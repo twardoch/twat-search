@@ -1,35 +1,36 @@
 # this_file: twat_search/pyproject.toml
 
-# this_file: pyproject.toml
-
 # Build System Configuration
 # -------------------------
 # Specifies the build system and its requirements for packaging the project
-# Specifies the build backend and its requirements for building the package
+# - hatchling: Modern, extensible build backend for Python projects
+# - hatch-vcs: Automatically determines package version from version control system
 [build-system]
 requires = [
-    "hatchling>=1.27.0",     # Core build backend for Hatch
-    "hatch-vcs>=0.4.0",      # Version Control System plugin for Hatch
+    "hatchling>=1.27.0",     # Core build backend for Hatch, providing modern packaging capabilities
+    "hatch-vcs>=0.4.0",      # Plugin to dynamically generate version from Git tags/commits
 ]
-build-backend = "hatchling.build"  # Use Hatchling as the build backend
+build-backend = "hatchling.build"  # Use Hatchling as the build backend for consistent and flexible builds
 
-# Wheel build configuration
-# Specifies which packages to include in the wheel distribution
+# Wheel Distribution Configuration
+# --------------------------------
+# Controls how the package is built and distributed as a wheel
+# Ensures only specific packages are included in the distribution
 [tool.hatch.build.targets.wheel]
-packages = ["src/twat_search"]
+packages = ["src/twat_search"]  # Only include the src/twat_search directory in the wheel
 
 # Project Metadata Configuration
 # ------------------------------
 # Comprehensive project description, requirements, and compatibility information
 [project]
-name = "twat-search"
-dynamic = ["version"]  # Version is determined dynamically from VCS
-description = ""
-readme = "README.md"
-requires-python = ">=3.10"  # Minimum Python version required
-license = "MIT"
-keywords = []
-classifiers = [
+name = "twat-search"  # Unique package name for PyPI and installation
+dynamic = ["version"]  # Version is dynamically determined from version control system
+description = "Advanced search utilities and tools for the twat ecosystem"  # Short, descriptive package summary
+readme = "README.md"  # Path to the project's README file for package description
+requires-python = ">=3.10"  # Minimum Python version required, leveraging modern Python features
+license = "MIT"  # Open-source license type
+keywords = ["twat", "search", "utilities", "text-search", "indexing"]  # Keywords for package discovery
+classifiers = [  # Metadata for package indexes and compatibility
     "Development Status :: 4 - Beta",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3.10",
@@ -43,14 +44,14 @@ classifiers = [
 # -------------------
 # External packages required for the project to function
 dependencies = [
-    "twat>=1.8.1",           # Main twat package
+    "twat>=1.8.1",           # Core twat package, providing essential functionality
 ]
 
 # Project Authors
 # ---------------
 [[project.authors]]
-name = "Adam Twardoch"
-email = "adam+github@twardoch.com"
+name = "Adam Twardoch"  # Primary author's name
+email = "adam+github@twardoch.com"  # Contact email for the author
 
 # Project URLs
 # ------------
@@ -64,16 +65,23 @@ Source = "https://github.com/twardoch/twat-search"
 # -----------------------
 # Registers this package as a plugin for the twat ecosystem
 [project.entry-points."twat.plugins"]
-search = "twat_search"
+search = "twat_search"  # Plugin name and module for search utilities
 
-# Version configuration using VCS (Git)
+# Version Management
+# -----------------
+# Configures automatic version generation from version control system
 [tool.hatch.version]
-source = "vcs"
+source = "vcs"  # Use version control system (Git) to determine version
 
+# Version Scheme
+# --------------
+# Defines how versions are generated and incremented
 [tool.hatch.version.raw-options]
-version_scheme = "post-release"
+version_scheme = "post-release"  # Generates version numbers based on Git tags
 
-# VCS hook configuration for version file generation
+# Version File Generation
+# ----------------------
+# Automatically creates a version file in the package
 [tool.hatch.build.hooks.vcs]
 version-file = "src/twat_search/__version__.py"
 
