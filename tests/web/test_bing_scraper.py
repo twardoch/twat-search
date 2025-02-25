@@ -3,17 +3,32 @@
 
 """
 Tests for the Bing Scraper search engine.
+
+This module contains tests for the BingScraperSearchEngine class and its
+associated functionality. The tests use mocking to avoid making actual
+network requests during testing.
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 from pydantic import HttpUrl
 from typing import Any
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.engines import BingScraperSearchEngine
 from twat_search.web.engines.bing_scraper import bing_scraper
+from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
+
+
+class MockSearchResult:
+    """Mock class to simulate results from BingScraper."""
+
+    def __init__(self, title: str, url: str, description: str = "") -> None:
+        """Initialize a mock search result."""
+        self.title = title
+        self.url = url
+        self.description = description
 
 
 @pytest.fixture
@@ -26,6 +41,23 @@ def engine_config() -> EngineConfig:
 def engine(engine_config: EngineConfig) -> BingScraperSearchEngine:
     """Create a Bing Scraper engine instance for testing."""
     return BingScraperSearchEngine(config=engine_config, num_results=5)
+
+
+@pytest.fixture
+def mock_results() -> list[MockSearchResult]:
+    """Create a list of mock search results for testing."""
+    return [
+        MockSearchResult(
+            title="Test Result 1",
+            url="https://example.com/1",
+            description="First test result",
+        ),
+        MockSearchResult(
+            title="Test Result 2",
+            url="https://example.com/2",
+            description="Second test result",
+        ),
+    ]
 
 
 class TestBingScraperEngine:
@@ -44,33 +76,16 @@ class TestBingScraperEngine:
     @patch("twat_search.web.engines.bing_scraper.BingScraper")
     @pytest.mark.asyncio
     async def test_search_basic(
-        self, mock_BingScraper: MagicMock, engine: BingScraperSearchEngine
+        self,
+        mock_BingScraper: MagicMock,
+        engine: BingScraperSearchEngine,
+        mock_results: list[MockSearchResult],
     ) -> None:
         """Test basic search functionality."""
         # Setup mock
         mock_instance = MagicMock()
         mock_BingScraper.return_value = mock_instance
-
-        # Create mock search result objects
-        class MockSearchResult:
-            def __init__(self, title: str, url: str, description: str) -> None:
-                self.title = title
-                self.url = url
-                self.description = description
-
-        # Mock search results
-        mock_instance.search.return_value = [
-            MockSearchResult(
-                title="Test Result 1",
-                url="https://example.com/1",
-                description="First test result",
-            ),
-            MockSearchResult(
-                title="Test Result 2",
-                url="https://example.com/2",
-                description="Second test result",
-            ),
-        ]
+        mock_instance.search.return_value = mock_results
 
         # Perform search
         results = await engine.search("test query")
@@ -130,13 +145,6 @@ class TestBingScraperEngine:
         mock_instance = MagicMock()
         mock_BingScraper.return_value = mock_instance
 
-        # Create mock search result objects with one invalid URL
-        class MockSearchResult:
-            def __init__(self, title: str, url: str, description: str) -> None:
-                self.title = title
-                self.url = url
-                self.description = description
-
         # Include an invalid URL that will fail HttpUrl validation
         mock_instance.search.return_value = [
             MockSearchResult(
@@ -161,7 +169,7 @@ class TestBingScraperEngine:
     @patch("twat_search.web.api.search")
     @pytest.mark.asyncio
     async def test_bing_scraper_convenience_function(
-        self, mock_search: MagicMock
+        self, mock_search: AsyncMock
     ) -> None:
         """Test the bing_scraper convenience function."""
         # Setup mock
@@ -194,3 +202,88 @@ class TestBingScraperEngine:
         assert call_kwargs["num_results"] == 10
         assert call_kwargs["bing_scraper_max_retries"] == 5
         assert call_kwargs["bing_scraper_delay_between_requests"] == 2.0
+
+    @patch("twat_search.web.engines.bing_scraper.BingScraper")
+    @pytest.mark.asyncio
+    async def test_empty_query(
+        self, mock_BingScraper: MagicMock, engine: BingScraperSearchEngine
+    ) -> None:
+        """Test behavior with empty query string."""
+        # Empty query should raise an EngineError
+        with pytest.raises(EngineError) as excinfo:
+            await engine.search("")
+
+        assert "Search query cannot be empty" in str(excinfo.value)
+        mock_BingScraper.assert_not_called()
+
+    @patch("twat_search.web.engines.bing_scraper.BingScraper")
+    @pytest.mark.asyncio
+    async def test_no_results(
+        self, mock_BingScraper: MagicMock, engine: BingScraperSearchEngine
+    ) -> None:
+        """Test handling of no results returned from BingScraper."""
+        # Setup mock to return empty list
+        mock_instance = MagicMock()
+        mock_BingScraper.return_value = mock_instance
+        mock_instance.search.return_value = []
+
+        # Should return empty list without errors
+        results = await engine.search("test query")
+        assert isinstance(results, list)
+        assert len(results) == 0
+
+    @patch("twat_search.web.engines.bing_scraper.BingScraper")
+    @pytest.mark.asyncio
+    async def test_network_error(
+        self, mock_BingScraper: MagicMock, engine: BingScraperSearchEngine
+    ) -> None:
+        """Test handling of network errors."""
+        # Setup mock to raise ConnectionError
+        mock_instance = MagicMock()
+        mock_BingScraper.return_value = mock_instance
+        mock_instance.search.side_effect = ConnectionError("Network timeout")
+
+        # Should raise EngineError with appropriate message
+        with pytest.raises(EngineError) as excinfo:
+            await engine.search("test query")
+
+        assert "Network error connecting to Bing" in str(excinfo.value)
+
+    @patch("twat_search.web.engines.bing_scraper.BingScraper")
+    @pytest.mark.asyncio
+    async def test_parsing_error(
+        self, mock_BingScraper: MagicMock, engine: BingScraperSearchEngine
+    ) -> None:
+        """Test handling of parsing errors."""
+        # Setup mock to raise RuntimeError
+        mock_instance = MagicMock()
+        mock_BingScraper.return_value = mock_instance
+        mock_instance.search.side_effect = RuntimeError("Failed to parse HTML")
+
+        # Should raise EngineError with appropriate message
+        with pytest.raises(EngineError) as excinfo:
+            await engine.search("test query")
+
+        assert "Error parsing Bing search results" in str(excinfo.value)
+
+    @patch("twat_search.web.engines.bing_scraper.BingScraper")
+    @pytest.mark.asyncio
+    async def test_invalid_result_format(
+        self, mock_BingScraper: MagicMock, engine: BingScraperSearchEngine
+    ) -> None:
+        """Test handling of invalid result format."""
+        # Setup mock to return results with missing attributes
+        mock_instance = MagicMock()
+        mock_BingScraper.return_value = mock_instance
+
+        # Create an invalid result object missing required attributes
+        class InvalidResult:
+            def __init__(self):
+                self.some_field = "something"
+
+        mock_instance.search.return_value = [InvalidResult()]
+
+        # Should handle gracefully and return empty list
+        results = await engine.search("test query")
+        assert isinstance(results, list)
+        assert len(results) == 0

@@ -148,13 +148,13 @@ File: .cursor/rules/filetree.mdc
 description: File tree of the project
 globs: 
 ---
-[ 864]  .
+[ 896]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 558]  cleanup.mdc
-│       └── [4.2K]  filetree.mdc
+│       └── [4.1K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
@@ -162,7 +162,7 @@ globs:
 ├── [3.5K]  .gitignore
 ├── [ 532]  .pre-commit-config.yaml
 ├── [  96]  .specstory
-│   └── [ 640]  history
+│   └── [ 704]  history
 │       ├── [2.0K]  .what-is-this.md
 │       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -180,16 +180,18 @@ globs:
 │       ├── [194K]  2025-02-25_05-43-implementing-the-webscout-search-engine.md
 │       ├── [ 23K]  2025-02-25_06-07-implementing-bing-scraper-engine.md
 │       ├── [ 15K]  2025-02-25_06-12-continuing-bing-scraper-engine-implementation.md
-│       └── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
+│       ├── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
+│       ├── [9.9K]  2025-02-25_07-09-refactoring-plan-and-progress-update.md
+│       └── [ 40K]  2025-02-25_07-17-implementing-phase-1-from-todo-md.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
-├── [1.4K]  PROGRESS.md
-├── [2.3K]  README.md
-├── [9.5K]  TODO.md
+├── [1.2K]  PROGRESS.md
+├── [3.2K]  README.md
+├── [4.1K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [ 128]  dist
-├── [9.4K]  pyproject.toml
+├── [9.5K]  pyproject.toml
 ├── [ 128]  src
 │   └── [ 256]  twat_search
 │       ├── [ 556]  __init__.py
@@ -202,37 +204,39 @@ globs:
 │           ├── [ 448]  engines
 │           │   ├── [3.5K]  __init__.py
 │           │   ├── [3.7K]  base.py
-│           │   ├── [6.6K]  bing_scraper.py
+│           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [7.6K]  brave.py
 │           │   ├── [8.2K]  critique.py
-│           │   ├── [6.8K]  duckduckgo.py
+│           │   ├── [6.7K]  duckduckgo.py
 │           │   ├── [4.9K]  pplx.py
 │           │   ├── [6.9K]  serpapi.py
-│           │   ├── [7.5K]  tavily.py
+│           │   ├── [7.4K]  tavily.py
 │           │   └── [7.3K]  you.py
 │           ├── [1.0K]  exceptions.py
 │           ├── [1.3K]  models.py
 │           └── [1.5K]  utils.py
-└── [ 224]  tests
-    ├── [2.0K]  conftest.py
-    ├── [ 157]  test_twat_search.py
-    ├── [ 192]  unit
-    │   ├── [  42]  __init__.py
-    │   ├── [1.5K]  mock_engine.py
-    │   └── [ 320]  web
-    │       ├── [  46]  __init__.py
-    │       ├── [ 160]  engines
-    │       │   ├── [  37]  __init__.py
-    │       │   └── [4.3K]  test_base.py
-    │       ├── [5.1K]  test_api.py
-    │       ├── [2.7K]  test_config.py
-    │       ├── [2.0K]  test_exceptions.py
-    │       ├── [4.5K]  test_models.py
-    │       └── [3.5K]  test_utils.py
-    └── [ 160]  web
-        └── [6.7K]  test_bing_scraper.py
+├── [ 256]  tests
+│   ├── [  64]  .benchmarks
+│   ├── [2.0K]  conftest.py
+│   ├── [ 157]  test_twat_search.py
+│   ├── [ 192]  unit
+│   │   ├── [  42]  __init__.py
+│   │   ├── [1.5K]  mock_engine.py
+│   │   └── [ 320]  web
+│   │       ├── [  46]  __init__.py
+│   │       ├── [ 160]  engines
+│   │       │   ├── [  37]  __init__.py
+│   │       │   └── [4.3K]  test_base.py
+│   │       ├── [5.1K]  test_api.py
+│   │       ├── [2.7K]  test_config.py
+│   │       ├── [2.0K]  test_exceptions.py
+│   │       ├── [4.5K]  test_models.py
+│   │       └── [3.5K]  test_utils.py
+│   └── [ 160]  web
+│       └── [ 10K]  test_bing_scraper.py
+└── [ 89K]  twat_search.txt
 
-18 directories, 65 files
+19 directories, 68 files
 
 ================
 File: .github/workflows/push.yml
@@ -431,16 +435,16 @@ def get_registered_engines() -> dict[str, type[SearchEngine]]:
 File: src/twat_search/web/engines/bing_scraper.py
 ================
     class BingScraper:  # type: ignore
-        def __init__(self, max_retries=3, delay_between_requests=1.0):
-        def search(self, query, num_results=10):
+        def __init__(
+        def search(self, query: str, num_results: int = 10) -> list[Any]:
 logger = logging.getLogger(__name__)
 class BingScraperResult(BaseModel):
 class BingScraperSearchEngine(SearchEngine):
-    def __init__(
         super().__init__(config, **kwargs)
-        self.max_results = num_results or self.config.default_params.get(
-        self.max_retries = kwargs.get("max_retries") or self.config.default_params.get(
-        self.delay_between_requests = kwargs.get(
+        self.max_results: int = num_results or self.config.default_params.get(
+        self.max_retries: int = kwargs.get(
+        ) or self.config.default_params.get("max_retries", 3)
+        self.delay_between_requests: float = kwargs.get(
         ) or self.config.default_params.get("delay_between_requests", 1.0)
             unused_params.append(f"country='{country}'")
             unused_params.append(f"language='{language}'")
@@ -449,17 +453,26 @@ class BingScraperSearchEngine(SearchEngine):
             logger.debug(
                 f"Parameters {', '.join(unused_params)} set but not used by Bing Scraper"
     def _convert_result(self, result: Any) -> SearchResult | None:
+            logger.warning("Empty result received from Bing Scraper")
+        if not hasattr(result, "title") or not hasattr(result, "url"):
+            logger.warning(f"Invalid result format: {result}")
             validated = BingScraperResult(
+                if hasattr(result, "description")
             return SearchResult(
+                    "url": str(result.url),
             logger.warning(f"Validation error for result: {exc}")
+            logger.warning(f"Unexpected error converting result: {exc}")
     async def search(self, query: str) -> list[SearchResult]:
+            raise EngineError(self.name, "Search query cannot be empty")
+        logger.info(f"Searching Bing with query: '{query}'")
             scraper = BingScraper(
             raw_results = scraper.search(query, num_results=self.max_results)
-            raise EngineError(self.name, f"Invalid input: {exc}") from exc
-            raise EngineError(self.name, f"Network error: {exc}") from exc
-            raise EngineError(self.name, f"Parsing error: {exc}") from exc
-            raise EngineError(self.name, f"Search failed: {exc}") from exc
+                logger.info("No results returned from Bing Scraper")
+            logger.debug(f"Received {len(raw_results)} raw results from Bing Scraper")
+            logger.error(error_msg)
+            raise EngineError(self.name, error_msg) from exc
                 self._convert_result(result) for result in raw_results
+        logger.info(f"Returning {len(results)} validated results from Bing Scraper")
 async def bing_scraper(
     return await search(
 
@@ -1260,19 +1273,20 @@ register_engine(MockSearchEngine)
 ================
 File: tests/web/test_bing_scraper.py
 ================
+class MockSearchResult:
+    def __init__(self, title: str, url: str, description: str = "") -> None:
 def engine_config() -> EngineConfig:
     return EngineConfig(enabled=True)
 def engine(engine_config: EngineConfig) -> BingScraperSearchEngine:
     return BingScraperSearchEngine(config=engine_config, num_results=5)
+def mock_results() -> list[MockSearchResult]:
+        MockSearchResult(
 class TestBingScraperEngine:
     @patch("twat_search.web.engines.bing_scraper.BingScraper")
     def test_init(self, mock_BingScraper: MagicMock, engine: Any) -> None:
         mock_BingScraper.assert_not_called()
     async def test_search_basic(
         mock_instance = MagicMock()
-        class MockSearchResult:
-            def __init__(self, title: str, url: str, description: str) -> None:
-            MockSearchResult(
         results = await engine.search("test query")
         assert len(results) == 2
         assert isinstance(results[0], SearchResult)
@@ -1292,6 +1306,23 @@ class TestBingScraperEngine:
                 url=HttpUrl("https://example.com"),
         results = await bing_scraper(
         mock_search.assert_called_once()
+    async def test_empty_query(
+        with pytest.raises(EngineError) as excinfo:
+            await engine.search("")
+        assert "Search query cannot be empty" in str(excinfo.value)
+    async def test_no_results(
+        assert isinstance(results, list)
+        assert len(results) == 0
+    async def test_network_error(
+        mock_instance.search.side_effect = ConnectionError("Network timeout")
+        assert "Network error connecting to Bing" in str(excinfo.value)
+    async def test_parsing_error(
+        mock_instance.search.side_effect = RuntimeError("Failed to parse HTML")
+        assert "Error parsing Bing search results" in str(excinfo.value)
+    async def test_invalid_result_format(
+        class InvalidResult:
+            def __init__(self):
+        mock_instance.search.return_value = [InvalidResult()]
 
 ================
 File: tests/conftest.py
@@ -1829,36 +1860,32 @@ File: PROGRESS.md
 this_file: PROGRESS.md
 ---
 
-- [ ] See [TODO.md](TODO.md) for the list of upcoming features planned for future development.
-- [x] Test planning completed (see detailed plan in [TODO.md](TODO.md))
-- [ ] Tests implementation
-- [ ] CLI tool for terminal-based searching
+## Completed
+- [x] Defined common parameters in base `SearchEngine` class
+- [x] Updated search engines to use unified parameters
+- [x] Added support for multiple search engines (Brave, Tavily, Perplexity, You.com, SerpAPI, Critique, DuckDuckGo)
+- [x] Implemented initial version of Bing Scraper engine
+- [x] Created basic testing infrastructure
 
-## Unified Parameter Implementation
+## In Progress
+- [ ] Fixing type checking and linting issues identified in cleanup report
+- [ ] Completing Bing Scraper implementation and tests
+- [ ] Addressing failing test in config environment variable loading
 
-### Completed:
-- [x] Defined common parameters in base `SearchEngine` class:
-  - `num_results`: Number of results to return
-  - `country`: Country code for results
-  - `language`: Language code for results
-  - `safe_search`: Boolean flag for safe search
-  - `time_frame`: Time frame for filtering results
-- [x] Updated search engines to use unified parameters:
-  - [x] BraveSearchEngine and BraveNewsSearchEngine
-  - [x] YouSearchEngine and YouNewsSearchEngine
-  - [x] SerpApiSearchEngine
-  - [x] TavilySearchEngine
-  - [x] PerplexitySearchEngine
-  - [x] CritiqueSearchEngine (new implementation)
-- [x] Updated convenience functions for all engines to expose unified parameters
-- [x] Fixed type conversion issues with URL handling
-- [x] Ensured proper validation and error handling for parameters
-- [x] Added CLI support for all engines including the new Critique engine
+## Upcoming
+- [ ] Enhancing test framework with mocks and fixtures
+- [ ] Standardizing error handling across all engines
+- [ ] Improving documentation and adding comprehensive examples
+- [ ] Implementing performance optimizations
+- [ ] Adding advanced features (caching, rate limiting, result normalization)
 
-### Next steps:
-- [ ] Write unit tests to verify unified parameter handling works correctly
-- [ ] Update documentation to reflect the unified parameters
-- [ ] Add docstrings explaining the mapping between unified parameters and engine-specific ones
+## Known Issues
+- Environment variable loading not working correctly in tests
+- Missing type annotations in several modules
+- Excessive parameter counts in engine initialization methods
+- Skipped tests for asynchronous components
+
+See [TODO.md](TODO.md) for the detailed task breakdown and implementation plans.
 
 ================
 File: pyproject.toml
@@ -2078,7 +2105,8 @@ test = [
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
     "pytest-xdist>=3.6.1",                # For parallel test execution
-    "pytest-benchmark[histogram]>=5.1.0",  # For performance testing
+    "pytest-benchmark[histogram]>=5.1.0", 
+    "pytest-asyncio>=0.25.3", # For async test execution
 ]
 
 dev = [
@@ -2094,21 +2122,31 @@ duckduckgo = [
     "duckduckgo-search>=7.3.0",  # DuckDuckGo search API
 ]
 
-bing = [
+bing_scraper = [
     "scrape-bing>=0.1.2.1",  # Bing scraper
 ]
 
-# Group all engines together
-all-engines = [
-    "duckduckgo-search>=7.3.0",
-    "scrape-bing>=0.1.2.1",
+tavily = [
+    "tavily-python>=0.5.0",  # Tavily search API
 ]
+
+pplx = [
+]
+
+serpapi = [
+    "serpapi>=0.1.5",  # SerpAPI search API
+]
+
+
+
 
 # Complete installation with all dependencies
 all = [
     "twat>=1.8.1",
     "duckduckgo-search>=7.3.0",
     "scrape-bing>=0.1.2.1",
+    "tavily-python>=0.5.0",
+    "serpapi>=0.1.5",
 ]
 
 # Test environment configuration
@@ -2171,6 +2209,7 @@ A powerful Python web search aggregator that combines results from multiple sear
   - Tavily Research
   - Perplexity
   - You.com
+  - Bing (via web scraping)
 - **Async Support**: Concurrent searches across engines
 - **Rate Limiting**: Built-in rate limiting per search engine
 - **Type Safety**: Full type annotations and runtime validation
@@ -2201,6 +2240,30 @@ for result in results:
   print(f"Snippet: {result.snippet}\n")
 ```
 
+## Using Specific Search Engines
+
+### Bing Scraper
+
+The Bing Scraper engine uses web scraping to retrieve search results from Bing without requiring an API key:
+
+```python
+from twat_search.web.engines.bing_scraper import bing_scraper
+
+# Search using Bing Scraper
+results = await bing_scraper(
+    "Python asyncio tutorial", 
+    num_results=10,                  # Number of results to return
+    max_retries=3,                   # Max retry attempts for failed requests
+    delay_between_requests=1.0       # Delay between scraping requests
+)
+
+# Print results
+for result in results:
+    print(f"{result.title}")
+    print(f"URL: {result.url}")
+    print(f"Snippet: {result.snippet}\n")
+```
+
 ## Configuration
 
 Configure search engines via environment variables:
@@ -2219,6 +2282,10 @@ GOOGLE_ENABLED=true
 TAVILY_ENABLED=true
 PERPLEXITY_ENABLED=true
 YOU_ENABLED=true
+BING_SCRAPER_ENABLED=true
+
+# Bing Scraper specific settings
+BING_SCRAPER_DEFAULT_PARAMS='{"max_retries": 3, "delay_between_requests": 1.0}'
 ```
 
 Or programmatically:
@@ -2229,7 +2296,9 @@ from twat_search.web import WebSearch, Config
 config = Config(
     brave_api_key="...",
     google_enabled=True,
-    tavily_enabled=False
+    tavily_enabled=False,
+    bing_scraper_enabled=True,
+    bing_scraper_default_params={"max_retries": 5, "delay_between_requests": 2.0}
 )
 
 search = WebSearch(config)
@@ -2275,332 +2344,120 @@ File: TODO.md
 ================
 # twat-search Web Package - Future Tasks
 
-The basic implementation of the `twat-search` web package is complete. 
-
-Tip: Periodically run `./cleanup.py status` to see results of lints and tests. 
-
-## 1. TODO
-
-### 1.1. Add new engine: 
-
-Add new engine `bing-scraper` (in `bing_scraper.py`)
-
-uv pip install --system scrape-bing
-https://github.com/AffanShaikhsurab/scraper-bing
-
-
->>> from scrape_bing import BingScraper
->>> scraper= BingScraper(
-...     max_retries=3,
-...     delay_between_requests=1.0
-... )
->>> results = scraper.search("Adam Twardoch", num_results=5)
->>> results
-[SearchResult(title='Adam Twardoch', url='https://www.twardoch.com/', description='Adam Twardoch | [auf Deutsch] I do font technology, multilingual typography, variable fonts, digital text processing, Unicode and OpenType. I manage software development and provide consulting …'), SearchResult(title='Adam Twardoch – Fontlab Ltd. | LinkedIn', url='https://pl.linkedin.com/in/twardoch', description='Born 1975 in Poland, Adam Twardoch studied business administration and cultural anthropology in Frankfurt (Oder), Germany. Following his passion for fonts and typography, Adam joined …'), SearchResult(title='Półtawski Nowy: przywrócono do życia kolejną perełkę …', url='https://designalley.pl/poltawski-nowy-digitalizacja-kroju/', description='10 gru 2020\xa0· Antykwa zaprojektowana przez Adama Półtawskiego na podstawie badań autora nad postacią graficzną tekstów drukowanych w języku polskim. …'), SearchResult(title='Adam Twardoch - Typoteka', url='https://typoteka.pl/pl/designer/adam-twardoch', description='Dyrektor produktów w firmie FontLab tworzącej cyfrowe narzędzia liternicze. Konsultant m. in. Google, Adobe, Monotype, Corel, Underware, współtwórca serwisu internetowego MyFonts. …'), SearchResult(title='Zamiast Timesa...', url='http://evil.pl/dtp/nietylkotimes.html', description='60 krojów pism przygotowanych specjalnie z myślą o zastosowaniu w składzie książek i gazet -- wyboru dokonał Adam Twardoch Na grupach dyskusyjnych pojawiają się czasem pytania o kroje …')]
-
-
-
-# Scrape Bing
-
-A robust Python package for scraping search results from Bing with built-in rate limiting, retry mechanisms, and result cleaning features.
-
-## 2. Features
-
-- 🔍 Clean and structured search results
-- 🔄 Automatic retry mechanism for failed requests
-- ⏱️ Built-in rate limiting to prevent blocking
-- 🧹 URL cleaning and validation
-- 🔄 User agent rotation
-- 💪 Type hints and proper error handling
-- 📝 Comprehensive documentation
-
-## 3. Installation
-
-You can install the package using pip:
-
-```bash
-pip install scrape-bing
-```
-
-For development installation:
-
-```bash
-git clone https://github.com/affanshaikhsurab/scrape-bing.git
-cd scrape_bing
-pip install -e .
-```
-
-## 4. Quick Start
-
-```python
-from scrape_bing import BingScraper
-
-# Initialize the searcher
-scraper= BingScraper(
-    max_retries=3,
-    delay_between_requests=1.0
-)
-
-# Perform a search
-results = scraper.search("python programming", num_results=5)
-
-# Process results
-for result in results:
-    print(f"\nTitle: {result.title}")
-    print(f"URL: {result.url}")
-    print(f"Description: {result.description}")
-```
-
-## 5. Advanced Usage
-
-### 5.1. Custom Configuration
-
-```python
-# Configure with custom parameters
-scraper = BingScraper(
-    max_retries=5,                # Maximum retry attempts
-    delay_between_requests=2.0    # Delay between requests in seconds
-)
-```
-
-### 5.2. Error Handling
-
-```python
-from scrape_bing import BingScraper
-
-scraper = BingScraper()
-
-try:
-    results = scraper.search("python programming")
-  
-except ValueError as e:
-    print(f"Invalid input: {e}")
-  
-except ConnectionError as e:
-    print(f"Network error: {e}")
-  
-except RuntimeError as e:
-    print(f"Parsing error: {e}")
-```
-
-### 5.3. Search Result Structure
-
-Each search result contains:
-
-- `title`: The title of the search result
-- `url`: The cleaned and validated URL
-- `description`: The description snippet (if available)
-
-```python
-# Access result attributes
-for result in results:
-    print(result.title)       # Title of the page
-    print(result.url)         # Clean URL
-    print(result.description) # Description (may be None)
-```
-
-## 6. API Reference
-
-### 6.1. BingSearch Class
-
-```python
-class BingScraper:
-    def __init__(self, max_retries: int = 3, delay_between_requests: float = 1.0):
-        """
-        Initialize the BingSearch scraper.
-  
-        Args:
-            max_retries: Maximum number of retry attempts for failed requests
-            delay_between_requests: Minimum delay between requests in seconds
-        """
-        pass
-
-    def search(self, query: str, num_results: int = 10) -> List[SearchResult]:
-        """
-        Perform a Bing search and return results.
-  
-        Args:
-            query: Search query string
-            num_results: Maximum number of results to return
-  
-        Returns:
-            List of SearchResult objects
-  
-        Raises:
-            ValueError: If query is empty
-            ConnectionError: If network connection fails
-            RuntimeError: If parsing fails
-        """
-        pass
-```
-
-### 6.2. SearchResult Class
-
-```python
-@dataclass
-class SearchResult:
-    title: str                    # Title of the search result
-    url: str                      # Cleaned URL
-    description: Optional[str]     # Description (may be None)
-```
-
-## 7. Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 8. Running Tests
-
-```bash
-# Install development dependencies
-pip install -e ".[dev]"
-
-# Run tests
-python -m pytest tests/
-```
-
-## 9. License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 10. Acknowledgments
-
-- Beautiful Soup 4 for HTML parsing
-- Requests library for HTTP requests
-- Python typing for type hints
-
-## 11. Support
-
-If you encounter any issues or have questions, please file an issue on the GitHub repository.
-
-
-### 11.1. Testing Plan
-
-The following tests should be implemented to ensure the robustness and reliability of the package:
-
-#### 11.1.1. Unit Tests
-
-##### Core API
-- Test `search` function
-  - Test with single engine
-  - Test with multiple engines
-  - Test with custom configuration
-  - Test with engine-specific parameters
-  - Test error handling (no engines, all engines fail)
-  - Test empty result handling
-
-##### Models
-- Test `SearchResult` model
-  - Test validation of URLs (valid and invalid)
-  - Test serialization/deserialization
-
-##### Configuration
-- Test `Config` class
-  - Test loading from environment variables
-  - Test loading from .env file
-  - Test default configuration
-- Test `EngineConfig` class
-  - Test enabled/disabled functionality
-  - Test default parameters
-
-##### Utilities
-- Test `RateLimiter` class
-  - Test it properly limits requests to specified rate
-  - Test with different rate limits
-  - Test behavior under high load
-
-##### Exceptions
-- Test `SearchError` and `EngineError` classes
-  - Test proper error message formatting
-  - Test exception hierarchy
-
-#### 11.1.2. Engine-specific Tests
-
-For each search engine implementation (Brave, Google, Tavily, Perplexity, You.com):
-
-- Test initialization
-  - Test with valid configuration
-  - Test with missing API key
-  - Test with custom parameters
-- Test search method
-  - Test with mock responses (happy path)
-  - Test error handling
-    - Connection errors
-    - API errors (rate limits, invalid requests)
-    - Authentication errors
-    - Timeout errors
-  - Test response parsing
-    - Valid responses
-    - Malformed responses
-    - Empty responses
-- Test parameter unification
-  - Test mapping of common parameters to engine-specific ones
-  - Test default values
-  - Test type conversions (especially for safe_search parameter)
-
-#### 11.1.3. Integration Tests
-
-- Test the entire search flow
-  - Test search across multiple engines
-  - Test fallback behavior when some engines fail
-  - Test rate limiting in real-world scenarios
-
-#### 11.1.4. Type Checking Tests
-
-- Add tests to verify type hints are correct
-- Fix existing mypy type errors identified in CLEANUP.txt
-  - Fix HttpUrl validation issues
-  - Fix BaseSettings issues in config.py
-  - Fix missing return type annotations
-
-#### 11.1.5. Performance Tests
-
-- Benchmark search performance
-  - Measure latency across different engines
-  - Test with concurrent searches
-  - Test with rate limiting
-
-#### 11.1.6. Mock Implementation
-
-Create mock implementations for testing that don't require actual API calls:
-
-```python
-# Example mock implementation
-@register_engine
-class MockSearchEngine(SearchEngine):
-    name = "mock"
-    
-    async def search(self, query: str) -> list[SearchResult]:
-        # Return predictable test results
-        return [
-            SearchResult(
-                title="Mock Result 1",
-                url="https://example.com/1",
-                snippet="This is a mock result for testing",
-                source=self.name
-            )
-        ]
-```
-
-#### 11.1.7. Test Utilities
-
-- Create helper functions for testing
-  - Mock response generators
-  - Configuration helpers
-  - Test data generators
-
-#### 11.1.8. Continuous Integration
-
-- Add GitHub workflow for running tests
-- Add coverage reporting
-- Add type checking to CI pipeline
-
-Tests!!! FIXME Describe here in detail the planned tests before implementing them
+The basic implementation of the `twat-search` web package is complete.
+
+Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
+
+## 1. Phase 1
+
+### 1.1. Complete Bing Scraper Implementation
+
+- [ ] Fix implementation issues in bing_scraper.py
+  - Add proper type annotations to all methods
+  - Implement better error handling with appropriate context
+- [ ] Complete test coverage for BingScraperSearchEngine
+  - Fix skipped tests in test_bing_scraper.py
+  - Add tests for error conditions and edge cases
+- [ ] Document Bing Scraper functionality
+  - Add comprehensive docstrings
+  - Include usage examples in README
+
+
+### 1.2. Documentation and Examples
+
+- [ ] Add comprehensive docstrings to all classes and methods
+  - Include parameter descriptions
+  - Document exceptions that can be raised
+  - Add usage examples
+- [ ] Create detailed README examples
+  - Basic usage examples for each engine
+  - Advanced configuration examples
+  - Error handling examples
+- [ ] Document environment variable configuration
+  - Create a comprehensive list of all supported environment variables
+  - Add examples of .env file configuration
+
+
+## 2. Phase 2
+
+### 2.1. Type Checking Errors
+
+- [ ] Fix missing type stubs for third-party modules
+  - `duckduckgo_search` and `scrape_bing` are showing import-not-found errors
+  - Create local stub files or install type stubs if available
+- [ ] Add type annotations to functions missing them
+  - Particularly in bing_scraper.py, need to add annotations to search methods
+- [ ] Fix attribute errors in You.py engine
+  - "YouBaseEngine" has no attribute errors for num_results_param and base_url
+- [ ] Resolve incompatible types in engine assignments in **init**.py
+- [ ] Fix the test_config_with_env_vars failure (api_key not being set correctly)
+
+### 2.2. Linting Issues
+
+- [ ] Address boolean parameter warnings (FBT001, FBT002)
+  - Consider using keyword-only arguments for boolean parameters
+  - Or create specific enum types for boolean options
+- [ ] Fix functions with too many parameters (PLR0913)
+  - Refactor using parameter objects or configuration objects
+  - Consider breaking down complex functions
+- [ ] Resolve magic values in code (PLR2004)
+  - Replace hardcoded numbers like 100, 5, 10 with named constants
+- [ ] Clean up unused imports (F401)
+  - Remove or properly use imported modules
+
+### 2.3. Improve Test Framework
+
+- [ ] Implement mock search engines for all providers
+  - Create standardized mock responses
+  - Enable offline testing without API keys
+- [ ] Add integration tests
+  - Test the entire search workflow
+  - Test concurrent searches across multiple engines
+- [ ] Create test fixtures for common configurations
+  - Standard API response data
+  - Common error cases
+- [ ] Fix test_config_with_env_vars failure
+  - Debug why environment variables aren't being properly loaded
+
+## 3. Phase 3
+
+### 3.1. Enhance Engine Implementations
+
+- [ ] Standardize error handling across all engines
+  - Use consistent error context and messages
+  - Properly propagate exceptions with 'from exc'
+- [ ] Optimize parameter handling in engines
+  - Reduce code duplication in parameter mapping
+  - Create utility functions for common parameter conversions
+- [ ] Add timeouts to all HTTP requests
+  - Ensure all engines have consistent timeout handling
+  - Add configurable timeout parameters
+
+## 4. Phase 4
+
+### 4.1. Additional Features
+
+- [ ] Add result caching mechanism
+  - Implement optional caching of search results
+  - Add configurable cache expiration
+- [ ] Implement rate limiting for all engines
+  - Ensure all engines respect API rate limits
+  - Add configurable backoff strategies
+- [ ] Add result normalization
+  - Create a more consistent result format across engines
+  - Implement result scoring and ranking
+
+### 4.2. Performance Improvements
+
+- [ ] Profile search performance across engines
+  - Measure latency and throughput
+  - Identify performance bottlenecks
+- [ ] Implement connection pooling for HTTP clients
+  - Reuse connections where possible
+  - Configure appropriate connection limits
+- [ ] Add parallelization options for multiple searches
+  - Control concurrency limits
+  - Implement proper resource cleanup
 
 ================
 File: VERSION.txt

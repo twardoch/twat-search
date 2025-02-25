@@ -75,6 +75,8 @@ class SearchCLI:
             "critique",
             "duckduckgo",
             "bing_scraper",
+            "hasdata-google",
+            "hasdata-google-light",
         ]
         available_engines = get_available_engines()
         missing_engines = [
@@ -88,13 +90,25 @@ class SearchCLI:
             )
 
     def _configure_logging(self, verbose: bool = False) -> None:
+        """Configure the logging level based on the verbose flag."""
+        # When not in verbose mode, silence almost all logs
+        level = logging.DEBUG if verbose else logging.CRITICAL
+
+        # Configure the root logger
         logging.basicConfig(
-            level=logging.INFO if not verbose else logging.DEBUG,
+            level=level,
             format="%(message)s",
             handlers=[self.log_handler],
             force=True,
         )
-        self.logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+
+        # Set levels for specific loggers
+        self.logger.setLevel(level)
+
+        # Also set levels for other loggers used in the system
+        logging.getLogger("twat_search.web.api").setLevel(level)
+        logging.getLogger("twat_search.web.engines").setLevel(level)
+        logging.getLogger("httpx").setLevel(level)
 
     def _parse_engines(self, engines_arg: Any) -> list[str] | None:
         if engines_arg is None:
@@ -125,6 +139,10 @@ class SearchCLI:
                     )
             engines = available or None
 
+        # Add debug print to see what engines are being used
+        if self.logger.level <= logging.DEBUG:
+            self.logger.debug(f"Attempting to search with engines: {engines}")
+
         try:
             results = await search(query=query, engines=engines, **kwargs)
             return self._process_results(results)
@@ -136,10 +154,13 @@ class SearchCLI:
     def _process_results(self, results: list) -> list[dict[str, Any]]:
         processed = []
         engine_results: dict[str, list] = {}
+
+        # Group results by engine
         for result in results:
             engine_name = getattr(result, "source", None) or "unknown"
             engine_results.setdefault(engine_name, []).append(result)
 
+        # Process all results from each engine
         for engine, engine_results_list in engine_results.items():
             if not engine_results_list:
                 processed.append(
@@ -150,23 +171,27 @@ class SearchCLI:
                         "title": "N/A",
                         "snippet": "N/A",
                         "raw_result": None,
+                        "is_first": True,  # Flag to help with UI rendering
                     }
                 )
                 continue
-            top_result = engine_results_list[0]
-            url = str(top_result.url)
-            processed.append(
-                {
-                    "engine": engine,
-                    "status": "✅ Success",
-                    "url": url,
-                    "title": top_result.title,
-                    "snippet": top_result.snippet[:100] + "..."
-                    if len(top_result.snippet) > 100
-                    else top_result.snippet,
-                    "raw_result": getattr(top_result, "raw", None),
-                }
-            )
+
+            # Process all results for the engine, not just the first one
+            for idx, result in enumerate(engine_results_list):
+                url = str(result.url)
+                processed.append(
+                    {
+                        "engine": engine,
+                        "status": "✅ Success",
+                        "url": url,
+                        "title": result.title,
+                        "snippet": result.snippet[:100] + "..."
+                        if len(result.snippet) > 100
+                        else result.snippet,
+                        "raw_result": getattr(result, "raw", None),
+                        "is_first": idx == 0,  # Flag to help with UI rendering
+                    }
+                )
         return processed
 
     def _display_results(
@@ -176,40 +201,66 @@ class SearchCLI:
             console.print("[bold red]No results found![/bold red]")
             return
 
+        # Always use the compact table format unless verbose is specifically requested
+        table = Table()  # Remove show_lines=True to eliminate row separator lines
+        table.add_column("Engine", style="cyan", no_wrap=True)
+
         if verbose:
-            table = Table(title="🌐 Web Search Results")
-            table.add_column("Engine", style="cyan", no_wrap=True)
             table.add_column("Status", style="magenta")
             table.add_column("Title", style="green")
-            table.add_column("URL", style="blue")
+            table.add_column("URL", style="blue", overflow="fold")
             for result in processed_results:
+                # Only show engine name for the first result of each engine
+                engine_display = result["engine"] if result["is_first"] else ""
                 table.add_row(
-                    result["engine"], result["status"], result["title"], result["url"]
+                    engine_display, result["status"], result["title"], result["url"]
                 )
         else:
-            table = Table(title="🌐 Web Search Results")
-            table.add_column("Engine", style="cyan", no_wrap=True)
-            table.add_column("Result", style="green")
+            # Set the URL column to wrap, with enough width to display most URLs
+            table.add_column("URL", style="blue", overflow="fold", max_width=70)
             for result in processed_results:
                 if "❌" in result["status"]:
                     continue
-                table.add_row(result["engine"], result["title"])
+                table.add_row(result["engine"], result["url"])
+
         console.print(table)
 
+        # Only print the raw results when verbose is true
+        if verbose:
+            for result in processed_results:
+                if "❌" not in result["status"]:
+                    console.print(result)
+
     def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:
-        results_by_engine = {}
+        """Format and print results as JSON."""
+        results_by_engine: dict[str, dict[str, list[dict[str, Any]]]] = {}
+
+        # Group results by engine
         for result in processed_results:
             engine = result["engine"]
-            results_by_engine[engine] = {
-                "status": "success" if "✅" in result["status"] else "error",
-                "url": result["url"] if result["url"] != "N/A" else None,
-                "title": result["title"] if result["title"] != "N/A" else None,
-                "snippet": result.get("snippet")
-                if result.get("snippet") != "N/A"
-                else None,
-                "result": result.get("raw_result"),
-            }
-        # Print JSON output (omitted actual printing for brevity)
+
+            # Initialize engine results list if it doesn't exist
+            if engine not in results_by_engine:
+                results_by_engine[engine] = {"results": []}
+
+            # Skip error results
+            if "❌" in result["status"]:
+                continue
+
+            # Add the current result to the engine's results list
+            results_by_engine[engine]["results"].append(
+                {
+                    "url": result["url"] if result["url"] != "N/A" else None,
+                    "title": result["title"] if result["title"] != "N/A" else None,
+                    "snippet": result.get("snippet")
+                    if result.get("snippet") != "N/A"
+                    else None,
+                    "raw": result.get("raw_result"),
+                }
+            )
+
+        # Print the JSON output
+        print(json_lib.dumps(results_by_engine, cls=CustomJSONEncoder, indent=2))
 
     def _display_errors(self, error_messages: list[str]) -> None:
         if not error_messages:
@@ -223,12 +274,24 @@ class SearchCLI:
     async def _search_engine(
         self, engine: str, query: str, params: dict, json: bool, verbose: bool
     ) -> list[dict[str, Any]]:
+        """
+        Execute a search with a specific engine.
+
+        Args:
+            engine: Name of the engine to use
+            query: Search query
+            params: Parameters for the engine
+            json: Whether to format output as JSON
+            verbose: Whether to display verbose output
+        """
         self._configure_logging(verbose)
+
         if not is_engine_available(engine):
             error_msg = f"{engine.capitalize()} search engine is not available. Make sure the required dependency is installed."
             self.logger.error(error_msg)
             self._display_errors([error_msg])
             return []
+
         engine_func = get_engine_function(engine)
         if engine_func is None:
             error_msg = (
@@ -248,6 +311,8 @@ class SearchCLI:
             "you_news": "You.com News",
             "critique": "Critique",
             "duckduckgo": "DuckDuckGo",
+            "hasdata-google": "HasData Google",
+            "hasdata-google-light": "HasData Google Light",
         }
         friendly = friendly_names.get(engine, engine)
         if not json:
@@ -270,6 +335,8 @@ class SearchCLI:
         self,
         query: str,
         engines: str | list[str] | None = None,
+        engine: str | None = None,  # Add alias for --engine/-e
+        e: str | None = None,  # Add alias for -e
         num_results: int = 5,
         country: str | None = None,
         language: str | None = None,
@@ -279,8 +346,36 @@ class SearchCLI:
         json: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
+        """
+        Search the web using one or more search engines.
+
+        Args:
+            query: The search query
+            engines: List of engines to use (comma-separated string or list)
+            engine: Alias for engines (--engine flag)
+            e: Alias for engines (-e flag)
+            num_results: Number of results to return per engine
+            country: Country code for regional results
+            language: Language code for results
+            safe_search: Whether to enable safe search filtering
+            time_frame: Time frame for results (e.g., "day", "week", "month")
+            verbose: Whether to display verbose output
+            json: Whether to return results as JSON
+            **kwargs: Additional engine-specific parameters
+
+        Returns:
+            List of search results (empty in JSON mode)
+        """
         self._configure_logging(verbose)
+
+        # Process engine flags - prioritize them in this order
+        if e is not None:
+            engines = e
+        if engine is not None:
+            engines = engine
+
         engine_list = self._parse_engines(engines)
+
         common_params = {
             "num_results": num_results,
             "country": country,
@@ -289,6 +384,7 @@ class SearchCLI:
             "time_frame": time_frame,
         }
         common_params = {k: v for k, v in common_params.items() if v is not None}
+
         if json:
             results = asyncio.run(
                 self._run_search(query, engine_list, **common_params, **kwargs)
@@ -300,12 +396,17 @@ class SearchCLI:
                 results = asyncio.run(
                     self._run_search(query, engine_list, **common_params, **kwargs)
                 )
+
         if json:
             self._display_json_results(results)
             return []
         else:
             self._display_results(results, verbose)
-            return results
+            # Only return the actual results if verbose mode is enabled
+            # This prevents the CLI from printing the raw results
+            if verbose:
+                return results
+            return []
 
     def info(self, engine: str | None = None, json: bool = False) -> None:
         try:
@@ -500,7 +601,7 @@ class SearchCLI:
         json: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
-        params = {
+        params: dict[str, Any] = {
             "num_results": num_results,
             "country": country,
             "language": language,
@@ -619,7 +720,7 @@ class SearchCLI:
         json: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
-        params = {
+        params: dict[str, Any] = {
             "num_results": num_results,
             "country": country,
             "language": language,
@@ -742,6 +843,71 @@ class SearchCLI:
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
         return await self._search_engine("duckduckgo", query, params, json, verbose)
+
+    async def hasdata_google(
+        self,
+        query: str,
+        num_results: int = 5,
+        location: str | None = None,
+        device_type: str = "desktop",
+        api_key: str | None = None,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using HasData Google SERP API.
+
+        Args:
+            query: Search query string
+            num_results: Number of results to return
+            location: Location for search (e.g., "Austin,Texas,United States")
+            device_type: Device type for search (desktop or mobile)
+            api_key: API key to use (overrides environment variable)
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+        """
+        params = {
+            "num_results": num_results,
+            "location": location,
+            "device_type": device_type,
+            "api_key": api_key,
+        }
+        params.update(kwargs)
+        params = {k: v for k, v in params.items() if v is not None}
+        return await self._search_engine("hasdata-google", query, params, json, verbose)
+
+    async def hasdata_google_light(
+        self,
+        query: str,
+        num_results: int = 5,
+        location: str | None = None,
+        api_key: str | None = None,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using HasData Google SERP Light API.
+
+        Args:
+            query: Search query string
+            num_results: Number of results to return
+            location: Location for search (e.g., "Austin,Texas,United States")
+            api_key: API key to use (overrides environment variable)
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+        """
+        params = {
+            "num_results": num_results,
+            "location": location,
+            "api_key": api_key,
+        }
+        params.update(kwargs)
+        params = {k: v for k, v in params.items() if v is not None}
+        return await self._search_engine(
+            "hasdata-google-light", query, params, json, verbose
+        )
 
 
 def main() -> None:

@@ -7,6 +7,10 @@ This package contains the implementations of various search engines that
 can be used with the twat_search.web API.
 """
 
+from typing import Any, Callable, Coroutine
+
+from twat_search.web.models import SearchResult
+
 # Initialize empty __all__ list
 __all__ = []
 
@@ -92,6 +96,28 @@ try:
 except ImportError:
     pass
 
+# Import HasData engines
+try:
+    from .hasdata import (
+        HasDataGoogleEngine,
+        HasDataGoogleLightEngine,
+        hasdata_google,
+        hasdata_google_light,
+    )
+
+    available_engine_functions["hasdata-google"] = hasdata_google
+    available_engine_functions["hasdata-google-light"] = hasdata_google_light
+    __all__.extend(
+        [
+            "HasDataGoogleEngine",
+            "HasDataGoogleLightEngine",
+            "hasdata_google",
+            "hasdata_google_light",
+        ]
+    )
+except ImportError:
+    pass
+
 
 # Add helper functions to the exports
 def is_engine_available(engine_name: str) -> bool:
@@ -106,7 +132,9 @@ def is_engine_available(engine_name: str) -> bool:
     return engine_name in available_engine_functions
 
 
-def get_engine_function(engine_name: str):
+def get_engine_function(
+    engine_name: str,
+) -> Callable[..., Coroutine[Any, Any, list[SearchResult]]] | None:
     """Get the function for a specific engine.
 
     Args:

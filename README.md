@@ -10,6 +10,7 @@ A powerful Python web search aggregator that combines results from multiple sear
   - Tavily Research
   - Perplexity
   - You.com
+  - Bing (via web scraping)
 - **Async Support**: Concurrent searches across engines
 - **Rate Limiting**: Built-in rate limiting per search engine
 - **Type Safety**: Full type annotations and runtime validation
@@ -40,6 +41,30 @@ for result in results:
   print(f"Snippet: {result.snippet}\n")
 ```
 
+## Using Specific Search Engines
+
+### Bing Scraper
+
+The Bing Scraper engine uses web scraping to retrieve search results from Bing without requiring an API key:
+
+```python
+from twat_search.web.engines.bing_scraper import bing_scraper
+
+# Search using Bing Scraper
+results = await bing_scraper(
+    "Python asyncio tutorial", 
+    num_results=10,                  # Number of results to return
+    max_retries=3,                   # Max retry attempts for failed requests
+    delay_between_requests=1.0       # Delay between scraping requests
+)
+
+# Print results
+for result in results:
+    print(f"{result.title}")
+    print(f"URL: {result.url}")
+    print(f"Snippet: {result.snippet}\n")
+```
+
 ## Configuration
 
 Configure search engines via environment variables:
@@ -58,6 +83,10 @@ GOOGLE_ENABLED=true
 TAVILY_ENABLED=true
 PERPLEXITY_ENABLED=true
 YOU_ENABLED=true
+BING_SCRAPER_ENABLED=true
+
+# Bing Scraper specific settings
+BING_SCRAPER_DEFAULT_PARAMS='{"max_retries": 3, "delay_between_requests": 1.0}'
 ```
 
 Or programmatically:
@@ -68,7 +97,9 @@ from twat_search.web import WebSearch, Config
 config = Config(
     brave_api_key="...",
     google_enabled=True,
-    tavily_enabled=False
+    tavily_enabled=False,
+    bing_scraper_enabled=True,
+    bing_scraper_default_params={"max_retries": 5, "delay_between_requests": 2.0}
 )
 
 search = WebSearch(config)

@@ -213,7 +213,8 @@ test = [
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
     "pytest-xdist>=3.6.1",                # For parallel test execution
-    "pytest-benchmark[histogram]>=5.1.0",  # For performance testing
+    "pytest-benchmark[histogram]>=5.1.0", 
+    "pytest-asyncio>=0.25.3", # For async test execution
 ]
 
 dev = [
@@ -229,21 +230,34 @@ duckduckgo = [
     "duckduckgo-search>=7.3.0",  # DuckDuckGo search API
 ]
 
-bing = [
+bing_scraper = [
     "scrape-bing>=0.1.2.1",  # Bing scraper
 ]
 
-# Group all engines together
-all-engines = [
-    "duckduckgo-search>=7.3.0",
-    "scrape-bing>=0.1.2.1",
+tavily = [
+    "tavily-python>=0.5.0",  # Tavily search API
 ]
+
+pplx = [
+]
+
+serpapi = [
+    "serpapi>=0.1.5",  # SerpAPI search API
+]
+
+hasdata = []  # HasData API uses only core dependencies
+
+
+
 
 # Complete installation with all dependencies
 all = [
     "twat>=1.8.1",
     "duckduckgo-search>=7.3.0",
     "scrape-bing>=0.1.2.1",
+    "tavily-python>=0.5.0",
+    "serpapi>=0.1.5",
+    # HasData uses core dependencies
 ]
 
 # Test environment configuration
