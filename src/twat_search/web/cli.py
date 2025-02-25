@@ -15,7 +15,8 @@ import asyncio
 import os
 import logging
 import json as json_lib
-from typing import Any, TYPE_CHECKING
+import sys
+from typing import Any, TYPE_CHECKING, Dict, List, Optional, Callable, Coroutine, Union
 
 # We need to ignore the missing stubs for fire
 import fire  # type: ignore
@@ -25,20 +26,27 @@ from rich.logging import RichHandler
 
 from twat_search.web.api import search
 from twat_search.web.config import Config
+from twat_search.web.models import SearchResult
 from twat_search.web.engines import (
-    brave,
-    brave_news,
-    critique,
-    duckduckgo,
-    pplx,
-    serpapi,
-    tavily,
-    you,
-    you_news,
+    is_engine_available,
+    get_engine_function,
+    get_available_engines,
 )
 
+# For type checking
 if TYPE_CHECKING:
     from twat_search.web.config import Config
+    from twat_search.web.engines import (
+        brave,
+        brave_news,
+        critique,
+        duckduckgo,
+        pplx,
+        serpapi,
+        tavily,
+        you,
+        you_news,
+    )
 
 
 # Custom JSON encoder that handles non-serializable objects
@@ -66,47 +74,69 @@ console = Console()
 
 
 class SearchCLI:
-    """Web search CLI tool that displays results from multiple search engines."""
+    """
+    Command-line interface for web search functionality.
+
+    This class provides a CLI wrapper around the search API, with commands
+    for searching, listing available engines, and getting engine information.
+    """
 
     def __init__(self) -> None:
-        """Initialize SearchCLI with default logging setup."""
-        # Set up logging with rich
+        """
+        Initialize the CLI.
+
+        Sets up logging and initializes a Console for rich output.
+        """
+        # Set up logging
+        self.logger = logging.getLogger("twat_search.cli")
         self.log_handler = RichHandler(rich_tracebacks=True)
-        logging.basicConfig(
-            level=logging.CRITICAL,  # Default to CRITICAL level to hide all logs
-            format="%(message)s",
-            handlers=[self.log_handler],
-        )
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.CRITICAL)  # Explicitly set logger level
+        self._configure_logging()
 
-        # Load environment variables from .env file
-        try:
-            from dotenv import load_dotenv
+        # Set up console for rich output
+        self.console = Console()
 
-            load_dotenv()
-            # Use debug level for this message so it only shows in verbose mode
-            self.logger.debug("Loaded environment variables from .env file")
-        except ImportError:
-            # Also use debug level for this warning
-            self.logger.debug("python-dotenv not installed, skipping .env loading")
+        # Check for missing engines and warn
+        all_possible_engines = [
+            "brave",
+            "brave_news",
+            "serpapi",
+            "tavily",
+            "pplx",
+            "you",
+            "you_news",
+            "critique",
+            "duckduckgo",
+            "bing_scraper",
+        ]
+        available_engines = get_available_engines()
+        missing_engines = [
+            engine for engine in all_possible_engines if engine not in available_engines
+        ]
+
+        if missing_engines:
+            self.logger.warning(
+                f"The following engines are not available due to missing dependencies: "
+                f"{', '.join(missing_engines)}. "
+                f"Install the relevant optional dependencies to use them."
+            )
 
     def _configure_logging(self, verbose: bool = False) -> None:
-        """Configure logging based on verbose flag.
+        """
+        Configure logging with optional verbose mode.
 
         Args:
-            verbose: Whether to show detailed logs
+            verbose: Whether to enable verbose logging
         """
-        log_level = (
-            logging.INFO if verbose else logging.CRITICAL
-        )  # Use CRITICAL to hide all logs
+        # Set up logging with rich handler
+        logging.basicConfig(
+            level=logging.INFO if verbose else logging.WARNING,
+            format="%(message)s",
+            handlers=[self.log_handler],
+            force=True,  # Override any existing configuration
+        )
 
-        # Update logger levels
-        logging.getLogger().setLevel(log_level)
-        self.logger.setLevel(log_level)
-        self.log_handler.level = log_level
-
-        # Import modules after setting log level
+        # Set specific level for this logger
+        self.logger.setLevel(logging.DEBUG if verbose else logging.INFO)
 
     def _parse_engines(self, engines_arg: Any) -> list[str] | None:
         """Parse engines argument into a list of engine names.
@@ -145,25 +175,35 @@ class SearchCLI:
         engines: list[str] | None = None,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
-        """Run search across all available engines.
+        """
+        Run the search across specified engines.
 
         Args:
-            query: The search term to query
-            engines: Optional list of specific engines to use
-            **kwargs: Additional engine-specific parameters
+            query: The search query
+            engines: List of engines to use (or None for all enabled)
+            **kwargs: Additional search parameters
 
         Returns:
-            List of result dictionaries with engine name, status, and results
+            List of processed search results
         """
-        # Import here to ensure logging is configured before import
-
-        self.logger.info(f"🔍 Searching for: {query}")
+        # Filter engines to only include those that are available
+        if engines:
+            available = []
+            for engine in engines:
+                if engine == "all" or is_engine_available(engine):
+                    available.append(engine)
+                else:
+                    self.logger.warning(
+                        f"Engine '{engine}' is not available. The dependency may not be installed."
+                    )
+            engines = available or None
 
         try:
-            results = await search(query, engines=engines, **kwargs)
+            results = await search(query=query, engines=engines, **kwargs)
             return self._process_results(results)
         except Exception as e:
-            self.logger.error(f"❌ Search failed: {e}")
+            self.logger.error(f"Search failed: {e}")
+            self._display_errors([str(e)])
             return []
 
     def _process_results(self, results: list) -> list[dict[str, Any]]:
@@ -460,7 +500,7 @@ class SearchCLI:
         # Try to import the engine class to get more details
         try:
             # Import base engine module
-            from twat_search.web.engines.base import get_engine, get_registered_engines
+            from twat_search.web.engines.base import get_registered_engines
 
             # Get registered engines to access the class
             registered_engines = get_registered_engines()
@@ -619,6 +659,18 @@ class SearchCLI:
             "default_params": default_params,
         }
 
+    def _check_engine_availability(self, engine_name: str) -> bool:
+        """
+        Check if an engine is available (dependency is installed).
+
+        Args:
+            engine_name: Name of the engine to check
+
+        Returns:
+            True if the engine is available, False otherwise
+        """
+        return is_engine_available(engine_name)
+
     async def critique(
         self,
         query: str,
@@ -637,67 +689,87 @@ class SearchCLI:
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
         """
-        Search using Critique Labs AI search.
+        Search using the Critique Search API.
 
         Args:
-            query: Search query string
+            query: The search query
             num_results: Number of results to return
-            country: Country code
-            language: Language code
+            country: Country code for results
+            language: Language code for results
             safe_search: Whether to enable safe search
             time_frame: Time frame for results
-            image_url: URL of an image to include in search
-            image_base64: Base64-encoded image to include in search
+            image_url: URL of image to search with
+            image_base64: Base64-encoded image to search with
             source_whitelist: Comma-separated list of domains to include
             source_blacklist: Comma-separated list of domains to exclude
-            api_key: API key (otherwise use environment variable)
-            verbose: Show detailed output
-            json: Return results as JSON
-            **kwargs: Additional engine-specific parameters
+            api_key: API key to use (overrides config)
+            verbose: Whether to show verbose output
+            json: Whether to output results as JSON
+            **kwargs: Additional Critique-specific parameters
 
         Returns:
-            List of search results as dictionaries
+            List of search results
         """
         self._configure_logging(verbose)
 
-        # Only show status message when not in JSON mode
-        console = Console()
-        if not json:
-            console.print(f"[bold]Searching Critique Labs AI[/bold]: {query}")
-
-        # Convert comma-separated lists to actual lists
-        source_whitelist_list = None
-        if source_whitelist:
-            source_whitelist_list = [s.strip() for s in source_whitelist.split(",")]
-
-        source_blacklist_list = None
-        if source_blacklist:
-            source_blacklist_list = [s.strip() for s in source_blacklist.split(",")]
-
-        results = await critique(
-            query=query,
-            num_results=num_results,
-            country=country,
-            language=language,
-            safe_search=safe_search,
-            time_frame=time_frame,
-            image_url=image_url,
-            image_base64=image_base64,
-            source_whitelist=source_whitelist_list,
-            source_blacklist=source_blacklist_list,
-            api_key=api_key,
-            **kwargs,
-        )
-
-        processed_results = self._process_results(results)
-
-        if json:
-            self._display_json_results(processed_results)
-            # Don't return raw results to avoid double output in json mode
+        if not self._check_engine_availability("critique"):
+            error_msg = "Critique Search engine is not available. Make sure the required dependency is installed."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
             return []
-        else:
-            self._display_results(processed_results, verbose)
+
+        critique_func = get_engine_function("critique")
+        if critique_func is None:
+            error_msg = "Critique Search engine function could not be loaded."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
+        try:
+            # Prepare parameters for the search
+            params: dict[str, Any] = {
+                "num_results": num_results,
+                "country": country,
+                "language": language,
+                "safe_search": safe_search,
+                "time_frame": time_frame,
+            }
+
+            # Add optional parameters if provided
+            if api_key:
+                params["api_key"] = api_key
+            if image_url:
+                params["image_url"] = image_url
+            if image_base64:
+                params["image_base64"] = image_base64
+            if source_whitelist:
+                params["source_whitelist"] = source_whitelist.split(",")
+            if source_blacklist:
+                params["source_blacklist"] = source_blacklist.split(",")
+
+            # Add any additional kwargs
+            params.update(kwargs)
+
+            # Remove None values
+            params = {k: v for k, v in params.items() if v is not None}
+
+            # Run the search
+            self.logger.info(f"🔍 Searching with Critique: {query}")
+            results = await critique_func(query, **params)
+
+            # Process and display results
+            processed_results = self._process_results(results)
+            if json:
+                self._display_json_results(processed_results)
+            else:
+                self._display_results(processed_results, verbose)
+
             return processed_results
+
+        except Exception as e:
+            self.logger.error(f"Critique search failed: {e}")
+            self._display_errors([str(e)])
+            return []
 
     async def brave(
         self,
@@ -732,12 +804,25 @@ class SearchCLI:
         """
         self._configure_logging(verbose)
 
+        if not self._check_engine_availability("brave"):
+            error_msg = "Brave Search engine is not available. Make sure the required dependency is installed."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
+        brave_func = get_engine_function("brave")
+        if brave_func is None:
+            error_msg = "Brave Search engine function could not be loaded."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
         # Only show status message when not in JSON mode
         console = Console()
         if not json:
             console.print(f"[bold]Searching Brave[/bold]: {query}")
 
-        results = await brave(
+        results = await brave_func(
             query=query,
             num_results=num_results,
             country=country,
@@ -791,12 +876,25 @@ class SearchCLI:
         """
         self._configure_logging(verbose)
 
+        if not self._check_engine_availability("brave_news"):
+            error_msg = "Brave News search engine is not available. Make sure the required dependency is installed."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
+        brave_news_func = get_engine_function("brave_news")
+        if brave_news_func is None:
+            error_msg = "Brave News search engine function could not be loaded."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
         # Only show status message when not in JSON mode
         console = Console()
         if not json:
             console.print(f"[bold]Searching Brave News[/bold]: {query}")
 
-        results = await brave_news(
+        results = await brave_news_func(
             query=query,
             num_results=num_results,
             country=country,
@@ -850,12 +948,25 @@ class SearchCLI:
         """
         self._configure_logging(verbose)
 
+        if not self._check_engine_availability("serpapi"):
+            error_msg = "SerpAPI search engine is not available. Make sure the required dependency is installed."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
+        serpapi_func = get_engine_function("serpapi")
+        if serpapi_func is None:
+            error_msg = "SerpAPI search engine function could not be loaded."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
         # Only show status message when not in JSON mode
         console = Console()
         if not json:
             console.print(f"[bold]Searching SerpAPI (Google)[/bold]: {query}")
 
-        results = await serpapi(
+        results = await serpapi_func(
             query=query,
             num_results=num_results,
             country=country,
@@ -915,6 +1026,19 @@ class SearchCLI:
         """
         self._configure_logging(verbose)
 
+        if not self._check_engine_availability("tavily"):
+            error_msg = "Tavily search engine is not available. Make sure the required dependency is installed."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
+        tavily_func = get_engine_function("tavily")
+        if tavily_func is None:
+            error_msg = "Tavily search engine function could not be loaded."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
         # Only show status message when not in JSON mode
         console = Console()
         if not json:
@@ -929,7 +1053,7 @@ class SearchCLI:
         if exclude_domains:
             exclude_domains_list = [s.strip() for s in exclude_domains.split(",")]
 
-        results = await tavily(
+        results = await tavily_func(
             query=query,
             num_results=num_results,
             country=country,
@@ -988,12 +1112,25 @@ class SearchCLI:
         """
         self._configure_logging(verbose)
 
+        if not self._check_engine_availability("pplx"):
+            error_msg = "Perplexity search engine is not available. Make sure the required dependency is installed."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
+        pplx_func = get_engine_function("pplx")
+        if pplx_func is None:
+            error_msg = "Perplexity search engine function could not be loaded."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
         # Only show status message when not in JSON mode
         console = Console()
         if not json:
             console.print(f"[bold]Searching Perplexity AI[/bold]: {query}")
 
-        results = await pplx(
+        results = await pplx_func(
             query=query,
             num_results=num_results,
             country=country,
@@ -1048,12 +1185,25 @@ class SearchCLI:
         """
         self._configure_logging(verbose)
 
+        if not self._check_engine_availability("you"):
+            error_msg = "You.com search engine is not available. Make sure the required dependency is installed."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
+        you_func = get_engine_function("you")
+        if you_func is None:
+            error_msg = "You.com search engine function could not be loaded."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
         # Only show status message when not in JSON mode
         console = Console()
         if not json:
             console.print(f"[bold]Searching You.com[/bold]: {query}")
 
-        results = await you(
+        results = await you_func(
             query=query,
             num_results=num_results,
             country=country,
@@ -1107,12 +1257,25 @@ class SearchCLI:
         """
         self._configure_logging(verbose)
 
+        if not self._check_engine_availability("you_news"):
+            error_msg = "You.com News search engine is not available. Make sure the required dependency is installed."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
+        you_news_func = get_engine_function("you_news")
+        if you_news_func is None:
+            error_msg = "You.com News search engine function could not be loaded."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
         # Only show status message when not in JSON mode
         console = Console()
         if not json:
             console.print(f"[bold]Searching You.com News[/bold]: {query}")
 
-        results = await you_news(
+        results = await you_news_func(
             query=query,
             num_results=num_results,
             country=country,
@@ -1148,54 +1311,64 @@ class SearchCLI:
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
         """
-        Search using DuckDuckGo search engine.
+        Search using DuckDuckGo Search.
 
         Args:
-            query: The search query
-            num_results: Maximum number of results to return
-            country: Optional country code for regional search (maps to 'region')
-            language: Optional language code for localized results
-            safe_search: Whether to enable safe search filtering
-            time_frame: Optional time range for results (d: day, w: week, m: month, y: year)
-            proxy: Optional proxy server to use, supports http/https/socks5
-            timeout: Request timeout in seconds
-            verbose: Whether to show detailed results
-            json: Whether to output in JSON format
-            **kwargs: Additional DuckDuckGo-specific parameters
+            query: Search query string
+            num_results: Number of results to return
+            country: Country code
+            language: Language code
+            safe_search: Whether to enable safe search
+            time_frame: Time frame for results
+            proxy: HTTP proxy to use
+            timeout: Timeout in seconds
+            verbose: Show detailed output
+            json: Return results as JSON
+            **kwargs: Additional engine-specific parameters
 
         Returns:
-            Search results as dictionaries
+            List of search results as dictionaries
         """
         self._configure_logging(verbose)
-        self.logger.info(f"🔍 Searching DuckDuckGo for: {query}")
 
-        try:
-            # Ensure safe_search is a boolean and not None
-            actual_safe_search = True if safe_search is None else bool(safe_search)
-
-            results = await duckduckgo(
-                query,
-                num_results=num_results,
-                country=country,
-                language=language,
-                safe_search=actual_safe_search,
-                time_frame=time_frame,
-                proxy=proxy,
-                timeout=timeout,
-                **kwargs,
-            )
-            processed_results = self._process_results(results)
-
-            if json:
-                self._display_json_results(processed_results)
-            else:
-                self._display_results(processed_results, verbose)
-            return processed_results
-        except Exception as e:
-            error_msg = f"DuckDuckGo search failed: {e}"
-            self.logger.error(f"❌ {error_msg}")
+        if not self._check_engine_availability("duckduckgo"):
+            error_msg = "DuckDuckGo search engine is not available. Make sure the required dependency is installed."
+            self.logger.error(error_msg)
             self._display_errors([error_msg])
             return []
+
+        duckduckgo_func = get_engine_function("duckduckgo")
+        if duckduckgo_func is None:
+            error_msg = "DuckDuckGo search engine function could not be loaded."
+            self.logger.error(error_msg)
+            self._display_errors([error_msg])
+            return []
+
+        # Only show status message when not in JSON mode
+        console = Console()
+        if not json:
+            console.print(f"[bold]Searching DuckDuckGo[/bold]: {query}")
+
+        results = await duckduckgo_func(
+            query=query,
+            num_results=num_results,
+            region=country,  # Map country to region
+            safesearch=safe_search,  # Map to DuckDuckGo's param
+            time_range=time_frame,  # Map to DuckDuckGo's param
+            proxy=proxy,
+            timeout=timeout,
+            **kwargs,
+        )
+
+        processed_results = self._process_results(results)
+
+        if json:
+            self._display_json_results(processed_results)
+            # Don't return raw results to avoid double output in json mode
+            return []
+        else:
+            self._display_results(processed_results, verbose)
+            return processed_results
 
 
 def main() -> None:

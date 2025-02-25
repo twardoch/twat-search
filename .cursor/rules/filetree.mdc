@@ -8,7 +8,7 @@ globs:
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 558]  cleanup.mdc
-│       └── [3.5K]  filetree.mdc
+│       └── [4.2K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
@@ -16,7 +16,7 @@ globs:
 ├── [3.5K]  .gitignore
 ├── [ 532]  .pre-commit-config.yaml
 ├── [  96]  .specstory
-│   └── [ 576]  history
+│   └── [ 608]  history
 │       ├── [2.0K]  .what-is-this.md
 │       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -32,16 +32,17 @@ globs:
 │       ├── [286K]  2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md
 │       ├── [ 83K]  2025-02-25_05-36-implementing-duckduckgo-search-engine.md
 │       ├── [194K]  2025-02-25_05-43-implementing-the-webscout-search-engine.md
-│       └── [6.8K]  2025-02-25_06-07-untitled.md
+│       ├── [ 23K]  2025-02-25_06-07-implementing-bing-scraper-engine.md
+│       └── [ 15K]  2025-02-25_06-12-continuing-bing-scraper-engine-implementation.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [1.4K]  PROGRESS.md
 ├── [2.3K]  README.md
-├── [ 23K]  TODO.md
+├── [9.5K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [ 160]  dist
-├── [9.1K]  pyproject.toml
+├── [9.3K]  pyproject.toml
 ├── [ 128]  src
 │   └── [ 256]  twat_search
 │       ├── [ 232]  __init__.py
@@ -54,7 +55,7 @@ globs:
 │           ├── [ 448]  engines
 │           │   ├── [1.4K]  __init__.py
 │           │   ├── [3.7K]  base.py
-│           │   ├── [7.4K]  bing_scraper.py
+│           │   ├── [7.3K]  bing_scraper.py
 │           │   ├── [ 15K]  brave.py
 │           │   ├── [ 11K]  critique.py
 │           │   ├── [7.5K]  duckduckgo.py
@@ -82,9 +83,10 @@ globs:
 │   │       ├── [2.0K]  test_exceptions.py
 │   │       ├── [4.5K]  test_models.py
 │   │       └── [3.5K]  test_utils.py
-│   └── [  96]  web
+│   └── [ 160]  web
+│       ├── [6.7K]  test_bing_scraper.py
 │       └── [6.4K]  test_webscout.py
 ├── [ 76K]  twat_search.txt
-└── [120K]  uv.lock
+└── [365K]  uv.lock
 
-18 directories, 66 files
+18 directories, 68 files

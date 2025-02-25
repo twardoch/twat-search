@@ -12,33 +12,72 @@ multiple search engines, handling the differences between APIs
 and providing a consistent result format.
 """
 
-from .api import search
-from .models import SearchResult
-from .config import Config, EngineConfig
-from .engines import (
-    brave,
-    brave_news,
-    pplx,
-    serpapi,
-    tavily,
-    you,
-    you_news,
-    critique,
-    duckduckgo,
-)
+# Initialize empty __all__ list
+__all__ = []
 
-__all__ = [
-    "Config",
-    "EngineConfig",
-    "SearchResult",
-    "brave",
-    "brave_news",
-    "critique",
-    "duckduckgo",
-    "pplx",
-    "search",
-    "serpapi",
-    "tavily",
-    "you",
-    "you_news",
-]
+# Import core functionality first
+try:
+    from .api import search
+    from .models import SearchResult
+    from .config import Config, EngineConfig
+
+    __all__.extend(["Config", "EngineConfig", "SearchResult", "search"])
+except ImportError:
+    pass
+
+# Import search engines with try-except blocks to handle optional dependencies
+try:
+    from .engines import brave, brave_news
+
+    __all__.extend(["brave", "brave_news"])
+except ImportError:
+    pass
+
+try:
+    from .engines import pplx
+
+    __all__.extend(["pplx"])
+except ImportError:
+    pass
+
+try:
+    from .engines import serpapi
+
+    __all__.extend(["serpapi"])
+except ImportError:
+    pass
+
+try:
+    from .engines import tavily
+
+    __all__.extend(["tavily"])
+except ImportError:
+    pass
+
+try:
+    from .engines import you, you_news
+
+    __all__.extend(["you", "you_news"])
+except ImportError:
+    pass
+
+try:
+    from .engines import critique
+
+    __all__.extend(["critique"])
+except ImportError:
+    pass
+
+try:
+    from .engines import duckduckgo
+
+    __all__.extend(["duckduckgo"])
+except ImportError:
+    pass
+
+try:
+    from .engines import bing_scraper
+
+    __all__.extend(["bing_scraper"])
+except ImportError:
+    pass

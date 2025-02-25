@@ -90,38 +90,50 @@ async def search(
                     logger.warning(f"Engine '{engine_name}' not configured.")
                     continue
 
-                # Extract engine-specific parameters from kwargs
-                engine_params = {
-                    k[len(engine_name) + 1 :]: v
-                    for k, v in kwargs.items()
-                    if k.startswith(engine_name + "_")
-                }
+                # Import the engine module dynamically to handle optional dependencies
+                try:
+                    # First check if the engine is directly available from the engines module
+                    from .engines.base import get_engine, SearchEngine
 
-                # Add additional parameters that don't have an engine prefix
-                engine_params.update(
-                    {
-                        k: v
+                    # Extract engine-specific parameters from kwargs
+                    engine_params = {
+                        k[len(engine_name) + 1 :]: v
                         for k, v in kwargs.items()
-                        if not any(k.startswith(e + "_") for e in engines)
+                        if k.startswith(engine_name + "_")
                     }
-                )
 
-                # Merge common parameters with engine-specific ones
-                engine_params = {**common_params, **engine_params}
+                    # Add additional parameters that don't have an engine prefix
+                    engine_params.update(
+                        {
+                            k: v
+                            for k, v in kwargs.items()
+                            if not any(k.startswith(e + "_") for e in engines)
+                        }
+                    )
 
-                # Initialize the engine
-                engine_instance: SearchEngine = get_engine(
-                    engine_name, engine_config, **engine_params
-                )
+                    # Merge common parameters with engine-specific ones
+                    engine_params = {**common_params, **engine_params}
 
-                logger.info(f"🔍 Querying engine: {engine_name}")
-                engine_names.append(engine_name)
-                search_tasks.append((engine_name, engine_instance.search(query)))
+                    # Initialize the engine
+                    engine_instance: SearchEngine = get_engine(
+                        engine_name, engine_config, **engine_params
+                    )
+
+                    logger.info(f"🔍 Querying engine: {engine_name}")
+                    engine_names.append(engine_name)
+                    search_tasks.append((engine_name, engine_instance.search(query)))
+
+                except (ImportError, KeyError) as e:
+                    logger.warning(
+                        f"Engine '{engine_name}' is not available: {e}. The dependency may not be installed."
+                    )
+                    continue
+
             except Exception as e:
                 logger.error(f"Error initializing engine '{engine_name}': {e}")
 
         if not search_tasks:
-            msg = "No search engines could be initialized"
+            msg = "No search engines could be initialized. Make sure at least one engine dependency is installed."
             raise SearchError(msg)
 
         # Execute all search tasks concurrently
