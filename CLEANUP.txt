@@ -2444,3 +2444,51 @@ Tests!!! FIXME Describe here in detail the planned tests before implementing the
 ?? CLEANUP.txt
 
 2025-02-25 07:09:43 - Changes detected in repository
+2025-02-25 07:09:43 - [main 82f865a] Update repository files
+ 12 files changed, 3151 insertions(+), 1792 deletions(-)
+ create mode 100644 CLEANUP.txt
+
+2025-02-25 07:09:43 - Changes committed successfully
+2025-02-25 07:09:44 - 
+📦 Repomix v0.2.29
+
+No custom config found at repomix.config.json or global config at /Users/adam/.config/repomix/repomix.config.json.
+You can add a config file for additional settings. Please check https://github.com/yamadashy/repomix for more information.
+⠙ Collecting files...
+[2K[1A[2K[G⠹ Collecting files...
+[2K[1A[2K[G⠸ Running security check...
+[2K[1A[2K[G⠼ Running security check... (45/46) TODO.md
+[2K[1A[2K[G⠴ Processing files...
+[2K[1A[2K[G⠦ Processing file... (19/46) src/twat_search/web/config.py
+[2K[1A[2K[G⠧ Calculating metrics...
+[2K[1A[2K[G⠇ Calculating metrics...
+[2K[1A[2K[G⠏ Calculating metrics...
+[2K[1A[2K[G⠋ Calculating metrics... (2/46) .cursor/rules/cleanup.mdc
+[2K[1A[2K[G✔ Packing completed successfully!
+
+📈 Top 5 Files by Character Count and Token Count:
+──────────────────────────────────────────────────
+1.  TODO.md (9,654 chars, 2,319 tokens)
+2.  pyproject.toml (9,620 chars, 2,597 tokens)
+3.  src/twat_search/web/cli.py (9,105 chars, 1,932 tokens)
+4.  cleanup.py (5,868 chars, 1,301 tokens)
+5.  .gitignore (3,633 chars, 1,391 tokens)
+
+🔎 Security Check:
+──────────────────
+✔ No suspicious files detected.
+
+📊 Pack Summary:
+────────────────
+  Total Files: 46 files
+  Total Chars: 90,767 chars
+ Total Tokens: 22,264 tokens
+       Output: twat_search.txt
+     Security: ✔ No suspicious files detected
+
+🎉 All Done!
+Your repository has been successfully packed.
+
+💡 Repomix is now available in your browser! Try it at https://repomix.com
+
+2025-02-25 07:09:44 - Repository content mixed into twat_search.txt
