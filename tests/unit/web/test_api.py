@@ -11,7 +11,8 @@ for the web search functionality.
 import asyncio
 import contextlib
 import logging
-from typing import Any, AsyncGenerator, Awaitable, Callable, TypeVar
+from typing import Any, TypeVar
+from collections.abc import AsyncGenerator, Awaitable, Callable
 
 import pytest
 from pydantic import HttpUrl
@@ -48,8 +49,9 @@ class MockSearchEngine(SearchEngine):
         """Mock search implementation."""
         self.query_count += 1
         if self.should_fail:
-            raise Exception("Mock search failure")
-        
+            msg = "Mock search failure"
+            raise Exception(msg)
+
         # Use kwargs to control the number of results
         result_count = self.kwargs.get("result_count", 1)
         return [
@@ -98,7 +100,7 @@ async def test_search_with_mock_engine(
 ) -> None:
     """Test search with a mock engine."""
     results = await search("test query", engines=["mock"], config=mock_config)
-    
+
     assert len(results) == 2
     assert all(isinstance(result, SearchResult) for result in results)
     assert all(result.source == "mock" for result in results)
@@ -111,12 +113,12 @@ async def test_search_with_additional_params(
 ) -> None:
     """Test search with additional parameters."""
     results = await search(
-        "test query", 
-        engines=["mock"], 
-        config=mock_config, 
+        "test query",
+        engines=["mock"],
+        config=mock_config,
         result_count=3
     )
-    
+
     assert len(results) == 3
 
 
@@ -126,12 +128,12 @@ async def test_search_with_engine_specific_params(
 ) -> None:
     """Test search with engine-specific parameters."""
     results = await search(
-        "test query", 
-        engines=["mock"], 
-        config=mock_config, 
+        "test query",
+        engines=["mock"],
+        config=mock_config,
         mock_result_count=4
     )
-    
+
     assert len(results) == 4
 
 
@@ -148,12 +150,12 @@ async def test_search_with_failing_engine(
 ) -> None:
     """Test search with a failing engine returns empty results."""
     results = await search(
-        "test query", 
-        engines=["mock"], 
-        config=mock_config, 
+        "test query",
+        engines=["mock"],
+        config=mock_config,
         should_fail=True
     )
-    
+
     assert len(results) == 0
 
 
@@ -173,6 +175,6 @@ async def test_search_with_disabled_engine(
     """Test search with a disabled engine raises SearchError."""
     # Disable the mock engine
     mock_config.engines["mock"].enabled = False
-    
+
     with pytest.raises(SearchError, match="No search engines could be initialized"):
-        await search("test query", engines=["mock"], config=mock_config) 
+        await search("test query", engines=["mock"], config=mock_config)

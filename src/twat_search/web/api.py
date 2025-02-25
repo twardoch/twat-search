@@ -92,6 +92,9 @@ async def search(
                 engine_name, engine_config, **merged_kwargs
             )
 
+            # Log that we're querying this engine
+            logger.info(f"🔍 Querying engine: {engine_name}")
+
             # Add the search task
             search_tasks.append((engine_name, engine_instance.search(query)))
 
@@ -114,7 +117,10 @@ async def search(
     for engine_name, result in zip(engine_names, results, strict=False):
         if isinstance(result, Exception):
             logger.error(f"Search with engine '{engine_name}' failed: {result}")
-        elif result:  # Check if results exist
+        elif isinstance(result, list):  # Check if results exist and is a list
+            logger.info(f"✅ Engine '{engine_name}' returned {len(result)} results")
             flattened_results.extend(result)
+        else:
+            logger.info(f"⚠️ Engine '{engine_name}' returned no results or unexpected type: {type(result)}")
 
     return flattened_results

@@ -4,13 +4,63 @@ The basic implementation of the `twat-search` web package is complete.
 
 Tip: Periodically run `./cleanup.py status` to see results of lints and tests. 
 
-## TODO
+## 1. TODO
 
-### Testing Plan
+### 1.1. Review and extend engines
+
+#### 1.1.1. Tavily (should be accessible as engine `tavily`)
+
+@https://docs.tavily.com/sdk/python/get-started
+@https://github.com/tavily-ai/tavily-python
+@https://docs.tavily.com/sdk/python/reference
+@https://docs.tavily.com/sdk/javascript/get-started
+
+
+#### 1.1.2. Brave
+
+- Web search (should be accessible as engine `brave`)
+
+@https://api-dashboard.search.brave.com/app/documentation/web-search/get-started
+@https://api-dashboard.search.brave.com/app/documentation/web-search/query
+@https://api-dashboard.search.brave.com/app/documentation/web-search/request-headers
+@https://api-dashboard.search.brave.com/app/documentation/web-search/response-headers
+@https://api-dashboard.search.brave.com/app/documentation/web-search/responses
+@https://api-dashboard.search.brave.com/app/documentation/web-search/codes
+
+- News search (should be accessible as engine `brave-news`)
+
+@https://api-dashboard.search.brave.com/app/documentation/news-search/get-started
+@https://api-dashboard.search.brave.com/app/documentation/news-search/query
+@https://api-dashboard.search.brave.com/app/documentation/news-search/request-headers
+@https://api-dashboard.search.brave.com/app/documentation/news-search/response-headers
+@https://api-dashboard.search.brave.com/app/documentation/news-search/responses
+@https://api-dashboard.search.brave.com/app/documentation/news-search/codes
+
+#### 1.1.3. You.com
+
+- Web search (should be accessible as engine `you`)
+
+@https://documentation.you.com/api-reference/search
+
+- News search (`you-news`)
+
+@https://documentation.you.com/api-reference/news
+
+#### 1.1.4. SerpApi 
+
+- Google Search (`serpapi`)
+
+@https://serpapi.com/search-api
+
+
+
+
+
+### 1.2. Testing Plan
 
 The following tests should be implemented to ensure the robustness and reliability of the package:
 
-#### 1. Unit Tests
+#### 1.2.1. Unit Tests
 
 ##### Core API
 - Test `search` function
@@ -46,7 +96,7 @@ The following tests should be implemented to ensure the robustness and reliabili
   - Test proper error message formatting
   - Test exception hierarchy
 
-#### 2. Engine-specific Tests
+#### 1.2.2. Engine-specific Tests
 
 For each search engine implementation (Brave, Google, Tavily, Perplexity, You.com):
 
@@ -66,14 +116,14 @@ For each search engine implementation (Brave, Google, Tavily, Perplexity, You.co
     - Malformed responses
     - Empty responses
 
-#### 3. Integration Tests
+#### 1.2.3. Integration Tests
 
 - Test the entire search flow
   - Test search across multiple engines
   - Test fallback behavior when some engines fail
   - Test rate limiting in real-world scenarios
 
-#### 4. Type Checking Tests
+#### 1.2.4. Type Checking Tests
 
 - Add tests to verify type hints are correct
 - Fix existing mypy type errors identified in CLEANUP.txt
@@ -81,14 +131,14 @@ For each search engine implementation (Brave, Google, Tavily, Perplexity, You.co
   - Fix BaseSettings issues in config.py
   - Fix missing return type annotations
 
-#### 5. Performance Tests
+#### 1.2.5. Performance Tests
 
 - Benchmark search performance
   - Measure latency across different engines
   - Test with concurrent searches
   - Test with rate limiting
 
-#### 6. Mock Implementation
+#### 1.2.6. Mock Implementation
 
 Create mock implementations for testing that don't require actual API calls:
 
@@ -110,14 +160,14 @@ class MockSearchEngine(SearchEngine):
         ]
 ```
 
-#### 7. Test Utilities
+#### 1.2.7. Test Utilities
 
 - Create helper functions for testing
   - Mock response generators
   - Configuration helpers
   - Test data generators
 
-#### 8. Continuous Integration
+#### 1.2.8. Continuous Integration
 
 - Add GitHub workflow for running tests
 - Add coverage reporting

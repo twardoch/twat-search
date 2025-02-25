@@ -7,7 +7,7 @@ This module defines the data models used for inputs and outputs
 in the web search API.
 """
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, HttpUrl, field_validator
 
@@ -29,13 +29,14 @@ class SearchResult(BaseModel):
     url: HttpUrl  # Use Pydantic's HttpUrl for URL validation
     snippet: str
     source: str
-    rank: Optional[int] = None  # For future ranking functionality
-    raw: Optional[Dict[str, Any]] = None  # Store the raw API response
+    rank: int | None = None  # For future ranking functionality
+    raw: dict[str, Any] | None = None  # Store the raw API response
 
-    @field_validator('title', 'snippet', 'source')
+    @field_validator("title", "snippet", "source")
     @classmethod
     def validate_non_empty(cls, v: str) -> str:
         """Validate that string fields are not empty."""
         if not v or not v.strip():
-            raise ValueError("Field cannot be empty")
+            msg = "Field cannot be empty"
+            raise ValueError(msg)
         return v.strip()

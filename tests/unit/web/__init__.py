@@ -1,1 +1,1 @@
-"""Unit tests for twat_search.web package.""" 
+"""Unit tests for twat_search.web package."""

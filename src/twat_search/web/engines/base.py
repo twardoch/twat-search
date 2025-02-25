@@ -8,7 +8,7 @@ implement, as well as functions to register and instantiate engines.
 """
 
 import abc
-from typing import Any, ClassVar, Dict, List, Optional, Type
+from typing import Any, ClassVar
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.models import SearchResult
@@ -24,11 +24,11 @@ class SearchEngine(abc.ABC):
     """
 
     name: ClassVar[str] = ""  # Class attribute that must be defined by subclasses
-    
+
     # Class attributes for environment variables
-    env_api_key_names: ClassVar[List[str]] = []  # Override with engine-specific names
-    env_enabled_names: ClassVar[List[str]] = []  # Override with engine-specific names
-    env_params_names: ClassVar[List[str]] = []   # Override with engine-specific names
+    env_api_key_names: ClassVar[list[str]] = []  # Override with engine-specific names
+    env_enabled_names: ClassVar[list[str]] = []  # Override with engine-specific names
+    env_params_names: ClassVar[list[str]] = []   # Override with engine-specific names
 
     def __init__(self, config: EngineConfig, **kwargs: Any) -> None:
         """
@@ -66,10 +66,10 @@ class SearchEngine(abc.ABC):
 
 
 # Registry of available search engines
-_engine_registry: Dict[str, Type[SearchEngine]] = {}
+_engine_registry: dict[str, type[SearchEngine]] = {}
 
 
-def register_engine(engine_class: Type[SearchEngine]) -> Type[SearchEngine]:
+def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
     """
     Register a search engine class.
 
@@ -84,13 +84,13 @@ def register_engine(engine_class: Type[SearchEngine]) -> Type[SearchEngine]:
     # Set default environment variable names if not explicitly defined
     if not engine_class.env_api_key_names:
         engine_class.env_api_key_names = [f"{engine_class.name.upper()}_API_KEY"]
-    
+
     if not engine_class.env_enabled_names:
         engine_class.env_enabled_names = [f"{engine_class.name.upper()}_ENABLED"]
-    
+
     if not engine_class.env_params_names:
         engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]
-    
+
     _engine_registry[engine_class.name] = engine_class
     return engine_class
 
@@ -118,10 +118,10 @@ def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchE
     return engine_class(config, **kwargs)
 
 
-def get_registered_engines() -> Dict[str, Type[SearchEngine]]:
+def get_registered_engines() -> dict[str, type[SearchEngine]]:
     """
     Get a dictionary of all registered search engines.
-    
+
     Returns:
         Dictionary mapping engine names to engine classes
     """

@@ -24,7 +24,7 @@ def test_search_result_valid_data() -> None:
         snippet="This is a test result",
         source="test_engine",
     )
-    
+
     assert result.title == "Test Result"
     assert str(result.url) == "https://example.com/"
     assert result.snippet == "This is a test result"
@@ -45,7 +45,7 @@ def test_search_result_with_optional_fields() -> None:
         rank=1,
         raw=raw_data,
     )
-    
+
     assert result.rank == 1
     assert result.raw == raw_data
 
@@ -65,7 +65,7 @@ def test_search_result_invalid_url() -> None:
 def test_search_result_empty_fields() -> None:
     """Test that empty required fields raise validation errors."""
     url = HttpUrl("https://example.com")
-    
+
     # Test empty title
     with pytest.raises(ValidationError):
         SearchResult.model_validate({
@@ -74,7 +74,7 @@ def test_search_result_empty_fields() -> None:
             "snippet": "This is a test result",
             "source": "test_engine",
         })
-    
+
     # Test empty snippet
     with pytest.raises(ValidationError):
         SearchResult.model_validate({
@@ -83,7 +83,7 @@ def test_search_result_empty_fields() -> None:
             "snippet": "",  # Empty snippet should fail validation
             "source": "test_engine",
         })
-    
+
     # Test empty source
     with pytest.raises(ValidationError):
         SearchResult.model_validate({
@@ -104,7 +104,7 @@ def test_search_result_serialization() -> None:
         source="test_engine",
         rank=1,
     )
-    
+
     # Test dict serialization
     result_dict = result.model_dump()
     assert result_dict["title"] == "Test Result"
@@ -113,7 +113,7 @@ def test_search_result_serialization() -> None:
     assert result_dict["snippet"] == "This is a test result"
     assert result_dict["source"] == "test_engine"
     assert result_dict["rank"] == 1
-    
+
     # Test JSON serialization
     result_json = result.model_dump_json()
     assert isinstance(result_json, str)
@@ -130,10 +130,10 @@ def test_search_result_deserialization() -> None:
         "source": "test_engine",
         "rank": 1,
     }
-    
+
     result = SearchResult.model_validate(data)
     assert result.title == "Test Result"
     assert str(result.url) == "https://example.com/"
     assert result.snippet == "This is a test result"
     assert result.source == "test_engine"
-    assert result.rank == 1 
+    assert result.rank == 1

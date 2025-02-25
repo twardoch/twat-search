@@ -9,9 +9,7 @@ settings for each search engine and loading environment variables.
 
 import json
 import os
-import re
-from pathlib import Path
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any
 
 # Load environment variables from .env file
 try:
@@ -26,36 +24,36 @@ from pydantic import BaseModel, Field
 
 class EngineConfig(BaseModel):
     """Configuration for a single search engine."""
-    
-    api_key: Optional[str] = None
+
+    api_key: str | None = None
     enabled: bool = True
-    default_params: Dict[str, Any] = Field(default_factory=dict)
+    default_params: dict[str, Any] = Field(default_factory=dict)
 
 
 class Config:
     """
     Configuration for the web search API.
-    
+
     Loads settings from environment variables for registered engines.
     """
-    
+
     def __init__(self, **kwargs: Any) -> None:
         """Initialize with engine configurations from environment variables."""
         # Initialize with empty engines dict or use provided
-        self.engines: Dict[str, EngineConfig] = kwargs.get("engines", {})
-        
+        self.engines: dict[str, EngineConfig] = kwargs.get("engines", {})
+
         # Skip auto-loading if we already have engines configured (from kwargs)
         if not self.engines:
             # Process environment variables
             self._load_engine_configs()
-    
+
     def _load_engine_configs(self) -> None:
         """
         Load engine configurations from environment variables.
-        
+
         This method only loads configurations for engines that are registered in
         the system, to prevent creating configurations for non-existent engines.
-        
+
         For tests that need an empty configuration, set _TEST_ENGINE env var.
         """
         # Import here to avoid circular imports
@@ -65,34 +63,34 @@ class Config:
         except ImportError:
             # If engines module isn't loaded yet, use empty dict
             registered_engines = {}
-        
+
         # Handle empty case for tests
-        if '_TEST_ENGINE' in os.environ:
+        if "_TEST_ENGINE" in os.environ:
             # Skip loading for tests
             return
-        
+
         # First load from environment file patterns for each engine
-        engine_settings: Dict[str, Dict[str, Any]] = {}
-        
+        engine_settings: dict[str, dict[str, Any]] = {}
+
         # Process registered engines specifically
         for engine_name, engine_class in registered_engines.items():
             if engine_name not in engine_settings:
                 engine_settings[engine_name] = {}
-            
+
             # Check API key environment variables (specific names from engine class)
             for env_name in engine_class.env_api_key_names:
                 api_key = os.environ.get(env_name)
                 if api_key:
                     engine_settings[engine_name]["api_key"] = api_key
                     break
-            
+
             # Check enabled environment variables (specific names from engine class)
             for env_name in engine_class.env_enabled_names:
                 enabled = os.environ.get(env_name)
                 if enabled is not None:
                     engine_settings[engine_name]["enabled"] = enabled.lower() in ("true", "1", "yes")
                     break
-            
+
             # Check default params environment variables (specific names from engine class)
             for env_name in engine_class.env_params_names:
                 params = os.environ.get(env_name)
@@ -103,7 +101,7 @@ class Config:
                         # If JSON parsing fails, use an empty dict
                         engine_settings[engine_name]["default_params"] = {}
                     break
-        
+
         # Now create or update EngineConfig objects
         for engine_name, settings in engine_settings.items():
             if engine_name in self.engines:

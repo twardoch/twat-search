@@ -355,7 +355,6 @@ def main() -> NoReturn:
             print_usage()
     except Exception as e:
         log_message(f"Error: {e}")
-    print(Path(LOG_FILE).read_text())
 
 
 if __name__ == "__main__":

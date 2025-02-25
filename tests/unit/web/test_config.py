@@ -7,10 +7,7 @@ Unit tests for the twat_search.web.config module.
 This module tests the configuration classes used for search engine settings.
 """
 
-import os
-from pathlib import Path
 
-import pytest
 from pytest import MonkeyPatch
 
 from twat_search.web.config import Config, EngineConfig
@@ -19,7 +16,7 @@ from twat_search.web.config import Config, EngineConfig
 def test_engine_config_defaults() -> None:
     """Test EngineConfig with default values."""
     config = EngineConfig()
-    
+
     assert config.api_key is None
     assert config.enabled is True
     assert config.default_params == {}
@@ -32,7 +29,7 @@ def test_engine_config_values() -> None:
         enabled=False,
         default_params={"count": 10, "include_domains": ["example.com"]},
     )
-    
+
     assert config.api_key == "test_key"
     assert config.enabled is False
     assert config.default_params == {"count": 10, "include_domains": ["example.com"]}
@@ -41,7 +38,7 @@ def test_engine_config_values() -> None:
 def test_config_defaults(isolate_env_vars: None) -> None:
     """Test Config with default values."""
     config = Config()
-    
+
     assert isinstance(config.engines, dict)
     assert len(config.engines) == 0
 
@@ -50,7 +47,7 @@ def test_config_with_env_vars(monkeypatch: MonkeyPatch, env_vars_for_brave: None
     """Test Config loads settings from environment variables."""
     # Create config
     config = Config()
-    
+
     # Check the brave engine was configured
     assert "brave" in config.engines
     brave_config = config.engines["brave"]
@@ -68,7 +65,7 @@ def test_config_with_direct_initialization() -> None:
             default_params={"count": 5}
         )
     })
-    
+
     assert "test_engine" in custom_config.engines
     assert custom_config.engines["test_engine"].api_key == "direct_key"
     assert custom_config.engines["test_engine"].default_params == {"count": 5}
@@ -78,7 +75,7 @@ def test_config_env_vars_override_direct_config(monkeypatch: MonkeyPatch) -> Non
     """Test environment variables do not override direct config."""
     # Set environment variables
     monkeypatch.setenv("BRAVE_API_KEY", "env_key")
-    
+
     # Create config with direct values (should take precedence)
     custom_config = Config(engines={
         "brave": EngineConfig(
@@ -87,6 +84,6 @@ def test_config_env_vars_override_direct_config(monkeypatch: MonkeyPatch) -> Non
             default_params={"count": 5}
         )
     })
-    
+
     # Check that direct config was not overridden
-    assert custom_config.engines["brave"].api_key == "direct_key" 
+    assert custom_config.engines["brave"].api_key == "direct_key"

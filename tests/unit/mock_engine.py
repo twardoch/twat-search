@@ -32,8 +32,9 @@ class MockSearchEngine(SearchEngine):
         """Mock search implementation."""
         self.query_count += 1
         if self.should_fail:
-            raise Exception("Mock search failure")
-        
+            msg = "Mock search failure"
+            raise Exception(msg)
+
         # Use kwargs to control the number of results
         result_count = self.kwargs.get("result_count", 1)
         return [
@@ -48,4 +49,4 @@ class MockSearchEngine(SearchEngine):
 
 
 # Register the mock engine
-register_engine(MockSearchEngine) 
+register_engine(MockSearchEngine)

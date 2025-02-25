@@ -9,8 +9,7 @@ particularly the RateLimiter class.
 """
 
 import time
-from typing import Any
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -36,7 +35,7 @@ def test_rate_limiter_wait_when_not_needed(rate_limiter: RateLimiter) -> None:
     with patch("time.sleep") as mock_sleep:
         rate_limiter.wait_if_needed()
         mock_sleep.assert_not_called()
-        
+
     # Still under limit, no need to wait
     with patch("time.sleep") as mock_sleep:
         for _ in range(3):  # 4 total calls including the one above
@@ -48,10 +47,10 @@ def test_rate_limiter_wait_when_needed(rate_limiter: RateLimiter) -> None:
     """Test that RateLimiter waits when at the limit."""
     # Set up timestamps as if we've made calls_per_second calls
     now = time.time()
-    
+
     # Make timestamps very close together to ensure we need to wait
     rate_limiter.call_timestamps = [now - 0.01 * i for i in range(rate_limiter.calls_per_second)]
-    
+
     # Next call should trigger waiting
     with patch("time.sleep") as mock_sleep, patch("time.time", return_value=now):
         rate_limiter.wait_if_needed()
@@ -68,12 +67,12 @@ def test_rate_limiter_cleans_old_timestamps(rate_limiter: RateLimiter) -> None:
     old_stamps = [now - 1.5, now - 2.0, now - 3.0]
     # Add some recent timestamps
     recent_stamps = [now - 0.1, now - 0.2, now - 0.3]
-    
+
     rate_limiter.call_timestamps = old_stamps + recent_stamps
-    
+
     with patch("time.time", return_value=now):
         rate_limiter.wait_if_needed()
-    
+
     # Check that old timestamps were removed
     assert len(rate_limiter.call_timestamps) == len(recent_stamps) + 1  # +1 for the new call
     # Check that the new call was recorded
@@ -85,14 +84,14 @@ def test_rate_limiter_with_different_rates(calls_per_second: int) -> None:
     """Test RateLimiter with different rate limits."""
     limiter = RateLimiter(calls_per_second=calls_per_second)
     assert limiter.calls_per_second == calls_per_second
-    
+
     # Make calls_per_second calls and verify we don't sleep
     with patch("time.sleep") as mock_sleep:
         for _ in range(calls_per_second):
             limiter.wait_if_needed()
         mock_sleep.assert_not_called()
-    
+
     # On the next call, we would need to sleep if all calls happened in < 1 second
     with patch("time.sleep") as mock_sleep, patch("time.time", return_value=time.time()):
         limiter.wait_if_needed()
-        # We might sleep depending on how fast the test runs, so we can't assert on sleep 
+        # We might sleep depending on how fast the test runs, so we can't assert on sleep

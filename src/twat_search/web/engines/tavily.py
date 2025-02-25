@@ -7,6 +7,7 @@ This module implements the Tavily Search API integration.
 """
 
 import httpx
+from typing import Any, ClassVar
 from pydantic import BaseModel, ValidationError
 
 from twat_search.web.config import EngineConfig
@@ -25,6 +26,7 @@ class TavilySearchResult(BaseModel):
     title: str
     url: str  # Use str instead of HttpUrl as Tavily might return non-standard URLs
     content: str  # Tavily returns content, not just a snippet
+    score: float | None = None  # Relevance score, if available
 
 
 class TavilySearchResponse(BaseModel):
@@ -35,6 +37,8 @@ class TavilySearchResponse(BaseModel):
     """
 
     results: list[TavilySearchResult]
+    query: str
+    search_id: str | None = None
 
 
 @register_engine
@@ -42,14 +46,27 @@ class TavilySearchEngine(SearchEngine):
     """Implementation of the Tavily Search API."""
 
     name = "tavily"
+    env_api_key_names: ClassVar[list[str]] = ["TAVILY_API_KEY"]
 
-    def __init__(self, config: EngineConfig, max_results: int | None = None) -> None:
+    def __init__(
+        self,
+        config: EngineConfig,
+        max_results: int | None = None,
+        search_depth: str | None = None,
+        include_domains: list[str] | None = None,
+        exclude_domains: list[str] | None = None,
+        search_type: str | None = None,
+    ) -> None:
         """
         Initialize the Tavily search engine.
 
         Args:
             config: Configuration for this search engine
             max_results: Maximum number of results to return (overrides config)
+            search_depth: 'basic' for faster results or 'comprehensive' for more thorough search
+            include_domains: List of domains to include in search
+            exclude_domains: List of domains to exclude from search
+            search_type: Type of search ('search' or 'news') - defaults to 'search'
 
         Raises:
             EngineError: If the API key is missing
@@ -60,6 +77,20 @@ class TavilySearchEngine(SearchEngine):
         # Use provided max_results if available, otherwise use default from config
         self.max_results = max_results or self.config.default_params.get(
             "max_results", 5
+        )
+
+        # Set search parameters
+        self.search_depth = search_depth or self.config.default_params.get(
+            "search_depth", "basic"
+        )
+        self.include_domains = include_domains or self.config.default_params.get(
+            "include_domains", []
+        )
+        self.exclude_domains = exclude_domains or self.config.default_params.get(
+            "exclude_domains", []
+        )
+        self.search_type = search_type or self.config.default_params.get(
+            "search_type", "search"
         )
 
         if not self.config.api_key:
@@ -82,11 +113,19 @@ class TavilySearchEngine(SearchEngine):
             EngineError: If the search fails
         """
         headers = {"Content-Type": "application/json"}
-        payload = {
+        payload: dict[str, Any] = {
             "api_key": self.config.api_key,
             "query": query,
             "max_results": self.max_results,
+            "search_depth": self.search_depth,
+            "search_type": self.search_type,
         }
+
+        # Only add these if they have values
+        if self.include_domains:
+            payload["include_domains"] = self.include_domains
+        if self.exclude_domains:
+            payload["exclude_domains"] = self.exclude_domains
 
         async with httpx.AsyncClient() as client:
             try:

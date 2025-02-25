@@ -10,19 +10,27 @@ each one providing a standard interface for searching and returning results.
 from .base import SearchEngine, register_engine, get_engine
 
 # Import and register all engines
-from .brave import BraveSearchEngine
-from .google import GoogleSearchEngine
+from .brave import BraveSearchEngine, BraveNewsSearchEngine
+from .serpapi import SerpApiSearchEngine
 from .tavily import TavilySearchEngine
-from .perplexity import PerplexitySearchEngine
-from .youcom import YoucomSearchEngine
+from .you import YouSearchEngine, YouNewsSearchEngine
+
+# Optional imports for backwards compatibility
+try:
+    from .pplx import PerplexitySearchEngine
+except ImportError:
+    # PerplexitySearchEngine not available
+    pass
 
 __all__ = [
+    "BraveNewsSearchEngine",
     "BraveSearchEngine",
-    "GoogleSearchEngine",
     "PerplexitySearchEngine",
     "SearchEngine",
+    "SerpApiSearchEngine",
     "TavilySearchEngine",
-    "YoucomSearchEngine",
+    "YouNewsSearchEngine",
+    "YouSearchEngine",
     "get_engine",
     "register_engine",
 ]

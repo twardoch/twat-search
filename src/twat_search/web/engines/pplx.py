@@ -1,4 +1,4 @@
-# this_file: src/twat_search/web/engines/perplexity.py
+# this_file: src/twat_search/web/engines/pplx.py
 
 """
 Perplexity AI search engine implementation.

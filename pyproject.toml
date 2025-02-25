@@ -47,8 +47,10 @@ dependencies = [
     "twat>=1.8.1", # Core twat package, providing essential functionality
     "pydantic>=2.10.6", # Data validation and settings management
     "pydantic-settings>=2.8.0", # Settings management for Pydantic v2
-    "httpx>=0.28.1",
-    "python-dotenv>=1.0.1",
+    "httpx>=0.28.1", # HTTP client for API requests
+    "python-dotenv>=1.0.1", # Environment variable management
+    "fire>=0.5.0", # Command line interface generator
+    "rich>=13.6.0", # Rich text and formatting for terminal output
 ]
 
 # Project Authors
@@ -260,4 +262,11 @@ compare = [
     "iqr",    # Inter-quartile range
     "ops",    # Operations per second
     "rounds", # Number of rounds
-] 
+]
+
+# Console Scripts
+# --------------
+# Command line interfaces exposed by this package
+[project.scripts]
+twat-search = "twat_search.__main__:main"
+twat-search-web = "twat_search.web.cli:main" 

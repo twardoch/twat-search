@@ -19,7 +19,7 @@ from pytest import MonkeyPatch
 def isolate_env_vars(monkeypatch: MonkeyPatch) -> None:
     """
     Automatically isolate environment variables for all tests.
-    
+
     This fixture ensures each test runs with a clean environment,
     preventing real API keys or config from affecting test results.
     """
@@ -30,7 +30,7 @@ def isolate_env_vars(monkeypatch: MonkeyPatch) -> None:
             for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]
         ):
             monkeypatch.delenv(env_var, raising=False)
-    
+
     # Add special marker for test environment to bypass auto-loading in Config
     monkeypatch.setenv("_TEST_ENGINE", "true")
 
@@ -39,7 +39,7 @@ def isolate_env_vars(monkeypatch: MonkeyPatch) -> None:
 def env_vars_for_brave(monkeypatch: MonkeyPatch) -> None:
     """
     Set environment variables for the brave search engine.
-    
+
     This fixture sets up environment variables for tests that need
     to verify the Config class can correctly read from environment.
     """
@@ -47,19 +47,19 @@ def env_vars_for_brave(monkeypatch: MonkeyPatch) -> None:
     try:
         sys.path.insert(0, str(Path(__file__).parent.parent))
         from twat_search.web.engines.base import SearchEngine, register_engine
-        
+
         class MockBraveEngine(SearchEngine):
             name = "brave"
-            
+
         register_engine(MockBraveEngine)
     except ImportError:
         # If we can't import yet, that's OK - the test will handle it
         pass
-    
+
     # Set environment variables
     monkeypatch.setenv("BRAVE_API_KEY", "test_brave_key")
     monkeypatch.setenv("BRAVE_ENABLED", "true")
     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')
-    
+
     # Unset the test marker to allow loading env variables
-    monkeypatch.delenv("_TEST_ENGINE", raising=False) 
+    monkeypatch.delenv("_TEST_ENGINE", raising=False)
