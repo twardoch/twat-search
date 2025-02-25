@@ -7,10 +7,10 @@ This module implements the Tavily Search API integration.
 """
 
 import httpx
+import textwrap
 from typing import Any, ClassVar
 from pydantic import BaseModel, ValidationError
 from pydantic.networks import HttpUrl
-import textwrap
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.models import SearchResult
@@ -26,8 +26,8 @@ class TavilySearchResult(BaseModel):
     """
 
     title: str
-    url: str  # Use str instead of HttpUrl as Tavily might return non-standard URLs
-    content: str  # Tavily returns content, not just a snippet
+    url: str  # Tavily might return non-standard URLs, so we use str
+    content: str  # Tavily returns full content, not just a snippet
     score: float | None = None  # Relevance score, if available
 
 
@@ -69,81 +69,51 @@ class TavilySearchEngine(SearchEngine):
         """
         Initialize the Tavily Search engine.
 
-        Args:
-            config: Engine configuration
-            num_results: Number of results to return (maps to 'max_results')
-            country: Country code for results (not directly used by Tavily)
-            language: Language code for results (not directly used by Tavily)
-            safe_search: Whether to enable safe search (not directly used by Tavily)
-            time_frame: Time frame for results (not directly used by Tavily)
-            search_depth: Search depth, either "basic" or "advanced"
-            include_domains: List of domains to include in search
-            exclude_domains: List of domains to exclude from search
-            include_answer: Whether to include an AI-generated answer
-            max_tokens: Maximum number of tokens for the answer
-            search_type: Type of search ("search" or "news")
-            **kwargs: Additional Tavily-specific parameters
+        All external parameters and API signatures remain unchanged.
         """
         super().__init__(config)
-
         self.base_url = "https://api.tavily.com/search"
 
+        # Helper to apply default values from config if no value was provided.
+        def get_default(value, key, fallback):
+            return (
+                value
+                if value is not None
+                else self.config.default_params.get(key, fallback)
+            )
+
         # Map common parameters to Tavily-specific ones
-        max_results = kwargs.get("max_results", num_results)
-        self.max_results = max_results or self.config.default_params.get(
-            "max_results", 5
+        self.max_results = get_default(
+            kwargs.get("max_results", num_results), "max_results", 5
         )
+        self.search_depth = get_default(search_depth, "search_depth", "basic")
+        self.include_domains = get_default(include_domains, "include_domains", None)
+        self.exclude_domains = get_default(exclude_domains, "exclude_domains", None)
+        self.include_answer = get_default(include_answer, "include_answer", False)
+        self.max_tokens = get_default(max_tokens, "max_tokens", None)
+        self.search_type = get_default(search_type, "search_type", "search")
 
-        self.search_depth = search_depth or self.config.default_params.get(
-            "search_depth", "basic"
-        )
-        self.include_domains = include_domains or self.config.default_params.get(
-            "include_domains", None
-        )
-        self.exclude_domains = exclude_domains or self.config.default_params.get(
-            "exclude_domains", None
-        )
-        self.include_answer = include_answer or self.config.default_params.get(
-            "include_answer", False
-        )
-        self.max_tokens = max_tokens or self.config.default_params.get(
-            "max_tokens", None
-        )
-        self.search_type = search_type or self.config.default_params.get(
-            "search_type", "search"
-        )
-
-        # Store unused unified parameters for future compatibility
+        # Store unused unified parameters for future compatibility.
         self.country = country
         self.language = language
         self.safe_search = safe_search
         self.time_frame = time_frame
 
-        # Prepare headers
+        # Prepare headers.
         self.headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
 
-        # Check if API key is available
         if not self.config.api_key:
             raise EngineError(
                 self.name,
                 f"Tavily API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
-    async def search(self, query: str) -> list[SearchResult]:
+    def _build_payload(self, query: str) -> dict:
         """
-        Perform a search using the Tavily API.
-
-        Args:
-            query: The search query string
-
-        Returns:
-            A list of SearchResult objects
-
-        Raises:
-            EngineError: If the search fails
+        Build the payload for the Tavily API request.
         """
         payload = {
             "api_key": self.config.api_key,
@@ -152,15 +122,43 @@ class TavilySearchEngine(SearchEngine):
             "search_depth": self.search_depth,
             "type": self.search_type,
         }
-
-        if self.include_domains:
+        if self.include_domains is not None:
             payload["include_domains"] = self.include_domains
-        if self.exclude_domains:
+        if self.exclude_domains is not None:
             payload["exclude_domains"] = self.exclude_domains
-        if self.include_answer:
+        if self.include_answer is not None:
             payload["include_answer"] = self.include_answer
-        if self.max_tokens:
+        if self.max_tokens is not None:
             payload["max_tokens"] = self.max_tokens
+        return payload
+
+    def _convert_result(self, item: dict, rank: int) -> SearchResult | None:
+        """
+        Convert a single Tavily result dict to a SearchResult object.
+        """
+        try:
+            validated_url = HttpUrl(item.get("url", ""))
+            return SearchResult(
+                title=item.get("title", ""),
+                url=validated_url,
+                snippet=textwrap.shorten(
+                    item.get("content", "").strip(), width=500, placeholder="..."
+                ),
+                source=self.name,
+                rank=rank,
+                raw=item,
+            )
+        except ValidationError:
+            return None
+
+    async def search(self, query: str) -> list[SearchResult]:
+        """
+        Perform a search using the Tavily API.
+
+        Returns:
+            A list of SearchResult objects.
+        """
+        payload = self._build_payload(query)
 
         async with httpx.AsyncClient() as client:
             try:
@@ -168,7 +166,7 @@ class TavilySearchEngine(SearchEngine):
                     self.base_url, headers=self.headers, json=payload, timeout=10
                 )
                 response.raise_for_status()
-                result = response.json()
+                data = response.json()
             except httpx.HTTPStatusError as e:
                 raise EngineError(self.name, f"HTTP error: {e}")
             except httpx.RequestError as e:
@@ -177,31 +175,17 @@ class TavilySearchEngine(SearchEngine):
                 raise EngineError(self.name, f"Error: {e!s}")
 
         results = []
-        for idx, item in enumerate(result.get("results", []), 1):
-            # Get the URL string
-            url_str = item.get("url", "")
+        # Attempt to use Pydantic validation for a cleaner conversion.
+        try:
+            parsed_response = TavilySearchResponse.parse_obj(data)
+            items = [item.dict() for item in parsed_response.results]
+        except ValidationError:
+            items = data.get("results", [])
 
-            try:
-                # Convert to HttpUrl - this will validate the URL
-                url = HttpUrl(url_str)
-
-                results.append(
-                    SearchResult(
-                        title=item.get("title", ""),
-                        url=url,
-                        snippet=textwrap.shorten(
-                            item.get("content", "").strip(),
-                            width=500,
-                            placeholder="...",
-                        ),
-                        source=self.name,
-                        rank=idx,
-                        raw=item,
-                    )
-                )
-            except ValidationError:
-                # Skip invalid URLs
-                continue
+        for idx, item in enumerate(items, start=1):
+            converted = self._convert_result(item, idx)
+            if converted:
+                results.append(converted)
 
         return results
 
@@ -224,23 +208,7 @@ async def tavily(
     """
     Search using Tavily AI search.
 
-    Args:
-        query: Search query string
-        num_results: Number of results to return
-        country: Country code (not directly used by Tavily)
-        language: Language code (not directly used by Tavily)
-        safe_search: Whether to enable safe search (not directly used by Tavily)
-        time_frame: Time filter (not directly used by Tavily)
-        search_depth: Search depth, either "basic" or "advanced"
-        include_domains: List of domains to include in search
-        exclude_domains: List of domains to exclude from search
-        include_answer: Whether to include an AI-generated answer
-        max_tokens: Maximum number of tokens for the answer
-        search_type: Type of search ("search" or "news")
-        api_key: Optional API key (otherwise use environment variable)
-
-    Returns:
-        List of search results
+    This function’s API and signature remain identical.
     """
     config = EngineConfig(
         api_key=api_key,

@@ -1,0 +1,2446 @@
+2025-02-25 07:09:24 - 
+=== PROJECT STATEMENT ===
+2025-02-25 07:09:24 - ---
+description: About this project
+globs: 
+alwaysApply: false
+---
+# About this project
+
+`twat-search` is a multi-provider search 
+
+## Development Notes
+- Uses `uv` for Python package management
+- Quality tools: ruff, mypy, pytest
+- Clear provider protocol for adding new search backends
+- Strong typing and runtime checks throughout
+
+2025-02-25 07:09:24 - 
+=== Current Status ===
+2025-02-25 07:09:24 - Error: LOG.md is missing
+2025-02-25 07:09:24 - [ 864]  .
+├── [  64]  .benchmarks
+├── [  96]  .cursor
+│   └── [ 192]  rules
+│       ├── [ 334]  0project.mdc
+│       ├── [ 558]  cleanup.mdc
+│       └── [4.2K]  filetree.mdc
+├── [  96]  .github
+│   └── [ 128]  workflows
+│       ├── [2.7K]  push.yml
+│       └── [1.4K]  release.yml
+├── [3.5K]  .gitignore
+├── [ 532]  .pre-commit-config.yaml
+├── [  96]  .specstory
+│   └── [ 640]  history
+│       ├── [2.0K]  .what-is-this.md
+│       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
+│       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
+│       ├── [ 11K]  2025-02-25_02-24-planning-tests-for-twat-search-web-package.md
+│       ├── [196K]  2025-02-25_02-27-implementing-tests-for-twat-search-package.md
+│       ├── [ 46K]  2025-02-25_02-58-transforming-python-script-into-cli-tool.md
+│       ├── [ 93K]  2025-02-25_03-09-generating-a-name-for-the-chat.md
+│       ├── [5.5K]  2025-02-25_03-33-untitled.md
+│       ├── [ 57K]  2025-02-25_03-54-integrating-search-engines-into-twat-search.md
+│       ├── [ 72K]  2025-02-25_04-05-consolidating-you-py-and-youcom-py.md
+│       ├── [6.1K]  2025-02-25_04-13-missing-env-api-key-names-in-pplx-py.md
+│       ├── [118K]  2025-02-25_04-16-implementing-functions-for-brave-search-engines.md
+│       ├── [286K]  2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md
+│       ├── [ 83K]  2025-02-25_05-36-implementing-duckduckgo-search-engine.md
+│       ├── [194K]  2025-02-25_05-43-implementing-the-webscout-search-engine.md
+│       ├── [ 23K]  2025-02-25_06-07-implementing-bing-scraper-engine.md
+│       ├── [ 15K]  2025-02-25_06-12-continuing-bing-scraper-engine-implementation.md
+│       └── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
+├── [ 499]  CLEANUP.txt
+├── [1.0K]  LICENSE
+├── [1.4K]  PROGRESS.md
+├── [2.3K]  README.md
+├── [9.5K]  TODO.md
+├── [   7]  VERSION.txt
+├── [ 12K]  cleanup.py
+├── [ 128]  dist
+├── [9.4K]  pyproject.toml
+├── [ 128]  src
+│   └── [ 256]  twat_search
+│       ├── [ 556]  __init__.py
+│       ├── [2.0K]  __main__.py
+│       └── [ 384]  web
+│           ├── [1.6K]  __init__.py
+│           ├── [4.8K]  api.py
+│           ├── [ 27K]  cli.py
+│           ├── [4.3K]  config.py
+│           ├── [ 448]  engines
+│           │   ├── [3.5K]  __init__.py
+│           │   ├── [3.7K]  base.py
+│           │   ├── [6.6K]  bing_scraper.py
+│           │   ├── [7.6K]  brave.py
+│           │   ├── [8.2K]  critique.py
+│           │   ├── [6.8K]  duckduckgo.py
+│           │   ├── [4.9K]  pplx.py
+│           │   ├── [6.9K]  serpapi.py
+│           │   ├── [7.5K]  tavily.py
+│           │   └── [7.3K]  you.py
+│           ├── [1.0K]  exceptions.py
+│           ├── [1.3K]  models.py
+│           └── [1.5K]  utils.py
+└── [ 224]  tests
+    ├── [2.0K]  conftest.py
+    ├── [ 157]  test_twat_search.py
+    ├── [ 192]  unit
+    │   ├── [  42]  __init__.py
+    │   ├── [1.5K]  mock_engine.py
+    │   └── [ 320]  web
+    │       ├── [  46]  __init__.py
+    │       ├── [ 160]  engines
+    │       │   ├── [  37]  __init__.py
+    │       │   └── [4.3K]  test_base.py
+    │       ├── [5.1K]  test_api.py
+    │       ├── [2.7K]  test_config.py
+    │       ├── [2.0K]  test_exceptions.py
+    │       ├── [4.5K]  test_models.py
+    │       └── [3.5K]  test_utils.py
+    └── [ 160]  web
+        └── [6.7K]  test_bing_scraper.py
+
+18 directories, 65 files
+
+2025-02-25 07:09:24 - 
+Project structure:
+2025-02-25 07:09:24 - [ 864]  .
+├── [  64]  .benchmarks
+├── [  96]  .cursor
+│   └── [ 192]  rules
+│       ├── [ 334]  0project.mdc
+│       ├── [ 558]  cleanup.mdc
+│       └── [4.2K]  filetree.mdc
+├── [  96]  .github
+│   └── [ 128]  workflows
+│       ├── [2.7K]  push.yml
+│       └── [1.4K]  release.yml
+├── [3.5K]  .gitignore
+├── [ 532]  .pre-commit-config.yaml
+├── [  96]  .specstory
+│   └── [ 640]  history
+│       ├── [2.0K]  .what-is-this.md
+│       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
+│       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
+│       ├── [ 11K]  2025-02-25_02-24-planning-tests-for-twat-search-web-package.md
+│       ├── [196K]  2025-02-25_02-27-implementing-tests-for-twat-search-package.md
+│       ├── [ 46K]  2025-02-25_02-58-transforming-python-script-into-cli-tool.md
+│       ├── [ 93K]  2025-02-25_03-09-generating-a-name-for-the-chat.md
+│       ├── [5.5K]  2025-02-25_03-33-untitled.md
+│       ├── [ 57K]  2025-02-25_03-54-integrating-search-engines-into-twat-search.md
+│       ├── [ 72K]  2025-02-25_04-05-consolidating-you-py-and-youcom-py.md
+│       ├── [6.1K]  2025-02-25_04-13-missing-env-api-key-names-in-pplx-py.md
+│       ├── [118K]  2025-02-25_04-16-implementing-functions-for-brave-search-engines.md
+│       ├── [286K]  2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md
+│       ├── [ 83K]  2025-02-25_05-36-implementing-duckduckgo-search-engine.md
+│       ├── [194K]  2025-02-25_05-43-implementing-the-webscout-search-engine.md
+│       ├── [ 23K]  2025-02-25_06-07-implementing-bing-scraper-engine.md
+│       ├── [ 15K]  2025-02-25_06-12-continuing-bing-scraper-engine-implementation.md
+│       └── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
+├── [ 499]  CLEANUP.txt
+├── [1.0K]  LICENSE
+├── [1.4K]  PROGRESS.md
+├── [2.3K]  README.md
+├── [9.5K]  TODO.md
+├── [   7]  VERSION.txt
+├── [ 12K]  cleanup.py
+├── [ 128]  dist
+├── [9.4K]  pyproject.toml
+├── [ 128]  src
+│   └── [ 256]  twat_search
+│       ├── [ 556]  __init__.py
+│       ├── [2.0K]  __main__.py
+│       └── [ 384]  web
+│           ├── [1.6K]  __init__.py
+│           ├── [4.8K]  api.py
+│           ├── [ 27K]  cli.py
+│           ├── [4.3K]  config.py
+│           ├── [ 448]  engines
+│           │   ├── [3.5K]  __init__.py
+│           │   ├── [3.7K]  base.py
+│           │   ├── [6.6K]  bing_scraper.py
+│           │   ├── [7.6K]  brave.py
+│           │   ├── [8.2K]  critique.py
+│           │   ├── [6.8K]  duckduckgo.py
+│           │   ├── [4.9K]  pplx.py
+│           │   ├── [6.9K]  serpapi.py
+│           │   ├── [7.5K]  tavily.py
+│           │   └── [7.3K]  you.py
+│           ├── [1.0K]  exceptions.py
+│           ├── [1.3K]  models.py
+│           └── [1.5K]  utils.py
+└── [ 224]  tests
+    ├── [2.0K]  conftest.py
+    ├── [ 157]  test_twat_search.py
+    ├── [ 192]  unit
+    │   ├── [  42]  __init__.py
+    │   ├── [1.5K]  mock_engine.py
+    │   └── [ 320]  web
+    │       ├── [  46]  __init__.py
+    │       ├── [ 160]  engines
+    │       │   ├── [  37]  __init__.py
+    │       │   └── [4.3K]  test_base.py
+    │       ├── [5.1K]  test_api.py
+    │       ├── [2.7K]  test_config.py
+    │       ├── [2.0K]  test_exceptions.py
+    │       ├── [4.5K]  test_models.py
+    │       └── [3.5K]  test_utils.py
+    └── [ 160]  web
+        └── [6.7K]  test_bing_scraper.py
+
+18 directories, 65 files
+
+2025-02-25 07:09:24 - On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .cursor/rules/filetree.mdc
+	modified:   src/twat_search/web/api.py
+	modified:   src/twat_search/web/cli.py
+	modified:   src/twat_search/web/engines/bing_scraper.py
+	modified:   src/twat_search/web/engines/brave.py
+	modified:   src/twat_search/web/engines/critique.py
+	modified:   src/twat_search/web/engines/duckduckgo.py
+	modified:   src/twat_search/web/engines/pplx.py
+	modified:   src/twat_search/web/engines/serpapi.py
+	modified:   src/twat_search/web/engines/tavily.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	CLEANUP.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+2025-02-25 07:09:24 - On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   .cursor/rules/filetree.mdc
+	modified:   src/twat_search/web/api.py
+	modified:   src/twat_search/web/cli.py
+	modified:   src/twat_search/web/engines/bing_scraper.py
+	modified:   src/twat_search/web/engines/brave.py
+	modified:   src/twat_search/web/engines/critique.py
+	modified:   src/twat_search/web/engines/duckduckgo.py
+	modified:   src/twat_search/web/engines/pplx.py
+	modified:   src/twat_search/web/engines/serpapi.py
+	modified:   src/twat_search/web/engines/tavily.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	CLEANUP.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+2025-02-25 07:09:24 - 
+=== Environment Status ===
+2025-02-25 07:09:24 - Setting up virtual environment
+2025-02-25 07:09:25 - Virtual environment created and activated
+2025-02-25 07:09:25 - Installing package with all extras
+2025-02-25 07:09:25 - Setting up virtual environment
+2025-02-25 07:09:25 - Virtual environment created and activated
+2025-02-25 07:09:28 - Package installed successfully
+2025-02-25 07:09:28 - Running code quality checks
+2025-02-25 07:09:28 - >>> Running code fixes...
+2025-02-25 07:09:29 - src/twat_search/__init__.py:22:19: F401 `.web` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+20 | # Import submodules if available
+21 | try:
+22 |     from . import web
+   |                   ^^^ F401
+23 |
+24 |     __all__.append("web")
+   |
+   = help: Remove unused import: `.web`
+
+src/twat_search/web/__init__.py:20:22: F401 `.api.search` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+18 | # Import core functionality first
+19 | try:
+20 |     from .api import search
+   |                      ^^^^^^ F401
+21 |     from .models import SearchResult
+22 |     from .config import Config, EngineConfig
+   |
+   = help: Remove unused import: `.api.search`
+
+src/twat_search/web/__init__.py:21:25: F401 `.models.SearchResult` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+19 | try:
+20 |     from .api import search
+21 |     from .models import SearchResult
+   |                         ^^^^^^^^^^^^ F401
+22 |     from .config import Config, EngineConfig
+   |
+   = help: Remove unused import: `.models.SearchResult`
+
+src/twat_search/web/__init__.py:22:25: F401 `.config.Config` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+20 |     from .api import search
+21 |     from .models import SearchResult
+22 |     from .config import Config, EngineConfig
+   |                         ^^^^^^ F401
+23 |
+24 |     __all__.extend(["Config", "EngineConfig", "SearchResult", "search"])
+   |
+   = help: Remove unused import
+
+src/twat_search/web/__init__.py:22:33: F401 `.config.EngineConfig` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+20 |     from .api import search
+21 |     from .models import SearchResult
+22 |     from .config import Config, EngineConfig
+   |                                 ^^^^^^^^^^^^ F401
+23 |
+24 |     __all__.extend(["Config", "EngineConfig", "SearchResult", "search"])
+   |
+   = help: Remove unused import
+
+src/twat_search/web/__init__.py:30:26: F401 `.engines.brave` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+28 | # Import search engines with try-except blocks to handle optional dependencies
+29 | try:
+30 |     from .engines import brave, brave_news
+   |                          ^^^^^ F401
+31 |
+32 |     __all__.extend(["brave", "brave_news"])
+   |
+   = help: Remove unused import
+
+src/twat_search/web/__init__.py:30:33: F401 `.engines.brave_news` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+28 | # Import search engines with try-except blocks to handle optional dependencies
+29 | try:
+30 |     from .engines import brave, brave_news
+   |                                 ^^^^^^^^^^ F401
+31 |
+32 |     __all__.extend(["brave", "brave_news"])
+   |
+   = help: Remove unused import
+
+src/twat_search/web/__init__.py:37:26: F401 `.engines.pplx` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+36 | try:
+37 |     from .engines import pplx
+   |                          ^^^^ F401
+38 |
+39 |     __all__.extend(["pplx"])
+   |
+   = help: Remove unused import: `.engines.pplx`
+
+src/twat_search/web/__init__.py:44:26: F401 `.engines.serpapi` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+43 | try:
+44 |     from .engines import serpapi
+   |                          ^^^^^^^ F401
+45 |
+46 |     __all__.extend(["serpapi"])
+   |
+   = help: Remove unused import: `.engines.serpapi`
+
+src/twat_search/web/__init__.py:51:26: F401 `.engines.tavily` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+50 | try:
+51 |     from .engines import tavily
+   |                          ^^^^^^ F401
+52 |
+53 |     __all__.extend(["tavily"])
+   |
+   = help: Remove unused import: `.engines.tavily`
+
+src/twat_search/web/__init__.py:58:26: F401 `.engines.you` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+57 | try:
+58 |     from .engines import you, you_news
+   |                          ^^^ F401
+59 |
+60 |     __all__.extend(["you", "you_news"])
+   |
+   = help: Remove unused import
+
+src/twat_search/web/__init__.py:58:31: F401 `.engines.you_news` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+57 | try:
+58 |     from .engines import you, you_news
+   |                               ^^^^^^^^ F401
+59 |
+60 |     __all__.extend(["you", "you_news"])
+   |
+   = help: Remove unused import
+
+src/twat_search/web/__init__.py:65:26: F401 `.engines.critique` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+64 | try:
+65 |     from .engines import critique
+   |                          ^^^^^^^^ F401
+66 |
+67 |     __all__.extend(["critique"])
+   |
+   = help: Remove unused import: `.engines.critique`
+
+src/twat_search/web/__init__.py:72:26: F401 `.engines.duckduckgo` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+71 | try:
+72 |     from .engines import duckduckgo
+   |                          ^^^^^^^^^^ F401
+73 |
+74 |     __all__.extend(["duckduckgo"])
+   |
+   = help: Remove unused import: `.engines.duckduckgo`
+
+src/twat_search/web/__init__.py:79:26: F401 `.engines.bing_scraper` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+78 | try:
+79 |     from .engines import bing_scraper
+   |                          ^^^^^^^^^^^^ F401
+80 |
+81 |     __all__.extend(["bing_scraper"])
+   |
+   = help: Remove unused import: `.engines.bing_scraper`
+
+src/twat_search/web/api.py:35:5: PLR0913 Too many arguments in function definition (6 > 5)
+   |
+35 | def init_engine_task(
+   |     ^^^^^^^^^^^^^^^^ PLR0913
+36 |     engine_name: str,
+37 |     config: Config,
+   |
+
+src/twat_search/web/api.py:69:11: PLR0913 Too many arguments in function definition (8 > 5)
+   |
+69 | async def search(
+   |           ^^^^^^ PLR0913
+70 |     query: str,
+71 |     engines: list[str] | None = None,
+   |
+
+src/twat_search/web/api.py:75:5: FBT001 Boolean-typed positional argument in function definition
+   |
+73 |     country: str | None = None,
+74 |     language: str | None = None,
+75 |     safe_search: bool = True,
+   |     ^^^^^^^^^^^ FBT001
+76 |     time_frame: str | None = None,
+77 |     config: Optional["Config"] = None,
+   |
+
+src/twat_search/web/api.py:75:5: FBT002 Boolean default positional argument in function definition
+   |
+73 |     country: str | None = None,
+74 |     language: str | None = None,
+75 |     safe_search: bool = True,
+   |     ^^^^^^^^^^^ FBT002
+76 |     time_frame: str | None = None,
+77 |     config: Optional["Config"] = None,
+   |
+
+src/twat_search/web/cli.py:90:34: FBT001 Boolean-typed positional argument in function definition
+   |
+88 |             )
+89 |
+90 |     def _configure_logging(self, verbose: bool = False) -> None:
+   |                                  ^^^^^^^ FBT001
+91 |         logging.basicConfig(
+92 |             level=logging.INFO if not verbose else logging.DEBUG,
+   |
+
+src/twat_search/web/cli.py:90:34: FBT002 Boolean default positional argument in function definition
+   |
+88 |             )
+89 |
+90 |     def _configure_logging(self, verbose: bool = False) -> None:
+   |                                  ^^^^^^^ FBT002
+91 |         logging.basicConfig(
+92 |             level=logging.INFO if not verbose else logging.DEBUG,
+   |
+
+src/twat_search/web/cli.py:165:50: PLR2004 Magic value used in comparison, consider replacing `100` with a constant variable
+    |
+163 |                     "title": top_result.title,
+164 |                     "snippet": top_result.snippet[:100] + "..."
+165 |                     if len(top_result.snippet) > 100
+    |                                                  ^^^ PLR2004
+166 |                     else top_result.snippet,
+167 |                     "raw_result": getattr(top_result, "raw", None),
+    |
+
+src/twat_search/web/cli.py:173:56: FBT001 Boolean-typed positional argument in function definition
+    |
+172 |     def _display_results(
+173 |         self, processed_results: list[dict[str, Any]], verbose: bool = False
+    |                                                        ^^^^^^^ FBT001
+174 |     ) -> None:
+175 |         if not processed_results:
+    |
+
+src/twat_search/web/cli.py:173:56: FBT002 Boolean default positional argument in function definition
+    |
+172 |     def _display_results(
+173 |         self, processed_results: list[dict[str, Any]], verbose: bool = False
+    |                                                        ^^^^^^^ FBT002
+174 |     ) -> None:
+175 |         if not processed_results:
+    |
+
+src/twat_search/web/cli.py:224:54: FBT001 Boolean-typed positional argument in function definition
+    |
+223 |     async def _search_engine(
+224 |         self, engine: str, query: str, params: dict, json: bool, verbose: bool
+    |                                                      ^^^^ FBT001
+225 |     ) -> list[dict[str, Any]]:
+226 |         self._configure_logging(verbose)
+    |
+
+src/twat_search/web/cli.py:224:66: FBT001 Boolean-typed positional argument in function definition
+    |
+223 |     async def _search_engine(
+224 |         self, engine: str, query: str, params: dict, json: bool, verbose: bool
+    |                                                                  ^^^^^^^ FBT001
+225 |     ) -> list[dict[str, Any]]:
+226 |         self._configure_logging(verbose)
+    |
+
+src/twat_search/web/cli.py:269:9: PLR0913 Too many arguments in function definition (9 > 5)
+    |
+267 |             return []
+268 |
+269 |     def q(
+    |         ^ PLR0913
+270 |         self,
+271 |         query: str,
+    |
+
+src/twat_search/web/cli.py:276:9: FBT001 Boolean-typed positional argument in function definition
+    |
+274 |         country: str | None = None,
+275 |         language: str | None = None,
+276 |         safe_search: bool = True,
+    |         ^^^^^^^^^^^ FBT001
+277 |         time_frame: str | None = None,
+278 |         verbose: bool = False,
+    |
+
+src/twat_search/web/cli.py:276:9: FBT002 Boolean default positional argument in function definition
+    |
+274 |         country: str | None = None,
+275 |         language: str | None = None,
+276 |         safe_search: bool = True,
+    |         ^^^^^^^^^^^ FBT002
+277 |         time_frame: str | None = None,
+278 |         verbose: bool = False,
+    |
+
+src/twat_search/web/cli.py:278:9: FBT001 Boolean-typed positional argument in function definition
+    |
+276 |         safe_search: bool = True,
+277 |         time_frame: str | None = None,
+278 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+279 |         json: bool = False,
+280 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:278:9: FBT002 Boolean default positional argument in function definition
+    |
+276 |         safe_search: bool = True,
+277 |         time_frame: str | None = None,
+278 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+279 |         json: bool = False,
+280 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:279:9: FBT001 Boolean-typed positional argument in function definition
+    |
+277 |         time_frame: str | None = None,
+278 |         verbose: bool = False,
+279 |         json: bool = False,
+    |         ^^^^ FBT001
+280 |         **kwargs: Any,
+281 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:279:9: FBT002 Boolean default positional argument in function definition
+    |
+277 |         time_frame: str | None = None,
+278 |         verbose: bool = False,
+279 |         json: bool = False,
+    |         ^^^^ FBT002
+280 |         **kwargs: Any,
+281 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:310:47: FBT001 Boolean-typed positional argument in function definition
+    |
+308 |             return results
+309 |
+310 |     def info(self, engine: str | None = None, json: bool = False) -> None:
+    |                                               ^^^^ FBT001
+311 |         try:
+312 |             from twat_search.web.config import Config
+    |
+
+src/twat_search/web/cli.py:310:47: FBT002 Boolean default positional argument in function definition
+    |
+308 |             return results
+309 |
+310 |     def info(self, engine: str | None = None, json: bool = False) -> None:
+    |                                               ^^^^ FBT002
+311 |         try:
+312 |             from twat_search.web.config import Config
+    |
+
+src/twat_search/web/cli.py:354:9: C901 `_show_engine_details` is too complex (11 > 10)
+    |
+352 |         )
+353 |
+354 |     def _show_engine_details(self, engine_name: str, config: "Config") -> None:
+    |         ^^^^^^^^^^^^^^^^^^^^ C901
+355 |         if engine_name not in config.engines:
+356 |             self.console.print(
+    |
+
+src/twat_search/web/cli.py:486:15: PLR0913 Too many arguments in function definition (13 > 5)
+    |
+484 |         return is_engine_available(engine_name)
+485 |
+486 |     async def critique(
+    |               ^^^^^^^^ PLR0913
+487 |         self,
+488 |         query: str,
+    |
+
+src/twat_search/web/cli.py:492:9: FBT002 Boolean default positional argument in function definition
+    |
+490 |         country: str | None = None,
+491 |         language: str | None = None,
+492 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+493 |         time_frame: str | None = None,
+494 |         image_url: str | None = None,
+    |
+
+src/twat_search/web/cli.py:499:9: FBT001 Boolean-typed positional argument in function definition
+    |
+497 |         source_blacklist: str | None = None,
+498 |         api_key: str | None = None,
+499 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+500 |         json: bool = False,
+501 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:499:9: FBT002 Boolean default positional argument in function definition
+    |
+497 |         source_blacklist: str | None = None,
+498 |         api_key: str | None = None,
+499 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+500 |         json: bool = False,
+501 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:500:9: FBT001 Boolean-typed positional argument in function definition
+    |
+498 |         api_key: str | None = None,
+499 |         verbose: bool = False,
+500 |         json: bool = False,
+    |         ^^^^ FBT001
+501 |         **kwargs: Any,
+502 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:500:9: FBT002 Boolean default positional argument in function definition
+    |
+498 |         api_key: str | None = None,
+499 |         verbose: bool = False,
+500 |         json: bool = False,
+    |         ^^^^ FBT002
+501 |         **kwargs: Any,
+502 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:528:15: PLR0913 Too many arguments in function definition (9 > 5)
+    |
+526 |         return await self._search_engine("critique", query, params, json, verbose)
+527 |
+528 |     async def brave(
+    |               ^^^^^ PLR0913
+529 |         self,
+530 |         query: str,
+    |
+
+src/twat_search/web/cli.py:534:9: FBT002 Boolean default positional argument in function definition
+    |
+532 |         country: str | None = None,
+533 |         language: str | None = None,
+534 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+535 |         time_frame: str | None = None,
+536 |         api_key: str | None = None,
+    |
+
+src/twat_search/web/cli.py:537:9: FBT001 Boolean-typed positional argument in function definition
+    |
+535 |         time_frame: str | None = None,
+536 |         api_key: str | None = None,
+537 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+538 |         json: bool = False,
+539 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:537:9: FBT002 Boolean default positional argument in function definition
+    |
+535 |         time_frame: str | None = None,
+536 |         api_key: str | None = None,
+537 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+538 |         json: bool = False,
+539 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:538:9: FBT001 Boolean-typed positional argument in function definition
+    |
+536 |         api_key: str | None = None,
+537 |         verbose: bool = False,
+538 |         json: bool = False,
+    |         ^^^^ FBT001
+539 |         **kwargs: Any,
+540 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:538:9: FBT002 Boolean default positional argument in function definition
+    |
+536 |         api_key: str | None = None,
+537 |         verbose: bool = False,
+538 |         json: bool = False,
+    |         ^^^^ FBT002
+539 |         **kwargs: Any,
+540 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:554:15: PLR0913 Too many arguments in function definition (9 > 5)
+    |
+552 |         return await self._search_engine("brave", query, params, json, verbose)
+553 |
+554 |     async def brave_news(
+    |               ^^^^^^^^^^ PLR0913
+555 |         self,
+556 |         query: str,
+    |
+
+src/twat_search/web/cli.py:560:9: FBT002 Boolean default positional argument in function definition
+    |
+558 |         country: str | None = None,
+559 |         language: str | None = None,
+560 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+561 |         time_frame: str | None = None,
+562 |         api_key: str | None = None,
+    |
+
+src/twat_search/web/cli.py:563:9: FBT001 Boolean-typed positional argument in function definition
+    |
+561 |         time_frame: str | None = None,
+562 |         api_key: str | None = None,
+563 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+564 |         json: bool = False,
+565 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:563:9: FBT002 Boolean default positional argument in function definition
+    |
+561 |         time_frame: str | None = None,
+562 |         api_key: str | None = None,
+563 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+564 |         json: bool = False,
+565 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:564:9: FBT001 Boolean-typed positional argument in function definition
+    |
+562 |         api_key: str | None = None,
+563 |         verbose: bool = False,
+564 |         json: bool = False,
+    |         ^^^^ FBT001
+565 |         **kwargs: Any,
+566 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:564:9: FBT002 Boolean default positional argument in function definition
+    |
+562 |         api_key: str | None = None,
+563 |         verbose: bool = False,
+564 |         json: bool = False,
+    |         ^^^^ FBT002
+565 |         **kwargs: Any,
+566 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:580:15: PLR0913 Too many arguments in function definition (9 > 5)
+    |
+578 |         return await self._search_engine("brave_news", query, params, json, verbose)
+579 |
+580 |     async def serpapi(
+    |               ^^^^^^^ PLR0913
+581 |         self,
+582 |         query: str,
+    |
+
+src/twat_search/web/cli.py:586:9: FBT002 Boolean default positional argument in function definition
+    |
+584 |         country: str | None = None,
+585 |         language: str | None = None,
+586 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+587 |         time_frame: str | None = None,
+588 |         api_key: str | None = None,
+    |
+
+src/twat_search/web/cli.py:589:9: FBT001 Boolean-typed positional argument in function definition
+    |
+587 |         time_frame: str | None = None,
+588 |         api_key: str | None = None,
+589 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+590 |         json: bool = False,
+591 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:589:9: FBT002 Boolean default positional argument in function definition
+    |
+587 |         time_frame: str | None = None,
+588 |         api_key: str | None = None,
+589 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+590 |         json: bool = False,
+591 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:590:9: FBT001 Boolean-typed positional argument in function definition
+    |
+588 |         api_key: str | None = None,
+589 |         verbose: bool = False,
+590 |         json: bool = False,
+    |         ^^^^ FBT001
+591 |         **kwargs: Any,
+592 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:590:9: FBT002 Boolean default positional argument in function definition
+    |
+588 |         api_key: str | None = None,
+589 |         verbose: bool = False,
+590 |         json: bool = False,
+    |         ^^^^ FBT002
+591 |         **kwargs: Any,
+592 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:606:15: PLR0913 Too many arguments in function definition (12 > 5)
+    |
+604 |         return await self._search_engine("serpapi", query, params, json, verbose)
+605 |
+606 |     async def tavily(
+    |               ^^^^^^ PLR0913
+607 |         self,
+608 |         query: str,
+    |
+
+src/twat_search/web/cli.py:612:9: FBT002 Boolean default positional argument in function definition
+    |
+610 |         country: str | None = None,
+611 |         language: str | None = None,
+612 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+613 |         time_frame: str | None = None,
+614 |         api_key: str | None = None,
+    |
+
+src/twat_search/web/cli.py:618:9: FBT001 Boolean-typed positional argument in function definition
+    |
+616 |         include_domains: str | None = None,
+617 |         exclude_domains: str | None = None,
+618 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+619 |         json: bool = False,
+620 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:618:9: FBT002 Boolean default positional argument in function definition
+    |
+616 |         include_domains: str | None = None,
+617 |         exclude_domains: str | None = None,
+618 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+619 |         json: bool = False,
+620 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:619:9: FBT001 Boolean-typed positional argument in function definition
+    |
+617 |         exclude_domains: str | None = None,
+618 |         verbose: bool = False,
+619 |         json: bool = False,
+    |         ^^^^ FBT001
+620 |         **kwargs: Any,
+621 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:619:9: FBT002 Boolean default positional argument in function definition
+    |
+617 |         exclude_domains: str | None = None,
+618 |         verbose: bool = False,
+619 |         json: bool = False,
+    |         ^^^^ FBT002
+620 |         **kwargs: Any,
+621 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:643:15: PLR0913 Too many arguments in function definition (10 > 5)
+    |
+641 |         return await self._search_engine("tavily", query, params, json, verbose)
+642 |
+643 |     async def pplx(
+    |               ^^^^ PLR0913
+644 |         self,
+645 |         query: str,
+    |
+
+src/twat_search/web/cli.py:649:9: FBT002 Boolean default positional argument in function definition
+    |
+647 |         country: str | None = None,
+648 |         language: str | None = None,
+649 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+650 |         time_frame: str | None = None,
+651 |         api_key: str | None = None,
+    |
+
+src/twat_search/web/cli.py:653:9: FBT001 Boolean-typed positional argument in function definition
+    |
+651 |         api_key: str | None = None,
+652 |         model: str | None = None,
+653 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+654 |         json: bool = False,
+655 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:653:9: FBT002 Boolean default positional argument in function definition
+    |
+651 |         api_key: str | None = None,
+652 |         model: str | None = None,
+653 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+654 |         json: bool = False,
+655 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:654:9: FBT001 Boolean-typed positional argument in function definition
+    |
+652 |         model: str | None = None,
+653 |         verbose: bool = False,
+654 |         json: bool = False,
+    |         ^^^^ FBT001
+655 |         **kwargs: Any,
+656 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:654:9: FBT002 Boolean default positional argument in function definition
+    |
+652 |         model: str | None = None,
+653 |         verbose: bool = False,
+654 |         json: bool = False,
+    |         ^^^^ FBT002
+655 |         **kwargs: Any,
+656 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:670:15: PLR0913 Too many arguments in function definition (9 > 5)
+    |
+668 |         return await self._search_engine("pplx", query, params, json, verbose)
+669 |
+670 |     async def you(
+    |               ^^^ PLR0913
+671 |         self,
+672 |         query: str,
+    |
+
+src/twat_search/web/cli.py:676:9: FBT002 Boolean default positional argument in function definition
+    |
+674 |         country: str | None = None,
+675 |         language: str | None = None,
+676 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+677 |         time_frame: str | None = None,
+678 |         api_key: str | None = None,
+    |
+
+src/twat_search/web/cli.py:679:9: FBT001 Boolean-typed positional argument in function definition
+    |
+677 |         time_frame: str | None = None,
+678 |         api_key: str | None = None,
+679 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+680 |         json: bool = False,
+681 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:679:9: FBT002 Boolean default positional argument in function definition
+    |
+677 |         time_frame: str | None = None,
+678 |         api_key: str | None = None,
+679 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+680 |         json: bool = False,
+681 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:680:9: FBT001 Boolean-typed positional argument in function definition
+    |
+678 |         api_key: str | None = None,
+679 |         verbose: bool = False,
+680 |         json: bool = False,
+    |         ^^^^ FBT001
+681 |         **kwargs: Any,
+682 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:680:9: FBT002 Boolean default positional argument in function definition
+    |
+678 |         api_key: str | None = None,
+679 |         verbose: bool = False,
+680 |         json: bool = False,
+    |         ^^^^ FBT002
+681 |         **kwargs: Any,
+682 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:695:15: PLR0913 Too many arguments in function definition (9 > 5)
+    |
+693 |         return await self._search_engine("you", query, params, json, verbose)
+694 |
+695 |     async def you_news(
+    |               ^^^^^^^^ PLR0913
+696 |         self,
+697 |         query: str,
+    |
+
+src/twat_search/web/cli.py:701:9: FBT002 Boolean default positional argument in function definition
+    |
+699 |         country: str | None = None,
+700 |         language: str | None = None,
+701 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+702 |         time_frame: str | None = None,
+703 |         api_key: str | None = None,
+    |
+
+src/twat_search/web/cli.py:704:9: FBT001 Boolean-typed positional argument in function definition
+    |
+702 |         time_frame: str | None = None,
+703 |         api_key: str | None = None,
+704 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+705 |         json: bool = False,
+706 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:704:9: FBT002 Boolean default positional argument in function definition
+    |
+702 |         time_frame: str | None = None,
+703 |         api_key: str | None = None,
+704 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+705 |         json: bool = False,
+706 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:705:9: FBT001 Boolean-typed positional argument in function definition
+    |
+703 |         api_key: str | None = None,
+704 |         verbose: bool = False,
+705 |         json: bool = False,
+    |         ^^^^ FBT001
+706 |         **kwargs: Any,
+707 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:705:9: FBT002 Boolean default positional argument in function definition
+    |
+703 |         api_key: str | None = None,
+704 |         verbose: bool = False,
+705 |         json: bool = False,
+    |         ^^^^ FBT002
+706 |         **kwargs: Any,
+707 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:720:15: PLR0913 Too many arguments in function definition (10 > 5)
+    |
+718 |         return await self._search_engine("you_news", query, params, json, verbose)
+719 |
+720 |     async def duckduckgo(
+    |               ^^^^^^^^^^ PLR0913
+721 |         self,
+722 |         query: str,
+    |
+
+src/twat_search/web/cli.py:725:9: ARG002 Unused method argument: `language`
+    |
+723 |         num_results: int = 5,
+724 |         country: str | None = None,
+725 |         language: str | None = None,
+    |         ^^^^^^^^ ARG002
+726 |         safe_search: bool | None = True,
+727 |         time_frame: str | None = None,
+    |
+
+src/twat_search/web/cli.py:726:9: FBT002 Boolean default positional argument in function definition
+    |
+724 |         country: str | None = None,
+725 |         language: str | None = None,
+726 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+727 |         time_frame: str | None = None,
+728 |         proxy: str | None = None,
+    |
+
+src/twat_search/web/cli.py:730:9: FBT001 Boolean-typed positional argument in function definition
+    |
+728 |         proxy: str | None = None,
+729 |         timeout: int = 10,
+730 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+731 |         json: bool = False,
+732 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:730:9: FBT002 Boolean default positional argument in function definition
+    |
+728 |         proxy: str | None = None,
+729 |         timeout: int = 10,
+730 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+731 |         json: bool = False,
+732 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:731:9: FBT001 Boolean-typed positional argument in function definition
+    |
+729 |         timeout: int = 10,
+730 |         verbose: bool = False,
+731 |         json: bool = False,
+    |         ^^^^ FBT001
+732 |         **kwargs: Any,
+733 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:731:9: FBT002 Boolean default positional argument in function definition
+    |
+729 |         timeout: int = 10,
+730 |         verbose: bool = False,
+731 |         json: bool = False,
+    |         ^^^^ FBT002
+732 |         **kwargs: Any,
+733 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/config.py:51:9: C901 `_load_engine_configs` is too complex (15 > 10)
+   |
+49 |             self._load_engine_configs()
+50 |
+51 |     def _load_engine_configs(self) -> None:
+   |         ^^^^^^^^^^^^^^^^^^^^ C901
+52 |         """
+53 |         Load engine configurations from environment variables.
+   |
+
+src/twat_search/web/config.py:51:9: PLR0912 Too many branches (15 > 12)
+   |
+49 |             self._load_engine_configs()
+50 |
+51 |     def _load_engine_configs(self) -> None:
+   |         ^^^^^^^^^^^^^^^^^^^^ PLR0912
+52 |         """
+53 |         Load engine configurations from environment variables.
+   |
+
+src/twat_search/web/engines/__init__.py:18:23: F401 `.base.register_engine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+16 | # Import base functionality first
+17 | try:
+18 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
+   |                       ^^^^^^^^^^^^^^^ F401
+19 |
+20 |     __all__.extend(
+   |
+   = help: Remove unused import
+
+src/twat_search/web/engines/__init__.py:18:40: F401 `.base.get_engine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+16 | # Import base functionality first
+17 | try:
+18 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
+   |                                        ^^^^^^^^^^ F401
+19 |
+20 |     __all__.extend(
+   |
+   = help: Remove unused import
+
+src/twat_search/web/engines/__init__.py:18:52: F401 `.base.get_registered_engines` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+16 | # Import base functionality first
+17 | try:
+18 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
+   |                                                    ^^^^^^^^^^^^^^^^^^^^^^ F401
+19 |
+20 |     __all__.extend(
+   |
+   = help: Remove unused import
+
+src/twat_search/web/engines/__init__.py:18:76: F401 `.base.SearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+16 | # Import base functionality first
+17 | try:
+18 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
+   |                                                                            ^^^^^^^^^^^^ F401
+19 |
+20 |     __all__.extend(
+   |
+   = help: Remove unused import
+
+src/twat_search/web/engines/__init__.py:28:24: F401 `.brave.BraveSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+26 | # Import each engine module and add its components to __all__ if successful
+27 | try:
+28 |     from .brave import BraveSearchEngine, BraveNewsSearchEngine, brave, brave_news
+   |                        ^^^^^^^^^^^^^^^^^ F401
+29 |
+30 |     available_engine_functions["brave"] = brave
+   |
+   = help: Remove unused import
+
+src/twat_search/web/engines/__init__.py:28:43: F401 `.brave.BraveNewsSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+26 | # Import each engine module and add its components to __all__ if successful
+27 | try:
+28 |     from .brave import BraveSearchEngine, BraveNewsSearchEngine, brave, brave_news
+   |                                           ^^^^^^^^^^^^^^^^^^^^^ F401
+29 |
+30 |     available_engine_functions["brave"] = brave
+   |
+   = help: Remove unused import
+
+src/twat_search/web/engines/__init__.py:39:26: F401 `.serpapi.SerpApiSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+38 | try:
+39 |     from .serpapi import SerpApiSearchEngine, serpapi
+   |                          ^^^^^^^^^^^^^^^^^^^ F401
+40 |
+41 |     available_engine_functions["serpapi"] = serpapi
+   |
+   = help: Remove unused import: `.serpapi.SerpApiSearchEngine`
+
+src/twat_search/web/engines/__init__.py:47:25: F401 `.tavily.TavilySearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+46 | try:
+47 |     from .tavily import TavilySearchEngine, tavily
+   |                         ^^^^^^^^^^^^^^^^^^ F401
+48 |
+49 |     available_engine_functions["tavily"] = tavily
+   |
+   = help: Remove unused import: `.tavily.TavilySearchEngine`
+
+src/twat_search/web/engines/__init__.py:55:23: F401 `.pplx.PerplexitySearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+54 | try:
+55 |     from .pplx import PerplexitySearchEngine, pplx
+   |                       ^^^^^^^^^^^^^^^^^^^^^^ F401
+56 |
+57 |     available_engine_functions["pplx"] = pplx
+   |
+   = help: Remove unused import: `.pplx.PerplexitySearchEngine`
+
+src/twat_search/web/engines/__init__.py:63:22: F401 `.you.YouSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+62 | try:
+63 |     from .you import YouSearchEngine, YouNewsSearchEngine, you, you_news
+   |                      ^^^^^^^^^^^^^^^ F401
+64 |
+65 |     available_engine_functions["you"] = you
+   |
+   = help: Remove unused import
+
+src/twat_search/web/engines/__init__.py:63:39: F401 `.you.YouNewsSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+62 | try:
+63 |     from .you import YouSearchEngine, YouNewsSearchEngine, you, you_news
+   |                                       ^^^^^^^^^^^^^^^^^^^ F401
+64 |
+65 |     available_engine_functions["you"] = you
+   |
+   = help: Remove unused import
+
+src/twat_search/web/engines/__init__.py:72:27: F401 `.critique.CritiqueSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+71 | try:
+72 |     from .critique import CritiqueSearchEngine, critique
+   |                           ^^^^^^^^^^^^^^^^^^^^ F401
+73 |
+74 |     available_engine_functions["critique"] = critique
+   |
+   = help: Remove unused import: `.critique.CritiqueSearchEngine`
+
+src/twat_search/web/engines/__init__.py:80:29: F401 `.duckduckgo.DuckDuckGoSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+79 | try:
+80 |     from .duckduckgo import DuckDuckGoSearchEngine, duckduckgo
+   |                             ^^^^^^^^^^^^^^^^^^^^^^ F401
+81 |
+82 |     available_engine_functions["duckduckgo"] = duckduckgo
+   |
+   = help: Remove unused import: `.duckduckgo.DuckDuckGoSearchEngine`
+
+src/twat_search/web/engines/__init__.py:88:31: F401 `.bing_scraper.BingScraperSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+87 | try:
+88 |     from .bing_scraper import BingScraperSearchEngine, bing_scraper
+   |                               ^^^^^^^^^^^^^^^^^^^^^^^ F401
+89 |
+90 |     available_engine_functions["bing_scraper"] = bing_scraper
+   |
+   = help: Remove unused import: `.bing_scraper.BingScraperSearchEngine`
+
+src/twat_search/web/engines/bing_scraper.py:59:9: PLR0913 Too many arguments in function definition (6 > 5)
+   |
+57 |     env_api_key_names: ClassVar[list[str]] = []  # No API key needed
+58 |
+59 |     def __init__(
+   |         ^^^^^^^^ PLR0913
+60 |         self,
+61 |         config: EngineConfig,
+   |
+
+src/twat_search/web/engines/bing_scraper.py:65:9: FBT002 Boolean default positional argument in function definition
+   |
+63 |         country: str | None = None,
+64 |         language: str | None = None,
+65 |         safe_search: bool | str | None = True,
+   |         ^^^^^^^^^^^ FBT002
+66 |         time_frame: str | None = None,
+67 |         **kwargs: Any,
+   |
+
+src/twat_search/web/engines/brave.py:33:9: PLR0913 Too many arguments in function definition (6 > 5)
+   |
+31 |     result_model: type[BaseModel]  # Either BraveResult or BraveNewsResult.
+32 |
+33 |     def __init__(
+   |         ^^^^^^^^ PLR0913
+34 |         self,
+35 |         config: EngineConfig,
+   |
+
+src/twat_search/web/engines/brave.py:39:9: FBT002 Boolean default positional argument in function definition
+   |
+37 |         country: str | None = None,
+38 |         language: str | None = None,
+39 |         safe_search: bool | str | None = True,
+   |         ^^^^^^^^^^^ FBT002
+40 |         time_frame: str | None = None,
+41 |         **kwargs: Any,
+   |
+
+src/twat_search/web/engines/brave.py:74:15: C901 `search` is too complex (12 > 10)
+   |
+72 |         }
+73 |
+74 |     async def search(self, query: str) -> list[SearchResult]:
+   |               ^^^^^^ C901
+75 |         params: dict[str, Any] = {"q": query, "count": self.count}
+76 |         if self.country:
+   |
+
+src/twat_search/web/engines/brave.py:150:11: PLR0913 Too many arguments in function definition (7 > 5)
+    |
+150 | async def brave(
+    |           ^^^^^ PLR0913
+151 |     query: str,
+152 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/brave.py:155:5: FBT002 Boolean default positional argument in function definition
+    |
+153 |     country: str | None = None,
+154 |     language: str | None = None,
+155 |     safe_search: bool | str | None = True,
+    |     ^^^^^^^^^^^ FBT002
+156 |     time_frame: str | None = None,
+157 |     api_key: str | None = None,
+    |
+
+src/twat_search/web/engines/brave.py:186:11: PLR0913 Too many arguments in function definition (7 > 5)
+    |
+186 | async def brave_news(
+    |           ^^^^^^^^^^ PLR0913
+187 |     query: str,
+188 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/brave.py:191:5: FBT002 Boolean default positional argument in function definition
+    |
+189 |     country: str | None = None,
+190 |     language: str | None = None,
+191 |     safe_search: bool | str | None = True,
+    |     ^^^^^^^^^^^ FBT002
+192 |     time_frame: str | None = None,
+193 |     api_key: str | None = None,
+    |
+
+src/twat_search/web/engines/critique.py:50:9: PLR0913 Too many arguments in function definition (11 > 5)
+   |
+48 |     ]
+49 |
+50 |     def __init__(
+   |         ^^^^^^^^ PLR0913
+51 |         self,
+52 |         config: EngineConfig,
+   |
+
+src/twat_search/web/engines/critique.py:56:9: FBT002 Boolean default positional argument in function definition
+   |
+54 |         country: str | None = None,
+55 |         language: str | None = None,
+56 |         safe_search: bool | None = True,
+   |         ^^^^^^^^^^^ FBT002
+57 |         time_frame: str | None = None,
+58 |         image_url: str | None = None,
+   |
+
+src/twat_search/web/engines/critique.py:105:13: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+    |
+103 |                 return f"data:image/jpeg;base64,{encoded}"
+104 |         except httpx.RequestError as e:
+105 |             raise EngineError(self.name, f"Failed to fetch image from URL: {e}")
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ B904
+106 |         except Exception as e:
+107 |             raise EngineError(self.name, f"Error processing image: {e}")
+    |
+
+src/twat_search/web/engines/critique.py:107:13: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+    |
+105 |             raise EngineError(self.name, f"Failed to fetch image from URL: {e}")
+106 |         except Exception as e:
+107 |             raise EngineError(self.name, f"Error processing image: {e}")
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ B904
+108 |
+109 |     async def _build_payload(self, query: str) -> dict[str, Any]:
+    |
+
+src/twat_search/web/engines/critique.py:211:11: PLR0913 Too many arguments in function definition (12 > 5)
+    |
+211 | async def critique(
+    |           ^^^^^^^^ PLR0913
+212 |     query: str,
+213 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/critique.py:216:5: FBT002 Boolean default positional argument in function definition
+    |
+214 |     country: str | None = None,
+215 |     language: str | None = None,
+216 |     safe_search: bool | None = True,
+    |     ^^^^^^^^^^^ FBT002
+217 |     time_frame: str | None = None,
+218 |     image_url: str | None = None,
+    |
+
+src/twat_search/web/engines/duckduckgo.py:44:9: PLR0913 Too many arguments in function definition (6 > 5)
+   |
+42 |     env_api_key_names: ClassVar[list[str]] = []  # No API key needed
+43 |
+44 |     def __init__(
+   |         ^^^^^^^^ PLR0913
+45 |         self,
+46 |         config: EngineConfig,
+   |
+
+src/twat_search/web/engines/duckduckgo.py:50:9: FBT002 Boolean default positional argument in function definition
+   |
+48 |         country: str | None = None,
+49 |         language: str | None = None,
+50 |         safe_search: bool | str | None = True,
+   |         ^^^^^^^^^^^ FBT002
+51 |         time_frame: str | None = None,
+52 |         **kwargs: Any,
+   |
+
+src/twat_search/web/engines/duckduckgo.py:84:9: PLR0913 Too many arguments in function definition (7 > 5)
+   |
+83 |     @staticmethod
+84 |     def _map_init_params(
+   |         ^^^^^^^^^^^^^^^^ PLR0913
+85 |         num_results: int,
+86 |         country: str | None,
+   |
+
+src/twat_search/web/engines/duckduckgo.py:174:11: PLR0913 Too many arguments in function definition (8 > 5)
+    |
+174 | async def duckduckgo(
+    |           ^^^^^^^^^^ PLR0913
+175 |     query: str,
+176 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/duckduckgo.py:179:5: FBT001 Boolean-typed positional argument in function definition
+    |
+177 |     country: str | None = None,
+178 |     language: str | None = None,
+179 |     safe_search: bool = True,
+    |     ^^^^^^^^^^^ FBT001
+180 |     time_frame: str | None = None,
+181 |     proxy: str | None = None,
+    |
+
+src/twat_search/web/engines/duckduckgo.py:179:5: FBT002 Boolean default positional argument in function definition
+    |
+177 |     country: str | None = None,
+178 |     language: str | None = None,
+179 |     safe_search: bool = True,
+    |     ^^^^^^^^^^^ FBT002
+180 |     time_frame: str | None = None,
+181 |     proxy: str | None = None,
+    |
+
+src/twat_search/web/engines/pplx.py:40:9: PLR0913 Too many arguments in function definition (7 > 5)
+   |
+38 |     ]
+39 |
+40 |     def __init__(
+   |         ^^^^^^^^ PLR0913
+41 |         self,
+42 |         config: EngineConfig,
+   |
+
+src/twat_search/web/engines/pplx.py:46:9: FBT002 Boolean default positional argument in function definition
+   |
+44 |         country: str | None = None,
+45 |         language: str | None = None,
+46 |         safe_search: bool | None = True,
+   |         ^^^^^^^^^^^ FBT002
+47 |         time_frame: str | None = None,
+48 |         model: str | None = None,
+   |
+
+src/twat_search/web/engines/pplx.py:133:11: PLR0913 Too many arguments in function definition (8 > 5)
+    |
+133 | async def pplx(
+    |           ^^^^ PLR0913
+134 |     query: str,
+135 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/pplx.py:138:5: FBT002 Boolean default positional argument in function definition
+    |
+136 |     country: str | None = None,
+137 |     language: str | None = None,
+138 |     safe_search: bool | None = True,
+    |     ^^^^^^^^^^^ FBT002
+139 |     time_frame: str | None = None,
+140 |     model: str | None = None,
+    |
+
+src/twat_search/web/engines/serpapi.py:49:9: PLR0913 Too many arguments in function definition (6 > 5)
+   |
+47 |     env_api_key_names: ClassVar[list[str]] = ["SERPAPI_API_KEY"]
+48 |
+49 |     def __init__(
+   |         ^^^^^^^^ PLR0913
+50 |         self,
+51 |         config: EngineConfig,
+   |
+
+src/twat_search/web/engines/serpapi.py:55:9: FBT002 Boolean default positional argument in function definition
+   |
+53 |         country: str | None = None,
+54 |         language: str | None = None,
+55 |         safe_search: bool | str | None = True,
+   |         ^^^^^^^^^^^ FBT002
+56 |         time_frame: str | None = None,
+57 |         **kwargs: Any,
+   |
+
+src/twat_search/web/engines/serpapi.py:166:11: PLR0913 Too many arguments in function definition (8 > 5)
+    |
+166 | async def serpapi(
+    |           ^^^^^^^ PLR0913
+167 |     query: str,
+168 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/serpapi.py:171:5: FBT002 Boolean default positional argument in function definition
+    |
+169 |     country: str | None = None,
+170 |     language: str | None = None,
+171 |     safe_search: bool | str | None = True,
+    |     ^^^^^^^^^^^ FBT002
+172 |     time_frame: str | None = None,
+173 |     google_domain: str | None = None,
+    |
+
+src/twat_search/web/engines/tavily.py:53:9: PLR0913 Too many arguments in function definition (12 > 5)
+   |
+51 |     env_api_key_names: ClassVar[list[str]] = ["TAVILY_API_KEY"]
+52 |
+53 |     def __init__(
+   |         ^^^^^^^^ PLR0913
+54 |         self,
+55 |         config: EngineConfig,
+   |
+
+src/twat_search/web/engines/tavily.py:59:9: FBT002 Boolean default positional argument in function definition
+   |
+57 |         country: str | None = None,
+58 |         language: str | None = None,
+59 |         safe_search: bool | None = True,
+   |         ^^^^^^^^^^^ FBT002
+60 |         time_frame: str | None = None,
+61 |         search_depth: str = "basic",
+   |
+
+src/twat_search/web/engines/tavily.py:64:9: FBT001 Boolean-typed positional argument in function definition
+   |
+62 |         include_domains: list[str] | None = None,
+63 |         exclude_domains: list[str] | None = None,
+64 |         include_answer: bool = False,
+   |         ^^^^^^^^^^^^^^ FBT001
+65 |         max_tokens: int | None = None,
+66 |         search_type: str = "search",
+   |
+
+src/twat_search/web/engines/tavily.py:64:9: FBT002 Boolean default positional argument in function definition
+   |
+62 |         include_domains: list[str] | None = None,
+63 |         exclude_domains: list[str] | None = None,
+64 |         include_answer: bool = False,
+   |         ^^^^^^^^^^^^^^ FBT002
+65 |         max_tokens: int | None = None,
+66 |         search_type: str = "search",
+   |
+
+src/twat_search/web/engines/tavily.py:92:77: FBT003 Boolean positional value in function call
+   |
+90 |         self.include_domains = get_default(include_domains, "include_domains", None)
+91 |         self.exclude_domains = get_default(exclude_domains, "exclude_domains", None)
+92 |         self.include_answer = get_default(include_answer, "include_answer", False)
+   |                                                                             ^^^^^ FBT003
+93 |         self.max_tokens = get_default(max_tokens, "max_tokens", None)
+94 |         self.search_type = get_default(search_type, "search_type", "search")
+   |
+
+src/twat_search/web/engines/tavily.py:171:17: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+    |
+169 |                 data = response.json()
+170 |             except httpx.HTTPStatusError as e:
+171 |                 raise EngineError(self.name, f"HTTP error: {e}")
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ B904
+172 |             except httpx.RequestError as e:
+173 |                 raise EngineError(self.name, f"Request error: {e}")
+    |
+
+src/twat_search/web/engines/tavily.py:173:17: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+    |
+171 |                 raise EngineError(self.name, f"HTTP error: {e}")
+172 |             except httpx.RequestError as e:
+173 |                 raise EngineError(self.name, f"Request error: {e}")
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ B904
+174 |             except Exception as e:
+175 |                 raise EngineError(self.name, f"Error: {e!s}")
+    |
+
+src/twat_search/web/engines/tavily.py:175:17: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+    |
+173 |                 raise EngineError(self.name, f"Request error: {e}")
+174 |             except Exception as e:
+175 |                 raise EngineError(self.name, f"Error: {e!s}")
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ B904
+176 |
+177 |         results = []
+    |
+
+src/twat_search/web/engines/tavily.py:193:11: PLR0913 Too many arguments in function definition (13 > 5)
+    |
+193 | async def tavily(
+    |           ^^^^^^ PLR0913
+194 |     query: str,
+195 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/tavily.py:198:5: FBT002 Boolean default positional argument in function definition
+    |
+196 |     country: str | None = None,
+197 |     language: str | None = None,
+198 |     safe_search: bool | None = True,
+    |     ^^^^^^^^^^^ FBT002
+199 |     time_frame: str | None = None,
+200 |     search_depth: str = "basic",
+    |
+
+src/twat_search/web/engines/tavily.py:203:5: FBT001 Boolean-typed positional argument in function definition
+    |
+201 |     include_domains: list[str] | None = None,
+202 |     exclude_domains: list[str] | None = None,
+203 |     include_answer: bool = False,
+    |     ^^^^^^^^^^^^^^ FBT001
+204 |     max_tokens: int | None = None,
+205 |     search_type: str = "search",
+    |
+
+src/twat_search/web/engines/tavily.py:203:5: FBT002 Boolean default positional argument in function definition
+    |
+201 |     include_domains: list[str] | None = None,
+202 |     exclude_domains: list[str] | None = None,
+203 |     include_answer: bool = False,
+    |     ^^^^^^^^^^^^^^ FBT002
+204 |     max_tokens: int | None = None,
+205 |     search_type: str = "search",
+    |
+
+src/twat_search/web/engines/tavily.py:211:18: RUF002 Docstring contains ambiguous `’` (RIGHT SINGLE QUOTATION MARK). Did you mean ``` (GRAVE ACCENT)?
+    |
+209 |     Search using Tavily AI search.
+210 |
+211 |     This function’s API and signature remain identical.
+    |                  ^ RUF002
+212 |     """
+213 |     config = EngineConfig(
+    |
+
+src/twat_search/web/engines/you.py:40:9: PLR0913 Too many arguments in function definition (6 > 5)
+   |
+38 |     env_api_key_names: ClassVar[list[str]] = ["YOU_API_KEY"]
+39 |
+40 |     def __init__(
+   |         ^^^^^^^^ PLR0913
+41 |         self,
+42 |         config: EngineConfig,
+   |
+
+src/twat_search/web/engines/you.py:45:9: ARG002 Unused method argument: `language`
+   |
+43 |         num_results: int = 5,
+44 |         country: str | None = None,
+45 |         language: str | None = None,
+   |         ^^^^^^^^ ARG002
+46 |         safe_search: bool | None = True,
+47 |         time_frame: str | None = None,
+   |
+
+src/twat_search/web/engines/you.py:46:9: FBT002 Boolean default positional argument in function definition
+   |
+44 |         country: str | None = None,
+45 |         language: str | None = None,
+46 |         safe_search: bool | None = True,
+   |         ^^^^^^^^^^^ FBT002
+47 |         time_frame: str | None = None,
+48 |         **kwargs: Any,
+   |
+
+src/twat_search/web/engines/you.py:47:9: ARG002 Unused method argument: `time_frame`
+   |
+45 |         language: str | None = None,
+46 |         safe_search: bool | None = True,
+47 |         time_frame: str | None = None,
+   |         ^^^^^^^^^^ ARG002
+48 |         **kwargs: Any,
+49 |     ) -> None:
+   |
+
+src/twat_search/web/engines/you.py:48:11: ARG002 Unused method argument: `kwargs`
+   |
+46 |         safe_search: bool | None = True,
+47 |         time_frame: str | None = None,
+48 |         **kwargs: Any,
+   |           ^^^^^^ ARG002
+49 |     ) -> None:
+50 |         """Initialize the base engine with common parameters."""
+   |
+
+src/twat_search/web/engines/you.py:186:11: PLR0913 Too many arguments in function definition (7 > 5)
+    |
+186 | async def you(
+    |           ^^^ PLR0913
+187 |     query: str,
+188 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/you.py:191:5: FBT002 Boolean default positional argument in function definition
+    |
+189 |     country: str | None = None,
+190 |     language: str | None = None,
+191 |     safe_search: bool | None = True,
+    |     ^^^^^^^^^^^ FBT002
+192 |     time_frame: str | None = None,
+193 |     api_key: str | None = None,
+    |
+
+src/twat_search/web/engines/you.py:208:11: PLR0913 Too many arguments in function definition (7 > 5)
+    |
+208 | async def you_news(
+    |           ^^^^^^^^ PLR0913
+209 |     query: str,
+210 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/you.py:213:5: FBT002 Boolean default positional argument in function definition
+    |
+211 |     country: str | None = None,
+212 |     language: str | None = None,
+213 |     safe_search: bool | None = True,
+    |     ^^^^^^^^^^^ FBT002
+214 |     time_frame: str | None = None,
+215 |     api_key: str | None = None,
+    |
+
+src/twat_search/web/utils.py:48:33: PLR2004 Magic value used in comparison, consider replacing `0.1` with a constant variable
+   |
+46 |             sleep_time = 1 - (now - self.call_timestamps[0])
+47 |             if sleep_time > 0:
+48 |                 if sleep_time > 0.1:  # Only log if sleep time is significant
+   |                                 ^^^ PLR2004
+49 |                     logger.debug(f"Rate limiting: sleeping for {sleep_time:.2f}s")
+50 |                 time.sleep(sleep_time)
+   |
+
+tests/unit/web/engines/test_base.py:88:32: ARG002 Unused method argument: `query`
+   |
+86 |         name = "new_engine"
+87 |
+88 |         async def search(self, query: str) -> list[SearchResult]:
+   |                                ^^^^^ ARG002
+89 |             return []
+   |
+
+tests/unit/web/engines/test_base.py:137:40: PLR2004 Magic value used in comparison, consider replacing `30` with a constant variable
+    |
+135 |     # Check that kwargs were stored by the engine
+136 |     assert engine.kwargs == kwargs
+137 |     assert engine.kwargs["timeout"] == 30
+    |                                        ^^ PLR2004
+138 |     assert engine.kwargs["country"] == "US"
+    |
+
+tests/unit/web/test_api.py:104:28: PLR2004 Magic value used in comparison, consider replacing `2` with a constant variable
+    |
+102 |     results = await search("test query", engines=["mock"], config=mock_config)
+103 |
+104 |     assert len(results) == 2
+    |                            ^ PLR2004
+105 |     assert all(isinstance(result, SearchResult) for result in results)
+106 |     assert all(result.source == "mock" for result in results)
+    |
+
+tests/unit/web/test_api.py:119:28: PLR2004 Magic value used in comparison, consider replacing `3` with a constant variable
+    |
+117 |     )
+118 |
+119 |     assert len(results) == 3
+    |                            ^ PLR2004
+    |
+
+tests/unit/web/test_api.py:131:28: PLR2004 Magic value used in comparison, consider replacing `4` with a constant variable
+    |
+129 |     )
+130 |
+131 |     assert len(results) == 4
+    |                            ^ PLR2004
+    |
+
+tests/unit/web/test_exceptions.py:64:31: PLR2004 Magic value used in comparison, consider replacing `2` with a constant variable
+   |
+62 |         exceptions.append(e)
+63 |
+64 |     assert len(exceptions) == 2
+   |                               ^ PLR2004
+65 |     assert isinstance(exceptions[0], SearchError)
+66 |     assert isinstance(exceptions[1], EngineError)
+   |
+
+tests/unit/web/test_utils.py:28:40: PLR2004 Magic value used in comparison, consider replacing `10` with a constant variable
+   |
+26 |     """Test RateLimiter initialization."""
+27 |     limiter = RateLimiter(calls_per_second=10)
+28 |     assert limiter.calls_per_second == 10
+   |                                        ^^ PLR2004
+29 |     assert limiter.call_timestamps == []
+   |
+
+tests/web/test_bing_scraper.py:35:25: N803 Argument name `mock_BingScraper` should be lowercase
+   |
+34 |     @patch("twat_search.web.engines.bing_scraper.BingScraper")
+35 |     def test_init(self, mock_BingScraper: MagicMock, engine: Any) -> None:
+   |                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ N803
+36 |         """Test BingScraperSearchEngine initialization."""
+37 |         assert engine.name == "bing-scraper"
+   |
+
+tests/web/test_bing_scraper.py:38:38: PLR2004 Magic value used in comparison, consider replacing `5` with a constant variable
+   |
+36 |         """Test BingScraperSearchEngine initialization."""
+37 |         assert engine.name == "bing-scraper"
+38 |         assert engine.max_results == 5
+   |                                      ^ PLR2004
+39 |         assert engine.max_retries == 3
+40 |         assert engine.delay_between_requests == 1.0
+   |
+
+tests/web/test_bing_scraper.py:39:38: PLR2004 Magic value used in comparison, consider replacing `3` with a constant variable
+   |
+37 |         assert engine.name == "bing-scraper"
+38 |         assert engine.max_results == 5
+39 |         assert engine.max_retries == 3
+   |                                      ^ PLR2004
+40 |         assert engine.delay_between_requests == 1.0
+41 |         # Lazy initialization - BingScraper shouldn't be called yet
+   |
+
+tests/web/test_bing_scraper.py:47:15: N803 Argument name `mock_BingScraper` should be lowercase
+   |
+45 |     @pytest.mark.asyncio
+46 |     async def test_search_basic(
+47 |         self, mock_BingScraper: MagicMock, engine: BingScraperSearchEngine
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^ N803
+48 |     ) -> None:
+49 |         """Test basic search functionality."""
+   |
+
+tests/web/test_bing_scraper.py:79:32: PLR2004 Magic value used in comparison, consider replacing `2` with a constant variable
+   |
+78 |         # Verify results
+79 |         assert len(results) == 2
+   |                                ^ PLR2004
+80 |         assert isinstance(results[0], SearchResult)
+81 |         assert results[0].title == "Test Result 1"
+   |
+
+tests/web/test_bing_scraper.py:94:44: N803 Argument name `mock_BingScraper` should be lowercase
+   |
+92 |     @patch("twat_search.web.engines.bing_scraper.BingScraper")
+93 |     @pytest.mark.asyncio
+94 |     async def test_custom_parameters(self, mock_BingScraper: MagicMock) -> None:
+   |                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^ N803
+95 |         """Test custom parameters for engine initialization."""
+96 |         # Create engine with custom parameters
+   |
+
+tests/web/test_bing_scraper.py:126:15: N803 Argument name `mock_BingScraper` should be lowercase
+    |
+124 |     @pytest.mark.asyncio
+125 |     async def test_invalid_url_handling(
+126 |         self, mock_BingScraper: MagicMock, engine: BingScraperSearchEngine
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^ N803
+127 |     ) -> None:
+128 |         """Test handling of invalid URLs."""
+    |
+
+tests/web/test_bing_scraper.py:194:46: PLR2004 Magic value used in comparison, consider replacing `10` with a constant variable
+    |
+192 |         assert call_args[0] == "test query"
+193 |         assert call_kwargs["engines"] == ["bing-scraper"]
+194 |         assert call_kwargs["num_results"] == 10
+    |                                              ^^ PLR2004
+195 |         assert call_kwargs["bing_scraper_max_retries"] == 5
+196 |         assert call_kwargs["bing_scraper_delay_between_requests"] == 2.0
+    |
+
+tests/web/test_bing_scraper.py:195:59: PLR2004 Magic value used in comparison, consider replacing `5` with a constant variable
+    |
+193 |         assert call_kwargs["engines"] == ["bing-scraper"]
+194 |         assert call_kwargs["num_results"] == 10
+195 |         assert call_kwargs["bing_scraper_max_retries"] == 5
+    |                                                           ^ PLR2004
+196 |         assert call_kwargs["bing_scraper_delay_between_requests"] == 2.0
+    |
+
+tests/web/test_bing_scraper.py:196:70: PLR2004 Magic value used in comparison, consider replacing `2.0` with a constant variable
+    |
+194 |         assert call_kwargs["num_results"] == 10
+195 |         assert call_kwargs["bing_scraper_max_retries"] == 5
+196 |         assert call_kwargs["bing_scraper_delay_between_requests"] == 2.0
+    |                                                                      ^^^ PLR2004
+    |
+
+Found 239 errors (63 fixed, 176 remaining).
+
+2025-02-25 07:09:29 - 2 files reformatted, 30 files left unchanged
+
+2025-02-25 07:09:29 - >>>Running type checks...
+2025-02-25 07:09:41 - src/twat_search/web/engines/duckduckgo.py:16: error: Cannot find implementation or library stub for module named "duckduckgo_search"  [import-not-found]
+src/twat_search/web/engines/bing_scraper.py:19: error: Cannot find implementation or library stub for module named "scrape_bing"  [import-not-found]
+src/twat_search/web/engines/bing_scraper.py:19: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+src/twat_search/web/engines/bing_scraper.py:25: error: Function is missing a type annotation  [no-untyped-def]
+src/twat_search/web/engines/bing_scraper.py:28: error: Function is missing a type annotation  [no-untyped-def]
+tests/conftest.py:54: error: Only concrete class can be given where "type[SearchEngine]" is expected  [type-abstract]
+src/twat_search/web/engines/you.py:65: error: "type[YouBaseEngine]" has no attribute "num_results_param"  [attr-defined]
+src/twat_search/web/engines/you.py:78: error: "type[YouBaseEngine]" has no attribute "num_results_param"  [attr-defined]
+src/twat_search/web/engines/you.py:89: error: "type[YouBaseEngine]" has no attribute "base_url"  [attr-defined]
+src/twat_search/web/engines/you.py:95: error: Returning Any from function declared to return "dict[Any, Any]"  [no-any-return]
+src/twat_search/web/engines/tavily.py:78: error: Function is missing a type annotation  [no-untyped-def]
+src/twat_search/web/engines/brave.py:116: error: "BaseModel" has no attribute "description"  [attr-defined]
+src/twat_search/web/engines/brave.py:126: error: "BaseModel" has no attribute "title"  [attr-defined]
+src/twat_search/web/engines/brave.py:127: error: "BaseModel" has no attribute "url"  [attr-defined]
+src/twat_search/web/engines/__init__.py:41: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:49: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str, list[str] | None, list[str] | None, bool, int | None, str, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:57: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:65: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:66: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:74: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None, str | None, list[str] | None, list[str] | None, dict[str, Any] | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:82: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool, str | None, str | None, int, KwArg(Any)], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:90: error: Incompatible types in assignment (expression has type "Callable[[str, int, int, float, KwArg(Any)], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:109: error: Function is missing a return type annotation  [no-untyped-def]
+src/twat_search/web/cli.py:517: error: Incompatible types in assignment (expression has type "list[str]", target has type "int | str | None")  [assignment]
+src/twat_search/web/cli.py:521: error: Incompatible types in assignment (expression has type "list[str]", target has type "int | str | None")  [assignment]
+src/twat_search/web/cli.py:632: error: Incompatible types in assignment (expression has type "list[str]", target has type "int | str | None")  [assignment]
+src/twat_search/web/cli.py:636: error: Incompatible types in assignment (expression has type "list[str]", target has type "int | str | None")  [assignment]
+tests/test_twat_search.py:4: error: Function is missing a return type annotation  [no-untyped-def]
+tests/test_twat_search.py:4: note: Use "-> None" if function does not return a value
+Found 27 errors in 9 files (checked 33 source files)
+
+2025-02-25 07:09:41 - >>> Running tests...
+2025-02-25 07:09:43 - ============================= test session starts ==============================
+platform darwin -- Python 3.12.8, pytest-8.3.4, pluggy-1.5.0 -- /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.venv/bin/python
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search
+configfile: pyproject.toml
+plugins: cov-6.0.0, anyio-4.8.0, benchmark-5.1.0, xdist-3.6.1
+collecting ... collected 44 items
+
+tests/test_twat_search.py::test_version PASSED                           [  2%]
+tests/unit/web/engines/test_base.py::test_search_engine_is_abstract PASSED [  4%]
+tests/unit/web/engines/test_base.py::test_search_engine_name_class_var PASSED [  6%]
+tests/unit/web/engines/test_base.py::test_engine_registration PASSED     [  9%]
+tests/unit/web/engines/test_base.py::test_get_engine_with_invalid_name PASSED [ 11%]
+tests/unit/web/engines/test_base.py::test_get_engine_with_disabled_engine PASSED [ 13%]
+tests/unit/web/engines/test_base.py::test_get_engine_with_config PASSED  [ 15%]
+tests/unit/web/engines/test_base.py::test_get_engine_with_kwargs PASSED  [ 18%]
+tests/unit/web/test_api.py::test_search_with_mock_engine SKIPPED (as...) [ 20%]
+tests/unit/web/test_api.py::test_search_with_additional_params SKIPPED   [ 22%]
+tests/unit/web/test_api.py::test_search_with_engine_specific_params SKIPPED [ 25%]
+tests/unit/web/test_api.py::test_search_with_no_engines SKIPPED (asy...) [ 27%]
+tests/unit/web/test_api.py::test_search_with_failing_engine SKIPPED      [ 29%]
+tests/unit/web/test_api.py::test_search_with_nonexistent_engine SKIPPED  [ 31%]
+tests/unit/web/test_api.py::test_search_with_disabled_engine SKIPPED     [ 34%]
+tests/unit/web/test_config.py::test_engine_config_defaults PASSED        [ 36%]
+tests/unit/web/test_config.py::test_engine_config_values PASSED          [ 38%]
+tests/unit/web/test_config.py::test_config_defaults PASSED               [ 40%]
+tests/unit/web/test_config.py::test_config_with_env_vars FAILED          [ 43%]
+tests/unit/web/test_config.py::test_config_with_direct_initialization PASSED [ 45%]
+tests/unit/web/test_config.py::test_config_env_vars_override_direct_config PASSED [ 47%]
+tests/unit/web/test_exceptions.py::test_search_error PASSED              [ 50%]
+tests/unit/web/test_exceptions.py::test_engine_error PASSED              [ 52%]
+tests/unit/web/test_exceptions.py::test_engine_error_inheritance PASSED  [ 54%]
+tests/unit/web/test_exceptions.py::test_search_error_as_base_class PASSED [ 56%]
+tests/unit/web/test_models.py::test_search_result_valid_data PASSED      [ 59%]
+tests/unit/web/test_models.py::test_search_result_with_optional_fields PASSED [ 61%]
+tests/unit/web/test_models.py::test_search_result_invalid_url PASSED     [ 63%]
+tests/unit/web/test_models.py::test_search_result_empty_fields PASSED    [ 65%]
+tests/unit/web/test_models.py::test_search_result_serialization PASSED   [ 68%]
+tests/unit/web/test_models.py::test_search_result_deserialization PASSED [ 70%]
+tests/unit/web/test_utils.py::test_rate_limiter_init PASSED              [ 72%]
+tests/unit/web/test_utils.py::test_rate_limiter_wait_when_not_needed PASSED [ 75%]
+tests/unit/web/test_utils.py::test_rate_limiter_wait_when_needed PASSED  [ 77%]
+tests/unit/web/test_utils.py::test_rate_limiter_cleans_old_timestamps PASSED [ 79%]
+tests/unit/web/test_utils.py::test_rate_limiter_with_different_rates[1] PASSED [ 81%]
+tests/unit/web/test_utils.py::test_rate_limiter_with_different_rates[5] PASSED [ 84%]
+tests/unit/web/test_utils.py::test_rate_limiter_with_different_rates[10] PASSED [ 86%]
+tests/unit/web/test_utils.py::test_rate_limiter_with_different_rates[100] PASSED [ 88%]
+tests/web/test_bing_scraper.py::TestBingScraperEngine::test_init PASSED  [ 90%]
+tests/web/test_bing_scraper.py::TestBingScraperEngine::test_search_basic SKIPPED [ 93%]
+tests/web/test_bing_scraper.py::TestBingScraperEngine::test_custom_parameters SKIPPED [ 95%]
+tests/web/test_bing_scraper.py::TestBingScraperEngine::test_invalid_url_handling SKIPPED [ 97%]
+tests/web/test_bing_scraper.py::TestBingScraperEngine::test_bing_scraper_convenience_function SKIPPED [100%]
+
+=================================== FAILURES ===================================
+__________________________ test_config_with_env_vars ___________________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1106d2750>
+env_vars_for_brave = None
+
+    def test_config_with_env_vars(
+        monkeypatch: MonkeyPatch, env_vars_for_brave: None
+    ) -> None:
+        """Test Config loads settings from environment variables."""
+        # Create config
+        config = Config()
+    
+        # Check the brave engine was configured
+        assert "brave" in config.engines
+        brave_config = config.engines["brave"]
+>       assert brave_config.api_key == "test_brave_key"
+E       AssertionError: assert None == 'test_brave_key'
+E        +  where None = EngineConfig(api_key=None, enabled=True, default_params={}).api_key
+
+tests/unit/web/test_config.py:55: AssertionError
+=========================== short test summary info ============================
+FAILED tests/unit/web/test_config.py::test_config_with_env_vars - AssertionEr...
+=================== 1 failed, 32 passed, 11 skipped in 0.75s ===================
+
+2025-02-25 07:09:43 - All checks completed
+2025-02-25 07:09:43 - 
+=== TODO.md ===
+2025-02-25 07:09:43 - # twat-search Web Package - Future Tasks
+
+The basic implementation of the `twat-search` web package is complete. 
+
+Tip: Periodically run `./cleanup.py status` to see results of lints and tests. 
+
+## 1. TODO
+
+### 1.1. Add new engine: 
+
+Add new engine `bing-scraper` (in `bing_scraper.py`)
+
+uv pip install --system scrape-bing
+https://github.com/AffanShaikhsurab/scraper-bing
+
+
+>>> from scrape_bing import BingScraper
+>>> scraper= BingScraper(
+...     max_retries=3,
+...     delay_between_requests=1.0
+... )
+>>> results = scraper.search("Adam Twardoch", num_results=5)
+>>> results
+[SearchResult(title='Adam Twardoch', url='https://www.twardoch.com/', description='Adam Twardoch | [auf Deutsch] I do font technology, multilingual typography, variable fonts, digital text processing, Unicode and OpenType. I manage software development and provide consulting …'), SearchResult(title='Adam Twardoch – Fontlab Ltd. | LinkedIn', url='https://pl.linkedin.com/in/twardoch', description='Born 1975 in Poland, Adam Twardoch studied business administration and cultural anthropology in Frankfurt (Oder), Germany. Following his passion for fonts and typography, Adam joined …'), SearchResult(title='Półtawski Nowy: przywrócono do życia kolejną perełkę …', url='https://designalley.pl/poltawski-nowy-digitalizacja-kroju/', description='10 gru 2020\xa0· Antykwa zaprojektowana przez Adama Półtawskiego na podstawie badań autora nad postacią graficzną tekstów drukowanych w języku polskim. …'), SearchResult(title='Adam Twardoch - Typoteka', url='https://typoteka.pl/pl/designer/adam-twardoch', description='Dyrektor produktów w firmie FontLab tworzącej cyfrowe narzędzia liternicze. Konsultant m. in. Google, Adobe, Monotype, Corel, Underware, współtwórca serwisu internetowego MyFonts. …'), SearchResult(title='Zamiast Timesa...', url='http://evil.pl/dtp/nietylkotimes.html', description='60 krojów pism przygotowanych specjalnie z myślą o zastosowaniu w składzie książek i gazet -- wyboru dokonał Adam Twardoch Na grupach dyskusyjnych pojawiają się czasem pytania o kroje …')]
+
+
+
+# Scrape Bing
+
+A robust Python package for scraping search results from Bing with built-in rate limiting, retry mechanisms, and result cleaning features.
+
+## 2. Features
+
+- 🔍 Clean and structured search results
+- 🔄 Automatic retry mechanism for failed requests
+- ⏱️ Built-in rate limiting to prevent blocking
+- 🧹 URL cleaning and validation
+- 🔄 User agent rotation
+- 💪 Type hints and proper error handling
+- 📝 Comprehensive documentation
+
+## 3. Installation
+
+You can install the package using pip:
+
+```bash
+pip install scrape-bing
+```
+
+For development installation:
+
+```bash
+git clone https://github.com/affanshaikhsurab/scrape-bing.git
+cd scrape_bing
+pip install -e .
+```
+
+## 4. Quick Start
+
+```python
+from scrape_bing import BingScraper
+
+# Initialize the searcher
+scraper= BingScraper(
+    max_retries=3,
+    delay_between_requests=1.0
+)
+
+# Perform a search
+results = scraper.search("python programming", num_results=5)
+
+# Process results
+for result in results:
+    print(f"\nTitle: {result.title}")
+    print(f"URL: {result.url}")
+    print(f"Description: {result.description}")
+```
+
+## 5. Advanced Usage
+
+### 5.1. Custom Configuration
+
+```python
+# Configure with custom parameters
+scraper = BingScraper(
+    max_retries=5,                # Maximum retry attempts
+    delay_between_requests=2.0    # Delay between requests in seconds
+)
+```
+
+### 5.2. Error Handling
+
+```python
+from scrape_bing import BingScraper
+
+scraper = BingScraper()
+
+try:
+    results = scraper.search("python programming")
+  
+except ValueError as e:
+    print(f"Invalid input: {e}")
+  
+except ConnectionError as e:
+    print(f"Network error: {e}")
+  
+except RuntimeError as e:
+    print(f"Parsing error: {e}")
+```
+
+### 5.3. Search Result Structure
+
+Each search result contains:
+
+- `title`: The title of the search result
+- `url`: The cleaned and validated URL
+- `description`: The description snippet (if available)
+
+```python
+# Access result attributes
+for result in results:
+    print(result.title)       # Title of the page
+    print(result.url)         # Clean URL
+    print(result.description) # Description (may be None)
+```
+
+## 6. API Reference
+
+### 6.1. BingSearch Class
+
+```python
+class BingScraper:
+    def __init__(self, max_retries: int = 3, delay_between_requests: float = 1.0):
+        """
+        Initialize the BingSearch scraper.
+  
+        Args:
+            max_retries: Maximum number of retry attempts for failed requests
+            delay_between_requests: Minimum delay between requests in seconds
+        """
+        pass
+
+    def search(self, query: str, num_results: int = 10) -> List[SearchResult]:
+        """
+        Perform a Bing search and return results.
+  
+        Args:
+            query: Search query string
+            num_results: Maximum number of results to return
+  
+        Returns:
+            List of SearchResult objects
+  
+        Raises:
+            ValueError: If query is empty
+            ConnectionError: If network connection fails
+            RuntimeError: If parsing fails
+        """
+        pass
+```
+
+### 6.2. SearchResult Class
+
+```python
+@dataclass
+class SearchResult:
+    title: str                    # Title of the search result
+    url: str                      # Cleaned URL
+    description: Optional[str]     # Description (may be None)
+```
+
+## 7. Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 8. Running Tests
+
+```bash
+# Install development dependencies
+pip install -e ".[dev]"
+
+# Run tests
+python -m pytest tests/
+```
+
+## 9. License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 10. Acknowledgments
+
+- Beautiful Soup 4 for HTML parsing
+- Requests library for HTTP requests
+- Python typing for type hints
+
+## 11. Support
+
+If you encounter any issues or have questions, please file an issue on the GitHub repository.
+
+
+### 11.1. Testing Plan
+
+The following tests should be implemented to ensure the robustness and reliability of the package:
+
+#### 11.1.1. Unit Tests
+
+##### Core API
+- Test `search` function
+  - Test with single engine
+  - Test with multiple engines
+  - Test with custom configuration
+  - Test with engine-specific parameters
+  - Test error handling (no engines, all engines fail)
+  - Test empty result handling
+
+##### Models
+- Test `SearchResult` model
+  - Test validation of URLs (valid and invalid)
+  - Test serialization/deserialization
+
+##### Configuration
+- Test `Config` class
+  - Test loading from environment variables
+  - Test loading from .env file
+  - Test default configuration
+- Test `EngineConfig` class
+  - Test enabled/disabled functionality
+  - Test default parameters
+
+##### Utilities
+- Test `RateLimiter` class
+  - Test it properly limits requests to specified rate
+  - Test with different rate limits
+  - Test behavior under high load
+
+##### Exceptions
+- Test `SearchError` and `EngineError` classes
+  - Test proper error message formatting
+  - Test exception hierarchy
+
+#### 11.1.2. Engine-specific Tests
+
+For each search engine implementation (Brave, Google, Tavily, Perplexity, You.com):
+
+- Test initialization
+  - Test with valid configuration
+  - Test with missing API key
+  - Test with custom parameters
+- Test search method
+  - Test with mock responses (happy path)
+  - Test error handling
+    - Connection errors
+    - API errors (rate limits, invalid requests)
+    - Authentication errors
+    - Timeout errors
+  - Test response parsing
+    - Valid responses
+    - Malformed responses
+    - Empty responses
+- Test parameter unification
+  - Test mapping of common parameters to engine-specific ones
+  - Test default values
+  - Test type conversions (especially for safe_search parameter)
+
+#### 11.1.3. Integration Tests
+
+- Test the entire search flow
+  - Test search across multiple engines
+  - Test fallback behavior when some engines fail
+  - Test rate limiting in real-world scenarios
+
+#### 11.1.4. Type Checking Tests
+
+- Add tests to verify type hints are correct
+- Fix existing mypy type errors identified in CLEANUP.txt
+  - Fix HttpUrl validation issues
+  - Fix BaseSettings issues in config.py
+  - Fix missing return type annotations
+
+#### 11.1.5. Performance Tests
+
+- Benchmark search performance
+  - Measure latency across different engines
+  - Test with concurrent searches
+  - Test with rate limiting
+
+#### 11.1.6. Mock Implementation
+
+Create mock implementations for testing that don't require actual API calls:
+
+```python
+# Example mock implementation
+@register_engine
+class MockSearchEngine(SearchEngine):
+    name = "mock"
+    
+    async def search(self, query: str) -> list[SearchResult]:
+        # Return predictable test results
+        return [
+            SearchResult(
+                title="Mock Result 1",
+                url="https://example.com/1",
+                snippet="This is a mock result for testing",
+                source=self.name
+            )
+        ]
+```
+
+#### 11.1.7. Test Utilities
+
+- Create helper functions for testing
+  - Mock response generators
+  - Configuration helpers
+  - Test data generators
+
+#### 11.1.8. Continuous Integration
+
+- Add GitHub workflow for running tests
+- Add coverage reporting
+- Add type checking to CI pipeline
+
+Tests!!! FIXME Describe here in detail the planned tests before implementing them 
+
+
+2025-02-25 07:09:43 -  M .cursor/rules/filetree.mdc
+ M src/twat_search/web/api.py
+ M src/twat_search/web/cli.py
+ M src/twat_search/web/engines/__init__.py
+ M src/twat_search/web/engines/bing_scraper.py
+ M src/twat_search/web/engines/brave.py
+ M src/twat_search/web/engines/critique.py
+ M src/twat_search/web/engines/duckduckgo.py
+ M src/twat_search/web/engines/pplx.py
+ M src/twat_search/web/engines/serpapi.py
+ M src/twat_search/web/engines/tavily.py
+?? CLEANUP.txt
+
+2025-02-25 07:09:43 - Changes detected in repository

@@ -34,7 +34,6 @@ from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
 from .base import SearchEngine, register_engine
 
-# Set up logging
 logger = logging.getLogger(__name__)
 
 
@@ -80,13 +79,9 @@ class BingScraperSearchEngine(SearchEngine):
             **kwargs: Additional Bing Scraper-specific parameters
         """
         super().__init__(config, **kwargs)
-
-        # Store the number of results to return
         self.max_results = num_results or self.config.default_params.get(
             "max_results", 5
         )
-
-        # Bing Scraper specific parameters
         self.max_retries = kwargs.get("max_retries") or self.config.default_params.get(
             "max_retries", 3
         )
@@ -94,7 +89,7 @@ class BingScraperSearchEngine(SearchEngine):
             "delay_between_requests"
         ) or self.config.default_params.get("delay_between_requests", 1.0)
 
-        # Log information about unused parameters for clarity
+        # Log any unused parameters for clarity
         unused_params = []
         if country:
             unused_params.append(f"country='{country}'")
@@ -104,11 +99,37 @@ class BingScraperSearchEngine(SearchEngine):
             unused_params.append(f"safe_search={safe_search}")
         if time_frame:
             unused_params.append(f"time_frame='{time_frame}'")
-
         if unused_params:
             logger.debug(
                 f"Parameters {', '.join(unused_params)} set but not used by Bing Scraper"
             )
+
+    def _convert_result(self, result: Any) -> SearchResult | None:
+        """
+        Convert a raw result from BingScraper into a SearchResult.
+
+        Returns None if validation fails.
+        """
+        try:
+            validated = BingScraperResult(
+                title=result.title,
+                url=result.url,
+                description=result.description,
+            )
+            return SearchResult(
+                title=validated.title,
+                url=validated.url,
+                snippet=validated.description or "",
+                source=self.name,
+                raw={
+                    "title": result.title,
+                    "url": result.url,
+                    "description": result.description,
+                },
+            )
+        except ValidationError as exc:
+            logger.warning(f"Validation error for result: {exc}")
+            return None
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -124,47 +145,11 @@ class BingScraperSearchEngine(SearchEngine):
             EngineError: If the search fails
         """
         try:
-            # Create BingScraper instance with configured parameters
             scraper = BingScraper(
                 max_retries=self.max_retries,
                 delay_between_requests=self.delay_between_requests,
             )
-
-            # Perform the search
             raw_results = scraper.search(query, num_results=self.max_results)
-
-            results = []
-            for result in raw_results:
-                try:
-                    # Validate and convert response using our internal model
-                    bing_result = BingScraperResult(
-                        title=result.title,
-                        url=result.url,
-                        description=result.description,
-                    )
-
-                    # Convert to common SearchResult format
-                    results.append(
-                        SearchResult(
-                            title=bing_result.title,
-                            url=bing_result.url,
-                            # Use description as snippet, or empty string if None
-                            snippet=bing_result.description or "",
-                            source=self.name,
-                            # Include raw result as dict for debugging
-                            raw={
-                                "title": result.title,
-                                "url": result.url,
-                                "description": result.description,
-                            },
-                        )
-                    )
-                except ValidationError as exc:
-                    logger.warning(f"Validation error for result: {exc}")
-                    continue
-
-            return results
-
         except ValueError as exc:
             raise EngineError(self.name, f"Invalid input: {exc}") from exc
         except ConnectionError as exc:
@@ -174,8 +159,17 @@ class BingScraperSearchEngine(SearchEngine):
         except Exception as exc:
             raise EngineError(self.name, f"Search failed: {exc}") from exc
 
+        # Convert and filter results in a single comprehension
+        results = [
+            search_result
+            for search_result in (
+                self._convert_result(result) for result in raw_results
+            )
+            if search_result is not None
+        ]
+        return results
 
-# Convenience function for using the engine directly
+
 async def bing_scraper(
     query: str,
     num_results: int = 5,
@@ -212,17 +206,3 @@ async def bing_scraper(
         bing_scraper_delay_between_requests=delay_between_requests,
         **kwargs,
     )
-
-
-if __name__ == "__main__":
-    """Simple demo when script is run directly."""
-    import asyncio
-    import sys
-
-    async def main() -> None:
-        query = sys.argv[1] if len(sys.argv) > 1 else "Python programming"
-        results = await bing_scraper(query, num_results=5)
-        for _i, _result in enumerate(results, 1):
-            pass
-
-    asyncio.run(main())

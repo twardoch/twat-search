@@ -1,5 +1,3 @@
-# this_file: src/twat_search/web/engines/serpapi.py
-
 """
 SerpApi Google search engine implementation.
 
@@ -71,42 +69,33 @@ class SerpApiSearchEngine(SearchEngine):
             **kwargs: Additional SerpApi-specific parameters
         """
         super().__init__(config)
-
-        # API endpoint
         self.base_url = "https://serpapi.com/search"
 
-        # Map common parameters to SerpApi-specific ones
-        num = kwargs.get("num", num_results)
-        self.num = num or self.config.default_params.get("num", 10)
+        # Consolidate parameter mappings into one dictionary to reduce duplication.
+        self._params = {
+            "num": kwargs.get("num", num_results)
+            or self.config.default_params.get("num", 10),
+            "google_domain": kwargs.get("google_domain")
+            or self.config.default_params.get("google_domain", "google.com"),
+            "gl": kwargs.get("gl", country) or self.config.default_params.get("gl"),
+            "hl": kwargs.get("hl", language) or self.config.default_params.get("hl"),
+            "safe": self._convert_safe(kwargs.get("safe", safe_search))
+            or self.config.default_params.get("safe"),
+            "time_period": kwargs.get("time_period", time_frame)
+            or self.config.default_params.get("time_period"),
+        }
 
-        google_domain = kwargs.get("google_domain")
-        self.google_domain = google_domain or self.config.default_params.get(
-            "google_domain", "google.com"
-        )
-
-        gl = kwargs.get("gl", country)
-        self.gl = gl or self.config.default_params.get("gl", None)
-
-        hl = kwargs.get("hl", language)
-        self.hl = hl or self.config.default_params.get("hl", None)
-
-        # Handle safe_search conversion (boolean to string)
-        safe = kwargs.get("safe", safe_search)
-        if isinstance(safe, bool):
-            safe = "active" if safe else "off"
-        self.safe = safe or self.config.default_params.get("safe", None)
-
-        time_period = kwargs.get("time_period", time_frame)
-        self.time_period = time_period or self.config.default_params.get(
-            "time_period", None
-        )
-
-        # Check if API key is available
         if not self.config.api_key:
             raise EngineError(
                 self.name,
                 f"SerpApi API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
+
+    def _convert_safe(self, safe: bool | str | None) -> str | None:
+        """Convert safe_search boolean to SerpApi string parameter if needed."""
+        if isinstance(safe, bool):
+            return "active" if safe else "off"
+        return safe
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -121,23 +110,13 @@ class SerpApiSearchEngine(SearchEngine):
         Raises:
             EngineError: If the search fails
         """
-        params: dict[str, Any] = {
+        params = {
             "q": query,
             "api_key": self.config.api_key,
             "engine": "google",
-            "num": self.num,
-            "google_domain": self.google_domain,
         }
-
-        # Add optional parameters if they have values
-        if self.gl:
-            params["gl"] = self.gl
-        if self.hl:
-            params["hl"] = self.hl
-        if self.safe:
-            params["safe"] = self.safe
-        if self.time_period:
-            params["time_period"] = self.time_period
+        # Merge in any additional parameters, filtering out None values.
+        params.update({k: v for k, v in self._params.items() if v is not None})
 
         async with httpx.AsyncClient() as client:
             try:
@@ -147,19 +126,17 @@ class SerpApiSearchEngine(SearchEngine):
                     timeout=30,  # SerpApi can be slower
                 )
                 response.raise_for_status()
-
                 data = response.json()
 
-                # Check if organic_results exists in the response
+                # Return empty list if no results found
                 if "organic_results" not in data:
-                    return []  # No results found
+                    return []
 
                 serpapi_response = SerpApiResponse(**data)
 
                 results = []
                 for result in serpapi_response.organic_results:
                     try:
-                        # Convert to common SearchResult format
                         results.append(
                             SearchResult(
                                 title=result.title,
@@ -171,7 +148,6 @@ class SerpApiSearchEngine(SearchEngine):
                             )
                         )
                     except ValidationError:
-                        # Log the specific validation error and skip this result
                         continue
 
                 return results

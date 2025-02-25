@@ -18,7 +18,7 @@ try:
     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
 
     __all__.extend(
-        ["SearchEngine", "register_engine", "get_engine", "get_registered_engines"]
+        ["SearchEngine", "get_engine", "get_registered_engines", "register_engine"]
     )
 except ImportError:
     pass
@@ -30,7 +30,7 @@ try:
     available_engine_functions["brave"] = brave
     available_engine_functions["brave_news"] = brave_news
     __all__.extend(
-        ["BraveSearchEngine", "BraveNewsSearchEngine", "brave", "brave_news"]
+        ["BraveNewsSearchEngine", "BraveSearchEngine", "brave", "brave_news"]
     )
 except ImportError:
     pass
@@ -64,7 +64,7 @@ try:
 
     available_engine_functions["you"] = you
     available_engine_functions["you_news"] = you_news
-    __all__.extend(["YouSearchEngine", "YouNewsSearchEngine", "you", "you_news"])
+    __all__.extend(["YouNewsSearchEngine", "YouSearchEngine", "you", "you_news"])
 except ImportError:
     pass
 
@@ -131,8 +131,8 @@ def get_available_engines() -> list[str]:
 __all__.extend(
     [
         "available_engine_functions",
-        "is_engine_available",
-        "get_engine_function",
         "get_available_engines",
+        "get_engine_function",
+        "is_engine_available",
     ]
 )
