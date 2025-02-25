@@ -1,6 +1,6 @@
-2025-02-25 02:34:26 - 
-=== Package Installation ===
-2025-02-25 02:34:26 - Installing package with all extras
-2025-02-25 02:34:26 - Setting up virtual environment
-2025-02-25 02:34:26 - Virtual environment created and activated
-2025-02-25 02:34:28 - Package installed successfully
+2025-02-25 04:10:04 - Usage:
+2025-02-25 04:10:04 -   cleanup.py status   # Show current status and run all checks
+2025-02-25 04:10:04 -   cleanup.py venv     # Create virtual environment
+2025-02-25 04:10:04 -   cleanup.py install  # Install package with all extras
+2025-02-25 04:10:04 -   cleanup.py update   # Update and commit changes
+2025-02-25 04:10:04 -   cleanup.py push     # Push changes to remote
