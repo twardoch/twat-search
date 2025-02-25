@@ -260,7 +260,6 @@ class SearchCLI:
             )
 
         # Print the JSON output
-        print(json_lib.dumps(results_by_engine, cls=CustomJSONEncoder, indent=2))
 
     def _display_errors(self, error_messages: list[str]) -> None:
         if not error_messages:

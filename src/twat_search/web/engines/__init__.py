@@ -7,7 +7,8 @@ This package contains the implementations of various search engines that
 can be used with the twat_search.web API.
 """
 
-from typing import Any, Callable, Coroutine
+from typing import Any
+from collections.abc import Callable, Coroutine
 
 from twat_search.web.models import SearchResult
 

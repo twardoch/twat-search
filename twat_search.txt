@@ -66,6 +66,7 @@ src/
         brave.py
         critique.py
         duckduckgo.py
+        hasdata.py
         pplx.py
         serpapi.py
         tavily.py
@@ -154,7 +155,7 @@ globs:
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 558]  cleanup.mdc
-│       └── [4.1K]  filetree.mdc
+│       └── [4.4K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
@@ -162,7 +163,7 @@ globs:
 ├── [3.5K]  .gitignore
 ├── [ 532]  .pre-commit-config.yaml
 ├── [  96]  .specstory
-│   └── [ 704]  history
+│   └── [ 736]  history
 │       ├── [2.0K]  .what-is-this.md
 │       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -182,7 +183,8 @@ globs:
 │       ├── [ 15K]  2025-02-25_06-12-continuing-bing-scraper-engine-implementation.md
 │       ├── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
 │       ├── [9.9K]  2025-02-25_07-09-refactoring-plan-and-progress-update.md
-│       └── [ 40K]  2025-02-25_07-17-implementing-phase-1-from-todo-md.md
+│       ├── [ 40K]  2025-02-25_07-17-implementing-phase-1-from-todo-md.md
+│       └── [292K]  2025-02-25_07-34-integrating-hasdata-google-serp-apis.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [1.2K]  PROGRESS.md
@@ -191,7 +193,7 @@ globs:
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [ 128]  dist
-├── [9.5K]  pyproject.toml
+├── [9.6K]  pyproject.toml
 ├── [ 128]  src
 │   └── [ 256]  twat_search
 │       ├── [ 556]  __init__.py
@@ -199,15 +201,16 @@ globs:
 │       └── [ 384]  web
 │           ├── [1.6K]  __init__.py
 │           ├── [4.8K]  api.py
-│           ├── [ 27K]  cli.py
+│           ├── [ 33K]  cli.py
 │           ├── [4.3K]  config.py
-│           ├── [ 448]  engines
-│           │   ├── [3.5K]  __init__.py
+│           ├── [ 480]  engines
+│           │   ├── [4.2K]  __init__.py
 │           │   ├── [3.7K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [7.6K]  brave.py
 │           │   ├── [8.2K]  critique.py
 │           │   ├── [6.7K]  duckduckgo.py
+│           │   ├── [7.1K]  hasdata.py
 │           │   ├── [4.9K]  pplx.py
 │           │   ├── [6.9K]  serpapi.py
 │           │   ├── [7.4K]  tavily.py
@@ -234,9 +237,9 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-└── [ 89K]  twat_search.txt
+└── [ 87K]  twat_search.txt
 
-19 directories, 68 files
+19 directories, 70 files
 
 ================
 File: .github/workflows/push.yml
@@ -401,7 +404,7 @@ File: src/twat_search/web/engines/__init__.py
     __all__.extend(["DuckDuckGoSearchEngine", "duckduckgo"])
     __all__.extend(["BingScraperSearchEngine", "bing_scraper"])
 def is_engine_available(engine_name: str) -> bool:
-def get_engine_function(engine_name: str):
+def get_engine_function(
     return available_engine_functions.get(engine_name)
 def get_available_engines() -> list[str]:
     return list(available_engine_functions.keys())
@@ -615,6 +618,46 @@ class DuckDuckGoSearchEngine(SearchEngine):
             raise EngineError(self.name, f"Search failed: {exc}") from exc
 async def duckduckgo(
     return await search(
+
+================
+File: src/twat_search/web/engines/hasdata.py
+================
+class HasDataGoogleResult(BaseModel):
+    def from_api_result(cls, result: dict[str, Any]) -> "HasDataGoogleResult":
+        return cls(
+            title=result.get("title", ""),
+            url=result.get("link", ""),
+            snippet=result.get("snippet", ""),
+class HasDataBaseEngine(SearchEngine):
+    def __init__(
+        super().__init__(config)
+            or kwargs.get("location")
+            or self.config.default_params.get("location")
+            or kwargs.get("device_type")
+            or self.config.default_params.get("device_type", "desktop")
+            raise EngineError(
+                f"HasData API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
+    async def search(self, query: str) -> list[SearchResult]:
+        async with httpx.AsyncClient() as client:
+                response = await client.get(
+                response.raise_for_status()
+                data = response.json()
+                organic_results = data.get("organicResults", [])
+                for i, result in enumerate(organic_results):
+                        parsed = HasDataGoogleResult.from_api_result(result)
+                        results.append(
+                            SearchResult(
+                raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
+                raise EngineError(self.name, f"Response parsing error: {exc}") from exc
+                raise EngineError(self.name, f"Invalid JSON response: {exc}") from exc
+class HasDataGoogleEngine(HasDataBaseEngine):
+class HasDataGoogleLightEngine(HasDataBaseEngine):
+async def hasdata_google(
+    config = EngineConfig(api_key=api_key, enabled=True)
+    engine = HasDataGoogleEngine(
+    return await engine.search(query)
+async def hasdata_google_light(
+    engine = HasDataGoogleLightEngine(
 
 ================
 File: src/twat_search/web/engines/pplx.py
@@ -842,7 +885,10 @@ class SearchCLI:
                 f"{', '.join(missing_engines)}. "
     def _configure_logging(self, verbose: bool = False) -> None:
         logging.basicConfig(
-        self.logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+        self.logger.setLevel(level)
+        logging.getLogger("twat_search.web.api").setLevel(level)
+        logging.getLogger("twat_search.web.engines").setLevel(level)
+        logging.getLogger("httpx").setLevel(level)
     def _parse_engines(self, engines_arg: Any) -> list[str] | None:
         if isinstance(engines_arg, str):
             return [e.strip() for e in engines_arg.split(",") if e.strip()]
@@ -852,6 +898,7 @@ class SearchCLI:
     async def _run_search(
                 if engine == "all" or is_engine_available(engine):
                     available.append(engine)
+            self.logger.debug(f"Attempting to search with engines: {engines}")
             results = await search(query=query, engines=engines, **kwargs)
             return self._process_results(results)
             self.logger.error(f"Search failed: {e}")
@@ -861,24 +908,27 @@ class SearchCLI:
             engine_results.setdefault(engine_name, []).append(result)
         for engine, engine_results_list in engine_results.items():
                 processed.append(
-            url = str(top_result.url)
-                    if len(top_result.snippet) > 100
-                    "raw_result": getattr(top_result, "raw", None),
+            for idx, result in enumerate(engine_results_list):
+                url = str(result.url)
+                        if len(result.snippet) > 100
+                        "raw_result": getattr(result, "raw", None),
     def _display_results(
             console.print("[bold red]No results found![/bold red]")
-            table = Table(title="🌐 Web Search Results")
-            table.add_column("Engine", style="cyan", no_wrap=True)
+        table = Table()  # Remove show_lines=True to eliminate row separator lines
+        table.add_column("Engine", style="cyan", no_wrap=True)
             table.add_column("Status", style="magenta")
             table.add_column("Title", style="green")
-            table.add_column("URL", style="blue")
+            table.add_column("URL", style="blue", overflow="fold")
                 table.add_row(
-            table.add_column("Result", style="green")
-                table.add_row(result["engine"], result["title"])
+            table.add_column("URL", style="blue", overflow="fold", max_width=70)
+                table.add_row(result["engine"], result["url"])
         console.print(table)
+                    console.print(result)
     def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:
-                "snippet": result.get("snippet")
-                if result.get("snippet") != "N/A"
-                "result": result.get("raw_result"),
+            results_by_engine[engine]["results"].append(
+                    "snippet": result.get("snippet")
+                    if result.get("snippet") != "N/A"
+                    "raw": result.get("raw_result"),
     def _display_errors(self, error_messages: list[str]) -> None:
         table = Table(title="❌ Search Errors")
         table.add_column("Error", style="red")
@@ -983,6 +1033,10 @@ class SearchCLI:
         return await self._search_engine("you_news", query, params, json, verbose)
     async def duckduckgo(
         return await self._search_engine("duckduckgo", query, params, json, verbose)
+    async def hasdata_google(
+        return await self._search_engine("hasdata-google", query, params, json, verbose)
+    async def hasdata_google_light(
+        return await self._search_engine(
 def main() -> None:
     fire.Fire(SearchCLI())
     main()
@@ -2137,6 +2191,8 @@ serpapi = [
     "serpapi>=0.1.5",  # SerpAPI search API
 ]
 
+hasdata = []  # HasData API uses only core dependencies
+
 
 
 
@@ -2147,6 +2203,7 @@ all = [
     "scrape-bing>=0.1.2.1",
     "tavily-python>=0.5.0",
     "serpapi>=0.1.5",
+    # HasData uses core dependencies
 ]
 
 # Test environment configuration

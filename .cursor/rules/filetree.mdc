@@ -8,7 +8,7 @@ globs:
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 558]  cleanup.mdc
-│       └── [4.1K]  filetree.mdc
+│       └── [4.4K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
@@ -16,7 +16,7 @@ globs:
 ├── [3.5K]  .gitignore
 ├── [ 532]  .pre-commit-config.yaml
 ├── [  96]  .specstory
-│   └── [ 704]  history
+│   └── [ 736]  history
 │       ├── [2.0K]  .what-is-this.md
 │       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -36,7 +36,8 @@ globs:
 │       ├── [ 15K]  2025-02-25_06-12-continuing-bing-scraper-engine-implementation.md
 │       ├── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
 │       ├── [9.9K]  2025-02-25_07-09-refactoring-plan-and-progress-update.md
-│       └── [ 40K]  2025-02-25_07-17-implementing-phase-1-from-todo-md.md
+│       ├── [ 40K]  2025-02-25_07-17-implementing-phase-1-from-todo-md.md
+│       └── [292K]  2025-02-25_07-34-integrating-hasdata-google-serp-apis.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [1.2K]  PROGRESS.md
@@ -45,7 +46,7 @@ globs:
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [ 128]  dist
-├── [9.5K]  pyproject.toml
+├── [9.6K]  pyproject.toml
 ├── [ 128]  src
 │   └── [ 256]  twat_search
 │       ├── [ 556]  __init__.py
@@ -53,15 +54,16 @@ globs:
 │       └── [ 384]  web
 │           ├── [1.6K]  __init__.py
 │           ├── [4.8K]  api.py
-│           ├── [ 27K]  cli.py
+│           ├── [ 33K]  cli.py
 │           ├── [4.3K]  config.py
-│           ├── [ 448]  engines
-│           │   ├── [3.5K]  __init__.py
+│           ├── [ 480]  engines
+│           │   ├── [4.2K]  __init__.py
 │           │   ├── [3.7K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [7.6K]  brave.py
 │           │   ├── [8.2K]  critique.py
 │           │   ├── [6.7K]  duckduckgo.py
+│           │   ├── [7.1K]  hasdata.py
 │           │   ├── [4.9K]  pplx.py
 │           │   ├── [6.9K]  serpapi.py
 │           │   ├── [7.4K]  tavily.py
@@ -88,6 +90,6 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-└── [ 89K]  twat_search.txt
+└── [ 87K]  twat_search.txt
 
-19 directories, 68 files
+19 directories, 70 files
