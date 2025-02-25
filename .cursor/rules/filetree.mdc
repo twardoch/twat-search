@@ -8,7 +8,7 @@ globs:
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 558]  cleanup.mdc
-│       └── [3.4K]  filetree.mdc
+│       └── [3.5K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
@@ -16,7 +16,7 @@ globs:
 ├── [3.5K]  .gitignore
 ├── [ 532]  .pre-commit-config.yaml
 ├── [  96]  .specstory
-│   └── [ 480]  history
+│   └── [ 576]  history
 │       ├── [2.0K]  .what-is-this.md
 │       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -29,53 +29,62 @@ globs:
 │       ├── [ 72K]  2025-02-25_04-05-consolidating-you-py-and-youcom-py.md
 │       ├── [6.1K]  2025-02-25_04-13-missing-env-api-key-names-in-pplx-py.md
 │       ├── [118K]  2025-02-25_04-16-implementing-functions-for-brave-search-engines.md
-│       └── [111K]  2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md
+│       ├── [286K]  2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md
+│       ├── [ 83K]  2025-02-25_05-36-implementing-duckduckgo-search-engine.md
+│       ├── [194K]  2025-02-25_05-43-implementing-the-webscout-search-engine.md
+│       └── [6.8K]  2025-02-25_06-07-untitled.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
-├── [1.3K]  PROGRESS.md
+├── [1.4K]  PROGRESS.md
 ├── [2.3K]  README.md
-├── [6.3K]  TODO.md
+├── [ 23K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [ 160]  dist
-├── [9.0K]  pyproject.toml
+├── [9.1K]  pyproject.toml
 ├── [ 128]  src
 │   └── [ 256]  twat_search
 │       ├── [ 232]  __init__.py
 │       ├── [2.0K]  __main__.py
 │       └── [ 352]  web
-│           ├── [ 526]  __init__.py
+│           ├── [ 818]  __init__.py
 │           ├── [4.9K]  api.py
-│           ├── [ 19K]  cli.py
+│           ├── [ 41K]  cli.py
 │           ├── [4.3K]  config.py
-│           ├── [ 320]  engines
-│           │   ├── [ 983]  __init__.py
+│           ├── [ 448]  engines
+│           │   ├── [1.4K]  __init__.py
 │           │   ├── [3.7K]  base.py
+│           │   ├── [7.4K]  bing_scraper.py
 │           │   ├── [ 15K]  brave.py
+│           │   ├── [ 11K]  critique.py
+│           │   ├── [7.5K]  duckduckgo.py
 │           │   ├── [7.6K]  pplx.py
 │           │   ├── [7.4K]  serpapi.py
 │           │   ├── [8.7K]  tavily.py
+│           │   ├── [8.1K]  webscout.py
 │           │   └── [ 13K]  you.py
 │           ├── [1.0K]  exceptions.py
 │           ├── [1.3K]  models.py
 │           └── [1.5K]  utils.py
-├── [ 192]  tests
+├── [ 224]  tests
 │   ├── [2.0K]  conftest.py
 │   ├── [ 157]  test_twat_search.py
-│   └── [ 192]  unit
-│       ├── [  42]  __init__.py
-│       ├── [1.5K]  mock_engine.py
-│       └── [ 320]  web
-│           ├── [  46]  __init__.py
-│           ├── [ 160]  engines
-│           │   ├── [  37]  __init__.py
-│           │   └── [4.3K]  test_base.py
-│           ├── [5.1K]  test_api.py
-│           ├── [2.7K]  test_config.py
-│           ├── [2.0K]  test_exceptions.py
-│           ├── [4.5K]  test_models.py
-│           └── [3.5K]  test_utils.py
-├── [ 69K]  twat_search.txt
-└── [ 96K]  uv.lock
+│   ├── [ 192]  unit
+│   │   ├── [  42]  __init__.py
+│   │   ├── [1.5K]  mock_engine.py
+│   │   └── [ 320]  web
+│   │       ├── [  46]  __init__.py
+│   │       ├── [ 160]  engines
+│   │       │   ├── [  37]  __init__.py
+│   │       │   └── [4.3K]  test_base.py
+│   │       ├── [5.1K]  test_api.py
+│   │       ├── [2.7K]  test_config.py
+│   │       ├── [2.0K]  test_exceptions.py
+│   │       ├── [4.5K]  test_models.py
+│   │       └── [3.5K]  test_utils.py
+│   └── [  96]  web
+│       └── [6.4K]  test_webscout.py
+├── [ 76K]  twat_search.txt
+└── [120K]  uv.lock
 
-17 directories, 58 files
+18 directories, 66 files

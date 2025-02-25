@@ -52,6 +52,11 @@ dependencies = [
     "fire>=0.5.0", # Command line interface generator
     "rich>=13.6.0", # Rich text and formatting for terminal output
     "duckduckgo-search>=7.3.0", # DuckDuckGo search API integration
+    "webscout>=0.3.1", # WebScout Google search without API key
+    "scrape-bing>=0.1.2.1",
+    "pyobjc-framework-quartz>=11.0", # TODO: Move to `webscout` extra
+    "colorama>=0.4.6", # TODO: Move to `webscout` extra
+    "pytest-asyncio>=0.25.3", # TODO: Move to test dependencies
 ]
 
 # Project Authors

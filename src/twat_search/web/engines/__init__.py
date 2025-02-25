@@ -15,10 +15,13 @@ from .pplx import PerplexitySearchEngine, pplx
 from .you import YouSearchEngine, YouNewsSearchEngine, you, you_news
 from .critique import CritiqueSearchEngine, critique
 from .duckduckgo import DuckDuckGoSearchEngine, duckduckgo
+from .webscout import WebScoutEngine, webscout
+from .bing_scraper import BingScraperSearchEngine, bing_scraper
 
 __all__ = [
-    "BraveNewsSearchEngine",
     # Engine classes
+    "BingScraperSearchEngine",
+    "BraveNewsSearchEngine",
     "BraveSearchEngine",
     "CritiqueSearchEngine",
     "DuckDuckGoSearchEngine",
@@ -27,9 +30,11 @@ __all__ = [
     "SearchEngine",
     "SerpApiSearchEngine",
     "TavilySearchEngine",
+    "WebScoutEngine",
     "YouNewsSearchEngine",
     "YouSearchEngine",
     # Convenience functions
+    "bing_scraper",
     "brave",
     "brave_news",
     "critique",
@@ -40,6 +45,7 @@ __all__ = [
     "register_engine",
     "serpapi",
     "tavily",
+    "webscout",
     "you",
     "you_news",
 ]
