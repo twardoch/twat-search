@@ -122,7 +122,7 @@ class HasDataBaseEngine(SearchEngine):
 
                 # Parse the organic results from the response
                 results = []
-                organic_results = data.get("organic", [])
+                organic_results = data.get("organicResults", [])
 
                 for i, result in enumerate(organic_results):
                     if i >= self.num_results:

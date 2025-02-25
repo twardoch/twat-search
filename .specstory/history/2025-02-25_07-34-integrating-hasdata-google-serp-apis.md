@@ -6868,7 +6868,396 @@ what about hasdata?
 
 _**Assistant**_
 
+<think>Let's look at the `hasdata` engines in the search functionality. Based on the code you've shared in `src/twat_search/web/cli.py` and `pyproject.toml`, I can provide information about the HasData search engines.
 
+From the code, I can see that there are two HasData-related engines:
+1. `hasdata-google`
+2. `hasdata-google-light`
+
+Let me examine what I know about these engines:
+
+1. In the `pyproject.toml` file, HasData is listed in the optional dependencies section:
+```toml
+hasdata = []  # HasData API uses only core dependencies
+```
+
+This indicates that HasData doesn't require any additional dependencies beyond the core dependencies of the project. It uses the core dependencies like `httpx`, `pydantic`, etc.
+
+2. In the `SearchCLI` class, there are specific methods for using the HasData engines:
+   - `hasdata_google` method
+   - `hasdata_google_light` method
+
+3. In the constructor of `SearchCLI`, HasData engines are included in the `all_possible_engines` list:
+```python
+all_possible_engines = [
+    "brave",
+    "brave_news",
+    "serpapi",
+    "tavily",
+    "pplx",
+    "you",
+    "you_news",
+    "critique",
+    "duckduckgo",
+    "bing_scraper",
+    "hasdata-google",
+    "hasdata-google-light",
+]
+```
+
+However, in the output of the search command we just ran, I don't see any results from HasData engines. Let's verify if HasData engines are actually available and enabled.
+
+To check this, I should look at:
+1. The output of `twat-search web info` which should list all available engines and their status
+2. Whether the HasData engines are properly registered and initialized
+3. If there are any API keys required for HasData that might be missing
+
+Let's test the HasData engines specifically:</think>Let me check on the HasData engines. Based on what I see in the code, there are two HasData engines: `hasdata-google` and `hasdata-google-light`. Let's get some information about these engines and then try to use them specifically in a search.
+
+---
+
+_****_
+
+```bash
+twat-search web info hasdata-google
+```
+
+```
+
+🔍 Engine: hasdata-google
+Enabled: ✅
+API Key Required: ✅
+
+API Key Environment Variables:
+  HASDATA_API_KEY: ✅
+
+Default Parameters:
+  No default parameters specified
+
+Function Interface:
+  hasdata_google() - Search using HasData Google SERP API.
+
+    Args:
+        query: Search query string
+        num_results: Number of results to return
+        location: Location for search (e.g., "Austin,Texas,United
+States")
+        device_type: Device type (desktop or mobile)
+        api_key: Optional API key (otherwise use environment 
+variable)
+
+    Returns:
+        List of search results
+
+Example Usage:
+  from twat_search.web.engines.hasdata import hasdata_google
+  results = await hasdata_google("your search query")
+
+```
+
+---
+
+_****_
+
+
+
+Now let's try running a search using the HasData engine specifically:
+
+---
+
+_****_
+
+```bash
+twat-search web q -e hasdata-google "Adam Twardoch" --num-results=3
+```
+
+```
+⠦ Searching for 'Adam Twardoch'...
+No results found!
+
+```
+
+---
+
+_****_
+
+
+
+
+
+Let's try with verbose mode to see what might be happening with the HasData engine:
+
+---
+
+_****_
+
+```bash
+LOGURU_LEVEL=DEBUG twat-search web q -e hasdata-google "Adam Twardoch" --verbose
+```
+
+```
+[02/25/25 08:13:17] DEBUG    Using          selector_events.py:64
+                             selector:
+
+                             KqueueSelector
+
+                    DEBUG    Attempting to search with cli.py:144
+                             engines:
+
+                             ['hasdata-google']
+
+                    INFO     🔍 Querying engine:        api.py:57
+                             hasdata-google
+
+⠋ Searching for 'Adam Twardoch'...                    DEBUG    co
+nnect_tcp.started     _trace.py:87
+                             host='api.hasdata.com'
+
+                             port=443
+
+                             local_address=None
+
+                             timeout=10
+
+                             socket_options=None
+
+⠙ Searching for 'Adam Twardoch'...                    DEBUG    co
+nnect_tcp.complete    _trace.py:87
+                             return_value=<httpcore.
+
+                             _backends.anyio.AnyIOSt
+
+                             ream object at
+
+                             0x1088d3d40>
+
+                    DEBUG    start_tls.started       _trace.py:87
+                             ssl_context=<ssl.SSLCon
+
+                             text object at
+
+                             0x1089e96d0>
+
+                             server_hostname='api.ha
+
+                             sdata.com' timeout=10
+
+⠼ Searching for 'Adam Twardoch'...                    DEBUG    st
+art_tls.complete      _trace.py:87
+                             return_value=<httpcore.
+
+                             _backends.anyio.AnyIOSt
+
+                             ream object at
+
+                             0x108823ec0>
+
+                    DEBUG    send_request_headers.st _trace.py:87
+                             arted request=<Request
+
+                             [b'GET']>
+
+                    DEBUG    send_request_headers.co _trace.py:87
+                             mplete
+
+                    DEBUG    send_request_body.start _trace.py:87
+                             ed request=<Request
+
+                             [b'GET']>
+
+                    DEBUG    send_request_body.compl _trace.py:87
+                             ete
+
+                    DEBUG    receive_response_header _trace.py:87
+                             s.started
+
+                             request=<Request
+
+                             [b'GET']>
+
+⠴ Searching for 'Adam Twardoch'...                    DEBUG    re
+ceive_response_header _trace.py:87
+                             s.complete
+
+                             return_value=(b'HTTP/1.
+
+                             1', 401,
+
+                             b'Unauthorized',
+
+                             [(b'Content-Length',
+
+                             b'29'),
+
+                             (b'Content-Type',
+
+                             b'application/json;
+
+                             charset=utf-8'),
+
+                             (b'Date', b'Tue, 25 Feb
+
+                             2025 07:13:17 GMT')])
+
+                    INFO     HTTP Request: GET    _client.py:1740
+                             https://api.hasdata.
+
+                             com/scrape/google/se
+
+                             rp?q=Adam+Twardoch&d
+
+                             eviceType=desktop
+
+                             "HTTP/1.1 401
+
+                             Unauthorized"
+
+                    DEBUG    receive_response_body.s _trace.py:87
+                             tarted request=<Request
+
+                             [b'GET']>
+
+                    DEBUG    receive_response_body.c _trace.py:87
+                             omplete
+
+                    DEBUG    response_closed.started _trace.py:87
+⠦ Searching for 'Adam Twardoch'...                    DEBUG    re
+sponse_closed.complet _trace.py:87
+                             e
+
+                    DEBUG    close.started           _trace.py:87
+                    DEBUG    close.complete          _trace.py:87
+                    ERROR    Search with engine        api.py:138
+                             'hasdata-google' failed:
+
+                             Engine 'hasdata-google':
+
+                             HTTP Status error: 401 -
+
+                             {"message":"Invalid api
+
+                             key"}
+
+⠦ Searching for 'Adam Twardoch'...
+No results found!
+
+```
+
+---
+
+_****_
+
+
+
+
+
+Let's also check the other HasData engine:
+
+---
+
+_****_
+
+```bash
+twat-search web info hasdata-google-light
+```
+
+```
+
+🔍 Engine: hasdata-google-light
+Enabled: ✅
+API Key Required: ✅
+
+API Key Environment Variables:
+  HASDATA_API_KEY: ✅
+
+Default Parameters:
+  No default parameters specified
+
+Function Interface:
+  hasdata_google_light() - Search using HasData Google SERP Light
+API.
+
+    Args:
+        query: Search query string
+        num_results: Number of results to return
+        location: Location for search (e.g., "Austin,Texas,United
+States")
+        api_key: Optional API key (otherwise use environment 
+variable)
+
+    Returns:
+        List of search results
+
+Example Usage:
+  from twat_search.web.engines.hasdata import 
+hasdata_google_light
+  results = await hasdata_google_light("your search query")
+
+```
+
+---
+
+_****_
+
+
+
+
+
+Now I understand what's happening with the HasData engines. Here's the explanation:
+
+1. **HasData engines are available and enabled**: Both `hasdata-google` and `hasdata-google-light` are properly configured in the system and marked as enabled.
+
+2. **API key issue**: When we tried to use the `hasdata-google` engine, we got an HTTP 401 Unauthorized error with the message "Invalid api key". This suggests:
+   - There is an API key set in the `HASDATA_API_KEY` environment variable (marked as ✅ in the info output)
+   - However, the API key might be incorrect or invalid, as the API is returning an authentication error
+
+3. **Not included in default search**: When you run a search without specifying engines, the system attempts to use all available engines. However, engines that fail (like the HasData engines with the invalid API key) are silently excluded from the results.
+
+This is why you see results from other engines like Brave, SerpAPI, Tavily, etc., but not from HasData - those engines successfully authenticate and return results, while HasData engines fail due to the API key issue.
+
+To fix this:
+1. You would need to obtain a valid HasData API key
+2. Update the `HASDATA_API_KEY` environment variable with the correct key
+3. Then the HasData engines should work in both specific and default searches
+
+Is there anything specific you'd like to know about the HasData integration or any other aspects of the search functionality?
+
+---
+
+_**User**_
+
+https://api.hasdata.com/scrape/google/serp?q=Adam+Twardoch&deviceType=desktop
+
+
+
+```
+import http.client
+
+conn = http.client.HTTPSConnection("api.hasdata.com")
+
+headers = {
+    'x-api-key': "405f4322-1277-4875-8f37-0bd0340eeb5a",
+    'Content-Type': "application/json"
+}
+
+conn.request("GET", "/scrape/google-light/serp?q=Adam+Twardoch&location=Austin%2CTexas%2CUnited+States", headers=headers)
+
+res = conn.getresponse()
+data = res.read()
+
+print(data.decode("utf-8"))
+```
+
+
+{"requestMetadata":{"id":"149dbff9-4ba3-4fad-9b2e-a19de7b555a6","status":"ok","html":"https://f005.backblazeb2.com/file/hasdata-screenshots/149dbff9-4ba3-4fad-9b2e-a19de7b555a6.html","url":"https://www.google.com/search?q=Adam+Twardoch&uule=w+CAIQICIaQXVzdGluLFRleGFzLFVuaXRlZCBTdGF0ZXM%3D&hl=en&gl=us&num=10&sourceid=chrome&ie=UTF-8"},"organicResults":[{"position":1,"title":"Adam Twardoch","link":"http://www.twardoch.com/","displayedLink":"www.twardoch.com","snippet":"Adam Twardoch is Director of Products of FontLab. He co-created MyFonts, and has been working as a font consultant for Google, Adobe, Monotype, Corel, Underware ..."},{"position":2,"title":"twardoch.com | Adam Twardoch | Fonts","link":"https://www.twardoch.com/fonts/","displayedLink":"www.twardoch.com › fonts","snippet":"Fonts for General Use, Andromeda SL, The Andromeda SL font was inspired by a 1970's-like logo design for the \"Andromeda\" cinema in Tychy, Poland."},{"position":3,"title":"Adam Twardoch | MyFonts","link":"https://www.myfonts.com/collections/adam-twardoch?srsltid=AfmBOoqicseX3wQhormzU5WCOfmtEF7xIDxYc6itgrPRgij0JILcecFF","displayedLink":"www.myfonts.com › collections › adam-twardoch","snippet":"Born 1975 in Poland, Adam Twardoch lives in Berlin, where he works as typographic consultant to worldwide clients. He specializes in multilingual typography ..."},{"position":4,"title":"Adam Twardoch · Adam Twardoch's test site","link":"https://twardoch.github.io/","displayedLink":"twardoch.github.io","snippet":"No-nonsense simple transliteration between writing systems, mostly of Semitic origin; twardoch/gitignore: A collection of useful .gitignore templates; twardoch/ ..."},{"position":5,"title":"Adam Twardoch – Director of Products – Fontlab Ltd. | LinkedIn","link":"https://pl.linkedin.com/in/twardoch","displayedLink":"pl.linkedin.com › twardoch","snippet":"Adam Twardoch lives and works in Warsaw & Berlin, focusing on font tool development and marketing, online font distribution and marketing, ..."},{"position":6,"title":"Adam Twardoch Archives - ATypI","link":"https://atypi.org/speaker/adam-twardoch-cph-2001/","displayedLink":"atypi.org › speaker › adam-twardoch-cph-2001","snippet":"Adam Twardoch. Born in 1975 in Poland. Sharing his time between Germany Poland and recently Canada. Graduating in business administration and culture ..."},{"position":7,"title":"Adam Twardoch twardoch - GitHub","link":"https://github.com/twardoch","displayedLink":"github.com › twardoch","snippet":"@Fontlab, @latofonts manager, Unicode, OpenType. author of the `font-variation-settings` and `font-optical-sizing` CSS properties. ❤️Python, Markdown & YAML"},{"position":8,"title":"Adam Twardoch - Typoteka","link":"https://typoteka.pl/en/designer/adam-twardoch","displayedLink":"typoteka.pl › designer › adam-twardoch","snippet":"Adam Twardoch is Director of Products of FontLab. He co-created MyFonts, and has been working as a font consultant for Google, Adobe, Monotype, Corel, ..."},{"position":9,"title":"FontLab with Adam Twardoch - YouTube","link":"https://www.youtube.com/playlist?list=PLj-8PzlEWrCGlC5_FQxmfUqnluKdVOMDP","displayedLink":"www.youtube.com › playlist","snippet":"60-minute intro to FontLab 7, Part 1 (with Adam Twardoch) FontLab font editors and apps 30:15 60-minute intro to FontLab 7, Part 2 (with Adam Twardoch)"},{"position":10,"title":"Adam Twardoch - Facebook","link":"https://www.facebook.com/adamtwardoch/","displayedLink":"www.facebook.com › adamtwardoch","snippet":"Adam Twardoch is on Facebook. Join Facebook to connect with Adam Twardoch ... Adam Twardoch. FontLab, font technology, multilingual typography, variable ..."}],"relatedSearches":[]}
+
+---
+
+_**Assistant**_
+
+<think>The user has provided me with:
+
+1. A URL for the HasData API: `https://api.hasdata.com/scr
 
 ---
 
