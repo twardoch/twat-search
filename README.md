@@ -1,10 +1,10 @@
-# TWAT-Search: Multi-Engine Web Search Aggregator
+# Twat Search: multi-engine web search aggregator
 
-## Executive Summary
+## Executive summary
 
-TWAT-Search is a powerful, asynchronous Python package that provides a unified interface to query multiple search engines simultaneously. It facilitates efficient information retrieval by aggregating, normalizing, and processing results from various search providers through a consistent API. This comprehensive documentation serves as a definitive guide for both CLI and Python usage of the package.
+Twat Search is a powerful, asynchronous Python package that provides a unified interface to query multiple search engines simultaneously. It facilitates efficient information retrieval by aggregating, normalizing, and processing results from various search providers through a consistent API. This comprehensive documentation serves as a definitive guide for both CLI and Python usage of the package.
 
-## Key Features
+## Key features
 
 - **Multi-Engine Search**: A single query can simultaneously search across multiple providers including Brave, Google (via SerpAPI/HasData), Tavily, Perplexity, You.com, Bing (via web scraping), and more
 - **Asynchronous Operation**: Leverages `asyncio` for concurrent searches, maximizing speed and efficiency
@@ -16,42 +16,41 @@ TWAT-Search is a powerful, asynchronous Python package that provides a unified i
 - **Command-Line Interface**: Rich, interactive CLI for searching and exploring engine configurations
 - **JSON Output**: Supports JSON output for easy integration with other tools
 
-## Installation Options
+## Installation options
 
-### Basic Installation
-
-```bash
-pip install twat-search
-```
-
-### Comprehensive Installation
-
-Install with all supported search engines:
+### Full installation
 
 ```bash
-pip install "twat-search[all]"
+uv pip install --system twat-search[all]
 ```
 
-### Selective Installation
+or 
+
+```bash
+uv pip install --system twat-search[all]
+```
+
+
+### Selective installation
 
 Install only specific engine dependencies:
 
 ```bash
-# Example: Install only Brave and DuckDuckGo dependencies
+# Example: install only brave and duckduckgo dependencies
 pip install "twat-search[brave,duckduckgo]"
 
-# Example: Install DuckDuckGo and Bing Scraper
+# Example: install duckduckgo and bing scraper
 pip install "twat-search[duckduckgo,bing_scraper]"
 ```
 
-After installation, both `twat-search` and `twat-search-web` commands should be available in your PATH. Alternatively, you can run:
+After installation, both `Twat Search` and `Twat Search-web` commands should be available in your PATH. Alternatively, you can run:
 
 ```bash
 python -m twat_search.__main__
 python -m twat_search.web.cli
 ```
 
-## Quick Start Guide
+## Quick start guide
 
 ### Python API
 
@@ -73,25 +72,25 @@ async def main():
 asyncio.run(main())
 ```
 
-### Command Line Interface
+### Command line interface
 
 ```bash
 # Search using all available engines
-twat-search q "climate change solutions"
+Twat Search q "climate change solutions"
 
 # Search with specific engines
-twat-search q "machine learning frameworks" --engines brave,tavily
+Twat Search q "machine learning frameworks" --engines brave,tavily
 
-# Get JSON output
-twat-search q "renewable energy" --json
+# Get json output
+Twat Search q "renewable energy" --json
 
 # Use engine-specific command
-twat-search brave "web development trends" --count 10
+Twat Search brave "web development trends" --count 10
 ```
 
-## Core Architecture
+## Core architecture
 
-### Module Structure
+### Module structure
 
 ```
 twat_search/
@@ -111,9 +110,9 @@ twat_search/
     └── utils.py            # Utility functions
 ```
 
-## Supported Search Engines
+## Supported search engines
 
-TWAT-Search provides a consistent interface to the following search engines:
+Twat Search provides a consistent interface to the following search engines:
 
 | Engine | Module | API Key Required | Description | Package Extra |
 | --- | --- | --- | --- | --- |
@@ -130,11 +129,11 @@ TWAT-Search provides a consistent interface to the following search engines:
 | DuckDuckGo | `duckduckgo` | No | Privacy-focused search results | `duckduckgo` |
 | Bing Scraper | `bing_scraper` | No | Web scraping of Bing search results | `bing_scraper` |
 
-## Detailed Usage Guide
+## Detailed usage guide
 
 ### Python API
 
-#### The `search()` Function
+#### The `search()` function
 
 The core function for performing searches is `twat_search.web.search()` :
 
@@ -164,7 +163,7 @@ Parameters:
   - General parameters applied to all engines (e.g., `num_results=10`)
   - Engine-specific parameters with prefixes (e.g., `brave_count=20`, `tavily_search_depth="advanced"`)
 
-#### Engine-Specific Functions
+#### Engine-specific functions
 
 Each engine provides a direct function for individual access:
 
@@ -172,7 +171,7 @@ Each engine provides a direct function for individual access:
 from twat_search.web.engines.brave import brave
 from twat_search.web.engines.bing_scraper import bing_scraper
 
-# Using Brave search
+# Using brave search
 brave_results = await brave(
     query="machine learning tutorials",
     count=10,
@@ -180,7 +179,7 @@ brave_results = await brave(
     safe_search=True
 )
 
-# Using Bing Scraper (no API key required)
+# Using bing scraper (no api key required)
 bing_results = await bing_scraper(
     query="data science projects",
     num_results=10,
@@ -189,7 +188,7 @@ bing_results = await bing_scraper(
 )
 ```
 
-#### Working with Search Results
+#### Working with search results
 
 The `SearchResult` model provides a consistent structure across all engines:
 
@@ -213,14 +212,14 @@ print(result.source)   # "brave"
 print(result.snippet)  # "This is an example search result snippet..."
 ```
 
-### Command Line Interface
+### Command line interface
 
-The CLI provides convenient access to all search engines through the `twat-search` command.
+The CLI provides convenient access to all search engines through the `Twat Search` command.
 
-#### General Search Command
+#### General search command
 
 ```bash
-twat-search q <query> [options]
+Twat Search q <query> [options]
 ```
 
 Common options:
@@ -236,45 +235,45 @@ Common options:
 Engine-specific parameters can be passed with `--<engine>_<param> <value>` , for example:
 
 ```bash
-twat-search q "machine learning" --brave_count 15 --tavily_search_depth advanced
+Twat Search q "machine learning" --brave_count 15 --tavily_search_depth advanced
 ```
 
-#### Engine Information Command
+#### Engine information command
 
 ```bash
-twat-search info [engine_name] [--json]
+Twat Search info [engine_name] [--json]
 ```
 
 - Shows information about available search engines
 - If `engine_name` is provided, shows detailed information about that engine
 - The `--json` flag outputs in JSON format
 
-#### Engine-Specific Commands
+#### Engine-specific commands
 
 Each engine has a dedicated command for direct access:
 
 ```bash
 # Brave search
-twat-search brave "web development trends" --count 10
+Twat Search brave "web development trends" --count 10
 
-# DuckDuckGo search
-twat-search duckduckgo "privacy tools" --max_results 5
+# Duckduckgo search
+Twat Search duckduckgo "privacy tools" --max_results 5
 
-# Bing Scraper
-twat-search bing_scraper "python tutorials" --num_results 10
+# Bing scraper
+Twat Search bing_scraper "python tutorials" --num_results 10
 
 # Critique with image
-twat-search critique --image-url "https://example.com/image.jpg" "Is this image real?"
+Twat Search critique --image-url "https://example.com/image.jpg" "Is this image real?"
 ```
 
-## Configuration Management
+## Configuration management
 
-### Environment Variables
+### Environment variables
 
 Configure engines using environment variables:
 
 ```bash
-# API Keys
+# Api keys
 BRAVE_API_KEY=your_brave_api_key
 TAVILY_API_KEY=your_tavily_api_key
 PERPLEXITY_API_KEY=your_perplexity_api_key
@@ -283,7 +282,7 @@ SERPAPI_API_KEY=your_serpapi_api_key
 CRITIQUE_API_KEY=your_critique_api_key
 HASDATA_API_KEY=your_hasdata_api_key
 
-# Engine Enablement
+# Engine enablement
 BRAVE_ENABLED=true
 TAVILY_ENABLED=true
 PERPLEXITY_ENABLED=true
@@ -294,7 +293,7 @@ DUCKDUCKGO_ENABLED=true
 BING_SCRAPER_ENABLED=true
 HASDATA_GOOGLE_ENABLED=true
 
-# Default Parameters (JSON format)
+# Default parameters (json format)
 BRAVE_DEFAULT_PARAMS={"count": 10, "safesearch": "off"}
 TAVILY_DEFAULT_PARAMS={"max_results": 5, "search_depth": "basic"}
 PERPLEXITY_DEFAULT_PARAMS={"model": "pplx-7b-online"}
@@ -310,7 +309,7 @@ NUM_RESULTS=5
 
 You can store these in a `.env` file in your project directory, which will be automatically loaded by the library using `python-dotenv` .
 
-### Programmatic Configuration
+### Programmatic configuration
 
 Configure engines programmatically when using the Python API:
 
@@ -341,11 +340,11 @@ config = Config(
 results = await search("quantum computing", config=config)
 ```
 
-## Engine-Specific Parameters
+## Engine-specific parameters
 
 Each search engine accepts different parameters. Here's a reference for commonly used ones:
 
-### Brave Search
+### Brave search
 
 ```python
 await brave(
@@ -359,7 +358,7 @@ await brave(
 )
 ```
 
-### Bing Scraper
+### Bing scraper
 
 ```python
 await bing_scraper(
@@ -404,7 +403,7 @@ await you(
 )
 ```
 
-### DuckDuckGo
+### Duckduckgo
 
 ```python
 await duckduckgo(
@@ -417,7 +416,7 @@ await duckduckgo(
 )
 ```
 
-### Critique (with Image)
+### Critique (with image)
 
 ```python
 await critique(
@@ -431,9 +430,9 @@ await critique(
 )
 ```
 
-## Error Handling Framework
+## Error handling framework
 
-TWAT-Search provides custom exception classes for proper error handling:
+Twat Search provides custom exception classes for proper error handling:
 
 ```python
 from twat_search.web.exceptions import SearchError, EngineError
@@ -461,9 +460,9 @@ Typical error scenarios:
 - Invalid responses
 - Configuration errors
 
-## Advanced Usage Techniques
+## Advanced usage techniques
 
-### Concurrent Searches
+### Concurrent searches
 
 Search across multiple engines concurrently:
 
@@ -490,7 +489,7 @@ async def search_multiple(query):
 results = await search_multiple("artificial intelligence")
 ```
 
-### Custom Engine Parameters
+### Custom engine parameters
 
 Specify engine-specific parameters in the unified search function:
 
@@ -512,7 +511,7 @@ results = await search(
 )
 ```
 
-### Rate Limiting
+### Rate limiting
 
 Use the built-in rate limiter to avoid hitting API limits:
 
@@ -530,9 +529,9 @@ async def rate_limited_search():
         # Process results...
 ```
 
-## Development Guide
+## Development guide
 
-### Running Tests
+### Running tests
 
 ```bash
 # Install test dependencies
@@ -548,7 +547,7 @@ pytest --cov=src/twat_search
 pytest -n auto
 ```
 
-### Adding a New Search Engine
+### Adding a new search engine
 
 To add a new search engine:
 
@@ -590,15 +589,15 @@ async def my_new_engine(query: str, **kwargs):
     # ...
 ```
 
-### Development Setup
+### Development setup
 
-To contribute to `twat-search` , follow these steps:
+To contribute to `Twat Search` , follow these steps:
 
 1. Clone the repository:
 
 ```bash
-   git clone https://github.com/twardoch/twat-search.git
-   cd twat-search
+   git clone https://github.com/twardoch/Twat Search.git
+   cd Twat Search
 ```
 
 2. Set up the virtual environment with `uv`:
@@ -638,9 +637,9 @@ To contribute to `twat-search` , follow these steps:
    python cleanup.py status
 ```
 
-## Troubleshooting Guide
+## Troubleshooting guide
 
-### API Key Issues
+### Api key issues
 
 If you're encountering API key errors:
 
@@ -652,7 +651,7 @@ If you're encountering API key errors:
    - `.env` file
    - Programmatic configuration
 
-### Rate Limiting Problems
+### Rate limiting problems
 
 If you're being rate limited by search providers:
 
@@ -661,7 +660,7 @@ If you're being rate limited by search providers:
 3. Consider upgrading your API plan with the provider
 4. Add delay between requests for engines that support it (e.g., `delay_between_requests` for Bing Scraper)
 
-### No Results Returned
+### No results returned
 
 If you're not getting results:
 
@@ -671,18 +670,18 @@ If you're not getting results:
 4. Check for engine-specific errors in the logs (use `--verbose` flag with CLI)
 5. Ensure you have the required dependencies installed for the engine
 
-### Common Error Messages
+### Common error messages
 
 - `"Engine 'X': API key is required"`: The engine requires an API key that hasn't been configured
 - `"No search engines configured"`: No engines are enabled or available
 - `"Unknown search engine: X"`: The specified engine name is invalid
 - `"Engine 'X': is disabled"`: The engine is registered but disabled in configuration
 
-## Development Status
+## Development status
 
 Version: 1.8.1
 
-TWAT-Search is actively developed. See [PROGRESS.md](PROGRESS.md) for completed tasks and [TODO.md](TODO.md) for planned features and improvements.
+Twat Search is actively developed. See [PROGRESS.md](PROGRESS.md) for completed tasks and [TODO.md](TODO.md) for planned features and improvements.
 
 ## Contributing
 
@@ -696,11 +695,11 @@ Contributions are welcome! Please check [TODO.md](TODO.md) for areas that need w
 
 ## License
 
-TWAT-Search is released under the MIT License. See the [LICENSE](LICENSE) file for details.
+Twat Search is released under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## Appendix: Available Engines and Requirements
+## Appendix: available engines and requirements
 
 | Engine | Package Extra | API Key Required | Environment Variable | Notes |
 | --- | --- | --- | --- | --- |
