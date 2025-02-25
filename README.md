@@ -1,14 +1,19 @@
 # 
 
+The initial implementation of the `twat-search` web package is now complete. Key features implemented:
 
-
-## Features
-
-- Plugin for twat
-- Modern Python packaging with PEP 621 compliance
-- Type hints and runtime type checking
-- Comprehensive test suite and documentation
-- CI/CD ready configuration
+- Unified search API across multiple search engines
+- Support for five search engines:
+  - Brave Search
+  - Google Search (via SerpAPI)
+  - Tavily Search
+  - Perplexity AI
+  - You.com
+- Asynchronous operations using asyncio and httpx
+- Type safety with Pydantic models
+- Comprehensive error handling
+- Customizable configuration
+- Example usage in `src/twat_search/web/example.py`
 
 ## Installation
 

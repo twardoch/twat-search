@@ -41,7 +41,7 @@ Workflow Example:
 3. Commit changes: `cleanup.py update`
 4. Push to remote: `cleanup.py push`
 
-The script maintains a CLEANUP.log file that records all operations with timestamps.
+The script maintains a CLEANUP.txt file that records all operations with timestamps.
 It also includes content from README.md at the start and TODO.md at the end of logs
 for context.
 
@@ -69,7 +69,7 @@ IGNORE_PATTERNS = [
     "*.egg-info",
 ]
 REQUIRED_FILES = ["LOG.md", ".cursor/rules/0project.mdc", "TODO.md"]
-LOG_FILE = Path("CLEANUP.log")
+LOG_FILE = Path("CLEANUP.txt")
 
 # Ensure we're working from the script's directory
 os.chdir(Path(__file__).parent)
@@ -353,12 +353,9 @@ def main() -> NoReturn:
             cleanup.push()
         else:
             print_usage()
-            sys.exit(1)
     except Exception as e:
         log_message(f"Error: {e}")
-        sys.exit(1)
-
-    sys.exit(0)
+    print(Path(LOG_FILE).read_text())
 
 
 if __name__ == "__main__":

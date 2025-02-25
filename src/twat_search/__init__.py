@@ -1,7 +1,10 @@
-"""twat search plugin"""
+"""
+TwAT Search package - Tools for web search and information retrieval.
 
-from importlib import metadata
+This package provides utilities for searching the web and retrieving information
+from various sources.
+"""
 
-from twat_search.__version__ import version as __version__
+__version__ = "0.1.0"
 
 __all__ = ["__version__"]

@@ -1,0 +1,6 @@
+2025-02-25 02:34:26 - 
+=== Package Installation ===
+2025-02-25 02:34:26 - Installing package with all extras
+2025-02-25 02:34:26 - Setting up virtual environment
+2025-02-25 02:34:26 - Virtual environment created and activated
+2025-02-25 02:34:28 - Package installed successfully

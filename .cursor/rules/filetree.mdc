@@ -2,13 +2,13 @@
 description: File tree of the project
 globs: 
 ---
-[ 768]  .
+[ 864]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 224]  rules
 │       ├── [ 821]  0project.mdc
 │       ├── [ 516]  cleanup.mdc
-│       ├── [2.5K]  filetree.mdc
+│       ├── [2.0K]  filetree.mdc
 │       └── [2.0K]  quality.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
@@ -16,17 +16,41 @@ globs:
 │       └── [1.4K]  release.yml
 ├── [3.5K]  .gitignore
 ├── [ 532]  .pre-commit-config.yaml
+├── [  96]  .specstory
+│   └── [ 160]  history
+│       ├── [2.0K]  .what-is-this.md
+│       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
+│       └── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
+├── [ 986]  CLEANUP.txt
 ├── [1.0K]  LICENSE
-├── [ 715]  LOG.md
-├── [ 758]  README.md
+├── [ 186]  PROGRESS.md
+├── [1.0K]  README.md
+├── [ 208]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 11K]  cleanup.py
 ├── [ 160]  dist
 ├── [8.5K]  pyproject.toml
+├── [524K]  research.txt
 ├── [ 128]  src
-│   └── [ 160]  twat_search
-│       └── [ 144]  __init__.py
+│   └── [ 192]  twat_search
+│       ├── [ 232]  __init__.py
+│       └── [ 320]  web
+│           ├── [ 526]  __init__.py
+│           ├── [3.9K]  api.py
+│           ├── [1.6K]  config.py
+│           ├── [ 288]  engines
+│           │   ├── [ 766]  __init__.py
+│           │   ├── [2.8K]  base.py
+│           │   ├── [4.2K]  brave.py
+│           │   ├── [3.9K]  google.py
+│           │   ├── [5.0K]  perplexity.py
+│           │   ├── [4.1K]  tavily.py
+│           │   └── [4.0K]  youcom.py
+│           ├── [3.9K]  example.py
+│           ├── [1.0K]  exceptions.py
+│           ├── [1005]  models.py
+│           └── [1.5K]  utils.py
 └── [ 128]  tests
     └── [ 157]  test_twat_search.py
 
-10 directories, 16 files
+14 directories, 36 files

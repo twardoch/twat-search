@@ -44,7 +44,11 @@ classifiers = [  # Metadata for package indexes and compatibility
 # -------------------
 # External packages required for the project to function
 dependencies = [
-    "twat>=1.8.1",           # Core twat package, providing essential functionality
+    "twat>=1.8.1", # Core twat package, providing essential functionality
+    "pydantic>=2.10.6", # Data validation and settings management
+    "pydantic-settings>=2.8.0", # Settings management for Pydantic v2
+    "httpx>=0.28.1",
+    "python-dotenv>=1.0.1",
 ]
 
 # Project Authors
