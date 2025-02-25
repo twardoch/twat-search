@@ -49,7 +49,9 @@ def test_rate_limiter_wait_when_needed(rate_limiter: RateLimiter) -> None:
     now = time.time()
 
     # Make timestamps very close together to ensure we need to wait
-    rate_limiter.call_timestamps = [now - 0.01 * i for i in range(rate_limiter.calls_per_second)]
+    rate_limiter.call_timestamps = [
+        now - 0.01 * i for i in range(rate_limiter.calls_per_second)
+    ]
 
     # Next call should trigger waiting
     with patch("time.sleep") as mock_sleep, patch("time.time", return_value=now):
@@ -74,7 +76,9 @@ def test_rate_limiter_cleans_old_timestamps(rate_limiter: RateLimiter) -> None:
         rate_limiter.wait_if_needed()
 
     # Check that old timestamps were removed
-    assert len(rate_limiter.call_timestamps) == len(recent_stamps) + 1  # +1 for the new call
+    assert (
+        len(rate_limiter.call_timestamps) == len(recent_stamps) + 1
+    )  # +1 for the new call
     # Check that the new call was recorded
     assert rate_limiter.call_timestamps[-1] >= now
 
@@ -92,6 +96,9 @@ def test_rate_limiter_with_different_rates(calls_per_second: int) -> None:
         mock_sleep.assert_not_called()
 
     # On the next call, we would need to sleep if all calls happened in < 1 second
-    with patch("time.sleep") as mock_sleep, patch("time.time", return_value=time.time()):
+    with (
+        patch("time.sleep") as mock_sleep,
+        patch("time.time", return_value=time.time()),
+    ):
         limiter.wait_if_needed()
         # We might sleep depending on how fast the test runs, so we can't assert on sleep

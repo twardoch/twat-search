@@ -14,6 +14,7 @@ from typing import Any
 # Load environment variables from .env file
 try:
     from dotenv import load_dotenv
+
     load_dotenv()  # Load variables from .env file into environment
 except ImportError:
     # python-dotenv is optional
@@ -59,6 +60,7 @@ class Config:
         # Import here to avoid circular imports
         try:
             from .engines.base import get_registered_engines
+
             registered_engines = get_registered_engines()
         except ImportError:
             # If engines module isn't loaded yet, use empty dict
@@ -88,7 +90,11 @@ class Config:
             for env_name in engine_class.env_enabled_names:
                 enabled = os.environ.get(env_name)
                 if enabled is not None:
-                    engine_settings[engine_name]["enabled"] = enabled.lower() in ("true", "1", "yes")
+                    engine_settings[engine_name]["enabled"] = enabled.lower() in (
+                        "true",
+                        "1",
+                        "yes",
+                    )
                     break
 
             # Check default params environment variables (specific names from engine class)
@@ -96,7 +102,9 @@ class Config:
                 params = os.environ.get(env_name)
                 if params:
                     try:
-                        engine_settings[engine_name]["default_params"] = json.loads(params)
+                        engine_settings[engine_name]["default_params"] = json.loads(
+                            params
+                        )
                     except json.JSONDecodeError:
                         # If JSON parsing fails, use an empty dict
                         engine_settings[engine_name]["default_params"] = {}

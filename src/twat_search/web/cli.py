@@ -451,13 +451,13 @@ class SearchCLI:
 
             # Show API key environment variables
             if engine_class and hasattr(engine_class, "env_api_key_names"):
-                console.print(f"\n[bold]API Key Environment Variables:[/bold]")
+                console.print("\n[bold]API Key Environment Variables:[/bold]")
                 for env_name in engine_class.env_api_key_names:
                     value_status = "✅" if os.environ.get(env_name) else "❌"
                     console.print(f"  {env_name}: {value_status}")
 
             # Show default parameters
-            console.print(f"\n[bold]Default Parameters:[/bold]")
+            console.print("\n[bold]Default Parameters:[/bold]")
             if engine_config.default_params:
                 for param, value in engine_config.default_params.items():
                     console.print(f"  {param}: {value}")
@@ -479,13 +479,13 @@ class SearchCLI:
                 function_name = engine_name.replace("-", "_")
                 if hasattr(engine_module, function_name):
                     func = getattr(engine_module, function_name)
-                    console.print(f"\n[bold]Function Interface:[/bold]")
+                    console.print("\n[bold]Function Interface:[/bold]")
                     console.print(
                         f"  [green]{function_name}()[/green] - {func.__doc__.strip().split('\\n')[0]}"
                     )
 
                     # Show example usage
-                    console.print(f"\n[bold]Example Usage:[/bold]")
+                    console.print("\n[bold]Example Usage:[/bold]")
                     console.print(
                         f"  [italic]from {module_name} import {function_name}[/italic]"
                     )

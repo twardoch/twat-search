@@ -319,6 +319,40 @@ class Cleanup:
             log_message(f"Failed to push changes: {e}")
 
 
+def repomix(
+    compress: bool = True,
+    remove_empty_lines: bool = True,
+    ignore_patterns: str = ".specstory/**/*.md,.venv/**,_private/**,CLEANUP.txt,**/*.json,*.lock",
+    output_file: str = "twat_search.txt",
+) -> None:
+    """Combine repository files into a single text file.
+
+    Args:
+        compress: Whether to compress whitespace in output
+        remove_empty_lines: Whether to remove empty lines
+        ignore_patterns: Comma-separated glob patterns of files to ignore
+        output_file: Output file path
+    """
+    try:
+        # Build command
+        cmd = ["repomix"]
+        if compress:
+            cmd.append("--compress")
+        if remove_empty_lines:
+            cmd.append("--remove-empty-lines")
+        if ignore_patterns:
+            cmd.append("-i")
+            cmd.append(ignore_patterns)
+        cmd.extend(["-o", output_file])
+
+        # Run repomix
+        run_command(cmd)
+        log_message(f"Repository content mixed into {output_file}")
+
+    except Exception as e:
+        log_message(f"Failed to mix repository: {e}")
+
+
 def print_usage() -> None:
     """Print usage information."""
     log_message("Usage:")
@@ -355,6 +389,8 @@ def main() -> NoReturn:
             print_usage()
     except Exception as e:
         log_message(f"Error: {e}")
+    repomix()
+    print(Path(LOG_FILE).read_text())
 
 
 if __name__ == "__main__":

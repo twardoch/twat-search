@@ -1727,7 +1727,7 @@ Let's run the example to see if our fix for BaseSettings worked:
 _****_
 
 ```bash
-python src/twat_search/web/cli.py
+python src/twat_search/web/example.py
 ```
 
 ```

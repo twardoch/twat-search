@@ -121,6 +121,8 @@ async def search(
             logger.info(f"✅ Engine '{engine_name}' returned {len(result)} results")
             flattened_results.extend(result)
         else:
-            logger.info(f"⚠️ Engine '{engine_name}' returned no results or unexpected type: {type(result)}")
+            logger.info(
+                f"⚠️ Engine '{engine_name}' returned no results or unexpected type: {type(result)}"
+            )
 
     return flattened_results

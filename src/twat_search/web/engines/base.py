@@ -28,7 +28,7 @@ class SearchEngine(abc.ABC):
     # Class attributes for environment variables
     env_api_key_names: ClassVar[list[str]] = []  # Override with engine-specific names
     env_enabled_names: ClassVar[list[str]] = []  # Override with engine-specific names
-    env_params_names: ClassVar[list[str]] = []   # Override with engine-specific names
+    env_params_names: ClassVar[list[str]] = []  # Override with engine-specific names
 
     def __init__(self, config: EngineConfig, **kwargs: Any) -> None:
         """

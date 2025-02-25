@@ -39,9 +39,9 @@ class MockSearchEngine(SearchEngine):
         result_count = self.kwargs.get("result_count", 1)
         return [
             SearchResult(
-                title=f"Mock Result {i+1} for {query}",
-                url=HttpUrl(f"https://example.com/{i+1}"),
-                snippet=f"This is mock result {i+1} for query: {query}",
+                title=f"Mock Result {i + 1} for {query}",
+                url=HttpUrl(f"https://example.com/{i + 1}"),
+                snippet=f"This is mock result {i + 1} for query: {query}",
                 source=self.name,
             )
             for i in range(result_count)

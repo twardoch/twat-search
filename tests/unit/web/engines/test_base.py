@@ -47,9 +47,7 @@ class DisabledTestSearchEngine(SearchEngine):
     async def search(self, query: str) -> list[SearchResult]:
         """Search implementation that should never be called."""
         msg = "This should never be called because the engine is disabled"
-        raise NotImplementedError(
-            msg
-        )
+        raise NotImplementedError(msg)
 
 
 # Register the disabled test engine
@@ -82,6 +80,7 @@ def test_search_engine_name_class_var() -> None:
 
 def test_engine_registration() -> None:
     """Test that engines are properly registered."""
+
     # Create a new engine class
     class NewEngine(SearchEngine):
         name = "new_engine"

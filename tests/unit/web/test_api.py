@@ -56,9 +56,9 @@ class MockSearchEngine(SearchEngine):
         result_count = self.kwargs.get("result_count", 1)
         return [
             SearchResult(
-                title=f"Mock Result {i+1} for {query}",
-                url=HttpUrl(f"https://example.com/{i+1}"),
-                snippet=f"This is mock result {i+1} for query: {query}",
+                title=f"Mock Result {i + 1} for {query}",
+                url=HttpUrl(f"https://example.com/{i + 1}"),
+                snippet=f"This is mock result {i + 1} for query: {query}",
                 source=self.name,
             )
             for i in range(result_count)
@@ -113,10 +113,7 @@ async def test_search_with_additional_params(
 ) -> None:
     """Test search with additional parameters."""
     results = await search(
-        "test query",
-        engines=["mock"],
-        config=mock_config,
-        result_count=3
+        "test query", engines=["mock"], config=mock_config, result_count=3
     )
 
     assert len(results) == 3
@@ -128,10 +125,7 @@ async def test_search_with_engine_specific_params(
 ) -> None:
     """Test search with engine-specific parameters."""
     results = await search(
-        "test query",
-        engines=["mock"],
-        config=mock_config,
-        mock_result_count=4
+        "test query", engines=["mock"], config=mock_config, mock_result_count=4
     )
 
     assert len(results) == 4
@@ -150,10 +144,7 @@ async def test_search_with_failing_engine(
 ) -> None:
     """Test search with a failing engine returns empty results."""
     results = await search(
-        "test query",
-        engines=["mock"],
-        config=mock_config,
-        should_fail=True
+        "test query", engines=["mock"], config=mock_config, should_fail=True
     )
 
     assert len(results) == 0

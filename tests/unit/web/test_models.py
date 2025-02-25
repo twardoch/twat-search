@@ -54,12 +54,14 @@ def test_search_result_invalid_url() -> None:
     """Test that invalid URLs raise validation errors."""
     with pytest.raises(ValidationError):
         # This will fail at validation inside SearchResult model
-        SearchResult.model_validate({
-            "title": "Test Result",
-            "url": "not-a-valid-url",  # Invalid URL as string
-            "snippet": "This is a test result",
-            "source": "test_engine",
-        })
+        SearchResult.model_validate(
+            {
+                "title": "Test Result",
+                "url": "not-a-valid-url",  # Invalid URL as string
+                "snippet": "This is a test result",
+                "source": "test_engine",
+            }
+        )
 
 
 def test_search_result_empty_fields() -> None:
@@ -68,30 +70,36 @@ def test_search_result_empty_fields() -> None:
 
     # Test empty title
     with pytest.raises(ValidationError):
-        SearchResult.model_validate({
-            "title": "",  # Empty title should fail validation
-            "url": str(url),
-            "snippet": "This is a test result",
-            "source": "test_engine",
-        })
+        SearchResult.model_validate(
+            {
+                "title": "",  # Empty title should fail validation
+                "url": str(url),
+                "snippet": "This is a test result",
+                "source": "test_engine",
+            }
+        )
 
     # Test empty snippet
     with pytest.raises(ValidationError):
-        SearchResult.model_validate({
-            "title": "Test Result",
-            "url": str(url),
-            "snippet": "",  # Empty snippet should fail validation
-            "source": "test_engine",
-        })
+        SearchResult.model_validate(
+            {
+                "title": "Test Result",
+                "url": str(url),
+                "snippet": "",  # Empty snippet should fail validation
+                "source": "test_engine",
+            }
+        )
 
     # Test empty source
     with pytest.raises(ValidationError):
-        SearchResult.model_validate({
-            "title": "Test Result",
-            "url": str(url),
-            "snippet": "This is a test result",
-            "source": "",  # Empty source should fail validation
-        })
+        SearchResult.model_validate(
+            {
+                "title": "Test Result",
+                "url": str(url),
+                "snippet": "This is a test result",
+                "source": "",  # Empty source should fail validation
+            }
+        )
 
 
 def test_search_result_serialization() -> None:

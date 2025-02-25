@@ -7,7 +7,6 @@ Unit tests for the twat_search.web.config module.
 This module tests the configuration classes used for search engine settings.
 """
 
-
 from pytest import MonkeyPatch
 
 from twat_search.web.config import Config, EngineConfig
@@ -43,7 +42,9 @@ def test_config_defaults(isolate_env_vars: None) -> None:
     assert len(config.engines) == 0
 
 
-def test_config_with_env_vars(monkeypatch: MonkeyPatch, env_vars_for_brave: None) -> None:
+def test_config_with_env_vars(
+    monkeypatch: MonkeyPatch, env_vars_for_brave: None
+) -> None:
     """Test Config loads settings from environment variables."""
     # Create config
     config = Config()
@@ -58,13 +59,13 @@ def test_config_with_env_vars(monkeypatch: MonkeyPatch, env_vars_for_brave: None
 
 def test_config_with_direct_initialization() -> None:
     """Test Config can be initialized directly with engines."""
-    custom_config = Config(engines={
-        "test_engine": EngineConfig(
-            api_key="direct_key",
-            enabled=True,
-            default_params={"count": 5}
-        )
-    })
+    custom_config = Config(
+        engines={
+            "test_engine": EngineConfig(
+                api_key="direct_key", enabled=True, default_params={"count": 5}
+            )
+        }
+    )
 
     assert "test_engine" in custom_config.engines
     assert custom_config.engines["test_engine"].api_key == "direct_key"
@@ -77,13 +78,13 @@ def test_config_env_vars_override_direct_config(monkeypatch: MonkeyPatch) -> Non
     monkeypatch.setenv("BRAVE_API_KEY", "env_key")
 
     # Create config with direct values (should take precedence)
-    custom_config = Config(engines={
-        "brave": EngineConfig(
-            api_key="direct_key",
-            enabled=True,
-            default_params={"count": 5}
-        )
-    })
+    custom_config = Config(
+        engines={
+            "brave": EngineConfig(
+                api_key="direct_key", enabled=True, default_params={"count": 5}
+            )
+        }
+    )
 
     # Check that direct config was not overridden
     assert custom_config.engines["brave"].api_key == "direct_key"
