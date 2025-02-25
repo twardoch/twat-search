@@ -15,16 +15,37 @@ import asyncio
 import os
 import logging
 import json as json_lib
+from typing import Any, TYPE_CHECKING
 
 # We need to ignore the missing stubs for fire
 import fire  # type: ignore
 from rich.console import Console
 from rich.table import Table
 from rich.logging import RichHandler
-from typing import Any, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from twat_search.web.config import Config
+
+
+# Custom JSON encoder that handles non-serializable objects
+class CustomJSONEncoder(json_lib.JSONEncoder):
+    """Custom JSON encoder that converts non-serializable objects to strings."""
+
+    def default(self, o: Any) -> Any:
+        """Convert non-serializable objects to strings.
+
+        Args:
+            o: The object to convert
+
+        Returns:
+            A JSON serializable object
+        """
+        try:
+            return json_lib.JSONEncoder.default(self, o)
+        except TypeError:
+            # Convert non-serializable objects to their string representation
+            return str(o)
+
 
 # Set up console
 console = Console()
@@ -38,20 +59,23 @@ class SearchCLI:
         # Set up logging with rich
         self.log_handler = RichHandler(rich_tracebacks=True)
         logging.basicConfig(
-            level=logging.ERROR,  # Default to ERROR level
+            level=logging.CRITICAL,  # Default to CRITICAL level to hide all logs
             format="%(message)s",
             handlers=[self.log_handler],
         )
         self.logger = logging.getLogger(__name__)
+        self.logger.setLevel(logging.CRITICAL)  # Explicitly set logger level
 
         # Load environment variables from .env file
         try:
             from dotenv import load_dotenv
 
             load_dotenv()
-            self.logger.info("Loaded environment variables from .env file")
+            # Use debug level for this message so it only shows in verbose mode
+            self.logger.debug("Loaded environment variables from .env file")
         except ImportError:
-            self.logger.warning("python-dotenv not installed, skipping .env loading")
+            # Also use debug level for this warning
+            self.logger.debug("python-dotenv not installed, skipping .env loading")
 
     def _configure_logging(self, verbose: bool = False) -> None:
         """Configure logging based on verbose flag.
@@ -155,6 +179,7 @@ class SearchCLI:
                         "url": "N/A",
                         "title": "N/A",
                         "snippet": "N/A",
+                        "raw_result": None,  # Add raw result field
                     }
                 )
                 continue
@@ -172,6 +197,9 @@ class SearchCLI:
                     "snippet": top_result.snippet[:100] + "..."
                     if len(top_result.snippet) > 100
                     else top_result.snippet,
+                    "raw_result": getattr(
+                        top_result, "raw", None
+                    ),  # Store raw result data
                 }
             )
 
@@ -234,10 +262,13 @@ class SearchCLI:
                 "snippet": result["snippet"]
                 if result.get("snippet") != "N/A"
                 else None,
+                "result": result.get("raw_result"),  # Include raw result data
             }
 
-        # Print JSON output
-        console.print(json_lib.dumps(results_by_engine, indent=2))
+        # Print JSON output with custom encoder for non-serializable objects
+        console.print(
+            json_lib.dumps(results_by_engine, indent=2, cls=CustomJSONEncoder)
+        )
 
     def _display_errors(self, error_messages: list[str]) -> None:
         """Display error messages in a rich table.

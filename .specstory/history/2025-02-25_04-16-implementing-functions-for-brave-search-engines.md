@@ -2783,6 +2783,414 @@ yes do it
 
 _**Assistant**_
 
+<think>I need to fix the issue with the CLI incorrectly showing that "you-news" doesn't require an API key when it actually does. The current check only looks at the `engine_config.api_key` value, but it should also consider the `env_api_key_names` class variable.
+
+Let's modify the `_list_all_engines` and `_show_engine_details` methods in the `SearchCLI` class to properly detect API key requirements by also checking the engine class's `env_api_key_names`.
+
+Here's the current code in `_list_all_engines`:
+
+```python
+def _list_all_engines(self, config: "Config") -> None:
+    """List all available search engines."""
+    table = Table(title="🔎 Available Search Engines")
+    table.add_column("Engine", style="cyan", no_wrap=True)
+    table.add_column("Enabled", style="magenta")
+    table.add_column("API Key Required", style="yellow")
+
+    for engine, engine_config in config.engines.items():
+        # Check if API key is required by checking if the api_key attribute exists
+        api_key_required = (
+            hasattr(engine_config, "api_key") and engine_config.api_key is not None
+        )
+
+        table.add_row(
+            engine,
+            "✅" if engine_config.enabled else "❌",
+            "✅" if api_key_required else "❌",
+        )
+```
+
+I need to modify this to also check the engine class's `env_api_key_names`. I'll update the `api_key_required` check to also look at the engine class if available:
+
+1. First, I'll try to get the engine class from the registered engines
+2. If the class has a non-empty `env_api_key_names` list, consider the API key required
+3. Fall back to the current logic if we can't determine from the class
+
+Let's implement this fix:</think>I'll fix the issue by updating how the CLI detects API key requirements. The current logic only checks if the `engine_config.api_key` is set, but it should also consider engines that use environment variables for API keys (like "you-news").
+
+---
+
+_****_
+
+```diff
+          table.add_column("API Key Required", style="yellow")
+  
++         # Try to get registered engines for more accurate API key requirements
++         try:
++             from twat_search.web.engines.base import get_registered_engines
++             registered_engines = get_registered_engines()
++         except ImportError:
++             registered_engines = {}
++ 
+          for engine, engine_config in config.engines.items():
+-             # Check if API key is required by checking if the api_key attribute exists
++             # First check if the config has an API key set
+              api_key_required = (
+                  hasattr(engine_config, "api_key") and engine_config.api_key is not None
+              )
++             
++             # If not, check if the engine class has env_api_key_names
++             if not api_key_required and engine in registered_engines:
++                 engine_class = registered_engines.get(engine)
++                 if engine_class and hasattr(engine_class, "env_api_key_names"):
++                     # If the class has non-empty env_api_key_names, it requires an API key
++                     api_key_required = bool(engine_class.env_api_key_names)
+  
+              table.add_row(
+```
+
+---
+
+_****_
+
+
+
+Now let's also update the `_show_engine_details` method to have the same logic for showing API key requirements for a specific engine:
+
+---
+
+_****_
+
+```diff
+          engine_config = config.engines[engine_name]
+          
++         # Default API key requirement check
++         api_key_required = (
++             hasattr(engine_config, "api_key") and engine_config.api_key is not None
++         )
++ 
+          # Try to import the engine class to get more details
+          try:
+              registered_engines = get_registered_engines()
+              engine_class = registered_engines.get(engine_name)
++             
++             # Update API key requirement based on class information
++             if not api_key_required and engine_class and hasattr(engine_class, "env_api_key_names"):
++                 api_key_required = bool(engine_class.env_api_key_names)
+  
+              # Display detailed information
+              )
+              console.print(
+-                 f"[bold]API Key Required:[/bold] {'✅' if engine_config.api_key is not None else '❌'}"
++                 f"[bold]API Key Required:[/bold] {'✅' if api_key_required else '❌'}"
+              )
+  
+```
+
+---
+
+_****_
+
+
+
+Let's run a test to see if our changes correctly show the you-news engine as requiring an API key:
+
+---
+
+_****_
+
+```bash
+cd src && python -m twat_search.web.cli info
+```
+
+```
+(twat_search) adam@Hamlet twat_search % cd src && python -m twat_search.we
+b.cli info                                    cd src && python -m twat_sea
+rch.web.cli info
+        🔎 Available Search Engines        
+┏━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ Engine     ┃ Enabled ┃ API Key Required ┃
+┡━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ brave      │ ✅      │ ✅               │
+│ brave-news │ ✅      │ ✅               │
+│ serpapi    │ ✅      │ ✅               │
+│ tavily     │ ✅      │ ✅               │
+│ you        │ ✅      │ ✅               │
+│ you-news   │ ✅      │ ✅               │
+│ pplx       │ ✅      │ ✅               │
+└────────────┴─────────┴──────────────────┘
+
+Run 'info ENGINE_NAME' for more details about a specific engine.
+(twat_search) adam@Hamlet src %
+```
+
+---
+
+_****_
+
+
+
+Excellent! The fix is working as expected. Now the CLI correctly shows that the "you-news" engine requires an API key, just like the "you" engine.
+
+Let's also test the detailed view to make sure it shows the correct information:
+
+---
+
+_****_
+
+Cancelled
+
+---
+
+_****_
+
+
+
+---
+
+_**User**_
+
+twat-search web q "Adam Twardoch"
+[02/25/25 04:40:08] INFO     Loaded environment variables from .env file                                                                                     cli.py:52
+⠏ Searching for 'Adam Twardoch'...
+
+
+This should NOT appear in non-verbose
+
+---
+
+_**Assistant**_
+
+<think>The user is pointing out a bug in the CLI. The message "Loaded environment variables from .env file" is showing up in the normal mode of the `q` command, despite the fact that the CLI is supposed to hide logs in non-verbose mode.
+
+Let's analyze what's happening:
+
+1. In the `__init__` method, logging is initialized with:
+   ```python
+   logging.basicConfig(
+       level=logging.ERROR,  # Default to ERROR level
+       format="%(message)s",
+       handlers=[self.log_handler],
+   )
+   self.logger = logging.getLogger(__name__)
+   ```
+
+2. After initialization, we have this code that logs at INFO level:
+   ```python
+   try:
+       from dotenv import load_dotenv
+       load_dotenv()
+       self.logger.info("Loaded environment variables from .env file")
+   except ImportError:
+       self.logger.warning("python-dotenv not installed, skipping .env loading")
+   ```
+
+3. Later, in the `_configure_logging` method, we set the log level based on the verbose flag:
+   ```python
+   log_level = logging.INFO if verbose else logging.CRITICAL
+   logging.getLogger().setLevel(log_level)
+   self.logger.setLevel(log_level)
+   self.log_handler.level = log_level
+   ```
+
+The issue is that the log level isn't configured to CRITICAL until the `_configure_logging` method is called, which happens when the `q` command is executed. But the INFO log "Loaded environment variables from .env file" happens during initialization, before `_configure_logging` is called.
+
+To fix this, we need to:
+
+1. Set the log level to CRITICAL by default in `__init__`
+2. Only log the "Loaded environment variables" message at DEBUG level, which won't show up unless verbose is specifically enabled
+
+Let's fix this issue:</think>I see the issue! You're getting logging messages in non-verbose mode when they should be hidden. Let's fix this:
+
+---
+
+_****_
+
+```diff
+          self.log_handler = RichHandler(rich_tracebacks=True)
+          logging.basicConfig(
+-             level=logging.ERROR,  # Default to ERROR level
++             level=logging.CRITICAL,  # Default to CRITICAL level to hide all logs
+              format="%(message)s",
+              handlers=[self.log_handler],
+          )
+          self.logger = logging.getLogger(__name__)
++         self.logger.setLevel(logging.CRITICAL)  # Explicitly set logger level
+  
+          # Load environment variables from .env file
+  
+              load_dotenv()
+-             self.logger.info("Loaded environment variables from .env file")
++             # Use debug level for this message so it only shows in verbose mode
++             self.logger.debug("Loaded environment variables from .env file")
+          except ImportError:
+-             self.logger.warning("python-dotenv not installed, skipping .env loading")
++             # Also use debug level for this warning
++             self.logger.debug("python-dotenv not installed, skipping .env loading")
+  
+      def _configure_logging(self, verbose: bool = False) -> None:
+```
+
+---
+
+_****_
+
+
+
+Let's run the search command again to confirm this fixed the issue:
+
+---
+
+_****_
+
+```bash
+cd src && python -m twat_search.web.cli q "Adam Twardoch"
+```
+
+```
+(twat_search) adam@Hamlet src % cd src && python -m twat_search.web.cli q 
+"Adam Twardoch"                 cd src && python -m twat_search.web.cli q 
+"Adam Twardoch"
+cd: no such file or directory: src
+(twat_search) adam@Hamlet src %
+```
+
+---
+
+_****_
+
+
+
+
+
+Let's try again from the correct directory:
+
+---
+
+_****_
+
+```bash
+python -m twat_search.web.cli q "Adam Twardoch"
+```
+
+```
+(twat_search) adam@Hamlet src % python -m twat_search.web.cli q "Adam Twar
+doch"                           python -m twat_search.web.cli q "Adam Twar
+doch"
+            🌐 Web Search Results            
+┏━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Engine  ┃ Result                          ┃
+┡━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ brave   │ Adam Twardoch                   │
+│ serpapi │ Adam Twardoch                   │
+│ tavily  │ LAIDUG Presenter: Adam Twardoch │
+└─────────┴─────────────────────────────────┘
+(twat_search) adam@Hamlet src %
+```
+
+---
+
+_****_
+
+
+
+
+
+Great! The fix worked perfectly. Now no logs appear in non-verbose mode. Let's ensure the logs are still visible when verbose mode is enabled:
+
+---
+
+_****_
+
+Cancelled
+
+---
+
+_****_
+
+
+
+---
+
+_**User**_
+
+twat-search web q "Adam Twardoch" --json
+{
+  "serpapi": {
+    "status": "success",
+    "url": "http://www.twardoch.com/",
+    "title": "Adam Twardoch",
+    "snippet": "Adam Twardoch is Director of Products of FontLab. He co-created MyFonts, and has been working as a f..."
+  },
+  "tavily": {
+    "status": "success",
+    "url": "https://www.laidug.com/presenters/presenter/adam-twardoch",
+    "title": "LAIDUG Presenter: Adam Twardoch",
+    "snippet": "Adam Twardoch is Director of Products of FontLab. He has also been a font consultant for MyFonts, Mo..."
+  }
+}
+
+The result from each engine should include an additional key "result" where the value is the "NATIVE DETAILED" form of the result returned by the engine, whatever that might be. 
+
+---
+
+_**Assistant**_
+
+<think>The user wants to enhance the JSON output format for the search results. Currently, the JSON output includes the basic information (status, url, title, snippet) for each search engine result. The user wants to add a new key called "result" that contains the complete native result data from each engine, rather than just the simplified version.
+
+Looking at how results are processed in the current code:
+
+1. The `_display_json_results` method organizes results by engine
+2. It extracts just a few basic fields (status, url, title, snippet)
+3. The user wants to see the full raw data in addition to these basic fields
+
+I'll need to enhance the `_display_json_results` method to include the complete original result data. The raw result is likely available in the `raw` field of the search result, as we can see from the code in the `_process_results` method:
+
+```python
+processed.append(
+    {
+        "engine": engine,
+        "status": "✅ Success",
+        "url": url,
+        "title": top_result.title,
+        "snippet": top_result.snippet[:100] + "..."
+        if len(top_result.snippet) > 100
+        else top_result.snippet,
+    }
+)
+```
+
+This doesn't include the raw result, but from what we saw in the engine implementations (like the brave.py file), each result likely has a `raw` attribute that contains the original data from the API response. For example, in brave.py:
+
+```python
+results.append(
+    SearchResult(
+        title=brave_result.title,
+        url=brave_result.url,
+        snippet=brave_result.description,
+        source=self.name,
+        raw=result,  # Include raw result for debugging
+    )
+)
+```
+
+So I need to modify the `_display_json_results` method to include this raw data if it's available. Let's implement this change:
+
+1. First, I need to ensure the `_process_results` method preserves the raw field
+2. Then update `_display_json_results` to include this raw data in the output
+
+Let's make these changes:</think>I'll update the CLI to include the full native result data in the JSON output. This will give you the complete, detailed information returned by each search engine.
+
+---
+
+_****_
+
+
+
+---
+
+_****_
+
 
 
 ---
