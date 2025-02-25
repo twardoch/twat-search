@@ -9,6 +9,8 @@ This module implements the Tavily Search API integration.
 import httpx
 from typing import Any, ClassVar
 from pydantic import BaseModel, ValidationError
+from pydantic.networks import HttpUrl
+import textwrap
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.models import SearchResult
@@ -43,7 +45,7 @@ class TavilySearchResponse(BaseModel):
 
 @register_engine
 class TavilySearchEngine(SearchEngine):
-    """Implementation of the Tavily Search API."""
+    """Implementation of the Tavily AI Search API."""
 
     name = "tavily"
     env_api_key_names: ClassVar[list[str]] = ["TAVILY_API_KEY"]
@@ -51,57 +53,88 @@ class TavilySearchEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        max_results: int | None = None,
-        search_depth: str | None = None,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        search_depth: str = "basic",
         include_domains: list[str] | None = None,
         exclude_domains: list[str] | None = None,
-        search_type: str | None = None,
+        include_answer: bool = False,
+        max_tokens: int | None = None,
+        search_type: str = "search",
+        **kwargs: Any,
     ) -> None:
         """
-        Initialize the Tavily search engine.
+        Initialize the Tavily Search engine.
 
         Args:
-            config: Configuration for this search engine
-            max_results: Maximum number of results to return (overrides config)
-            search_depth: 'basic' for faster results or 'comprehensive' for more thorough search
+            config: Engine configuration
+            num_results: Number of results to return (maps to 'max_results')
+            country: Country code for results (not directly used by Tavily)
+            language: Language code for results (not directly used by Tavily)
+            safe_search: Whether to enable safe search (not directly used by Tavily)
+            time_frame: Time frame for results (not directly used by Tavily)
+            search_depth: Search depth, either "basic" or "advanced"
             include_domains: List of domains to include in search
             exclude_domains: List of domains to exclude from search
-            search_type: Type of search ('search' or 'news') - defaults to 'search'
-
-        Raises:
-            EngineError: If the API key is missing
+            include_answer: Whether to include an AI-generated answer
+            max_tokens: Maximum number of tokens for the answer
+            search_type: Type of search ("search" or "news")
+            **kwargs: Additional Tavily-specific parameters
         """
         super().__init__(config)
+
         self.base_url = "https://api.tavily.com/search"
 
-        # Use provided max_results if available, otherwise use default from config
+        # Map common parameters to Tavily-specific ones
+        max_results = kwargs.get("max_results", num_results)
         self.max_results = max_results or self.config.default_params.get(
             "max_results", 5
         )
 
-        # Set search parameters
         self.search_depth = search_depth or self.config.default_params.get(
             "search_depth", "basic"
         )
         self.include_domains = include_domains or self.config.default_params.get(
-            "include_domains", []
+            "include_domains", None
         )
         self.exclude_domains = exclude_domains or self.config.default_params.get(
-            "exclude_domains", []
+            "exclude_domains", None
+        )
+        self.include_answer = include_answer or self.config.default_params.get(
+            "include_answer", False
+        )
+        self.max_tokens = max_tokens or self.config.default_params.get(
+            "max_tokens", None
         )
         self.search_type = search_type or self.config.default_params.get(
             "search_type", "search"
         )
 
+        # Store unused unified parameters for future compatibility
+        self.country = country
+        self.language = language
+        self.safe_search = safe_search
+        self.time_frame = time_frame
+
+        # Prepare headers
+        self.headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
+        # Check if API key is available
         if not self.config.api_key:
             raise EngineError(
                 self.name,
-                "Tavily API key is required. Set it in the config or via the TAVILY_API_KEY env var.",
+                f"Tavily API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
     async def search(self, query: str) -> list[SearchResult]:
         """
-        Perform a search using the Tavily Search API.
+        Perform a search using the Tavily API.
 
         Args:
             query: The search query string
@@ -112,156 +145,121 @@ class TavilySearchEngine(SearchEngine):
         Raises:
             EngineError: If the search fails
         """
-        headers = {"Content-Type": "application/json"}
-        payload: dict[str, Any] = {
+        payload = {
             "api_key": self.config.api_key,
             "query": query,
             "max_results": self.max_results,
             "search_depth": self.search_depth,
-            "search_type": self.search_type,
+            "type": self.search_type,
         }
 
-        # Only add these if they have values
         if self.include_domains:
             payload["include_domains"] = self.include_domains
         if self.exclude_domains:
             payload["exclude_domains"] = self.exclude_domains
+        if self.include_answer:
+            payload["include_answer"] = self.include_answer
+        if self.max_tokens:
+            payload["max_tokens"] = self.max_tokens
 
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    self.base_url, headers=headers, json=payload, timeout=10
+                    self.base_url, headers=self.headers, json=payload, timeout=10
                 )
                 response.raise_for_status()
+                result = response.json()
+            except httpx.HTTPStatusError as e:
+                raise EngineError(self.name, f"HTTP error: {e}")
+            except httpx.RequestError as e:
+                raise EngineError(self.name, f"Request error: {e}")
+            except Exception as e:
+                raise EngineError(self.name, f"Error: {e!s}")
 
-                data = response.json()
-                tavily_response = TavilySearchResponse(**data)
+        results = []
+        for idx, item in enumerate(result.get("results", []), 1):
+            # Get the URL string
+            url_str = item.get("url", "")
 
-                results = []
-                for result in tavily_response.results:
-                    try:
-                        # Convert to common SearchResult format
-                        results.append(
-                            SearchResult(
-                                title=result.title,
-                                url=result.url,  # URLs are already strings
-                                snippet=result.content[:500],  # Limit snippet length
-                                source=self.name,
-                                raw=result.model_dump(),
-                            )
-                        )
-                    except ValidationError:
-                        # Log the specific validation error and skip this result
-                        continue
+            try:
+                # Convert to HttpUrl - this will validate the URL
+                url = HttpUrl(url_str)
 
-                return results
+                results.append(
+                    SearchResult(
+                        title=item.get("title", ""),
+                        url=url,
+                        snippet=textwrap.shorten(
+                            item.get("content", "").strip(),
+                            width=500,
+                            placeholder="...",
+                        ),
+                        source=self.name,
+                        rank=idx,
+                        raw=item,
+                    )
+                )
+            except ValidationError:
+                # Skip invalid URLs
+                continue
 
-            except httpx.RequestError as exc:
-                raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
-            except httpx.HTTPStatusError as exc:
-                raise EngineError(
-                    self.name,
-                    f"HTTP Status error: {exc.response.status_code} - {exc.response.text}",
-                ) from exc
-            except ValidationError as exc:
-                raise EngineError(self.name, f"Response parsing error: {exc}") from exc
+        return results
 
 
 async def tavily(
     query: str,
-    api_key: str | None = None,
-    max_results: int = 5,
+    num_results: int = 5,
+    country: str | None = None,
+    language: str | None = None,
+    safe_search: bool | None = True,
+    time_frame: str | None = None,
     search_depth: str = "basic",
     include_domains: list[str] | None = None,
     exclude_domains: list[str] | None = None,
+    include_answer: bool = False,
+    max_tokens: int | None = None,
     search_type: str = "search",
+    api_key: str | None = None,
 ) -> list[SearchResult]:
     """
-    Perform a web search using the Tavily Search API.
-
-    This function provides a simple interface to the Tavily Search API, allowing
-    users to search the web and get structured results with content from matching pages.
-
-    If no API key is provided, the function will attempt to find one in the environment
-    variables using the names defined in TavilySearchEngine.env_api_key_names
-    (typically "TAVILY_API_KEY").
+    Search using Tavily AI search.
 
     Args:
-        query: The search query string
-        api_key: Optional Tavily API key. If not provided, will look for it in environment variables
-        max_results: Maximum number of results to return (default: 5)
-        search_depth: Search depth level (default: "basic")
-            - "basic": Faster results
-            - "comprehensive": More thorough search
-        include_domains: List of domains to include in search (default: None)
-        exclude_domains: List of domains to exclude from search (default: None)
-        search_type: Type of search (default: "search")
-            - "search": Regular web search
-            - "news": News articles search
+        query: Search query string
+        num_results: Number of results to return
+        country: Country code (not directly used by Tavily)
+        language: Language code (not directly used by Tavily)
+        safe_search: Whether to enable safe search (not directly used by Tavily)
+        time_frame: Time filter (not directly used by Tavily)
+        search_depth: Search depth, either "basic" or "advanced"
+        include_domains: List of domains to include in search
+        exclude_domains: List of domains to exclude from search
+        include_answer: Whether to include an AI-generated answer
+        max_tokens: Maximum number of tokens for the answer
+        search_type: Type of search ("search" or "news")
+        api_key: Optional API key (otherwise use environment variable)
 
     Returns:
-        A list of SearchResult objects containing the search results with:
-        - title: The title of the search result
-        - url: The URL of the search result
-        - snippet: A brief description or excerpt (limited to 500 characters)
-        - source: The source engine ("tavily")
-        - raw: The raw result data from the API
-
-    Raises:
-        EngineError: If the search fails or API key is missing
-
-    Examples:
-        # Using API key from environment variable
-        >>> results = await tavily("Python programming")
-        >>> for result in results:
-        ...     print(f"{result.title}: {result.url}")
-
-        # Explicitly providing API key
-        >>> results = await tavily("machine learning", api_key="your-api-key")
-
-        # With advanced parameters
-        >>> results = await tavily(
-        ...     "python programming",
-        ...     max_results=10,
-        ...     search_depth="comprehensive",
-        ...     include_domains=["python.org", "realpython.com"],
-        ...     exclude_domains=["w3schools.com"],
-        ...     search_type="search"
-        ... )
+        List of search results
     """
-    # Try to get API key from environment if not provided
-    actual_api_key = api_key
-    if not actual_api_key:
-        import os
-
-        # Check environment variables using the engine's env_api_key_names
-        for env_var in TavilySearchEngine.env_api_key_names:
-            if env_var in os.environ:
-                actual_api_key = os.environ[env_var]
-                break
-
-    # Create a simple config for this request
     config = EngineConfig(
-        api_key=actual_api_key,
+        api_key=api_key,
         enabled=True,
-        default_params={
-            "max_results": max_results,
-            "search_depth": search_depth,
-            "include_domains": include_domains or [],
-            "exclude_domains": exclude_domains or [],
-            "search_type": search_type,
-        },
     )
 
-    # Create the engine instance
     engine = TavilySearchEngine(
-        config=config,
-        max_results=max_results,
+        config,
+        num_results=num_results,
+        country=country,
+        language=language,
+        safe_search=safe_search,
+        time_frame=time_frame,
         search_depth=search_depth,
         include_domains=include_domains,
         exclude_domains=exclude_domains,
+        include_answer=include_answer,
+        max_tokens=max_tokens,
         search_type=search_type,
     )
 
-    # Perform the search
     return await engine.search(query)

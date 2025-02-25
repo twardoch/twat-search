@@ -51,6 +51,7 @@ dependencies = [
     "python-dotenv>=1.0.1", # Environment variable management
     "fire>=0.5.0", # Command line interface generator
     "rich>=13.6.0", # Rich text and formatting for terminal output
+    "duckduckgo-search>=7.3.0", # DuckDuckGo search API integration
 ]
 
 # Project Authors

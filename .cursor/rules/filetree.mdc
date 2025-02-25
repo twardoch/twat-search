@@ -16,7 +16,7 @@ globs:
 ├── [3.5K]  .gitignore
 ├── [ 532]  .pre-commit-config.yaml
 ├── [  96]  .specstory
-│   └── [ 448]  history
+│   └── [ 480]  history
 │       ├── [2.0K]  .what-is-this.md
 │       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -28,12 +28,13 @@ globs:
 │       ├── [ 57K]  2025-02-25_03-54-integrating-search-engines-into-twat-search.md
 │       ├── [ 72K]  2025-02-25_04-05-consolidating-you-py-and-youcom-py.md
 │       ├── [6.1K]  2025-02-25_04-13-missing-env-api-key-names-in-pplx-py.md
-│       └── [118K]  2025-02-25_04-16-implementing-functions-for-brave-search-engines.md
+│       ├── [118K]  2025-02-25_04-16-implementing-functions-for-brave-search-engines.md
+│       └── [111K]  2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
-├── [ 270]  PROGRESS.md
+├── [1.3K]  PROGRESS.md
 ├── [2.3K]  README.md
-├── [5.0K]  TODO.md
+├── [6.3K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [ 160]  dist
@@ -44,17 +45,17 @@ globs:
 │       ├── [2.0K]  __main__.py
 │       └── [ 352]  web
 │           ├── [ 526]  __init__.py
-│           ├── [4.3K]  api.py
+│           ├── [4.9K]  api.py
 │           ├── [ 19K]  cli.py
 │           ├── [4.3K]  config.py
 │           ├── [ 320]  engines
 │           │   ├── [ 983]  __init__.py
-│           │   ├── [3.8K]  base.py
-│           │   ├── [ 18K]  brave.py
-│           │   ├── [7.8K]  pplx.py
-│           │   ├── [9.2K]  serpapi.py
-│           │   ├── [9.2K]  tavily.py
-│           │   └── [ 16K]  you.py
+│           │   ├── [3.7K]  base.py
+│           │   ├── [ 15K]  brave.py
+│           │   ├── [7.6K]  pplx.py
+│           │   ├── [7.4K]  serpapi.py
+│           │   ├── [8.7K]  tavily.py
+│           │   └── [ 13K]  you.py
 │           ├── [1.0K]  exceptions.py
 │           ├── [1.3K]  models.py
 │           └── [1.5K]  utils.py
@@ -74,7 +75,7 @@ globs:
 │           ├── [2.0K]  test_exceptions.py
 │           ├── [4.5K]  test_models.py
 │           └── [3.5K]  test_utils.py
-├── [593K]  twat_search.txt
+├── [ 69K]  twat_search.txt
 └── [ 96K]  uv.lock
 
-17 directories, 57 files
+17 directories, 58 files

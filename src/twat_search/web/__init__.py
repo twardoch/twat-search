@@ -15,5 +15,30 @@ and providing a consistent result format.
 from .api import search
 from .models import SearchResult
 from .config import Config, EngineConfig
+from .engines import (
+    brave,
+    brave_news,
+    pplx,
+    serpapi,
+    tavily,
+    you,
+    you_news,
+    critique,
+    duckduckgo,
+)
 
-__all__ = ["Config", "EngineConfig", "SearchResult", "search"]
+__all__ = [
+    "Config",
+    "EngineConfig",
+    "SearchResult",
+    "brave",
+    "brave_news",
+    "critique",
+    "duckduckgo",
+    "pplx",
+    "search",
+    "serpapi",
+    "tavily",
+    "you",
+    "you_news",
+]

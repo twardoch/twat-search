@@ -1,36 +1,45 @@
 # this_file: src/twat_search/web/engines/__init__.py
 
 """
-Search engine implementations for the web search API.
+Search engine implementations.
 
-This package contains implementations for various search engines,
-each one providing a standard interface for searching and returning results.
+This package contains the implementations of various search engines that
+can be used with the twat_search.web API.
 """
 
-from .base import SearchEngine, register_engine, get_engine
-
-# Import and register all engines
-from .brave import BraveSearchEngine, BraveNewsSearchEngine
-from .serpapi import SerpApiSearchEngine
-from .tavily import TavilySearchEngine
-from .you import YouSearchEngine, YouNewsSearchEngine
-
-# Optional imports for backwards compatibility
-try:
-    from .pplx import PerplexitySearchEngine
-except ImportError:
-    # PerplexitySearchEngine not available
-    pass
+from .base import register_engine, get_engine, get_registered_engines, SearchEngine
+from .brave import BraveSearchEngine, BraveNewsSearchEngine, brave, brave_news
+from .serpapi import SerpApiSearchEngine, serpapi
+from .tavily import TavilySearchEngine, tavily
+from .pplx import PerplexitySearchEngine, pplx
+from .you import YouSearchEngine, YouNewsSearchEngine, you, you_news
+from .critique import CritiqueSearchEngine, critique
+from .duckduckgo import DuckDuckGoSearchEngine, duckduckgo
 
 __all__ = [
     "BraveNewsSearchEngine",
+    # Engine classes
     "BraveSearchEngine",
+    "CritiqueSearchEngine",
+    "DuckDuckGoSearchEngine",
     "PerplexitySearchEngine",
+    # Base classes and functions
     "SearchEngine",
     "SerpApiSearchEngine",
     "TavilySearchEngine",
     "YouNewsSearchEngine",
     "YouSearchEngine",
+    # Convenience functions
+    "brave",
+    "brave_news",
+    "critique",
+    "duckduckgo",
     "get_engine",
+    "get_registered_engines",
+    "pplx",
     "register_engine",
+    "serpapi",
+    "tavily",
+    "you",
+    "you_news",
 ]

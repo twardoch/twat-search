@@ -7,8 +7,9 @@ This module implements the Perplexity AI API integration.
 """
 
 import httpx
-from typing import ClassVar
+from typing import ClassVar, Any
 from pydantic import BaseModel, Field, ValidationError
+from pydantic.networks import HttpUrl
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.models import SearchResult
@@ -44,34 +45,59 @@ class PerplexitySearchEngine(SearchEngine):
     env_api_key_names: ClassVar[list[str]] = [
         "PERPLEXITYAI_API_KEY",
         "PERPLEXITY_API_KEY",
-        "PPLX_API_KEY",
     ]
 
-    def __init__(self, config: EngineConfig, model: str | None = None) -> None:
+    def __init__(
+        self,
+        config: EngineConfig,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        model: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize the Perplexity search engine.
 
         Args:
-            config: Configuration for this search engine
-            model: Model to use for search (overrides config)
-
-        Raises:
-            EngineError: If the API key is missing
+            config: Engine configuration
+            num_results: Number of results to return (not directly used by Perplexity)
+            country: Country code for results (not directly used by Perplexity)
+            language: Language code for results (not directly used by Perplexity)
+            safe_search: Whether to enable safe search (not directly used by Perplexity)
+            time_frame: Time frame for results (not directly used by Perplexity)
+            model: Perplexity model to use
+            **kwargs: Additional Perplexity-specific parameters
         """
         super().__init__(config)
+
+        # API endpoint
         self.base_url = "https://api.perplexity.ai/chat/completions"
 
-        # Use provided model if available, otherwise use default from config
-        self.model = model or self.config.default_params.get(
-            "model", "llama-3.1-sonar-large-128k-online"
+        # Perplexity-specific parameters
+        self.model = (
+            model
+            or kwargs.get("model")
+            or self.config.default_params.get("model", "pplx-70b-online")
         )
 
+        # Store common parameters for possible future use
+        self.num_results = num_results
+        self.country = country
+        self.language = language
+        self.safe_search = safe_search
+        self.time_frame = time_frame
+
+        # Check if API key is available
         if not self.config.api_key:
             raise EngineError(
                 self.name,
-                f"Perplexity API key is required. Set it in config or via one of these env vars: {', '.join(self.env_api_key_names)}.",
+                f"Perplexity API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}.",
             )
 
+        # API authentication headers
         self.headers = {
             "accept": "application/json",
             "content-type": "application/json",
@@ -111,27 +137,32 @@ class PerplexitySearchEngine(SearchEngine):
 
                 data = response.json()
 
-                # Adapt the parsing logic to Perplexity's response format
-                # We wrap the response in a structure that matches our expected model
-                perplexity_response = PerplexityResponse(
-                    answers=[
-                        {
-                            "answer": choice["message"]["content"],
-                            "url": "https://perplexity.ai",
-                            "title": f"Perplexity AI Response: {query[:30]}...",
-                        }
-                        for choice in data.get("choices", [])
-                    ]
-                )
+                # Create individual PerplexityResult objects first
+                answers_list = []
+                for choice in data.get("choices", []):
+                    answer = choice["message"]["content"]
+                    url = "https://perplexity.ai"
+                    title = f"Perplexity AI Response: {query[:30]}..."
+
+                    # Create a proper PerplexityResult object
+                    answers_list.append(
+                        PerplexityResult(answer=answer, url=url, title=title)
+                    )
+
+                # Now use the list of PerplexityResult objects
+                perplexity_response = PerplexityResponse(answers=answers_list)
 
                 results = []
                 for result in perplexity_response.answers:
                     try:
+                        # Use HttpUrl constructor directly with the URL string
+                        url_obj = HttpUrl(result.url)
+
                         # Convert to common SearchResult format
                         results.append(
                             SearchResult(
                                 title=result.title,
-                                url=result.url,  # URLs are already strings
+                                url=url_obj,  # Use HttpUrl object
                                 snippet=result.answer,  # Use the answer as the snippet
                                 source=self.name,
                                 raw=data,  # Include raw API response
@@ -156,75 +187,43 @@ class PerplexitySearchEngine(SearchEngine):
 
 async def pplx(
     query: str,
-    api_key: str | None = None,
+    num_results: int = 5,
+    country: str | None = None,
+    language: str | None = None,
+    safe_search: bool | None = True,
+    time_frame: str | None = None,
     model: str | None = None,
+    api_key: str | None = None,
 ) -> list[SearchResult]:
     """
-    Perform an AI-powered search using Perplexity AI API.
-
-    This function provides a simple interface to the Perplexity AI API, allowing
-    users to get AI-generated answers to their queries. It returns structured
-    results with answer content from the specified AI model.
-
-    If no API key is provided, the function will attempt to find one in the environment
-    variables using the names defined in PerplexitySearchEngine.env_api_key_names
-    (typically "PERPLEXITYAI_API_KEY", "PERPLEXITY_API_KEY", or "PPLX_API_KEY").
+    Search with Perplexity AI.
 
     Args:
-        query: The search query string
-        api_key: Optional Perplexity API key. If not provided, will look for it in environment variables
-        model: Model to use for search (defaults to "llama-3.1-sonar-large-128k-online" if not specified)
+        query: Search query string
+        num_results: Number of results (not directly used by Perplexity)
+        country: Country code (not directly used by Perplexity)
+        language: Language code (not directly used by Perplexity)
+        safe_search: Safe search setting (not directly used by Perplexity)
+        time_frame: Time filter (not directly used by Perplexity)
+        model: Perplexity model to use (default: "pplx-70b-online")
+        api_key: Optional API key (otherwise use environment variable)
 
     Returns:
-        A list of SearchResult objects containing the search results with:
-        - title: The title of the result (formatted as "Perplexity AI Response: {query}")
-        - url: The URL (defaults to "https://perplexity.ai")
-        - snippet: The AI-generated answer content
-        - source: The source engine ("pplx")
-        - raw: The raw result data from the API
-
-    Raises:
-        EngineError: If the search fails or API key is missing
-
-    Examples:
-        # Using API key from environment variable
-        >>> results = await pplx("What is quantum computing?")
-        >>> for result in results:
-        ...     print(result.snippet)
-
-        # Explicitly providing API key
-        >>> results = await pplx(
-        ...     "Explain the theory of relativity",
-        ...     api_key="your-api-key"
-        ... )
-
-        # Specifying a different model
-        >>> results = await pplx(
-        ...     "What are the benefits of green energy?",
-        ...     model="llama-3.1-sonar-small-32k-online"
-        ... )
+        List of search results
     """
-    # Try to get API key from environment if not provided
-    actual_api_key = api_key
-    if not actual_api_key:
-        import os
-
-        # Check environment variables using the engine's env_api_key_names
-        for env_var in PerplexitySearchEngine.env_api_key_names:
-            if env_var in os.environ:
-                actual_api_key = os.environ[env_var]
-                break
-
-    # Create a simple config for this request
     config = EngineConfig(
-        api_key=actual_api_key, enabled=True, default_params={"model": model}
+        api_key=api_key,
+        enabled=True,
     )
 
-    # Create the engine instance
     engine = PerplexitySearchEngine(
-        config=config,
+        config,
+        num_results=num_results,
+        country=country,
+        language=language,
+        safe_search=safe_search,
+        time_frame=time_frame,
         model=model,
     )
 
-    # Perform the search
     return await engine.search(query)

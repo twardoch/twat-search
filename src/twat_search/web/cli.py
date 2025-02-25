@@ -23,6 +23,20 @@ from rich.console import Console
 from rich.table import Table
 from rich.logging import RichHandler
 
+from twat_search.web.api import search
+from twat_search.web.config import Config
+from twat_search.web.engines import (
+    brave,
+    brave_news,
+    critique,
+    duckduckgo,
+    pplx,
+    serpapi,
+    tavily,
+    you,
+    you_news,
+)
+
 if TYPE_CHECKING:
     from twat_search.web.config import Config
 
@@ -126,24 +140,27 @@ class SearchCLI:
         return None
 
     async def _run_search(
-        self, query: str = "president of poland", engines: list[str] | None = None
+        self,
+        query: str = "president of poland",
+        engines: list[str] | None = None,
+        **kwargs: Any,
     ) -> list[dict[str, Any]]:
         """Run search across all available engines.
 
         Args:
             query: The search term to query
             engines: Optional list of specific engines to use
+            **kwargs: Additional engine-specific parameters
 
         Returns:
             List of result dictionaries with engine name, status, and results
         """
         # Import here to ensure logging is configured before import
-        from twat_search.web.api import search
 
         self.logger.info(f"🔍 Searching for: {query}")
 
         try:
-            results = await search(query, engines=engines)
+            results = await search(query, engines=engines, **kwargs)
             return self._process_results(results)
         except Exception as e:
             self.logger.error(f"❌ Search failed: {e}")
@@ -265,10 +282,8 @@ class SearchCLI:
                 "result": result.get("raw_result"),  # Include raw result data
             }
 
-        # Print JSON output with custom encoder for non-serializable objects
-        console.print(
-            json_lib.dumps(results_by_engine, indent=2, cls=CustomJSONEncoder)
-        )
+        # Print JSON output directly without using rich console
+        # This ensures clean JSON output for piping or programmatic use
 
     def _display_errors(self, error_messages: list[str]) -> None:
         """Display error messages in a rich table.
@@ -289,65 +304,77 @@ class SearchCLI:
 
     def q(
         self,
-        query: str = "president of poland",
-        engines: Any = None,
+        query: str,
+        engines: str | list[str] | None = None,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool = True,
+        time_frame: str | None = None,
         verbose: bool = False,
         json: bool = False,
-    ) -> None:
-        """Search the web using multiple search engines.
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search across multiple engines.
 
         Args:
-            query: The search term (default: "president of poland")
-            engines: Search engines to use, specified as a comma-separated string:
-                     --engines="brave,google,tavily"
-                     If not provided, all available engines will be used.
-            verbose: Show detailed information about the search process
-            json: Output results in JSON format
-        """
-        # Configure logging based on verbose flag
-        self._configure_logging(verbose)
+            query: The search query
+            engines: Comma-separated list of engines or list of engine names
+            num_results: Number of results per engine (default: 5)
+            country: Country code for search results
+            language: Language code for search results
+            safe_search: Whether to enable safe search (default: True)
+            time_frame: Time frame for results (e.g., "day", "week", "month")
+            verbose: Whether to display verbose output
+            json: Whether to display results in JSON format
+            **kwargs: Additional engine-specific parameters
 
-        # Parse engines argument
+        Returns:
+            List of processed search results
+        """
+        self._configure_logging(verbose)
         engine_list = self._parse_engines(engines)
 
-        # Run search
-        with console.status(f"[bold green]Searching for '{query}'...[/bold green]"):
-            results = asyncio.run(self._run_search(query, engine_list))
+        # Prepare common parameters
+        common_params = {
+            "num_results": num_results,
+            "country": country,
+            "language": language,
+            "safe_search": safe_search,
+            "time_frame": time_frame,
+        }
 
-        # Display results based on format preference
+        # Remove None values
+        common_params = {k: v for k, v in common_params.items() if v is not None}
+
+        # Only show status spinner when not in JSON mode
+        if json:
+            results = asyncio.run(
+                self._run_search(query, engine_list, **common_params, **kwargs)
+            )
+        else:
+            with console.status(f"[bold green]Searching for '{query}'...[/bold green]"):
+                results = asyncio.run(
+                    self._run_search(query, engine_list, **common_params, **kwargs)
+                )
+
         if json:
             self._display_json_results(results)
+            # Don't return raw results to avoid double output in json mode
+            return []
         else:
             self._display_results(results, verbose)
+            return results
 
-        # Print API key information only in verbose mode
-        if verbose:
-            api_keys = {
-                "BRAVE_API_KEY": "✅" if os.environ.get("BRAVE_API_KEY") else "❌",
-                "SERPAPI_API_KEY": "✅" if os.environ.get("SERPAPI_API_KEY") else "❌",
-                "TAVILY_API_KEY": "✅" if os.environ.get("TAVILY_API_KEY") else "❌",
-                "PERPLEXITYAI_API_KEY": "✅"
-                if os.environ.get("PERPLEXITYAI_API_KEY")
-                else "❌",
-                "YOU_API_KEY": "✅" if os.environ.get("YOU_API_KEY") else "❌",
-            }
-
-            key_table = Table(title="🔑 API Keys Status")
-            key_table.add_column("Service", style="cyan", no_wrap=True)
-            key_table.add_column("Status", style="magenta")
-
-            for key, status in api_keys.items():
-                key_table.add_row(key.replace("_API_KEY", ""), status)
-
-            console.print(key_table)
-
-    def info(self, engine: str | None = None) -> None:
+    def info(self, engine: str | None = None, json: bool = False) -> None:
         """
         Display information about search engines.
 
         Args:
             engine: Optional specific engine to show details for.
                    If not provided, lists all available engines.
+            json: Whether to display results in JSON format
         """
         try:
             # Import here to ensure logging is configured
@@ -356,7 +383,10 @@ class SearchCLI:
             # Create a temporary config to see available engines
             config = Config()
 
-            if engine is None:
+            if json:
+                # JSON output mode - return structured engine info
+                self._display_engines_json(engine, config)
+            elif engine is None:
                 # List all engines
                 self._list_all_engines(config)
             else:
@@ -364,7 +394,11 @@ class SearchCLI:
                 self._show_engine_details(engine, config)
 
         except Exception as e:
-            self.logger.error(f"❌ Failed to display engine information: {e}")
+            if not json:
+                self.logger.error(f"❌ Failed to display engine information: {e}")
+            else:
+                # In JSON mode, return error as JSON
+                pass
 
     def _list_all_engines(self, config: "Config") -> None:
         """List all available search engines."""
@@ -505,6 +539,663 @@ class SearchCLI:
             console.print(f"Enabled: {'✅' if engine_config.enabled else '❌'}")
             console.print(f"Has API Key: {'✅' if engine_config.api_key else '❌'}")
             console.print(f"Default Parameters: {engine_config.default_params}")
+
+    def _display_engines_json(self, engine: str | None, config: "Config") -> None:
+        """Display engine information in JSON format.
+
+        Args:
+            engine: Optional specific engine name
+            config: Engine configuration
+        """
+        from twat_search.web.engines.base import get_registered_engines
+
+        try:
+            registered_engines = get_registered_engines()
+        except ImportError:
+            registered_engines = {}
+
+        result = {}
+
+        if engine:
+            # Single engine info
+            if engine not in config.engines:
+                return
+
+            engine_config = config.engines[engine]
+            result[engine] = self._get_engine_info(
+                engine, engine_config, registered_engines
+            )
+        else:
+            # All engines info
+            for engine_name, engine_config in config.engines.items():
+                result[engine_name] = self._get_engine_info(
+                    engine_name, engine_config, registered_engines
+                )
+
+    def _get_engine_info(
+        self, engine_name: str, engine_config: Any, registered_engines: dict
+    ) -> dict:
+        """Get structured information about an engine.
+
+        Args:
+            engine_name: Name of the engine
+            engine_config: Engine configuration object
+            registered_engines: Dictionary of registered engine classes
+
+        Returns:
+            Dictionary with engine information
+        """
+        # Check if API key is required
+        api_key_required = False
+        api_key_set = False
+        env_vars = []
+
+        if hasattr(engine_config, "api_key") and engine_config.api_key is not None:
+            api_key_required = True
+            api_key_set = True
+
+        # Check if engine class has env_api_key_names
+        if engine_name in registered_engines:
+            engine_class = registered_engines.get(engine_name)
+            if engine_class and hasattr(engine_class, "env_api_key_names"):
+                api_key_required = bool(engine_class.env_api_key_names)
+                env_vars = [
+                    {"name": env_name, "set": bool(os.environ.get(env_name))}
+                    for env_name in engine_class.env_api_key_names
+                ]
+
+        # Get default parameters
+        default_params = {}
+        if hasattr(engine_config, "default_params") and engine_config.default_params:
+            default_params = engine_config.default_params
+
+        return {
+            "enabled": engine_config.enabled
+            if hasattr(engine_config, "enabled")
+            else False,
+            "api_key_required": api_key_required,
+            "api_key_set": api_key_set,
+            "env_vars": env_vars,
+            "default_params": default_params,
+        }
+
+    async def critique(
+        self,
+        query: str,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        image_url: str | None = None,
+        image_base64: str | None = None,
+        source_whitelist: str | None = None,
+        source_blacklist: str | None = None,
+        api_key: str | None = None,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using Critique Labs AI search.
+
+        Args:
+            query: Search query string
+            num_results: Number of results to return
+            country: Country code
+            language: Language code
+            safe_search: Whether to enable safe search
+            time_frame: Time frame for results
+            image_url: URL of an image to include in search
+            image_base64: Base64-encoded image to include in search
+            source_whitelist: Comma-separated list of domains to include
+            source_blacklist: Comma-separated list of domains to exclude
+            api_key: API key (otherwise use environment variable)
+            verbose: Show detailed output
+            json: Return results as JSON
+            **kwargs: Additional engine-specific parameters
+
+        Returns:
+            List of search results as dictionaries
+        """
+        self._configure_logging(verbose)
+
+        # Only show status message when not in JSON mode
+        console = Console()
+        if not json:
+            console.print(f"[bold]Searching Critique Labs AI[/bold]: {query}")
+
+        # Convert comma-separated lists to actual lists
+        source_whitelist_list = None
+        if source_whitelist:
+            source_whitelist_list = [s.strip() for s in source_whitelist.split(",")]
+
+        source_blacklist_list = None
+        if source_blacklist:
+            source_blacklist_list = [s.strip() for s in source_blacklist.split(",")]
+
+        results = await critique(
+            query=query,
+            num_results=num_results,
+            country=country,
+            language=language,
+            safe_search=safe_search,
+            time_frame=time_frame,
+            image_url=image_url,
+            image_base64=image_base64,
+            source_whitelist=source_whitelist_list,
+            source_blacklist=source_blacklist_list,
+            api_key=api_key,
+            **kwargs,
+        )
+
+        processed_results = self._process_results(results)
+
+        if json:
+            self._display_json_results(processed_results)
+            # Don't return raw results to avoid double output in json mode
+            return []
+        else:
+            self._display_results(processed_results, verbose)
+            return processed_results
+
+    async def brave(
+        self,
+        query: str,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        api_key: str | None = None,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using Brave Search.
+
+        Args:
+            query: Search query string
+            num_results: Number of results to return
+            country: Country code
+            language: Language code
+            safe_search: Whether to enable safe search
+            time_frame: Time frame for results
+            api_key: API key (otherwise use environment variable)
+            verbose: Show detailed output
+            json: Return results as JSON
+            **kwargs: Additional engine-specific parameters
+
+        Returns:
+            List of search results as dictionaries
+        """
+        self._configure_logging(verbose)
+
+        # Only show status message when not in JSON mode
+        console = Console()
+        if not json:
+            console.print(f"[bold]Searching Brave[/bold]: {query}")
+
+        results = await brave(
+            query=query,
+            num_results=num_results,
+            country=country,
+            language=language,
+            safe_search=safe_search,
+            time_frame=time_frame,
+            api_key=api_key,
+            **kwargs,
+        )
+
+        processed_results = self._process_results(results)
+
+        if json:
+            self._display_json_results(processed_results)
+            # Don't return raw results to avoid double output in json mode
+            return []
+        else:
+            self._display_results(processed_results, verbose)
+            return processed_results
+
+    async def brave_news(
+        self,
+        query: str,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        api_key: str | None = None,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using Brave News Search.
+
+        Args:
+            query: Search query string
+            num_results: Number of results to return
+            country: Country code
+            language: Language code
+            safe_search: Whether to enable safe search
+            time_frame: Time frame for results
+            api_key: API key (otherwise use environment variable)
+            verbose: Show detailed output
+            json: Return results as JSON
+            **kwargs: Additional engine-specific parameters
+
+        Returns:
+            List of search results as dictionaries
+        """
+        self._configure_logging(verbose)
+
+        # Only show status message when not in JSON mode
+        console = Console()
+        if not json:
+            console.print(f"[bold]Searching Brave News[/bold]: {query}")
+
+        results = await brave_news(
+            query=query,
+            num_results=num_results,
+            country=country,
+            language=language,
+            safe_search=safe_search,
+            time_frame=time_frame,
+            api_key=api_key,
+            **kwargs,
+        )
+
+        processed_results = self._process_results(results)
+
+        if json:
+            self._display_json_results(processed_results)
+            # Don't return raw results to avoid double output in json mode
+            return []
+        else:
+            self._display_results(processed_results, verbose)
+            return processed_results
+
+    async def serpapi(
+        self,
+        query: str,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        api_key: str | None = None,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using SerpAPI (Google Search API).
+
+        Args:
+            query: Search query string
+            num_results: Number of results to return
+            country: Country code
+            language: Language code
+            safe_search: Whether to enable safe search
+            time_frame: Time frame for results
+            api_key: API key (otherwise use environment variable)
+            verbose: Show detailed output
+            json: Return results as JSON
+            **kwargs: Additional engine-specific parameters
+
+        Returns:
+            List of search results as dictionaries
+        """
+        self._configure_logging(verbose)
+
+        # Only show status message when not in JSON mode
+        console = Console()
+        if not json:
+            console.print(f"[bold]Searching SerpAPI (Google)[/bold]: {query}")
+
+        results = await serpapi(
+            query=query,
+            num_results=num_results,
+            country=country,
+            language=language,
+            safe_search=safe_search,
+            time_frame=time_frame,
+            api_key=api_key,
+            **kwargs,
+        )
+
+        processed_results = self._process_results(results)
+
+        if json:
+            self._display_json_results(processed_results)
+            # Don't return raw results to avoid double output in json mode
+            return []
+        else:
+            self._display_results(processed_results, verbose)
+            return processed_results
+
+    async def tavily(
+        self,
+        query: str,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        api_key: str | None = None,
+        search_depth: str = "basic",
+        include_domains: str | None = None,
+        exclude_domains: str | None = None,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using Tavily AI Search.
+
+        Args:
+            query: Search query string
+            num_results: Number of results to return
+            country: Country code
+            language: Language code
+            safe_search: Whether to enable safe search
+            time_frame: Time frame for results
+            api_key: API key (otherwise use environment variable)
+            search_depth: Search depth (basic or comprehensive)
+            include_domains: Comma-separated list of domains to include
+            exclude_domains: Comma-separated list of domains to exclude
+            verbose: Show detailed output
+            json: Return results as JSON
+            **kwargs: Additional engine-specific parameters
+
+        Returns:
+            List of search results as dictionaries
+        """
+        self._configure_logging(verbose)
+
+        # Only show status message when not in JSON mode
+        console = Console()
+        if not json:
+            console.print(f"[bold]Searching Tavily AI[/bold]: {query}")
+
+        # Convert comma-separated lists to actual lists
+        include_domains_list = None
+        if include_domains:
+            include_domains_list = [s.strip() for s in include_domains.split(",")]
+
+        exclude_domains_list = None
+        if exclude_domains:
+            exclude_domains_list = [s.strip() for s in exclude_domains.split(",")]
+
+        results = await tavily(
+            query=query,
+            num_results=num_results,
+            country=country,
+            language=language,
+            safe_search=safe_search,
+            time_frame=time_frame,
+            api_key=api_key,
+            search_depth=search_depth,
+            include_domains=include_domains_list,
+            exclude_domains=exclude_domains_list,
+            **kwargs,
+        )
+
+        processed_results = self._process_results(results)
+
+        if json:
+            self._display_json_results(processed_results)
+            # Don't return raw results to avoid double output in json mode
+            return []
+        else:
+            self._display_results(processed_results, verbose)
+            return processed_results
+
+    async def pplx(
+        self,
+        query: str,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        api_key: str | None = None,
+        model: str | None = None,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using Perplexity AI.
+
+        Args:
+            query: Search query string
+            num_results: Number of results to return
+            country: Country code
+            language: Language code
+            safe_search: Whether to enable safe search
+            time_frame: Time frame for results
+            api_key: API key (otherwise use environment variable)
+            model: Model to use (e.g., "sonar-small-online", "sonar-medium-online")
+            verbose: Show detailed output
+            json: Return results as JSON
+            **kwargs: Additional engine-specific parameters
+
+        Returns:
+            List of search results as dictionaries
+        """
+        self._configure_logging(verbose)
+
+        # Only show status message when not in JSON mode
+        console = Console()
+        if not json:
+            console.print(f"[bold]Searching Perplexity AI[/bold]: {query}")
+
+        results = await pplx(
+            query=query,
+            num_results=num_results,
+            country=country,
+            language=language,
+            safe_search=safe_search,
+            time_frame=time_frame,
+            api_key=api_key,
+            model=model,
+            **kwargs,
+        )
+
+        processed_results = self._process_results(results)
+
+        if json:
+            self._display_json_results(processed_results)
+            # Don't return raw results to avoid double output in json mode
+            return []
+        else:
+            self._display_results(processed_results, verbose)
+            return processed_results
+
+    async def you(
+        self,
+        query: str,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        api_key: str | None = None,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using You.com Search.
+
+        Args:
+            query: Search query string
+            num_results: Number of results to return
+            country: Country code
+            language: Language code
+            safe_search: Whether to enable safe search
+            time_frame: Time frame for results
+            api_key: API key (otherwise use environment variable)
+            verbose: Show detailed output
+            json: Return results as JSON
+            **kwargs: Additional engine-specific parameters
+
+        Returns:
+            List of search results as dictionaries
+        """
+        self._configure_logging(verbose)
+
+        # Only show status message when not in JSON mode
+        console = Console()
+        if not json:
+            console.print(f"[bold]Searching You.com[/bold]: {query}")
+
+        results = await you(
+            query=query,
+            num_results=num_results,
+            country=country,
+            language=language,
+            safe_search=safe_search,
+            time_frame=time_frame,
+            api_key=api_key,
+            **kwargs,
+        )
+
+        processed_results = self._process_results(results)
+
+        if json:
+            self._display_json_results(processed_results)
+            # Don't return raw results to avoid double output in json mode
+            return []
+        else:
+            self._display_results(processed_results, verbose)
+            return processed_results
+
+    async def you_news(
+        self,
+        query: str,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        api_key: str | None = None,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using You.com News Search.
+
+        Args:
+            query: Search query string
+            num_results: Number of results to return
+            country: Country code
+            language: Language code
+            safe_search: Whether to enable safe search
+            time_frame: Time frame for results
+            api_key: API key (otherwise use environment variable)
+            verbose: Show detailed output
+            json: Return results as JSON
+            **kwargs: Additional engine-specific parameters
+
+        Returns:
+            List of search results as dictionaries
+        """
+        self._configure_logging(verbose)
+
+        # Only show status message when not in JSON mode
+        console = Console()
+        if not json:
+            console.print(f"[bold]Searching You.com News[/bold]: {query}")
+
+        results = await you_news(
+            query=query,
+            num_results=num_results,
+            country=country,
+            language=language,
+            safe_search=safe_search,
+            time_frame=time_frame,
+            api_key=api_key,
+            **kwargs,
+        )
+
+        processed_results = self._process_results(results)
+
+        if json:
+            self._display_json_results(processed_results)
+            # Don't return raw results to avoid double output in json mode
+            return []
+        else:
+            self._display_results(processed_results, verbose)
+            return processed_results
+
+    async def duckduckgo(
+        self,
+        query: str,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        proxy: str | None = None,
+        timeout: int = 10,
+        verbose: bool = False,
+        json: bool = False,
+        **kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        """
+        Search using DuckDuckGo search engine.
+
+        Args:
+            query: The search query
+            num_results: Maximum number of results to return
+            country: Optional country code for regional search (maps to 'region')
+            language: Optional language code for localized results
+            safe_search: Whether to enable safe search filtering
+            time_frame: Optional time range for results (d: day, w: week, m: month, y: year)
+            proxy: Optional proxy server to use, supports http/https/socks5
+            timeout: Request timeout in seconds
+            verbose: Whether to show detailed results
+            json: Whether to output in JSON format
+            **kwargs: Additional DuckDuckGo-specific parameters
+
+        Returns:
+            Search results as dictionaries
+        """
+        self._configure_logging(verbose)
+        self.logger.info(f"🔍 Searching DuckDuckGo for: {query}")
+
+        try:
+            # Ensure safe_search is a boolean and not None
+            actual_safe_search = True if safe_search is None else bool(safe_search)
+
+            results = await duckduckgo(
+                query,
+                num_results=num_results,
+                country=country,
+                language=language,
+                safe_search=actual_safe_search,
+                time_frame=time_frame,
+                proxy=proxy,
+                timeout=timeout,
+                **kwargs,
+            )
+            processed_results = self._process_results(results)
+
+            if json:
+                self._display_json_results(processed_results)
+            else:
+                self._display_results(processed_results, verbose)
+            return processed_results
+        except Exception as e:
+            error_msg = f"DuckDuckGo search failed: {e}"
+            self.logger.error(f"❌ {error_msg}")
+            self._display_errors([error_msg])
+            return []
 
 
 def main() -> None:

@@ -51,49 +51,61 @@ class SerpApiSearchEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num: int | None = None,
-        google_domain: str | None = None,
-        gl: str | None = None,  # Country for Google search
-        hl: str | None = None,  # Language for Google search
-        safe: str | None = None,  # Safe search setting
-        time_period: str | None = None,  # Time period for search
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | str | None = True,
+        time_frame: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """
-        Initialize the SerpApi Google search engine.
+        Initialize the SerpApi search engine.
 
         Args:
-            config: Configuration for this search engine
-            num: Number of results to return (overrides config)
-            google_domain: Google domain to use (e.g., google.com, google.co.uk)
-            gl: Country for Google search (e.g., us, uk)
-            hl: Language for Google search (e.g., en, fr)
-            safe: Safe search setting (active or off)
-            time_period: Time period for search (e.g., last_day, last_week, last_month, last_year)
-
-        Raises:
-            EngineError: If the API key is missing
+            config: Engine configuration
+            num_results: Number of results to return (maps to 'num')
+            country: Country code for results (maps to 'gl')
+            language: Language code for results (maps to 'hl')
+            safe_search: Whether to enable safe search (maps to 'safe')
+            time_frame: Time frame for results (maps to 'time_period')
+            **kwargs: Additional SerpApi-specific parameters
         """
         super().__init__(config)
+
+        # API endpoint
         self.base_url = "https://serpapi.com/search"
 
-        # Use provided num if available, otherwise, use default from config
+        # Map common parameters to SerpApi-specific ones
+        num = kwargs.get("num", num_results)
         self.num = num or self.config.default_params.get("num", 10)
 
-        # Additional parameters
+        google_domain = kwargs.get("google_domain")
         self.google_domain = google_domain or self.config.default_params.get(
             "google_domain", "google.com"
         )
+
+        gl = kwargs.get("gl", country)
         self.gl = gl or self.config.default_params.get("gl", None)
+
+        hl = kwargs.get("hl", language)
         self.hl = hl or self.config.default_params.get("hl", None)
+
+        # Handle safe_search conversion (boolean to string)
+        safe = kwargs.get("safe", safe_search)
+        if isinstance(safe, bool):
+            safe = "active" if safe else "off"
         self.safe = safe or self.config.default_params.get("safe", None)
+
+        time_period = kwargs.get("time_period", time_frame)
         self.time_period = time_period or self.config.default_params.get(
             "time_period", None
         )
 
+        # Check if API key is available
         if not self.config.api_key:
             raise EngineError(
                 self.name,
-                "SerpApi API key is required. Set it in the config or via the SERPAPI_API_KEY env var.",
+                f"SerpApi API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
     async def search(self, query: str) -> list[SearchResult]:
@@ -177,99 +189,43 @@ class SerpApiSearchEngine(SearchEngine):
 
 async def serpapi(
     query: str,
+    num_results: int = 5,
+    country: str | None = None,
+    language: str | None = None,
+    safe_search: bool | str | None = True,
+    time_frame: str | None = None,
+    google_domain: str | None = None,
     api_key: str | None = None,
-    num: int = 10,
-    google_domain: str = "google.com",
-    gl: str | None = None,
-    hl: str | None = None,
-    safe: str | None = None,
-    time_period: str | None = None,
 ) -> list[SearchResult]:
     """
-    Perform a web search using the SerpApi Google Search API.
-
-    This function provides a simple interface to the SerpApi Google Search API,
-    allowing users to search the web and get structured results from Google.
-
-    If no API key is provided, the function will attempt to find one in the environment
-    variables using the names defined in SerpApiSearchEngine.env_api_key_names
-    (typically "SERPAPI_API_KEY").
+    Search using SerpApi Google search.
 
     Args:
-        query: The search query string
-        api_key: Optional SerpApi API key. If not provided, will look for it in environment variables
-        num: Number of results to return (default: 10)
-        google_domain: Google domain to use (default: "google.com")
-        gl: Country for Google search (e.g., "us", "uk", "fr")
-        hl: Language for Google search (e.g., "en", "fr", "de")
-        safe: Safe search setting ("active" or "off")
-        time_period: Time period for search ("last_day", "last_week", "last_month", "last_year")
+        query: Search query string
+        num_results: Number of results to return (1-100)
+        country: Country code (e.g., "us", "gb", "fr")
+        language: Language code (e.g., "en", "fr", "de")
+        safe_search: Whether to enable safe search (True="active", False="off")
+        time_frame: Time filter (e.g., "day", "week", "month", "year")
+        google_domain: Google domain to use (default: google.com)
+        api_key: Optional API key (otherwise use environment variable)
 
     Returns:
-        A list of SearchResult objects containing the search results with:
-        - title: The title of the search result
-        - url: The URL of the search result
-        - snippet: A brief description or excerpt
-        - source: The source engine ("serpapi")
-        - rank: The ranking position of the result (if available)
-        - raw: The raw result data from the API
-
-    Raises:
-        EngineError: If the search fails or API key is missing
-
-    Examples:
-        # Using API key from environment variable
-        >>> results = await serpapi("Python programming")
-        >>> for result in results:
-        ...     print(f"{result.title}: {result.url}")
-
-        # Explicitly providing API key
-        >>> results = await serpapi("machine learning", api_key="your-api-key")
-
-        # With advanced parameters
-        >>> results = await serpapi(
-        ...     "python programming",
-        ...     num=5,
-        ...     gl="us",
-        ...     hl="en",
-        ...     time_period="last_month"
-        ... )
+        List of search results
     """
-    # Try to get API key from environment if not provided
-    actual_api_key = api_key
-    if not actual_api_key:
-        import os
-
-        # Check environment variables using the engine's env_api_key_names
-        for env_var in SerpApiSearchEngine.env_api_key_names:
-            if env_var in os.environ:
-                actual_api_key = os.environ[env_var]
-                break
-
-    # Create a simple config for this request
     config = EngineConfig(
-        api_key=actual_api_key,
+        api_key=api_key,
         enabled=True,
-        default_params={
-            "num": num,
-            "google_domain": google_domain,
-            "gl": gl,
-            "hl": hl,
-            "safe": safe,
-            "time_period": time_period,
-        },
     )
 
-    # Create the engine instance
     engine = SerpApiSearchEngine(
-        config=config,
-        num=num,
+        config,
+        num_results=num_results,
+        country=country,
+        language=language,
+        safe_search=safe_search,
+        time_frame=time_frame,
         google_domain=google_domain,
-        gl=gl,
-        hl=hl,
-        safe=safe,
-        time_period=time_period,
     )
 
-    # Perform the search
     return await engine.search(query)

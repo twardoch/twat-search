@@ -48,49 +48,64 @@ class BraveSearchEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        count: int | None = None,
+        num_results: int = 5,
         country: str | None = None,
-        search_lang: str | None = None,
-        ui_lang: str | None = None,
-        safe_search: str | None = None,
-        freshness: str | None = None,
+        language: str | None = None,
+        safe_search: bool | str | None = True,
+        time_frame: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """
-        Initialize the Brave search engine.
+        Initialize Brave Search engine.
 
         Args:
-            config: Configuration for this search engine
-            count: Number of results to return (overrides config)
-            country: Country code for search localization
-            search_lang: Language for search results
-            ui_lang: Language for user interface
-            safe_search: Safe search setting ('strict', 'moderate', 'off')
-            freshness: Time range for results ('past_day', 'past_week', 'past_month', 'past_year')
-
-        Raises:
-            EngineError: If the API key is missing
+            config: Engine configuration
+            num_results: Number of results to return (maps to 'count')
+            country: Country code for results
+            language: Language code for results (maps to 'search_lang')
+            safe_search: Whether to enable safe search (boolean or string: 'strict', 'moderate', 'off')
+            time_frame: Time frame for results (maps to 'freshness')
+            **kwargs: Additional Brave-specific parameters
         """
         super().__init__(config)
+
+        # API endpoint
         self.base_url = "https://api.search.brave.com/res/v1/web/search"
 
-        # Use provided count if available, otherwise, use default from config
+        # Map common parameters to Brave-specific ones
+        count = kwargs.get("count", num_results)
         self.count = count or self.config.default_params.get("count", 10)
 
-        # Additional parameters
-        self.country = country or self.config.default_params.get("country", None)
+        self.country = (
+            country
+            or kwargs.get("country")
+            or self.config.default_params.get("country", None)
+        )
+
+        search_lang = kwargs.get("search_lang", language)
         self.search_lang = search_lang or self.config.default_params.get(
             "search_lang", None
         )
+
+        ui_lang = kwargs.get("ui_lang", language)
         self.ui_lang = ui_lang or self.config.default_params.get("ui_lang", None)
-        self.safe_search = safe_search or self.config.default_params.get(
-            "safe_search", None
-        )
+
+        safe = kwargs.get("safe_search", safe_search)
+        # Handle boolean to string conversion for safe_search
+        if isinstance(safe, bool) and safe is True:
+            safe = "strict"
+        elif isinstance(safe, bool) and safe is False:
+            safe = "off"
+        self.safe_search = safe or self.config.default_params.get("safe_search", None)
+
+        freshness = kwargs.get("freshness", time_frame)
         self.freshness = freshness or self.config.default_params.get("freshness", None)
 
+        # Check if API key is available
         if not self.config.api_key:
             raise EngineError(
                 self.name,
-                "Brave API key is required. Set it in the config or via the BRAVE_API_KEY env var.",
+                f"Brave API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
         self.headers = {
@@ -205,46 +220,67 @@ class BraveNewsSearchEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        count: int | None = None,
+        num_results: int = 5,
         country: str | None = None,
-        search_lang: str | None = None,
-        ui_lang: str | None = None,
-        freshness: str | None = None,
+        language: str | None = None,
+        safe_search: bool | str | None = True,
+        time_frame: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """
-        Initialize the Brave News search engine.
+        Initialize Brave News search engine.
 
         Args:
-            config: Configuration for this search engine
-            count: Number of results to return (overrides config)
-            country: Country code for search localization
-            search_lang: Language for search results
-            ui_lang: Language for user interface
-            freshness: Time range for results ('past_hour', 'past_day', 'past_week', 'past_month')
-
-        Raises:
-            EngineError: If the API key is missing
+            config: Engine configuration
+            num_results: Number of results to return (maps to 'count')
+            country: Country code for results
+            language: Language code for results (maps to 'search_lang')
+            safe_search: Whether to enable safe search (boolean or string: 'strict', 'moderate', 'off')
+            time_frame: Time frame for results (maps to 'freshness')
+            **kwargs: Additional Brave-specific parameters
         """
         super().__init__(config)
+
+        # API endpoint
         self.base_url = "https://api.search.brave.com/res/v1/news/search"
 
-        # Use provided count if available, otherwise, use default from config
+        # Map common parameters to Brave-specific ones
+        count = kwargs.get("count", num_results)
         self.count = count or self.config.default_params.get("count", 10)
 
-        # Additional parameters
-        self.country = country or self.config.default_params.get("country", None)
+        self.country = (
+            country
+            or kwargs.get("country")
+            or self.config.default_params.get("country", None)
+        )
+
+        search_lang = kwargs.get("search_lang", language)
         self.search_lang = search_lang or self.config.default_params.get(
             "search_lang", None
         )
+
+        ui_lang = kwargs.get("ui_lang", language)
         self.ui_lang = ui_lang or self.config.default_params.get("ui_lang", None)
+
+        safe = kwargs.get("safe_search", safe_search)
+        # Handle boolean to string conversion for safe_search
+        if isinstance(safe, bool) and safe is True:
+            safe = "strict"
+        elif isinstance(safe, bool) and safe is False:
+            safe = "off"
+        self.safe_search = safe or self.config.default_params.get("safe_search", None)
+
+        freshness = kwargs.get("freshness", time_frame)
         self.freshness = freshness or self.config.default_params.get("freshness", None)
 
+        # Check if API key is available
         if not self.config.api_key:
             raise EngineError(
                 self.name,
-                "Brave API key is required. Set it in the config or via the BRAVE_API_KEY env var.",
+                f"Brave API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
+        # API authentication headers
         self.headers = {
             "Accept": "application/json",
             "X-Subscription-Token": self.config.api_key,
@@ -330,200 +366,81 @@ class BraveNewsSearchEngine(SearchEngine):
 
 async def brave(
     query: str,
-    api_key: str | None = None,
-    count: int = 10,
+    num_results: int = 5,
     country: str | None = None,
-    search_lang: str | None = None,
-    ui_lang: str | None = None,
-    safe_search: str | None = None,
-    freshness: str | None = None,
+    language: str | None = None,
+    safe_search: bool | str | None = True,
+    time_frame: str | None = None,
+    api_key: str | None = None,
 ) -> list[SearchResult]:
     """
-    Perform a web search using Brave Search API.
-
-    This function provides a simple interface to the Brave Search API, allowing
-    users to search the web and get structured results. It returns web search
-    results that match the provided query.
-
-    If no API key is provided, the function will attempt to find one in the environment
-    variables using the names defined in BraveSearchEngine.env_api_key_names
-    (typically "BRAVE_API_KEY").
+    Search Brave web search.
 
     Args:
-        query: The search query string
-        api_key: Optional Brave Search API key. If not provided, will look for it in environment variables
-        count: Number of results to return (default: 10)
-        country: Country code for search localization (ISO 3166-1 alpha-2)
-            Example: 'US', 'GB', 'DE', etc.
-        search_lang: Language for search results (ISO 639-1)
-            Example: 'en', 'fr', 'de', etc.
-        ui_lang: Language for user interface (ISO 639-1)
-            Example: 'en', 'fr', 'de', etc.
-        safe_search: Safe search setting ('strict', 'moderate', 'off')
-        freshness: Time range for results ('past_day', 'past_week', 'past_month', 'past_year')
+        query: Search query string
+        num_results: Number of results to return (1-20)
+        country: Country code (e.g., "US", "GB", "FR")
+        language: Language code (e.g., "en", "fr", "de")
+        safe_search: Safe search level (True = strict, False = off, or "moderate")
+        time_frame: Time filter (e.g., "past_day", "past_week", "past_month")
+        api_key: Optional API key (otherwise use environment variable)
 
     Returns:
-        A list of SearchResult objects containing the search results with:
-        - title: The title of the search result
-        - url: The URL of the search result
-        - snippet: A brief description or excerpt
-        - source: The source engine ("brave")
-        - raw: The raw result data from the API
-
-    Raises:
-        EngineError: If the search fails or API key is missing
-
-    Examples:
-        # Using API key from environment variable
-        >>> results = await brave("Python programming")
-        >>> for result in results:
-        ...     print(f"{result.title}: {result.url}")
-
-        # Explicitly providing API key
-        >>> results = await brave("machine learning", api_key="your-api-key")
-
-        # With advanced parameters
-        >>> results = await brave(
-        ...     "machine learning",
-        ...     count=5,
-        ...     country="US",
-        ...     search_lang="en",
-        ...     freshness="past_week"
-        ... )
+        List of search results
     """
-    # Try to get API key from environment if not provided
-    actual_api_key = api_key
-    if not actual_api_key:
-        import os
-
-        # Check environment variables using the engine's env_api_key_names
-        for env_var in BraveSearchEngine.env_api_key_names:
-            if env_var in os.environ:
-                actual_api_key = os.environ[env_var]
-                break
-
-    # Create a simple config for this request
     config = EngineConfig(
-        api_key=actual_api_key,
+        api_key=api_key,
         enabled=True,
-        default_params={
-            "count": count,
-            "country": country,
-            "search_lang": search_lang,
-            "ui_lang": ui_lang,
-            "safe_search": safe_search,
-            "freshness": freshness,
-        },
     )
 
-    # Create the engine instance
     engine = BraveSearchEngine(
-        config=config,
-        count=count,
+        config,
+        num_results=num_results,
         country=country,
-        search_lang=search_lang,
-        ui_lang=ui_lang,
+        language=language,
         safe_search=safe_search,
-        freshness=freshness,
+        time_frame=time_frame,
     )
 
-    # Perform the search
     return await engine.search(query)
 
 
 async def brave_news(
     query: str,
-    api_key: str | None = None,
-    count: int = 10,
+    num_results: int = 5,
     country: str | None = None,
-    search_lang: str | None = None,
-    ui_lang: str | None = None,
-    freshness: str | None = None,
+    language: str | None = None,
+    safe_search: bool | str | None = True,
+    time_frame: str | None = None,
+    api_key: str | None = None,
 ) -> list[SearchResult]:
     """
-    Perform a news search using Brave News Search API.
-
-    This function provides a simple interface to the Brave News Search API, allowing
-    users to search for news articles and get structured results. It returns news
-    articles that match the provided query.
-
-    If no API key is provided, the function will attempt to find one in the environment
-    variables using the names defined in BraveNewsSearchEngine.env_api_key_names
-    (typically "BRAVE_API_KEY" or "BRAVE_NEWS_API_KEY").
+    Search Brave news.
 
     Args:
-        query: The search query string
-        api_key: Optional Brave Search API key. If not provided, will look for it in environment variables
-        count: Number of results to return (default: 10)
-        country: Country code for search localization (ISO 3166-1 alpha-2)
-            Example: 'US', 'GB', 'DE', etc.
-        search_lang: Language for search results (ISO 639-1)
-            Example: 'en', 'fr', 'de', etc.
-        ui_lang: Language for user interface (ISO 639-1)
-            Example: 'en', 'fr', 'de', etc.
-        freshness: Time range for results ('past_hour', 'past_day', 'past_week', 'past_month')
+        query: Search query string
+        num_results: Number of results to return (1-20)
+        country: Country code (e.g., "US", "GB", "FR")
+        language: Language code (e.g., "en", "fr", "de")
+        safe_search: Safe search level (True = strict, False = off, or "moderate")
+        time_frame: Time filter (e.g., "past_hour", "past_day", "past_week")
+        api_key: Optional API key (otherwise use environment variable)
 
     Returns:
-        A list of SearchResult objects containing the news search results with:
-        - title: The title of the news article
-        - url: The URL of the news article
-        - snippet: A brief description or excerpt, may include publisher and publication time
-        - source: The source engine ("brave-news")
-        - raw: The raw result data from the API
-
-    Raises:
-        EngineError: If the search fails or API key is missing
-
-    Examples:
-        # Using API key from environment variable
-        >>> results = await brave_news("Climate change")
-        >>> for result in results:
-        ...     print(f"{result.title}: {result.url}")
-
-        # Explicitly providing API key
-        >>> results = await brave_news("politics", api_key="your-api-key")
-
-        # With advanced parameters
-        >>> results = await brave_news(
-        ...     "politics",
-        ...     count=5,
-        ...     country="US",
-        ...     freshness="past_day"
-        ... )
+        List of search results
     """
-    # Try to get API key from environment if not provided
-    actual_api_key = api_key
-    if not actual_api_key:
-        import os
-
-        # Check environment variables using the engine's env_api_key_names
-        for env_var in BraveNewsSearchEngine.env_api_key_names:
-            if env_var in os.environ:
-                actual_api_key = os.environ[env_var]
-                break
-
-    # Create a simple config for this request
     config = EngineConfig(
-        api_key=actual_api_key,
+        api_key=api_key,
         enabled=True,
-        default_params={
-            "count": count,
-            "country": country,
-            "search_lang": search_lang,
-            "ui_lang": ui_lang,
-            "freshness": freshness,
-        },
     )
 
-    # Create the engine instance
     engine = BraveNewsSearchEngine(
-        config=config,
-        count=count,
+        config,
+        num_results=num_results,
         country=country,
-        search_lang=search_lang,
-        ui_lang=ui_lang,
-        freshness=freshness,
+        language=language,
+        safe_search=safe_search,
+        time_frame=time_frame,
     )
 
-    # Perform the search
     return await engine.search(query)

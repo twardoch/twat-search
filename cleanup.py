@@ -390,7 +390,6 @@ def main() -> NoReturn:
     except Exception as e:
         log_message(f"Error: {e}")
     repomix()
-    print(Path(LOG_FILE).read_text())
 
 
 if __name__ == "__main__":

@@ -32,37 +32,38 @@ class SearchEngine(abc.ABC):
 
     def __init__(self, config: EngineConfig, **kwargs: Any) -> None:
         """
-        Initialize the search engine with its configuration.
+        Initialize the search engine with configuration and common parameters.
 
         Args:
-            config: Configuration for this search engine
+            config: Engine configuration
             **kwargs: Additional engine-specific parameters
-
-        Raises:
-            SearchError: If the engine is disabled
         """
         self.config = config
-        self.kwargs = kwargs  # Store for later use
+        self.kwargs = kwargs
 
-        if not self.config.enabled:
+        # Common parameters with default values
+        self.num_results = kwargs.get("num_results", 5)
+        self.country = kwargs.get("country", None)
+        self.language = kwargs.get("language", None)
+        self.safe_search = kwargs.get("safe_search", True)
+        self.time_frame = kwargs.get("time_frame", None)
+
+        if not config.enabled:
             msg = f"Engine '{self.name}' is disabled."
             raise SearchError(msg)
 
     @abc.abstractmethod
     async def search(self, query: str) -> list[SearchResult]:
         """
-        Perform a search and return a list of SearchResult objects.
+        Search using this engine.
 
         Args:
-            query: The search query string
+            query: The search query
 
         Returns:
-            A list of SearchResult objects
-
-        Raises:
-            EngineError: If the search fails
+            List of search results
         """
-        ...
+        pass
 
 
 # Registry of available search engines
@@ -73,42 +74,36 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
     """
     Register a search engine class.
 
-    This is typically used as a decorator on search engine classes.
-
     Args:
         engine_class: The search engine class to register
 
     Returns:
-        The same search engine class (for decorator use)
+        The registered search engine class
     """
-    # Set default environment variable names if not explicitly defined
-    if not engine_class.env_api_key_names:
+    _engine_registry[engine_class.name] = engine_class
+
+    # Auto-generate environment variable names if not explicitly set
+    if not hasattr(engine_class, "env_api_key_names"):
         engine_class.env_api_key_names = [f"{engine_class.name.upper()}_API_KEY"]
-
-    if not engine_class.env_enabled_names:
+    if not hasattr(engine_class, "env_enabled_names"):
         engine_class.env_enabled_names = [f"{engine_class.name.upper()}_ENABLED"]
-
-    if not engine_class.env_params_names:
+    if not hasattr(engine_class, "env_params_names"):
         engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]
 
-    _engine_registry[engine_class.name] = engine_class
     return engine_class
 
 
 def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:
     """
-    Factory function to get an instance of a search engine.
+    Get a search engine instance by name.
 
     Args:
-        engine_name: The name of the engine (e.g., "brave", "google")
-        config: The EngineConfig object for this engine
-        **kwargs: Additional parameters to pass to the engine constructor
+        engine_name: The name of the engine to get
+        config: Engine configuration
+        **kwargs: Additional engine-specific parameters
 
     Returns:
-        An instance of the SearchEngine subclass
-
-    Raises:
-        SearchError: If the engine is not found
+        An instance of the requested search engine
     """
     engine_class = _engine_registry.get(engine_name)
     if engine_class is None:

@@ -41,56 +41,63 @@ class YouSearchResponse(BaseModel):
 
 @register_engine
 class YouSearchEngine(SearchEngine):
-    """Implementation of the You.com Search API."""
+    """Implementation of the You.com Web Search API."""
 
     name = "you"
-    env_api_key_names: ClassVar[list[str]] = [
-        "YOUCOM_API_KEY",
-        "YOUCOM_SEARCH_API_KEY",
-        "YOU_API_KEY",
-    ]
+    env_api_key_names: ClassVar[list[str]] = ["YOU_API_KEY"]
 
     def __init__(
         self,
         config: EngineConfig,
-        num_web_results: int | None = None,
-        country_code: str | None = None,
-        safe_search: bool | None = None,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """
         Initialize the You.com search engine.
 
         Args:
-            config: Configuration for this search engine
-            num_web_results: Number of results to return (overrides config)
-            country_code: Country code for localization (ISO-3166 Alpha-2)
+            config: Engine configuration
+            num_results: Number of results to return (maps to 'num_web_results')
+            country: Country code for results (maps to 'country_code')
+            language: Language code for results
             safe_search: Whether to enable safe search
-
-        Raises:
-            EngineError: If the API key is missing
+            time_frame: Time frame for results
+            **kwargs: Additional You.com-specific parameters
         """
         super().__init__(config)
+
+        # API endpoint
         self.base_url = "https://api.you.com/api/search"
 
-        # Use provided count if available, otherwise, use default from config
+        # Map common parameters to You-specific ones
+        num_web_results = kwargs.get("num_web_results", num_results)
         self.num_web_results = num_web_results or self.config.default_params.get(
-            "num_web_results", 10
+            "num_web_results", 5
         )
 
-        # Additional parameters
+        country_code = kwargs.get("country_code", country)
         self.country_code = country_code or self.config.default_params.get(
             "country_code", None
         )
-        self.safe_search = safe_search or self.config.default_params.get(
-            "safe_search", None
+
+        self.safe_search = (
+            safe_search
+            or kwargs.get("safe_search")
+            or self.config.default_params.get("safe_search", True)
         )
 
+        # Check if API key is available
         if not self.config.api_key:
             raise EngineError(
                 self.name,
-                "You.com API key is required. Set it in the config or via the YOU_API_KEY env var.",
+                f"You.com API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
+        # API authentication headers
         self.headers = {
             "X-API-Key": self.config.api_key,
             "Accept": "application/json",
@@ -189,49 +196,60 @@ class YouNewsSearchEngine(SearchEngine):
     """Implementation of the You.com News Search API."""
 
     name = "you-news"
-    env_api_key_names: ClassVar[list[str]] = ["YOU_API_KEY", "YOU_NEWS_API_KEY"]
+    env_api_key_names: ClassVar[list[str]] = ["YOU_API_KEY"]
 
     def __init__(
         self,
         config: EngineConfig,
-        num_news_results: int | None = None,
-        country_code: str | None = None,
-        safe_search: bool | None = None,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool | None = True,
+        time_frame: str | None = None,
+        **kwargs: Any,
     ) -> None:
         """
-        Initialize the You.com News search engine.
+        Initialize the You.com news search engine.
 
         Args:
-            config: Configuration for this search engine
-            num_news_results: Number of results to return (overrides config)
-            country_code: Country code for localization (ISO-3166 Alpha-2)
+            config: Engine configuration
+            num_results: Number of results to return (maps to 'num_news_results')
+            country: Country code for results (maps to 'country_code')
+            language: Language code for results
             safe_search: Whether to enable safe search
-
-        Raises:
-            EngineError: If the API key is missing
+            time_frame: Time frame for results
+            **kwargs: Additional You.com-specific parameters
         """
         super().__init__(config)
+
+        # API endpoint
         self.base_url = "https://api.you.com/api/news"
 
-        # Use provided count if available, otherwise, use default from config
+        # Map common parameters to You-specific ones
+        num_news_results = kwargs.get("num_news_results", num_results)
         self.num_news_results = num_news_results or self.config.default_params.get(
-            "num_news_results", 10
+            "num_news_results", 5
         )
 
-        # Additional parameters
+        country_code = kwargs.get("country_code", country)
         self.country_code = country_code or self.config.default_params.get(
             "country_code", None
         )
-        self.safe_search = safe_search or self.config.default_params.get(
-            "safe_search", None
+
+        self.safe_search = (
+            safe_search
+            or kwargs.get("safe_search")
+            or self.config.default_params.get("safe_search", True)
         )
 
+        # Check if API key is available
         if not self.config.api_key:
             raise EngineError(
                 self.name,
-                "You.com API key is required. Set it in the config or via the YOU_API_KEY env var.",
+                f"You.com API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
+        # API authentication headers
         self.headers = {
             "X-API-Key": self.config.api_key,
             "Accept": "application/json",
@@ -313,173 +331,83 @@ YoucomSearchEngine = YouSearchEngine
 
 async def you(
     query: str,
+    num_results: int = 5,
+    country: str | None = None,
+    language: str | None = None,
+    safe_search: bool | None = True,
+    time_frame: str | None = None,
     api_key: str | None = None,
-    num_web_results: int = 10,
-    country_code: str | None = None,
-    safe_search: bool | None = None,
 ) -> list[SearchResult]:
     """
-    Perform a web search using the You.com Search API.
-
-    This function provides a simple interface to the You.com Search API, allowing
-    users to search the web and get structured results.
-
-    If no API key is provided, the function will attempt to find one in the environment
-    variables using the names defined in YouSearchEngine.env_api_key_names
-    (typically "YOUCOM_API_KEY", "YOUCOM_SEARCH_API_KEY", or "YOU_API_KEY").
+    Search You.com web search.
 
     Args:
-        query: The search query string
-        api_key: Optional You.com API key. If not provided, will look for it in environment variables
-        num_web_results: Number of results to return (default: 10)
-        country_code: Country code for localization (ISO-3166 Alpha-2)
+        query: Search query string
+        num_results: Number of results to return (1-20)
+        country: Country code (e.g., "US", "GB", "FR")
+        language: Language code (e.g., "en", "fr", "de")
         safe_search: Whether to enable safe search
+        time_frame: Time filter (not used in You.com)
+        api_key: Optional API key (otherwise use environment variable)
 
     Returns:
-        A list of SearchResult objects containing the search results with:
-        - title: The title of the search result
-        - url: The URL of the search result
-        - snippet: A brief description or excerpt
-        - source: The source engine ("you")
-        - raw: The raw result data from the API
-
-    Raises:
-        EngineError: If the search fails or API key is missing
-
-    Examples:
-        # Using API key from environment variable
-        >>> results = await you("Python programming")
-        >>> for result in results:
-        ...     print(f"{result.title}: {result.url}")
-
-        # Explicitly providing API key
-        >>> results = await you("machine learning", api_key="your-api-key")
-
-        # With advanced parameters
-        >>> results = await you(
-        ...     "python programming",
-        ...     num_web_results=5,
-        ...     country_code="US",
-        ...     safe_search=True
-        ... )
+        List of search results
     """
-    # Try to get API key from environment if not provided
-    actual_api_key = api_key
-    if not actual_api_key:
-        import os
-
-        # Check environment variables using the engine's env_api_key_names
-        for env_var in YouSearchEngine.env_api_key_names:
-            if env_var in os.environ:
-                actual_api_key = os.environ[env_var]
-                break
-
-    # Create a simple config for this request
     config = EngineConfig(
-        api_key=actual_api_key,
+        api_key=api_key,
         enabled=True,
-        default_params={
-            "num_web_results": num_web_results,
-            "country_code": country_code,
-            "safe_search": safe_search,
-        },
     )
 
-    # Create the engine instance
     engine = YouSearchEngine(
-        config=config,
-        num_web_results=num_web_results,
-        country_code=country_code,
+        config,
+        num_results=num_results,
+        country=country,
+        language=language,
         safe_search=safe_search,
+        time_frame=time_frame,
     )
 
-    # Perform the search
     return await engine.search(query)
 
 
 async def you_news(
     query: str,
+    num_results: int = 5,
+    country: str | None = None,
+    language: str | None = None,
+    safe_search: bool | None = True,
+    time_frame: str | None = None,
     api_key: str | None = None,
-    num_news_results: int = 10,
-    country_code: str | None = None,
-    safe_search: bool | None = None,
 ) -> list[SearchResult]:
     """
-    Perform a news search using the You.com News API.
-
-    This function provides a simple interface to the You.com News API, allowing
-    users to search for news articles and get structured results.
-
-    If no API key is provided, the function will attempt to find one in the environment
-    variables using the names defined in YouNewsSearchEngine.env_api_key_names
-    (typically "YOU_API_KEY" or "YOU_NEWS_API_KEY").
+    Search You.com news.
 
     Args:
-        query: The search query string
-        api_key: Optional You.com API key. If not provided, will look for it in environment variables
-        num_news_results: Number of news results to return (default: 10)
-        country_code: Country code for localization (ISO-3166 Alpha-2)
+        query: Search query string
+        num_results: Number of results to return (1-20)
+        country: Country code (e.g., "US", "GB", "FR")
+        language: Language code (e.g., "en", "fr", "de")
         safe_search: Whether to enable safe search
+        time_frame: Time filter (not used in You.com)
+        api_key: Optional API key (otherwise use environment variable)
 
     Returns:
-        A list of SearchResult objects containing the news search results with:
-        - title: The title of the news article
-        - url: The URL of the news article
-        - snippet: A brief description or excerpt, may include publisher and publication time
-        - source: The source engine ("you-news")
-        - raw: The raw result data from the API
-
-    Raises:
-        EngineError: If the search fails or API key is missing
-
-    Examples:
-        # Using API key from environment variable
-        >>> results = await you_news("Climate change")
-        >>> for result in results:
-        ...     print(f"{result.title}: {result.url}")
-
-        # Explicitly providing API key
-        >>> results = await you_news("politics", api_key="your-api-key")
-
-        # With advanced parameters
-        >>> results = await you_news(
-        ...     "technology trends",
-        ...     num_news_results=5,
-        ...     country_code="US",
-        ...     safe_search=True
-        ... )
+        List of search results
     """
-    # Try to get API key from environment if not provided
-    actual_api_key = api_key
-    if not actual_api_key:
-        import os
-
-        # Check environment variables using the engine's env_api_key_names
-        for env_var in YouNewsSearchEngine.env_api_key_names:
-            if env_var in os.environ:
-                actual_api_key = os.environ[env_var]
-                break
-
-    # Create a simple config for this request
     config = EngineConfig(
-        api_key=actual_api_key,
+        api_key=api_key,
         enabled=True,
-        default_params={
-            "num_news_results": num_news_results,
-            "country_code": country_code,
-            "safe_search": safe_search,
-        },
     )
 
-    # Create the engine instance
     engine = YouNewsSearchEngine(
-        config=config,
-        num_news_results=num_news_results,
-        country_code=country_code,
+        config,
+        num_results=num_results,
+        country=country,
+        language=language,
         safe_search=safe_search,
+        time_frame=time_frame,
     )
 
-    # Perform the search
     return await engine.search(query)
 
 
