@@ -387,6 +387,11 @@ class SearchCLI:
         # Get engine configuration
         engine_config = config.engines[engine_name]
 
+        # Default API key requirement check
+        api_key_required = (
+            hasattr(engine_config, "api_key") and engine_config.api_key is not None
+        )
+
         # Try to import the engine class to get more details
         try:
             # Import base engine module
@@ -396,13 +401,21 @@ class SearchCLI:
             registered_engines = get_registered_engines()
             engine_class = registered_engines.get(engine_name)
 
+            # Update API key requirement based on class information
+            if (
+                not api_key_required
+                and engine_class
+                and hasattr(engine_class, "env_api_key_names")
+            ):
+                api_key_required = bool(engine_class.env_api_key_names)
+
             # Display detailed information
             console.print(f"\n[bold cyan]🔍 Engine: {engine_name}[/bold cyan]")
             console.print(
                 f"[bold]Enabled:[/bold] {'✅' if engine_config.enabled else '❌'}"
             )
             console.print(
-                f"[bold]API Key Required:[/bold] {'✅' if engine_config.api_key is not None else '❌'}"
+                f"[bold]API Key Required:[/bold] {'✅' if api_key_required else '❌'}"
             )
 
             # Show API key environment variables
