@@ -7,6 +7,7 @@ This module implements the Perplexity AI API integration.
 """
 
 import httpx
+from typing import ClassVar
 from pydantic import BaseModel, Field, ValidationError
 
 from twat_search.web.config import EngineConfig
@@ -39,7 +40,12 @@ class PerplexityResponse(BaseModel):
 class PerplexitySearchEngine(SearchEngine):
     """Implementation of the Perplexity AI API."""
 
-    name = "perplexity"
+    name = "pplx"
+    env_api_key_names: ClassVar[list[str]] = [
+        "PERPLEXITYAI_API_KEY",
+        "PERPLEXITY_API_KEY",
+        "PPLX_API_KEY",
+    ]
 
     def __init__(self, config: EngineConfig, model: str | None = None) -> None:
         """
@@ -63,7 +69,7 @@ class PerplexitySearchEngine(SearchEngine):
         if not self.config.api_key:
             raise EngineError(
                 self.name,
-                "Perplexity API key is required. Set it in config or the PERPLEXITYAI_API_KEY env var.",
+                f"Perplexity API key is required. Set it in config or via one of these env vars: {', '.join(self.env_api_key_names)}.",
             )
 
         self.headers = {
@@ -146,3 +152,79 @@ class PerplexitySearchEngine(SearchEngine):
                 ) from exc
             except ValidationError as exc:
                 raise EngineError(self.name, f"Response parsing error: {exc}") from exc
+
+
+async def pplx(
+    query: str,
+    api_key: str | None = None,
+    model: str | None = None,
+) -> list[SearchResult]:
+    """
+    Perform an AI-powered search using Perplexity AI API.
+
+    This function provides a simple interface to the Perplexity AI API, allowing
+    users to get AI-generated answers to their queries. It returns structured
+    results with answer content from the specified AI model.
+
+    If no API key is provided, the function will attempt to find one in the environment
+    variables using the names defined in PerplexitySearchEngine.env_api_key_names
+    (typically "PERPLEXITYAI_API_KEY", "PERPLEXITY_API_KEY", or "PPLX_API_KEY").
+
+    Args:
+        query: The search query string
+        api_key: Optional Perplexity API key. If not provided, will look for it in environment variables
+        model: Model to use for search (defaults to "llama-3.1-sonar-large-128k-online" if not specified)
+
+    Returns:
+        A list of SearchResult objects containing the search results with:
+        - title: The title of the result (formatted as "Perplexity AI Response: {query}")
+        - url: The URL (defaults to "https://perplexity.ai")
+        - snippet: The AI-generated answer content
+        - source: The source engine ("pplx")
+        - raw: The raw result data from the API
+
+    Raises:
+        EngineError: If the search fails or API key is missing
+
+    Examples:
+        # Using API key from environment variable
+        >>> results = await pplx("What is quantum computing?")
+        >>> for result in results:
+        ...     print(result.snippet)
+
+        # Explicitly providing API key
+        >>> results = await pplx(
+        ...     "Explain the theory of relativity",
+        ...     api_key="your-api-key"
+        ... )
+
+        # Specifying a different model
+        >>> results = await pplx(
+        ...     "What are the benefits of green energy?",
+        ...     model="llama-3.1-sonar-small-32k-online"
+        ... )
+    """
+    # Try to get API key from environment if not provided
+    actual_api_key = api_key
+    if not actual_api_key:
+        import os
+
+        # Check environment variables using the engine's env_api_key_names
+        for env_var in PerplexitySearchEngine.env_api_key_names:
+            if env_var in os.environ:
+                actual_api_key = os.environ[env_var]
+                break
+
+    # Create a simple config for this request
+    config = EngineConfig(
+        api_key=actual_api_key, enabled=True, default_params={"model": model}
+    )
+
+    # Create the engine instance
+    engine = PerplexitySearchEngine(
+        config=config,
+        model=model,
+    )
+
+    # Perform the search
+    return await engine.search(query)
