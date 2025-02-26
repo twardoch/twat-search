@@ -1,5 +1,4 @@
 # this_file: src/twat_search/web/engines/hasdata.py
-
 """
 HasData search engine implementation.
 
@@ -7,6 +6,7 @@ This module implements search engines that use the HasData APIs:
 - hasdata-google: Full Google SERP API
 - hasdata-google-light: Light version of Google SERP API
 """
+from __future__ import annotations
 
 import json
 from typing import Any, ClassVar
@@ -15,12 +15,10 @@ import httpx
 from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.engines import (ENGINE_FRIENDLY_NAMES, GOOGLE_HASDATA,
-                                     GOOGLE_HASDATA_FULL)
+from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, GOOGLE_HASDATA, GOOGLE_HASDATA_FULL
+from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-
-from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 # Pydantic models for HasData Google search results
@@ -32,12 +30,12 @@ class HasDataGoogleResult(BaseModel):
     snippet: str
 
     @classmethod
-    def from_api_result(cls, result: dict[str, Any]) -> "HasDataGoogleResult":
+    def from_api_result(cls, result: dict[str, Any]) -> HasDataGoogleResult:
         """Convert API result to a model instance."""
         return cls(
-            title=result.get("title", ""),
-            url=result.get("link", ""),
-            snippet=result.get("snippet", ""),
+            title=result.get('title', ''),
+            url=HttpUrl(result.get('link', '')),
+            snippet=result.get('snippet', ''),
         )
 
 
@@ -45,11 +43,9 @@ class HasDataGoogleResult(BaseModel):
 class HasDataBaseEngine(SearchEngine):
     """Base class for HasData search engines."""
 
-    env_api_key_names: ClassVar[list[str]] = ["HASDATA_API_KEY"]
+    env_api_key_names: ClassVar[list[str]] = ['HASDATA_API_KEY']
     base_url: str  # Must be defined by subclass
-    supports_device_type: ClassVar[bool] = (
-        False  # Default value, will be overridden by subclasses
-    )
+    supports_device_type: ClassVar[bool] = False  # Default value, will be overridden by subclasses
 
     def __init__(
         self,
@@ -71,15 +67,9 @@ class HasDataBaseEngine(SearchEngine):
         """
         super().__init__(config)
         self.num_results = num_results
-        self.location = (
-            location
-            or kwargs.get("location")
-            or self.config.default_params.get("location")
-        )
+        self.location = location or kwargs.get('location') or self.config.default_params.get('location')
         self.device_type = (
-            device_type
-            or kwargs.get("device_type")
-            or self.config.default_params.get("device_type", "desktop")
+            device_type or kwargs.get('device_type') or self.config.default_params.get('device_type', 'desktop')
         )
 
         if not self.config.api_key:
@@ -89,7 +79,7 @@ class HasDataBaseEngine(SearchEngine):
             )
 
         self.headers = {
-            "x-api-key": self.config.api_key,
+            'x-api-key': self.config.api_key,
         }
 
     async def search(self, query: str) -> list[SearchResult]:
@@ -105,13 +95,13 @@ class HasDataBaseEngine(SearchEngine):
         Raises:
             EngineError: If the search request fails
         """
-        params: dict[str, Any] = {"q": query}
+        params: dict[str, Any] = {'q': query}
 
         if self.location:
-            params["location"] = self.location
+            params['location'] = self.location
 
         if self.device_type and self.supports_device_type:
-            params["deviceType"] = self.device_type
+            params['deviceType'] = self.device_type
 
         async with httpx.AsyncClient() as client:
             try:
@@ -126,7 +116,7 @@ class HasDataBaseEngine(SearchEngine):
 
                 # Parse the organic results from the response
                 results = []
-                organic_results = data.get("organicResults", [])
+                organic_results = data.get('organicResults', [])
 
                 for i, result in enumerate(organic_results):
                     if i >= self.num_results:
@@ -142,7 +132,7 @@ class HasDataBaseEngine(SearchEngine):
                                 source=self.engine_code,
                                 rank=i + 1,
                                 raw=result,
-                            )
+                            ),
                         )
                     except ValidationError:
                         continue
@@ -151,7 +141,8 @@ class HasDataBaseEngine(SearchEngine):
 
             except httpx.RequestError as exc:
                 raise EngineError(
-                    self.engine_code, f"HTTP Request failed: {exc}"
+                    self.engine_code,
+                    f"HTTP Request failed: {exc}",
                 ) from exc
             except httpx.HTTPStatusError as exc:
                 raise EngineError(
@@ -160,11 +151,13 @@ class HasDataBaseEngine(SearchEngine):
                 ) from exc
             except ValidationError as exc:
                 raise EngineError(
-                    self.engine_code, f"Response parsing error: {exc}"
+                    self.engine_code,
+                    f"Response parsing error: {exc}",
                 ) from exc
             except json.JSONDecodeError as exc:
                 raise EngineError(
-                    self.engine_code, f"Invalid JSON response: {exc}"
+                    self.engine_code,
+                    f"Invalid JSON response: {exc}",
                 ) from exc
 
 
@@ -174,7 +167,7 @@ class HasDataGoogleEngine(HasDataBaseEngine):
 
     engine_code = GOOGLE_HASDATA_FULL
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[GOOGLE_HASDATA_FULL]
-    base_url = "https://api.hasdata.com/scrape/google/serp"
+    base_url = 'https://api.hasdata.com/scrape/google/serp'
     supports_device_type: ClassVar[bool] = True
 
 
@@ -184,7 +177,7 @@ class HasDataGoogleLightEngine(HasDataBaseEngine):
 
     engine_code = GOOGLE_HASDATA
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[GOOGLE_HASDATA]
-    base_url = "https://api.hasdata.com/scrape/google-light/serp"
+    base_url = 'https://api.hasdata.com/scrape/google-light/serp'
     supports_device_type: ClassVar[bool] = False
 
 
@@ -192,7 +185,7 @@ async def hasdata_google_full(
     query: str,
     num_results: int = 5,
     location: str | None = None,
-    device_type: str = "desktop",
+    device_type: str = 'desktop',
     api_key: str | None = None,
 ) -> list[SearchResult]:
     """

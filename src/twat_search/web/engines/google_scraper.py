@@ -3,7 +3,6 @@
 # dependencies = ["googlesearch-python"]
 # ///
 # this_file: src/twat_search/web/engines/google_scraper.py
-
 """
 Google Scraper search engine implementation.
 
@@ -14,6 +13,7 @@ The GoogleScraperEngine class handles all interactions with the googlesearch-pyt
 library, providing robust error handling, result validation, and conversion to
 the standard SearchResult format used throughout the package.
 """
+from __future__ import annotations
 
 import logging
 from typing import Any, ClassVar, cast
@@ -49,10 +49,9 @@ except ImportError:
 
 
 from twat_search.web.config import EngineConfig
+from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-
-from twat_search.web.engines.base import SearchEngine, register_engine
 
 logger = logging.getLogger(__name__)
 
@@ -73,13 +72,13 @@ class GoogleScraperResult(BaseModel):
 
     title: str
     url: HttpUrl
-    description: str = ""
+    description: str = ''
 
-    @field_validator("title", "description")
+    @field_validator('title', 'description')
     @classmethod
     def validate_non_empty(cls, v: str) -> str:
         """Ensure string fields are not None and convert to empty string if None."""
-        return v or ""
+        return v or ''
 
 
 @register_engine
@@ -92,7 +91,7 @@ class GoogleScraperEngine(SearchEngine):
     configurable parameters like language, region, and safe search.
 
     Attributes:
-        name: The name of the search engine ("google-scraper")
+        engine_code: The name of the search engine ("google-scraper")
         env_api_key_names: Empty list since no API key is needed
     """
 
@@ -128,31 +127,36 @@ class GoogleScraperEngine(SearchEngine):
         """
         super().__init__(config, **kwargs)
         self.max_results: int = num_results or self.config.default_params.get(
-            "max_results", 5
+            'max_results',
+            5,
         )
         self.language: str = language or self.config.default_params.get(
-            "language", "en"
+            'language',
+            'en',
         )
         self.region: str | None = country or self.config.default_params.get(
-            "region", None
+            'region',
+            None,
         )
         self.safe: str | None = (
-            ("active" if safe_search else None)
+            ('active' if safe_search else None)
             if safe_search is not None
-            else self.config.default_params.get("safe", "active")
+            else self.config.default_params.get('safe', 'active')
         )
 
         self.sleep_interval: float = kwargs.get(
-            "sleep_interval"
-        ) or self.config.default_params.get("sleep_interval", 0.0)
+            'sleep_interval',
+        ) or self.config.default_params.get('sleep_interval', 0.0)
         self.ssl_verify: bool | None = kwargs.get(
-            "ssl_verify"
-        ) or self.config.default_params.get("ssl_verify", None)
-        self.proxy: str | None = kwargs.get("proxy") or self.config.default_params.get(
-            "proxy", None
+            'ssl_verify',
+        ) or self.config.default_params.get('ssl_verify', None)
+        self.proxy: str | None = kwargs.get('proxy') or self.config.default_params.get(
+            'proxy',
+            None,
         )
-        self.unique: bool = kwargs.get("unique") or self.config.default_params.get(
-            "unique", True
+        self.unique: bool = kwargs.get('unique') or self.config.default_params.get(
+            'unique',
+            True,
         )
 
         # Log any unused parameters for clarity
@@ -161,7 +165,7 @@ class GoogleScraperEngine(SearchEngine):
             unused_params.append(f"time_frame='{time_frame}'")
         if unused_params:
             logger.debug(
-                f"Parameters {', '.join(unused_params)} set but not used by Google Scraper"
+                f"Parameters {', '.join(unused_params)} set but not used by Google Scraper",
             )
 
     def _convert_result(self, result: GoogleSearchResult) -> SearchResult | None:
@@ -178,17 +182,15 @@ class GoogleScraperEngine(SearchEngine):
             SearchResult object or None if validation fails
         """
         if not result:
-            logger.warning("Empty result received from Google Scraper")
+            logger.warning('Empty result received from Google Scraper')
             return None
 
         try:
             # Validate result fields
             validated = GoogleScraperResult(
                 title=result.title,
-                url=result.url,
-                description=result.description
-                if hasattr(result, "description")
-                else "",
+                url=HttpUrl(result.url),
+                description=result.description if hasattr(result, 'description') else '',
             )
 
             # Create and return the SearchResult
@@ -196,13 +198,11 @@ class GoogleScraperEngine(SearchEngine):
                 title=validated.title,
                 url=validated.url,
                 snippet=validated.description,
-                source=self.name,
+                source=self.engine_code,
                 raw={
-                    "title": result.title,
-                    "url": str(result.url),
-                    "description": result.description
-                    if hasattr(result, "description")
-                    else "",
+                    'title': result.title,
+                    'url': str(result.url),
+                    'description': result.description if hasattr(result, 'description') else '',
                 },
             )
         except ValidationError as exc:
@@ -230,13 +230,13 @@ class GoogleScraperEngine(SearchEngine):
                          parsing errors, or other exceptions
         """
         if not query:
-            raise EngineError(self.name, "Search query cannot be empty")
+            raise EngineError(self.engine_code, 'Search query cannot be empty')
 
         logger.info(f"Searching Google with query: '{query}'")
         logger.debug(
             f"Using max_results={self.max_results}, language={self.language}, "
             f"region={self.region}, safe={self.safe}, sleep_interval={self.sleep_interval}, "
-            f"ssl_verify={self.ssl_verify}, proxy={self.proxy}, unique={self.unique}"
+            f"ssl_verify={self.ssl_verify}, proxy={self.proxy}, unique={self.unique}",
         )
 
         try:
@@ -253,50 +253,51 @@ class GoogleScraperEngine(SearchEngine):
                     proxy=self.proxy,
                     unique=self.unique,
                     advanced=True,  # Always use advanced to get titles and descriptions
-                )
+                ),
             )
 
             if not raw_results:
-                logger.info("No results returned from Google Scraper")
+                logger.info('No results returned from Google Scraper')
                 return []
 
-            logger.debug(f"Received {len(raw_results)} raw results from Google Scraper")
+            logger.debug(
+                f"Received {len(raw_results)} raw results from Google Scraper",
+            )
 
         except ValueError as exc:
             error_msg = f"Invalid input for Google search: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
         except ConnectionError as exc:
             error_msg = f"Network error connecting to Google: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
         except RuntimeError as exc:
             error_msg = f"Error parsing Google search results: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
         except Exception as exc:
             error_msg = f"Unexpected error during Google search: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
 
         # Convert and filter results in a single comprehension
         results: list[SearchResult] = [
             search_result
-            for search_result in (
-                self._convert_result(cast(GoogleSearchResult, result))
-                for result in raw_results
-            )
+            for search_result in (self._convert_result(cast(GoogleSearchResult, result)) for result in raw_results)
             if search_result is not None
         ]
 
-        logger.info(f"Returning {len(results)} validated results from Google Scraper")
+        logger.info(
+            f"Returning {len(results)} validated results from Google Scraper",
+        )
         return results
 
 
 async def google_scraper(
     query: str,
     num_results: int = 5,
-    language: str = "en",
+    language: str = 'en',
     country: str | None = None,
     safe_search: bool = True,
     sleep_interval: float = 0.0,
@@ -333,7 +334,7 @@ async def google_scraper(
 
     return await search(
         query,
-        engines=["google-scraper"],
+        engines=['google-scraper'],
         num_results=num_results,
         language=language,
         country=country,

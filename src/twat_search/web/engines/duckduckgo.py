@@ -3,12 +3,12 @@
 # dependencies = ["duckduckgo-search"]
 # ///
 # this_file: src/twat_search/web/engines/duckduckgo.py
-
 """
 DuckDuckGo Search engine implementation.
 
 This module implements the DuckDuckGo search API integration using the duckduckgo_search library.
 """
+from __future__ import annotations
 
 import logging
 from typing import Any, ClassVar
@@ -18,10 +18,9 @@ from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.engines import DUCKDUCKGO, ENGINE_FRIENDLY_NAMES
+from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-
-from twat_search.web.engines.base import SearchEngine, register_engine
 
 logger = logging.getLogger(__name__)
 
@@ -76,11 +75,17 @@ class DuckDuckGoSearchEngine(SearchEngine):
             self.proxy,
             self.timeout,
         ) = self._map_init_params(
-            num_results, country, language, safe_search, time_frame, kwargs, self.config
+            num_results,
+            country,
+            language,
+            safe_search,
+            time_frame,
+            kwargs,
+            self.config,
         )
         if self.language:
             logger.debug(
-                f"Language '{self.language}' set but not directly used by DuckDuckGo API"
+                f"Language '{self.language}' set but not directly used by DuckDuckGo API",
             )
 
     @staticmethod
@@ -97,23 +102,36 @@ class DuckDuckGoSearchEngine(SearchEngine):
         Map and normalize initialization parameters.
         """
         max_results = kwargs.get(
-            "max_results", num_results
-        ) or config.default_params.get("max_results", 10)
-        region = kwargs.get("region", country) or config.default_params.get(
-            "region", None
+            'max_results',
+            num_results,
+        ) or config.default_params.get('max_results', 10)
+        region = kwargs.get('region', country) or config.default_params.get(
+            'region',
+            None,
         )
-        lang = language or config.default_params.get("language", None)
-        timelimit = kwargs.get("timelimit", time_frame) or config.default_params.get(
-            "timelimit", None
+        lang = language or config.default_params.get('language', None)
+        timelimit = kwargs.get('timelimit', time_frame) or config.default_params.get(
+            'timelimit',
+            None,
         )
-        if timelimit and not kwargs.get("timelimit"):
-            time_mapping = {"day": "d", "week": "w", "month": "m", "year": "y"}
+        if timelimit and not kwargs.get('timelimit'):
+            time_mapping = {'day': 'd', 'week': 'w', 'month': 'm', 'year': 'y'}
             timelimit = time_mapping.get(timelimit.lower(), timelimit)
-        safesearch = kwargs.get("safesearch", safe_search)
+        safesearch = kwargs.get('safesearch', safe_search)
         if isinstance(safesearch, str):
-            safesearch = False if safesearch.lower() in ["off", "false"] else True
-        proxy = kwargs.get("proxy") or config.default_params.get("proxy", None)
-        timeout = kwargs.get("timeout") or config.default_params.get("timeout", 10)
+            safesearch = (
+                False
+                if safesearch.lower()
+                in [
+                    'off',
+                    'false',
+                ]
+                else True
+            )
+        proxy = kwargs.get('proxy') or config.default_params.get('proxy', None)
+        timeout = kwargs.get(
+            'timeout',
+        ) or config.default_params.get('timeout', 10)
         return max_results, region, lang, timelimit, safesearch, proxy, timeout
 
     def _convert_result(self, raw: dict[str, Any]) -> SearchResult | None:
@@ -122,15 +140,15 @@ class DuckDuckGoSearchEngine(SearchEngine):
         """
         try:
             ddg_result = DuckDuckGoResult(
-                title=raw["title"],
-                href=raw["href"],
-                body=raw["body"],
+                title=raw['title'],
+                href=raw['href'],
+                body=raw['body'],
             )
             return SearchResult(
                 title=ddg_result.title,
                 url=ddg_result.href,
                 snippet=ddg_result.body,
-                source=self.name,
+                source=self.engine_code,
                 raw=raw,
             )
         except ValidationError as exc:
@@ -152,13 +170,13 @@ class DuckDuckGoSearchEngine(SearchEngine):
         """
         try:
             ddgs = DDGS(proxy=self.proxy, timeout=self.timeout)
-            params = {"keywords": query, "max_results": self.max_results}
+            params = {'keywords': query, 'max_results': self.max_results}
             if self.region:
-                params["region"] = self.region
+                params['region'] = self.region
             if self.timelimit:
-                params["timelimit"] = self.timelimit
+                params['timelimit'] = self.timelimit
             if self.safesearch is not None:
-                params["safesearch"] = self.safesearch
+                params['safesearch'] = self.safesearch
 
             raw_results = ddgs.text(**params)
             results = []
@@ -169,7 +187,10 @@ class DuckDuckGoSearchEngine(SearchEngine):
             return results
 
         except Exception as exc:
-            raise EngineError(self.name, f"Search failed: {exc}") from exc
+            raise EngineError(
+                self.engine_code,
+                f"Search failed: {exc}",
+            ) from exc
 
 
 async def duckduckgo(
@@ -209,7 +230,7 @@ async def duckduckgo(
 
     return await search(
         query,
-        engines=["duckduckgo"],
+        engines=['duckduckgo'],
         num_results=num_results,
         country=country,
         language=language,

@@ -335,15 +335,15 @@ And update the `_run_search` method to pass these parameters to the `search` fun
 
 ```python
 async def _run_search(
-    self,
-    query: str,
-    engines: list[str] | None = None,
-    **kwargs: Any,
+        self,
+        query: str,
+        engines: list[str] | None = None,
+        **kwargs: Any,
 ) -> list[dict[str, Any]]:
     self.logger.info(f"🔍 Searching for: {query}")
     try:
         results = await search(query, engines=engines, **kwargs)
-        return self._process_results(results)
+        return _process_results(results)
     except Exception as e:
         self.logger.error(f"❌ Search failed: {e}")
         return []
@@ -5413,9 +5413,9 @@ with console.status(f"[bold green]Searching for '{query}'...[/bold green]"):
     )
 
 if json:
-    self._display_json_results(results)
+    _display_json_results(results)
 else:
-    self._display_results(results, verbose)
+    _display_results(results, verbose)
 ```
 
 This shows that the progress spinner is created with `console.status()` regardless of whether `json=True` or not. When `json=True`, this spinner will still appear before the JSON output, which would make the output not valid JSON.
@@ -6571,22 +6571,24 @@ def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None
 Then, for the q and critique functions, we need to make sure we're not returning results in addition to displaying them as JSON, as that would lead to multiple JSON objects being output. Looking at the code for these functions:
 
 In the q function, it does:
+
 ```python
 if json:
-    self._display_json_results(results)
+    _display_json_results(results)
 else:
-    self._display_results(results, verbose)
+    _display_results(results, verbose)
 
 return results
 ```
 
 And in the critique function:
+
 ```python
 if json:
-    self._display_json_results(processed_results)
+    _display_json_results(processed_results)
 else:
-    self._display_results(processed_results, verbose)
-    
+    _display_results(processed_results, verbose)
+
 return processed_results
 ```
 
@@ -7142,4 +7144,3 @@ _**Assistant**_
 
 
 ---
-

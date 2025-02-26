@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, ClassVar
 
 import httpx
@@ -5,40 +7,39 @@ from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, YOU, YOU_NEWS
+from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-
-from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 class YouSearchHit(BaseModel):
     title: str
     url: HttpUrl
-    snippet: str = Field(alias="description")
+    snippet: str = Field(alias='description')
 
 
 class YouSearchResponse(BaseModel):
     hits: list[YouSearchHit]
-    search_id: str | None = Field(None, alias="searchId")
+    search_id: str | None = Field(None, alias='searchId')
 
 
 class YouNewsArticle(BaseModel):
     title: str
     url: HttpUrl
-    snippet: str = Field(alias="description")
+    snippet: str = Field(alias='description')
     source: str | None = None
     published_date: str | None = None
 
 
 class YouNewsResponse(BaseModel):
     articles: list[YouNewsArticle]
-    search_id: str | None = Field(None, alias="searchId")
+    search_id: str | None = Field(None, alias='searchId')
 
 
 class YouBaseEngine(SearchEngine):
     """Base class for You.com search engines, handling common API interaction logic."""
 
-    env_api_key_names: ClassVar[list[str]] = ["YOU_API_KEY"]
+    env_api_key_names: ClassVar[list[str]] = ['YOU_API_KEY']
 
     def __init__(
         self,
@@ -60,31 +61,34 @@ class YouBaseEngine(SearchEngine):
             )
 
         self.headers = {
-            "X-API-Key": self.config.api_key,
-            "Accept": "application/json",
+            'X-API-Key': self.config.api_key,
+            'Accept': 'application/json',
         }
 
         self.num_results = num_results or self.config.default_params.get(
-            self.__class__.num_results_param, 5
+            self.__class__.num_results_param,
+            5,
         )
         self.country_code = country or self.config.default_params.get(
-            "country_code", None
+            'country_code',
+            None,
         )
         self.safe_search = safe_search or self.config.default_params.get(
-            "safe_search", True
+            'safe_search',
+            True,
         )
 
     async def _make_api_call(self, query: str) -> dict:
         """Handle the common API call logic."""
         params: dict[str, Any] = {
-            "q": query,
+            'q': query,
             self.__class__.num_results_param: self.num_results,
         }
 
         if self.country_code:
-            params["country_code"] = self.country_code
+            params['country_code'] = self.country_code
         if self.safe_search is not None:
-            params["safe_search"] = str(self.safe_search).lower()
+            params['safe_search'] = str(self.safe_search).lower()
 
         async with httpx.AsyncClient() as client:
             try:
@@ -98,7 +102,8 @@ class YouBaseEngine(SearchEngine):
                 return response.json()
             except httpx.RequestError as exc:
                 raise EngineError(
-                    self.__class__.engine_code, f"HTTP Request failed: {exc}"
+                    self.__class__.engine_code,
+                    f"HTTP Request failed: {exc}",
                 ) from exc
             except httpx.HTTPStatusError as exc:
                 raise EngineError(
@@ -113,8 +118,8 @@ class YouSearchEngine(YouBaseEngine):
 
     engine_code = YOU
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[YOU]
-    base_url = "https://api.you.com/api/search"
-    num_results_param = "num_web_results"
+    base_url = 'https://api.you.com/api/search'
+    num_results_param = 'num_web_results'
 
     async def search(self, query: str) -> list[SearchResult]:
         """Perform a web search using the You.com Search API."""
@@ -129,16 +134,17 @@ class YouSearchEngine(YouBaseEngine):
                             title=hit.title,
                             url=hit.url,
                             snippet=hit.snippet,
-                            source=self.__class__.name,
+                            source=self.__class__.engine_code,
                             raw=hit.model_dump(by_alias=True),
-                        )
+                        ),
                     )
                 except ValidationError:
                     continue
             return results
         except ValidationError as exc:
             raise EngineError(
-                self.__class__.name, f"Response parsing error: {exc}"
+                self.__class__.engine_code,
+                f"Response parsing error: {exc}",
             ) from exc
 
 
@@ -148,8 +154,8 @@ class YouNewsSearchEngine(YouBaseEngine):
 
     engine_code = YOU_NEWS
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[YOU_NEWS]
-    base_url = "https://api.you.com/api/news"
-    num_results_param = "num_news_results"
+    base_url = 'https://api.you.com/api/news'
+    num_results_param = 'num_news_results'
 
     async def search(self, query: str) -> list[SearchResult]:
         """Perform a news search using the You.com News API."""
@@ -161,9 +167,7 @@ class YouNewsSearchEngine(YouBaseEngine):
                 try:
                     snippet = article.snippet
                     if article.source and article.published_date:
-                        snippet = (
-                            f"{snippet} - {article.source} ({article.published_date})"
-                        )
+                        snippet = f"{snippet} - {article.source} ({article.published_date})"
                     elif article.source:
                         snippet = f"{snippet} - {article.source}"
                     results.append(
@@ -171,16 +175,17 @@ class YouNewsSearchEngine(YouBaseEngine):
                             title=article.title,
                             url=article.url,
                             snippet=snippet,
-                            source=self.__class__.name,
+                            source=self.__class__.engine_code,
                             raw=article.model_dump(by_alias=True),
-                        )
+                        ),
                     )
                 except ValidationError:
                     continue
             return results
         except ValidationError as exc:
             raise EngineError(
-                self.__class__.name, f"Response parsing error: {exc}"
+                self.__class__.engine_code,
+                f"Response parsing error: {exc}",
             ) from exc
 
 

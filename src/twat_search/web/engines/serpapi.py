@@ -3,6 +3,7 @@ SerpApi Google search engine implementation.
 
 This module implements the SerpApi Google Search API integration.
 """
+from __future__ import annotations
 
 from typing import Any, ClassVar
 
@@ -11,10 +12,9 @@ from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, GOOGLE_SERPAPI
+from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-
-from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 class SerpApiResult(BaseModel):
@@ -48,7 +48,7 @@ class SerpApiSearchEngine(SearchEngine):
 
     engine_code = GOOGLE_SERPAPI
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[GOOGLE_SERPAPI]
-    env_api_key_names: ClassVar[list[str]] = ["SERPAPI_API_KEY"]
+    env_api_key_names: ClassVar[list[str]] = ['SERPAPI_API_KEY']
 
     def __init__(
         self,
@@ -73,33 +73,24 @@ class SerpApiSearchEngine(SearchEngine):
             **kwargs: Additional SerpApi-specific parameters
         """
         super().__init__(config)
-        self.base_url = "https://serpapi.com/search"
+        self.base_url = 'https://serpapi.com/search'
 
         # Consolidate parameter mappings into one dictionary to reduce duplication.
         self._params = {
-            "num": kwargs.get("num", num_results)
-            or self.config.default_params.get("num", 10),
-            "google_domain": kwargs.get("google_domain")
-            or self.config.default_params.get("google_domain", "google.com"),
-            "gl": kwargs.get("gl", country) or self.config.default_params.get("gl"),
-            "hl": kwargs.get("hl", language) or self.config.default_params.get("hl"),
-            "safe": self._convert_safe(kwargs.get("safe", safe_search))
-            or self.config.default_params.get("safe"),
-            "time_period": kwargs.get("time_period", time_frame)
-            or self.config.default_params.get("time_period"),
+            'num': kwargs.get('num', num_results) or self.config.default_params.get('num', 10),
+            'google_domain': kwargs.get('google_domain')
+            or self.config.default_params.get('google_domain', 'google.com'),
+            'gl': kwargs.get('gl', country) or self.config.default_params.get('gl'),
+            'hl': kwargs.get('hl', language) or self.config.default_params.get('hl'),
+            'safe': _convert_safe(kwargs.get('safe', safe_search)) or self.config.default_params.get('safe'),
+            'time_period': kwargs.get('time_period', time_frame) or self.config.default_params.get('time_period'),
         }
 
         if not self.config.api_key:
             raise EngineError(
-                self.name,
+                self.engine_code,
                 f"SerpApi API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
-
-    def _convert_safe(self, safe: bool | str | None) -> str | None:
-        """Convert safe_search boolean to SerpApi string parameter if needed."""
-        if isinstance(safe, bool):
-            return "active" if safe else "off"
-        return safe
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -115,9 +106,9 @@ class SerpApiSearchEngine(SearchEngine):
             EngineError: If the search fails
         """
         params = {
-            "q": query,
-            "api_key": self.config.api_key,
-            "engine": "google",
+            'q': query,
+            'api_key': self.config.api_key,
+            'engine': 'google',
         }
         # Merge in any additional parameters, filtering out None values.
         params.update({k: v for k, v in self._params.items() if v is not None})
@@ -133,7 +124,7 @@ class SerpApiSearchEngine(SearchEngine):
                 data = response.json()
 
                 # Return empty list if no results found
-                if "organic_results" not in data:
+                if 'organic_results' not in data:
                     return []
 
                 serpapi_response = SerpApiResponse(**data)
@@ -146,10 +137,10 @@ class SerpApiSearchEngine(SearchEngine):
                                 title=result.title,
                                 url=result.link,  # SerpApi uses 'link' instead of 'url'
                                 snippet=result.snippet,
-                                source=self.name,
+                                source=self.engine_code,
                                 rank=result.position,  # Use position as rank if available
                                 raw=result.model_dump(),  # Include raw result for debugging
-                            )
+                            ),
                         )
                     except ValidationError:
                         continue
@@ -157,14 +148,27 @@ class SerpApiSearchEngine(SearchEngine):
                 return results
 
             except httpx.RequestError as exc:
-                raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
+                raise EngineError(
+                    self.engine_code,
+                    f"HTTP Request failed: {exc}",
+                ) from exc
             except httpx.HTTPStatusError as exc:
                 raise EngineError(
-                    self.name,
+                    self.engine_code,
                     f"HTTP Status error: {exc.response.status_code} - {exc.response.text}",
                 ) from exc
             except ValidationError as exc:
-                raise EngineError(self.name, f"Response parsing error: {exc}") from exc
+                raise EngineError(
+                    self.engine_code,
+                    f"Response parsing error: {exc}",
+                ) from exc
+
+
+def _convert_safe(self, safe: bool | str | None) -> str | None:
+    """Convert safe_search boolean to SerpApi string parameter if needed."""
+    if isinstance(safe, bool):
+        return 'active' if safe else 'off'
+    return safe
 
 
 async def google_serpapi(

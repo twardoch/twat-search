@@ -3,7 +3,6 @@
 # dependencies = ["searchit"]
 # ///
 # this_file: src/twat_search/web/engines/searchit.py
-
 """
 Searchit based search engine implementations.
 
@@ -13,6 +12,7 @@ It provides asynchronous search functionality for Google, Yandex, Qwant, and Bin
 The SearchitEngine class is the base class for all searchit-based engines, with
 specific implementations for each search provider.
 """
+from __future__ import annotations
 
 import asyncio
 import logging
@@ -20,13 +20,16 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, HttpUrl, ValidationError, field_validator
 
-from twat_search.web.engines import (BING_SEARCHIT, ENGINE_FRIENDLY_NAMES,
-                                     GOOGLE_SEARCHIT, QWANT_SEARCHIT,
-                                     YANDEX_SEARCHIT)
+from twat_search.web.engines import (
+    BING_SEARCHIT,
+    ENGINE_FRIENDLY_NAMES,
+    GOOGLE_SEARCHIT,
+    QWANT_SEARCHIT,
+    YANDEX_SEARCHIT,
+)
 
 try:
-    from searchit import (BingScraper, GoogleScraper, QwantScraper,
-                          ScrapeRequest, YandexScraper)
+    from searchit import BingScraper, GoogleScraper, QwantScraper, ScrapeRequest, YandexScraper
     from searchit.scrapers.scraper import SearchResult as SearchitResult
 except ImportError:
     # For type checking when searchit is not installed
@@ -93,7 +96,8 @@ except ImportError:
             """
             self.max_results = max_results_per_page
 
-        async def scrape(self, request: ScrapeRequest) -> list[SearchitResult]:
+        @staticmethod
+        async def scrape(request: ScrapeRequest) -> list[SearchitResult]:
             """
             Dummy scrape method for type checking.
 
@@ -117,7 +121,8 @@ except ImportError:
             """
             self.max_results = max_results_per_page
 
-        async def scrape(self, request: ScrapeRequest) -> list[SearchitResult]:
+        @staticmethod
+        async def scrape(request: ScrapeRequest) -> list[SearchitResult]:
             """
             Dummy scrape method for type checking.
 
@@ -141,7 +146,8 @@ except ImportError:
             """
             self.max_results = max_results_per_page
 
-        async def scrape(self, request: ScrapeRequest) -> list[SearchitResult]:
+        @staticmethod
+        async def scrape(request: ScrapeRequest) -> list[SearchitResult]:
             """
             Dummy scrape method for type checking.
 
@@ -165,7 +171,8 @@ except ImportError:
             """
             self.max_results = max_results_per_page
 
-        async def scrape(self, request: ScrapeRequest) -> list[SearchitResult]:
+        @staticmethod
+        async def scrape(request: ScrapeRequest) -> list[SearchitResult]:
             """
             Dummy scrape method for type checking.
 
@@ -179,10 +186,9 @@ except ImportError:
 
 
 from twat_search.web.config import EngineConfig
+from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-
-from twat_search.web.engines.base import SearchEngine, register_engine
 
 logger = logging.getLogger(__name__)
 
@@ -205,13 +211,13 @@ class SearchitScraperResult(BaseModel):
     rank: int
     title: str
     url: HttpUrl
-    description: str = ""
+    description: str = ''
 
-    @field_validator("title", "description")
+    @field_validator('title', 'description')
     @classmethod
     def validate_non_empty(cls, v: str) -> str:
         """Ensure string fields are not None and convert to empty string if None."""
-        return v or ""
+        return v or ''
 
 
 class SearchitEngine(SearchEngine):
@@ -222,12 +228,13 @@ class SearchitEngine(SearchEngine):
     including result conversion and error handling.
 
     Attributes:
-        name: Must be overridden by subclasses
+        engine_code: Must be overridden by subclasses
         env_api_key_names: Empty list for scrapers as they don't need API keys
     """
 
-    engine_code = ""  # Must be overridden by subclasses
-    env_api_key_names: ClassVar[list[str]] = []  # No API key needed for scrapers
+    engine_code = ''  # Must be overridden by subclasses
+    # No API key needed for scrapers
+    env_api_key_names: ClassVar[list[str]] = []
 
     def __init__(
         self,
@@ -255,22 +262,29 @@ class SearchitEngine(SearchEngine):
         """
         super().__init__(config, **kwargs)
         self.max_results: int = num_results or self.config.default_params.get(
-            "max_results", 5
+            'max_results',
+            5,
         )
         self.language: str = language or self.config.default_params.get(
-            "language", "en"
+            'language',
+            'en',
         )
         # Some searchit engines use domain, others use geo
         self.domain: str | None = country or self.config.default_params.get(
-            "domain", None
+            'domain',
+            None,
         )
-        self.geo: str | None = country or self.config.default_params.get("geo", None)
+        self.geo: str | None = country or self.config.default_params.get(
+            'geo',
+            None,
+        )
 
         self.sleep_interval: int = kwargs.get(
-            "sleep_interval"
-        ) or self.config.default_params.get("sleep_interval", 0)
-        self.proxy: str | None = kwargs.get("proxy") or self.config.default_params.get(
-            "proxy", None
+            'sleep_interval',
+        ) or self.config.default_params.get('sleep_interval', 0)
+        self.proxy: str | None = kwargs.get('proxy') or self.config.default_params.get(
+            'proxy',
+            None,
         )
 
         # Log any unused parameters for clarity
@@ -281,7 +295,7 @@ class SearchitEngine(SearchEngine):
             unused_params.append(f"time_frame='{time_frame}'")
         if unused_params:
             logger.debug(
-                f"Parameters {', '.join(unused_params)} set but not used by {self.name}"
+                f"Parameters {', '.join(unused_params)} set but not used by {self.engine_code}",
             )
 
     def _convert_result(self, result: SearchitResult) -> SearchResult | None:
@@ -298,7 +312,7 @@ class SearchitEngine(SearchEngine):
             SearchResult object or None if validation fails
         """
         if not result:
-            logger.warning(f"Empty result received from {self.name}")
+            logger.warning(f"Empty result received from {self.engine_code}")
             return None
 
         try:
@@ -306,10 +320,8 @@ class SearchitEngine(SearchEngine):
             validated = SearchitScraperResult(
                 rank=result.rank,
                 title=result.title,
-                url=result.url,
-                description=result.description
-                if hasattr(result, "description")
-                else "",
+                url=HttpUrl(result.url),
+                description=result.description if hasattr(result, 'description') else '',
             )
 
             # Create and return the SearchResult
@@ -317,15 +329,13 @@ class SearchitEngine(SearchEngine):
                 title=validated.title,
                 url=validated.url,
                 snippet=validated.description,
-                source=self.name,
+                source=self.engine_code,
                 rank=validated.rank,
                 raw={
-                    "rank": result.rank,
-                    "title": result.title,
-                    "url": str(result.url),
-                    "description": result.description
-                    if hasattr(result, "description")
-                    else "",
+                    'rank': result.rank,
+                    'title': result.title,
+                    'url': str(result.url),
+                    'description': result.description if hasattr(result, 'description') else '',
                 },
             )
         except ValidationError as exc:
@@ -336,7 +346,9 @@ class SearchitEngine(SearchEngine):
             return None
 
     async def _run_scraper(
-        self, scraper: Any, request: ScrapeRequest
+        self,
+        scraper: Any,
+        request: ScrapeRequest,
     ) -> list[SearchitResult]:
         """
         Run a searchit scraper with the given request.
@@ -351,12 +363,14 @@ class SearchitEngine(SearchEngine):
         try:
             loop = asyncio.get_event_loop()
             return await loop.run_in_executor(
-                None, lambda: asyncio.run(scraper.scrape(request))
+                None,
+                lambda: asyncio.run(scraper.scrape(request)),
             )
         except Exception as exc:
             logger.error(f"Error running searchit scraper: {exc}")
             raise EngineError(
-                self.name, f"Error running searchit scraper: {exc}"
+                self.engine_code,
+                f"Error running searchit scraper: {exc}",
             ) from exc
 
 
@@ -366,7 +380,7 @@ class GoogleSearchitEngine(SearchitEngine):
     Implementation of Google search using searchit library.
 
     Attributes:
-        name: The name of the search engine ("google-searchit")
+        engine_code: The name of the search engine ("google-searchit")
     """
 
     engine_code = GOOGLE_SEARCHIT
@@ -386,13 +400,13 @@ class GoogleSearchitEngine(SearchitEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.name, "Search query cannot be empty")
+            raise EngineError(self.engine_code, 'Search query cannot be empty')
 
         logger.info(f"Searching Google (searchit) with query: '{query}'")
         logger.debug(
             f"Using max_results={self.max_results}, language={self.language}, "
             f"domain={self.domain}, sleep_interval={self.sleep_interval}, "
-            f"proxy={self.proxy}"
+            f"proxy={self.proxy}",
         )
 
         try:
@@ -406,37 +420,37 @@ class GoogleSearchitEngine(SearchitEngine):
                 language=self.language,
             )
 
-            scraper = GoogleScraper(max_results_per_page=min(100, self.max_results))
+            scraper = GoogleScraper(
+                max_results_per_page=min(100, self.max_results),
+            )
 
             # Run the scraper
             raw_results = await self._run_scraper(scraper, request)
 
             if not raw_results:
-                logger.info("No results returned from Google (searchit)")
+                logger.info('No results returned from Google (searchit)')
                 return []
 
             logger.debug(
-                f"Received {len(raw_results)} raw results from Google (searchit)"
+                f"Received {len(raw_results)} raw results from Google (searchit)",
             )
 
             # Convert results
             results: list[SearchResult] = [
                 search_result
-                for search_result in (
-                    self._convert_result(result) for result in raw_results
-                )
+                for search_result in (self._convert_result(result) for result in raw_results)
                 if search_result is not None
             ]
 
             logger.info(
-                f"Returning {len(results)} validated results from Google (searchit)"
+                f"Returning {len(results)} validated results from Google (searchit)",
             )
             return results
 
         except Exception as exc:
             error_msg = f"Error during Google (searchit) search: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
 
 
 @register_engine
@@ -445,7 +459,7 @@ class YandexSearchitEngine(SearchitEngine):
     Implementation of Yandex search using searchit library.
 
     Attributes:
-        name: The name of the search engine ("yandex-searchit")
+        engine_code: The name of the search engine ("yandex-searchit")
     """
 
     engine_code = YANDEX_SEARCHIT
@@ -465,13 +479,13 @@ class YandexSearchitEngine(SearchitEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.name, "Search query cannot be empty")
+            raise EngineError(self.engine_code, 'Search query cannot be empty')
 
         logger.info(f"Searching Yandex (searchit) with query: '{query}'")
         logger.debug(
             f"Using max_results={self.max_results}, language={self.language}, "
             f"domain={self.domain}, geo={self.geo}, sleep_interval={self.sleep_interval}, "
-            f"proxy={self.proxy}"
+            f"proxy={self.proxy}",
         )
 
         try:
@@ -485,37 +499,37 @@ class YandexSearchitEngine(SearchitEngine):
                 geo=self.geo,
             )
 
-            scraper = YandexScraper(max_results_per_page=min(10, self.max_results))
+            scraper = YandexScraper(
+                max_results_per_page=min(10, self.max_results),
+            )
 
             # Run the scraper
             raw_results = await self._run_scraper(scraper, request)
 
             if not raw_results:
-                logger.info("No results returned from Yandex (searchit)")
+                logger.info('No results returned from Yandex (searchit)')
                 return []
 
             logger.debug(
-                f"Received {len(raw_results)} raw results from Yandex (searchit)"
+                f"Received {len(raw_results)} raw results from Yandex (searchit)",
             )
 
             # Convert results
             results: list[SearchResult] = [
                 search_result
-                for search_result in (
-                    self._convert_result(result) for result in raw_results
-                )
+                for search_result in (self._convert_result(result) for result in raw_results)
                 if search_result is not None
             ]
 
             logger.info(
-                f"Returning {len(results)} validated results from Yandex (searchit)"
+                f"Returning {len(results)} validated results from Yandex (searchit)",
             )
             return results
 
         except Exception as exc:
             error_msg = f"Error during Yandex (searchit) search: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
 
 
 @register_engine
@@ -524,7 +538,7 @@ class QwantSearchitEngine(SearchitEngine):
     Implementation of Qwant search using searchit library.
 
     Attributes:
-        name: The name of the search engine ("qwant-searchit")
+        engine_code: The name of the search engine ("qwant-searchit")
     """
 
     engine_code = QWANT_SEARCHIT
@@ -544,13 +558,13 @@ class QwantSearchitEngine(SearchitEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.name, "Search query cannot be empty")
+            raise EngineError(self.engine_code, 'Search query cannot be empty')
 
         logger.info(f"Searching Qwant (searchit) with query: '{query}'")
         logger.debug(
             f"Using max_results={self.max_results}, language={self.language}, "
             f"geo={self.geo}, sleep_interval={self.sleep_interval}, "
-            f"proxy={self.proxy}"
+            f"proxy={self.proxy}",
         )
 
         try:
@@ -563,37 +577,37 @@ class QwantSearchitEngine(SearchitEngine):
                 geo=self.geo,
             )
 
-            scraper = QwantScraper(max_results_per_page=min(10, self.max_results))
+            scraper = QwantScraper(
+                max_results_per_page=min(10, self.max_results),
+            )
 
             # Run the scraper
             raw_results = await self._run_scraper(scraper, request)
 
             if not raw_results:
-                logger.info("No results returned from Qwant (searchit)")
+                logger.info('No results returned from Qwant (searchit)')
                 return []
 
             logger.debug(
-                f"Received {len(raw_results)} raw results from Qwant (searchit)"
+                f"Received {len(raw_results)} raw results from Qwant (searchit)",
             )
 
             # Convert results
             results: list[SearchResult] = [
                 search_result
-                for search_result in (
-                    self._convert_result(result) for result in raw_results
-                )
+                for search_result in (self._convert_result(result) for result in raw_results)
                 if search_result is not None
             ]
 
             logger.info(
-                f"Returning {len(results)} validated results from Qwant (searchit)"
+                f"Returning {len(results)} validated results from Qwant (searchit)",
             )
             return results
 
         except Exception as exc:
             error_msg = f"Error during Qwant (searchit) search: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
 
 
 @register_engine
@@ -602,7 +616,7 @@ class BingSearchitEngine(SearchitEngine):
     Implementation of Bing search using searchit library.
 
     Attributes:
-        name: The name of the search engine ("bing-searchit")
+        engine_code: The name of the search engine ("bing-searchit")
     """
 
     engine_code = BING_SEARCHIT
@@ -622,13 +636,13 @@ class BingSearchitEngine(SearchitEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.name, "Search query cannot be empty")
+            raise EngineError(self.engine_code, 'Search query cannot be empty')
 
         logger.info(f"Searching Bing (searchit) with query: '{query}'")
         logger.debug(
             f"Using max_results={self.max_results}, language={self.language}, "
             f"domain={self.domain}, sleep_interval={self.sleep_interval}, "
-            f"proxy={self.proxy}"
+            f"proxy={self.proxy}",
         )
 
         try:
@@ -642,44 +656,44 @@ class BingSearchitEngine(SearchitEngine):
                 language=self.language,
             )
 
-            scraper = BingScraper(max_results_per_page=min(30, self.max_results))
+            scraper = BingScraper(
+                max_results_per_page=min(30, self.max_results),
+            )
 
             # Run the scraper
             raw_results = await self._run_scraper(scraper, request)
 
             if not raw_results:
-                logger.info("No results returned from Bing (searchit)")
+                logger.info('No results returned from Bing (searchit)')
                 return []
 
             logger.debug(
-                f"Received {len(raw_results)} raw results from Bing (searchit)"
+                f"Received {len(raw_results)} raw results from Bing (searchit)",
             )
 
             # Convert results
             results: list[SearchResult] = [
                 search_result
-                for search_result in (
-                    self._convert_result(result) for result in raw_results
-                )
+                for search_result in (self._convert_result(result) for result in raw_results)
                 if search_result is not None
             ]
 
             logger.info(
-                f"Returning {len(results)} validated results from Bing (searchit)"
+                f"Returning {len(results)} validated results from Bing (searchit)",
             )
             return results
 
         except Exception as exc:
             error_msg = f"Error during Bing (searchit) search: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
 
 
 # Convenience functions for each engine
 async def google_searchit(
     query: str,
     num_results: int = 5,
-    language: str = "en",
+    language: str = 'en',
     country: str | None = None,
     sleep_interval: int = 0,
     proxy: str | None = None,
@@ -707,7 +721,7 @@ async def google_searchit(
 
     return await search(
         query,
-        engines=["google-searchit"],
+        engines=['google-searchit'],
         num_results=num_results,
         language=language,
         country=country,
@@ -720,7 +734,7 @@ async def google_searchit(
 async def yandex_searchit(
     query: str,
     num_results: int = 5,
-    language: str = "en",
+    language: str = 'en',
     country: str | None = None,
     sleep_interval: int = 0,
     proxy: str | None = None,
@@ -748,7 +762,7 @@ async def yandex_searchit(
 
     return await search(
         query,
-        engines=["yandex-searchit"],
+        engines=['yandex-searchit'],
         num_results=num_results,
         language=language,
         country=country,
@@ -761,7 +775,7 @@ async def yandex_searchit(
 async def qwant_searchit(
     query: str,
     num_results: int = 5,
-    language: str = "en",
+    language: str = 'en',
     country: str | None = None,
     sleep_interval: int = 0,
     proxy: str | None = None,
@@ -789,7 +803,7 @@ async def qwant_searchit(
 
     return await search(
         query,
-        engines=["qwant-searchit"],
+        engines=['qwant-searchit'],
         num_results=num_results,
         language=language,
         country=country,
@@ -802,7 +816,7 @@ async def qwant_searchit(
 async def bing_searchit(
     query: str,
     num_results: int = 5,
-    language: str = "en",
+    language: str = 'en',
     country: str | None = None,
     sleep_interval: int = 0,
     proxy: str | None = None,
@@ -830,7 +844,7 @@ async def bing_searchit(
 
     return await search(
         query,
-        engines=["bing-searchit"],
+        engines=['bing-searchit'],
         num_results=num_results,
         language=language,
         country=country,

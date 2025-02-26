@@ -3,6 +3,7 @@ Critique Labs search engine implementation.
 
 This module implements the Critique Labs AI API integration.
 """
+from __future__ import annotations
 
 import base64
 from typing import Any, ClassVar
@@ -12,10 +13,9 @@ from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.engines import CRITIQUE, ENGINE_FRIENDLY_NAMES
+from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-
-from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 class CritiqueResult(BaseModel):
@@ -23,10 +23,10 @@ class CritiqueResult(BaseModel):
     Pydantic model for a single Critique Labs search result.
     """
 
-    url: str = Field(default="")  # URL of the result source
-    title: str = Field(default="")  # Title of the result
-    summary: str = Field(default="")  # Summary or snippet from the result
-    source: str = Field(default="")  # Source of the result
+    url: str = Field(default='')  # URL of the result source
+    title: str = Field(default='')  # Title of the result
+    summary: str = Field(default='')  # Summary or snippet from the result
+    source: str = Field(default='')  # Source of the result
     relevance_score: float | None = None  # Relevance score if available
 
 
@@ -47,8 +47,8 @@ class CritiqueSearchEngine(SearchEngine):
     engine_code = CRITIQUE
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[CRITIQUE]
     env_api_key_names: ClassVar[list[str]] = [
-        "CRITIQUE_LABS_API_KEY",
-        "CRITIQUE_API_KEY",
+        'CRITIQUE_LABS_API_KEY',
+        'CRITIQUE_API_KEY',
     ]
 
     def __init__(
@@ -71,28 +71,32 @@ class CritiqueSearchEngine(SearchEngine):
         """
         super().__init__(config)
 
-        self.base_url = "https://api.critique-labs.ai/v1/search"
+        self.base_url = 'https://api.critique-labs.ai/v1/search'
         self.num_results = num_results
         self.country = country
         self.language = language
         self.safe_search = safe_search
         self.time_frame = time_frame
 
-        self.image_url = image_url or kwargs.get("image_url")
-        self.image_base64 = image_base64 or kwargs.get("image_base64")
-        self.source_whitelist = source_whitelist or kwargs.get("source_whitelist")
-        self.source_blacklist = source_blacklist or kwargs.get("source_blacklist")
-        self.output_format = output_format or kwargs.get("output_format")
+        self.image_url = image_url or kwargs.get('image_url')
+        self.image_base64 = image_base64 or kwargs.get('image_base64')
+        self.source_whitelist = source_whitelist or kwargs.get(
+            'source_whitelist',
+        )
+        self.source_blacklist = source_blacklist or kwargs.get(
+            'source_blacklist',
+        )
+        self.output_format = output_format or kwargs.get('output_format')
 
         if not self.config.api_key:
             raise EngineError(
-                self.name,
+                self.engine_code,
                 f"Critique Labs API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
         self.headers = {
-            "Content-Type": "application/json",
-            "X-API-Key": self.config.api_key,
+            'Content-Type': 'application/json',
+            'X-API-Key': self.config.api_key,
         }
 
     async def _convert_image_url_to_base64(self, image_url: str) -> str:
@@ -103,32 +107,35 @@ class CritiqueSearchEngine(SearchEngine):
             async with httpx.AsyncClient() as client:
                 response = await client.get(image_url, timeout=30)
                 response.raise_for_status()
-                encoded = base64.b64encode(response.content).decode("utf-8")
+                encoded = base64.b64encode(response.content).decode('utf-8')
                 return f"data:image/jpeg;base64,{encoded}"
         except httpx.RequestError as e:
-            raise EngineError(self.name, f"Failed to fetch image from URL: {e}")
+            raise EngineError(
+                self.engine_code,
+                f"Failed to fetch image from URL: {e}",
+            )
         except Exception as e:
-            raise EngineError(self.name, f"Error processing image: {e}")
+            raise EngineError(self.engine_code, f"Error processing image: {e}")
 
     async def _build_payload(self, query: str) -> dict[str, Any]:
         """
         Build the API payload from the search query and optional parameters.
         """
-        payload: dict[str, Any] = {"prompt": query}
+        payload: dict[str, Any] = {'prompt': query}
 
         # Handle image input (prioritize base64 over URL)
         if self.image_base64:
-            payload["image"] = self.image_base64
+            payload['image'] = self.image_base64
         elif self.image_url:
-            payload["image"] = await self._convert_image_url_to_base64(self.image_url)
+            payload['image'] = await self._convert_image_url_to_base64(self.image_url)
 
         # Add optional parameters if provided
         if self.source_whitelist:
-            payload["source_whitelist"] = self.source_whitelist
+            payload['source_whitelist'] = self.source_whitelist
         if self.source_blacklist:
-            payload["source_blacklist"] = self.source_blacklist
+            payload['source_blacklist'] = self.source_blacklist
         if self.output_format:
-            payload["output_format"] = self.output_format
+            payload['output_format'] = self.output_format
 
         return payload
 
@@ -138,18 +145,22 @@ class CritiqueSearchEngine(SearchEngine):
         """
         try:
             url_obj = (
-                HttpUrl(item.url) if item.url else HttpUrl("https://critique-labs.ai")
+                HttpUrl(item.url)
+                if item.url
+                else HttpUrl(
+                    'https://critique-labs.ai',
+                )
             )
         except ValidationError:
-            url_obj = HttpUrl("https://critique-labs.ai")
+            url_obj = HttpUrl('https://critique-labs.ai')
 
         return SearchResult(
             title=item.title or f"Result {rank}",
             url=url_obj,
             snippet=item.summary,
-            source=self.name,
+            source=self.engine_code,
             rank=rank,
-            raw=item.dict(),
+            raw=item.model_dump(),
         )
 
     def _parse_results(self, data: dict[str, Any]) -> list[SearchResult]:
@@ -157,21 +168,21 @@ class CritiqueSearchEngine(SearchEngine):
         Parse the API response data into a list of SearchResult objects.
         """
         critique_data = CritiqueResponse(
-            results=data.get("results", []),
-            response=data.get("response"),
-            structured_output=data.get("structured_output"),
+            results=data.get('results', []),
+            response=data.get('response'),
+            structured_output=data.get('structured_output'),
         )
         results: list[SearchResult] = []
 
         if not critique_data.results and critique_data.response:
             results.append(
                 SearchResult(
-                    title="Critique Labs AI Response",
-                    url=HttpUrl("https://critique-labs.ai"),
+                    title='Critique Labs AI Response',
+                    url=HttpUrl('https://critique-labs.ai'),
                     snippet=critique_data.response,
-                    source=self.name,
+                    source=self.engine_code,
                     raw=data,
-                )
+                ),
             )
 
         for idx, item in enumerate(critique_data.results, 1):
@@ -200,16 +211,25 @@ class CritiqueSearchEngine(SearchEngine):
                 data = response.json()
                 return self._parse_results(data)
             except httpx.RequestError as exc:
-                raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
+                raise EngineError(
+                    self.engine_code,
+                    f"HTTP Request failed: {exc}",
+                ) from exc
             except httpx.HTTPStatusError as exc:
                 raise EngineError(
-                    self.name,
+                    self.engine_code,
                     f"HTTP Status error: {exc.response.status_code} - {exc.response.text}",
                 ) from exc
             except ValidationError as exc:
-                raise EngineError(self.name, f"Response parsing error: {exc}") from exc
+                raise EngineError(
+                    self.engine_code,
+                    f"Response parsing error: {exc}",
+                ) from exc
             except Exception as exc:
-                raise EngineError(self.name, f"Search failed: {exc}") from exc
+                raise EngineError(
+                    self.engine_code,
+                    f"Search failed: {exc}",
+                ) from exc
 
 
 async def critique(

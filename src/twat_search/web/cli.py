@@ -3,13 +3,13 @@
 # dependencies = ["httpx>=0.24.1", "pydantic>=2.0.0", "python-dotenv>=1.0.0", "fire>=0.5.0", "rich>=13.6.0"]
 # ///
 # this_file: src/twat_search/web/cli.py
-
 """
 CLI tool for performing web searches across multiple engines.
 
 This tool allows you to search the web using various search engines and
 displays the results in a formatted table.
 """
+from __future__ import annotations
 
 import asyncio
 import json as json_lib
@@ -17,7 +17,6 @@ import logging
 import os
 from typing import TYPE_CHECKING, Any
 
-import fire
 import fire.core
 from rich.console import Console
 from rich.logging import RichHandler
@@ -25,11 +24,14 @@ from rich.table import Table
 
 from twat_search.web.api import search
 from twat_search.web.config import Config
-from twat_search.web.engines import (ALL_POSSIBLE_ENGINES,
-                                     ENGINE_FRIENDLY_NAMES,
-                                     get_available_engines,
-                                     get_engine_function, is_engine_available,
-                                     standardize_engine_name)
+from twat_search.web.engines import (
+    ALL_POSSIBLE_ENGINES,
+    ENGINE_FRIENDLY_NAMES,
+    get_available_engines,
+    get_engine_function,
+    is_engine_available,
+    standardize_engine_name,
+)
 
 if TYPE_CHECKING:
     from twat_search.web.config import Config
@@ -59,20 +61,18 @@ class SearchCLI:
     """
 
     def __init__(self) -> None:
-        self.logger = logging.getLogger("twat_search.cli")
+        self.logger = logging.getLogger('twat_search.cli')
         self.log_handler = RichHandler(rich_tracebacks=True)
         self._configure_logging()
         self.console = Console()
 
         available_engines = get_available_engines()
-        missing_engines = [
-            engine for engine in ALL_POSSIBLE_ENGINES if engine not in available_engines
-        ]
+        missing_engines = [engine for engine in ALL_POSSIBLE_ENGINES if engine not in available_engines]
         if missing_engines:
             self.logger.warning(
                 f"The following engines are not available due to missing dependencies: "
                 f"{', '.join(missing_engines)}. "
-                f"Install the relevant optional dependencies to use them."
+                f"Install the relevant optional dependencies to use them.",
             )
 
     def _configure_logging(self, verbose: bool = False) -> None:
@@ -83,7 +83,7 @@ class SearchCLI:
         # Configure the root logger
         logging.basicConfig(
             level=level,
-            format="%(message)s",
+            format='%(message)s',
             handlers=[self.log_handler],
             force=True,
         )
@@ -92,9 +92,9 @@ class SearchCLI:
         self.logger.setLevel(level)
 
         # Also set levels for other loggers used in the system
-        logging.getLogger("twat_search.web.api").setLevel(level)
-        logging.getLogger("twat_search.web.engines").setLevel(level)
-        logging.getLogger("httpx").setLevel(level)
+        logging.getLogger('twat_search.web.api').setLevel(level)
+        logging.getLogger('twat_search.web.engines').setLevel(level)
+        logging.getLogger('httpx').setLevel(level)
 
     def _parse_engines(self, engines_arg: Any) -> list[str] | None:
         """Parse the engines argument into a list of engine names.
@@ -115,24 +115,26 @@ class SearchCLI:
 
         # Handle special strings
         if isinstance(engines_arg, str):
-            if engines_arg.strip().lower() == "free":
+            if engines_arg.strip().lower() == 'free':
                 # Engines that don't require an API key
-                engines = ["duckduckgo", "hasdata_google_light"]
+                engines = ['duckduckgo', 'hasdata_google_light']
                 self.logger.info(f"Using 'free' engines: {', '.join(engines)}")
                 return engines
-            elif engines_arg.strip().lower() == "best":
+            elif engines_arg.strip().lower() == 'best':
                 # 3 recommended engines (placeholder for user to edit)
-                engines = ["brave", "duckduckgo", "serpapi"]
+                engines = ['brave', 'duckduckgo', 'serpapi']
                 self.logger.info(f"Using 'best' engines: {', '.join(engines)}")
                 return engines
-            elif engines_arg.strip().lower() == "all":
+            elif engines_arg.strip().lower() == 'all':
                 # Get all available engines programmatically
                 engines = get_available_engines()
-                self.logger.info(f"Using 'all' available engines: {', '.join(engines)}")
+                self.logger.info(
+                    f"Using 'all' available engines: {', '.join(engines)}",
+                )
                 return engines
 
             # Normal case: comma-separated string
-            engines = [e.strip() for e in engines_arg.split(",") if e.strip()]
+            engines = [e.strip() for e in engines_arg.split(',') if e.strip()]
             # Standardize engine names (replace hyphens with underscores)
             return [standardize_engine_name(e) for e in engines]
 
@@ -142,24 +144,24 @@ class SearchCLI:
             return [standardize_engine_name(e) for e in engines]
 
         self.logger.warning(
-            f"Unexpected engines type: {type(engines_arg)}. Using all available engines."
+            f"Unexpected engines type: {type(engines_arg)}. Using all available engines.",
         )
         return None
 
     async def _run_search(
         self,
-        query: str = "president of poland",
+        query: str = 'president of poland',
         engines: list[str] | None = None,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
         if engines:
             available = []
             for engine in engines:
-                if engine == "all" or is_engine_available(engine):
+                if engine == 'all' or is_engine_available(engine):
                     available.append(engine)
                 else:
                     self.logger.warning(
-                        f"Engine '{engine}' is not available. The dependency may not be installed."
+                        f"Engine '{engine}' is not available. The dependency may not be installed.",
                     )
             engines = available or None
 
@@ -169,145 +171,11 @@ class SearchCLI:
 
         try:
             results = await search(query=query, engines=engines, **kwargs)
-            return self._process_results(results)
+            return _process_results(results)
         except Exception as e:
             self.logger.error(f"Search failed: {e}")
-            self._display_errors([str(e)])
+            _display_errors([str(e)])
             return []
-
-    def _process_results(self, results: list) -> list[dict[str, Any]]:
-        processed = []
-        engine_results: dict[str, list] = {}
-
-        # Group results by engine
-        for result in results:
-            engine_name = getattr(result, "source", None) or "unknown"
-            engine_results.setdefault(engine_name, []).append(result)
-
-        # Process all results from each engine
-        for engine, engine_results_list in engine_results.items():
-            if not engine_results_list:
-                processed.append(
-                    {
-                        "engine": engine,
-                        "status": "❌ No results",
-                        "url": "N/A",
-                        "title": "N/A",
-                        "snippet": "N/A",
-                        "raw_result": None,
-                        "is_first": True,  # Flag to help with UI rendering
-                    }
-                )
-                continue
-
-            # Process all results for the engine, not just the first one
-            for idx, result in enumerate(engine_results_list):
-                url = str(result.url)
-                processed.append(
-                    {
-                        "engine": engine,
-                        "status": "✅ Success",
-                        "url": url,
-                        "title": result.title,
-                        "snippet": result.snippet[:100] + "..."
-                        if len(result.snippet) > 100
-                        else result.snippet,
-                        "raw_result": getattr(result, "raw", None),
-                        "is_first": idx == 0,  # Flag to help with UI rendering
-                    }
-                )
-        return processed
-
-    def _display_results(
-        self,
-        processed_results: list[dict[str, Any]],
-        verbose: bool = False,
-        plain: bool = False,
-    ) -> None:
-        if not processed_results:
-            if plain:
-                return
-            console.print("[bold red]No results found![/bold red]")
-            return
-
-        if plain:
-            # For plain output, just print a sorted and deduped list of URLs
-            urls = set()
-            for result in processed_results:
-                if "❌" not in result["status"] and result["url"] != "N/A":
-                    urls.add(result["url"])
-            for url in sorted(urls):
-                console.print(url)
-            return
-
-        # Always use the compact table format unless verbose is specifically requested
-        table = Table()  # Remove show_lines=True to eliminate row separator lines
-        table.add_column("Engine", style="cyan", no_wrap=True)
-
-        if verbose:
-            table.add_column("Status", style="magenta")
-            table.add_column("Title", style="green")
-            table.add_column("URL", style="blue", overflow="fold")
-            for result in processed_results:
-                # Only show engine name for the first result of each engine
-                engine_display = result["engine"] if result["is_first"] else ""
-                table.add_row(
-                    engine_display, result["status"], result["title"], result["url"]
-                )
-        else:
-            # Set the URL column to wrap, with enough width to display most URLs
-            table.add_column("URL", style="blue", overflow="fold", max_width=70)
-            for result in processed_results:
-                if "❌" in result["status"]:
-                    continue
-                table.add_row(result["engine"], result["url"])
-
-        console.print(table)
-
-        # Only print the raw results when verbose is true
-        if verbose:
-            for result in processed_results:
-                if "❌" not in result["status"]:
-                    console.print(result)
-
-    def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:
-        """Format and print results as JSON."""
-        results_by_engine: dict[str, dict[str, list[dict[str, Any]]]] = {}
-
-        # Group results by engine
-        for result in processed_results:
-            engine = result["engine"]
-
-            # Initialize engine results list if it doesn't exist
-            if engine not in results_by_engine:
-                results_by_engine[engine] = {"results": []}
-
-            # Skip error results
-            if "❌" in result["status"]:
-                continue
-
-            # Add the current result to the engine's results list
-            results_by_engine[engine]["results"].append(
-                {
-                    "url": result["url"] if result["url"] != "N/A" else None,
-                    "title": result["title"] if result["title"] != "N/A" else None,
-                    "snippet": result.get("snippet")
-                    if result.get("snippet") != "N/A"
-                    else None,
-                    "raw": result.get("raw_result"),
-                }
-            )
-
-        # Print the JSON output
-
-    def _display_errors(self, error_messages: list[str]) -> None:
-        if not error_messages:
-            return
-        table = Table(title="❌ Search Errors")
-        table.add_column("Error", style="red")
-        for error in error_messages:
-            table.add_row(error)
-        console.print(table)
 
     async def _search_engine(
         self,
@@ -338,12 +206,12 @@ class SearchCLI:
             if not engine_func:
                 error_msg = f"Engine '{engine}' is not available."
                 self.logger.warning(error_msg)
-                self._display_errors([error_msg])
+                _display_errors([error_msg])
                 return []
         except ImportError as e:
             error_msg = f"Could not load engine '{engine}': {e}"
             self.logger.warning(error_msg)
-            self._display_errors([error_msg])
+            _display_errors([error_msg])
             return []
 
         # Try to get friendly name from the engine class first, then fall back to the dictionary
@@ -352,11 +220,7 @@ class SearchCLI:
 
             registered_engines = get_registered_engines()
             engine_class = registered_engines.get(engine)
-            friendly = (
-                engine_class.friendly_engine_name
-                if engine_class
-                else ENGINE_FRIENDLY_NAMES.get(engine, engine)
-            )
+            friendly = engine_class.friendly_engine_name if engine_class else ENGINE_FRIENDLY_NAMES.get(engine, engine)
         except (ImportError, AttributeError):
             friendly = ENGINE_FRIENDLY_NAMES.get(engine, engine)
 
@@ -364,17 +228,17 @@ class SearchCLI:
             self.console.print(f"[bold]Searching {friendly}[/bold]: {query}")
         try:
             results = await engine_func(query=query, **params)
-            processed_results = self._process_results(results)
+            processed_results = _process_results(results)
             if json:
-                self._display_json_results(processed_results)
+                _display_json_results(processed_results)
                 return []
             else:
-                self._display_results(processed_results, verbose, plain)
+                _display_results(processed_results, verbose, plain)
                 return processed_results
         except Exception as e:
             self.logger.error(f"{friendly} search failed: {e}")
             if not plain:
-                self._display_errors([str(e)])
+                _display_errors([str(e)])
             return []
 
     def q(
@@ -428,37 +292,49 @@ class SearchCLI:
 
         # Use 'best' preset if no engines are specified
         if engines is None:
-            engines = "best"
-            self.logger.debug("No engines specified, using 'best' engines preset")
+            engines = 'best'
+            self.logger.debug(
+                "No engines specified, using 'best' engines preset",
+            )
 
         engine_list = self._parse_engines(engines)
 
         common_params = {
-            "num_results": num_results,
-            "country": country,
-            "language": language,
-            "safe_search": safe_search,
-            "time_frame": time_frame,
+            'num_results': num_results,
+            'country': country,
+            'language': language,
+            'safe_search': safe_search,
+            'time_frame': time_frame,
         }
         common_params = {k: v for k, v in common_params.items() if v is not None}
 
         if json or plain:
             results = asyncio.run(
-                self._run_search(query, engine_list, **common_params, **kwargs)
+                self._run_search(
+                    query,
+                    engine_list,
+                    **common_params,
+                    **kwargs,
+                ),
             )
         else:
             with self.console.status(
-                f"[bold green]Searching for '{query}'...[/bold green]"
+                f"[bold green]Searching for '{query}'...[/bold green]",
             ):
                 results = asyncio.run(
-                    self._run_search(query, engine_list, **common_params, **kwargs)
+                    self._run_search(
+                        query,
+                        engine_list,
+                        **common_params,
+                        **kwargs,
+                    ),
                 )
 
         if json:
-            self._display_json_results(results)
+            _display_json_results(results)
             return []
         else:
-            self._display_results(results, verbose, plain)
+            _display_results(results, verbose, plain)
             # Only return the actual results if verbose mode is enabled
             # This prevents the CLI from printing the raw results
             if verbose:
@@ -466,7 +342,10 @@ class SearchCLI:
             return []
 
     def info(
-        self, engine: str | None = None, json: bool = False, plain: bool = False
+        self,
+        engine: str | None = None,
+        json: bool = False,
+        plain: bool = False,
     ) -> None:
         """
         Display information about available search engines.
@@ -490,9 +369,11 @@ class SearchCLI:
                 self._show_engine_details(engine, config)
         except Exception as e:
             if not json and not plain:
-                self.logger.error(f"❌ Failed to display engine information: {e}")
+                self.logger.error(
+                    f"❌ Failed to display engine information: {e}",
+                )
 
-    def _display_engines_plain(self, engine: str | None, config: "Config") -> None:
+    def _display_engines_plain(self, engine: str | None, config: Config) -> None:
         """
         Display engine information in plain text format.
 
@@ -508,11 +389,11 @@ class SearchCLI:
             for engine_name in sorted(config.engines.keys()):
                 self.console.print(engine_name)
 
-    def _list_all_engines(self, config: "Config") -> None:
-        table = Table(title="🔎 Available Search Engines")
-        table.add_column("Engine", style="cyan", no_wrap=True)
-        table.add_column("Enabled", style="magenta")
-        table.add_column("API Key Required", style="yellow")
+    def _list_all_engines(self, config: Config) -> None:
+        table = Table(title='🔎 Available Search Engines')
+        table.add_column('Engine', style='cyan', no_wrap=True)
+        table.add_column('Enabled', style='magenta')
+        table.add_column('API Key Required', style='yellow')
         try:
             from twat_search.web.engines.base import get_registered_engines
 
@@ -525,106 +406,112 @@ class SearchCLI:
 
         for engine, engine_config in sorted_engines:
             api_key_required = (
-                hasattr(engine_config, "api_key") and engine_config.api_key is not None
+                hasattr(
+                    engine_config,
+                    'api_key',
+                )
+                and engine_config.api_key is not None
             )
             if not api_key_required and engine in registered_engines:
                 engine_class = registered_engines.get(engine)
-                if engine_class and hasattr(engine_class, "env_api_key_names"):
+                if engine_class and hasattr(engine_class, 'env_api_key_names'):
                     api_key_required = bool(engine_class.env_api_key_names)
             table.add_row(
                 engine,
-                "✅" if engine_config.enabled else "❌",
-                "✅" if api_key_required else "❌",
+                '✅' if engine_config.enabled else '❌',
+                '✅' if api_key_required else '❌',
             )
         self.console.print(table)
         self.console.print(
-            "\n[italic]Run 'info ENGINE_NAME' for more details about a specific engine.[/italic]"
+            "\n[italic]Run 'info ENGINE_NAME' for more details about a specific engine.[/italic]",
         )
 
-    def _show_engine_details(self, engine_name: str, config: "Config") -> None:
+    def _show_engine_details(self, engine_name: str, config: Config) -> None:
         if engine_name not in config.engines:
             self.console.print(
-                f"[bold red]Engine '{engine_name}' not found![/bold red]"
+                f"[bold red]Engine '{engine_name}' not found![/bold red]",
             )
-            self.console.print("\nAvailable engines:")
+            self.console.print('\nAvailable engines:')
             for name in config.engines:
                 self.console.print(f"- {name}")
             return
         engine_config = config.engines[engine_name]
-        api_key_required = (
-            hasattr(engine_config, "api_key") and engine_config.api_key is not None
-        )
+        api_key_required = hasattr(engine_config, 'api_key') and engine_config.api_key is not None
         try:
             from twat_search.web.engines.base import get_registered_engines
 
             registered_engines = get_registered_engines()
             engine_class = registered_engines.get(engine_name)
-            if (
-                not api_key_required
-                and engine_class
-                and hasattr(engine_class, "env_api_key_names")
-            ):
+            if not api_key_required and engine_class and hasattr(engine_class, 'env_api_key_names'):
                 api_key_required = bool(engine_class.env_api_key_names)
 
             # Get friendly name from the engine class first, fall back to the dictionary
             friendly_name = (
                 engine_class.friendly_engine_name
-                if engine_class and hasattr(engine_class, "friendly_name")
+                if engine_class and hasattr(engine_class, 'friendly_name')
                 else ENGINE_FRIENDLY_NAMES.get(engine_name, engine_name)
             )
 
-            self.console.print(f"\n[bold cyan]🔍 Engine: {friendly_name}[/bold cyan]")
             self.console.print(
-                f"[bold]Enabled:[/bold] {'✅' if engine_config.enabled else '❌'}"
+                f"\n[bold cyan]🔍 Engine: {friendly_name}[/bold cyan]",
             )
             self.console.print(
-                f"[bold]API Key Required:[/bold] {'✅' if api_key_required else '❌'}"
+                f"[bold]Enabled:[/bold] {'✅' if engine_config.enabled else '❌'}",
             )
-            if engine_class and hasattr(engine_class, "env_api_key_names"):
-                self.console.print("\n[bold]API Key Environment Variables:[/bold]")
+            self.console.print(
+                f"[bold]API Key Required:[/bold] {'✅' if api_key_required else '❌'}",
+            )
+            if engine_class and hasattr(engine_class, 'env_api_key_names'):
+                self.console.print(
+                    '\n[bold]API Key Environment Variables:[/bold]',
+                )
                 for env_name in engine_class.env_api_key_names:
-                    value_status = "✅" if os.environ.get(env_name) else "❌"
+                    value_status = '✅' if os.environ.get(env_name) else '❌'
                     self.console.print(f"  {env_name}: {value_status}")
-            self.console.print("\n[bold]Default Parameters:[/bold]")
+            self.console.print('\n[bold]Default Parameters:[/bold]')
             if engine_config.default_params:
                 for param, value in engine_config.default_params.items():
                     self.console.print(f"  {param}: {value}")
             else:
-                self.console.print("  No default parameters specified")
+                self.console.print('  No default parameters specified')
             try:
-                base_engine = engine_name.split("-")[0]
+                base_engine = engine_name.split('-')[0]
                 module_name = f"twat_search.web.engines.{base_engine}"
                 import importlib
 
                 engine_module = importlib.import_module(module_name)
-                function_name = engine_name.replace("-", "_")
+                function_name = engine_name.replace('-', '_')
                 if hasattr(engine_module, function_name):
                     func = getattr(engine_module, function_name)
-                    self.console.print("\n[bold]Function Interface:[/bold]")
+                    self.console.print('\n[bold]Function Interface:[/bold]')
                     self.console.print(
-                        f"  [green]{function_name}()[/green] - {func.__doc__.strip().split('\\n')[0]}"
+                        f"  [green]{function_name}()[/green] - {func.__doc__.strip().split('\\n')[0]}",
                     )
-                    self.console.print("\n[bold]Example Usage:[/bold]")
+                    self.console.print('\n[bold]Example Usage:[/bold]')
                     self.console.print(
-                        f"  [italic]from {module_name} import {function_name}[/italic]"
+                        f"  [italic]from {module_name} import {function_name}[/italic]",
                     )
                     self.console.print(
-                        f'  [italic]results = await {function_name}("your search query")[/italic]'
+                        f'  [italic]results = await {function_name}("your search query")[/italic]',
                     )
             except (ImportError, AttributeError, IndexError):
                 pass
         except (ImportError, AttributeError) as e:
             self.console.print(
-                f"[bold yellow]Could not load detailed engine information: {e}[/bold yellow]"
+                f"[bold yellow]Could not load detailed engine information: {e}[/bold yellow]",
             )
-            self.console.print("\n[bold]Basic Configuration:[/bold]")
-            self.console.print(f"Enabled: {'✅' if engine_config.enabled else '❌'}")
+            self.console.print('\n[bold]Basic Configuration:[/bold]')
             self.console.print(
-                f"Has API Key: {'✅' if engine_config.api_key else '❌'}"
+                f"Enabled: {'✅' if engine_config.enabled else '❌'}",
             )
-            self.console.print(f"Default Parameters: {engine_config.default_params}")
+            self.console.print(
+                f"Has API Key: {'✅' if engine_config.api_key else '❌'}",
+            )
+            self.console.print(
+                f"Default Parameters: {engine_config.default_params}",
+            )
 
-    def _display_engines_json(self, engine: str | None, config: "Config") -> None:
+    def _display_engines_json(self, engine: str | None, config: Config) -> None:
         from twat_search.web.engines.base import get_registered_engines
 
         try:
@@ -636,51 +523,20 @@ class SearchCLI:
             if engine not in config.engines:
                 return
             engine_config = config.engines[engine]
-            result[engine] = self._get_engine_info(
-                engine, engine_config, registered_engines
+            result[engine] = _get_engine_info(
+                engine,
+                engine_config,
+                registered_engines,
             )
         else:
             # Sort engines alphabetically for consistent ordering
             for engine_name, engine_config in sorted(config.engines.items()):
-                result[engine_name] = self._get_engine_info(
-                    engine_name, engine_config, registered_engines
+                result[engine_name] = _get_engine_info(
+                    engine_name,
+                    engine_config,
+                    registered_engines,
                 )
         # Print JSON output
-
-    def _get_engine_info(
-        self, engine_name: str, engine_config: Any, registered_engines: dict
-    ) -> dict:
-        api_key_required = False
-        api_key_set = False
-        env_vars = []
-        if hasattr(engine_config, "api_key") and engine_config.api_key is not None:
-            api_key_required = True
-            api_key_set = True
-        if engine_name in registered_engines:
-            engine_class = registered_engines.get(engine_name)
-            if engine_class and hasattr(engine_class, "env_api_key_names"):
-                api_key_required = bool(engine_class.env_api_key_names)
-                env_vars = [
-                    {"name": env_name, "set": bool(os.environ.get(env_name))}
-                    for env_name in engine_class.env_api_key_names
-                ]
-        default_params = (
-            engine_config.default_params
-            if hasattr(engine_config, "default_params")
-            else {}
-        )
-        return {
-            "enabled": engine_config.enabled
-            if hasattr(engine_config, "enabled")
-            else False,
-            "api_key_required": api_key_required,
-            "api_key_set": api_key_set,
-            "env_vars": env_vars,
-            "default_params": default_params,
-        }
-
-    def _check_engine_availability(self, engine_name: str) -> bool:
-        return is_engine_available(engine_name)
 
     async def critique(
         self,
@@ -726,34 +582,35 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
+            'num_results': num_results,
         }
         if country:
-            params["country"] = country
+            params['country'] = country
         if language:
-            params["language"] = language
+            params['language'] = language
         if safe_search is not None:
-            params["safe_search"] = safe_search
+            params['safe_search'] = safe_search
         if time_frame:
-            params["time_frame"] = time_frame
+            params['time_frame'] = time_frame
         if image_url:
-            params["image_url"] = image_url
+            params['image_url'] = image_url
         if image_base64:
-            params["image_base64"] = image_base64
+            params['image_base64'] = image_base64
         if source_whitelist:
-            params["source_whitelist"] = [
-                domain.strip() for domain in source_whitelist.split(",")
-            ]
+            params['source_whitelist'] = [domain.strip() for domain in source_whitelist.split(',')]
         if source_blacklist:
-            params["source_blacklist"] = [
-                domain.strip() for domain in source_blacklist.split(",")
-            ]
+            params['source_blacklist'] = [domain.strip() for domain in source_blacklist.split(',')]
         if api_key:
-            params["api_key"] = api_key
+            params['api_key'] = api_key
         params.update(kwargs)
 
         return await self._search_engine(
-            "critique", query, params, json, verbose, plain
+            'critique',
+            query,
+            params,
+            json,
+            verbose,
+            plain,
         )
 
     async def brave(
@@ -792,17 +649,17 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
-            "country": country,
-            "language": language,
-            "safe_search": safe_search,
-            "time_frame": time_frame,
+            'num_results': num_results,
+            'country': country,
+            'language': language,
+            'safe_search': safe_search,
+            'time_frame': time_frame,
         }
         if api_key:
-            params["api_key"] = api_key
+            params['api_key'] = api_key
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("brave", query, params, json, verbose, plain)
+        return await self._search_engine('brave', query, params, json, verbose, plain)
 
     async def brave_news(
         self,
@@ -840,18 +697,23 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
-            "country": country,
-            "language": language,
-            "safe_search": safe_search,
-            "time_frame": time_frame,
+            'num_results': num_results,
+            'country': country,
+            'language': language,
+            'safe_search': safe_search,
+            'time_frame': time_frame,
         }
         if api_key:
-            params["api_key"] = api_key
+            params['api_key'] = api_key
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
         return await self._search_engine(
-            "brave_news", query, params, json, verbose, plain
+            'brave_news',
+            query,
+            params,
+            json,
+            verbose,
+            plain,
         )
 
     async def serpapi(
@@ -890,17 +752,17 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
-            "country": country,
-            "language": language,
-            "safe_search": safe_search,
-            "time_frame": time_frame,
+            'num_results': num_results,
+            'country': country,
+            'language': language,
+            'safe_search': safe_search,
+            'time_frame': time_frame,
         }
         if api_key:
-            params["api_key"] = api_key
+            params['api_key'] = api_key
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("serpapi", query, params, json, verbose, plain)
+        return await self._search_engine('serpapi', query, params, json, verbose, plain)
 
     async def tavily(
         self,
@@ -911,7 +773,7 @@ class SearchCLI:
         safe_search: bool | None = True,
         time_frame: str | None = None,
         api_key: str | None = None,
-        search_depth: str = "basic",
+        search_depth: str = 'basic',
         include_domains: str | None = None,
         exclude_domains: str | None = None,
         verbose: bool = False,
@@ -944,25 +806,21 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
-            "country": country,
-            "language": language,
-            "safe_search": safe_search,
-            "time_frame": time_frame,
-            "api_key": api_key,
-            "search_depth": search_depth,
+            'num_results': num_results,
+            'country': country,
+            'language': language,
+            'safe_search': safe_search,
+            'time_frame': time_frame,
+            'api_key': api_key,
+            'search_depth': search_depth,
         }
         if include_domains:
-            params["include_domains"] = [
-                s.strip() for s in include_domains.split(",") if s.strip()
-            ]
+            params['include_domains'] = [s.strip() for s in include_domains.split(',') if s.strip()]
         if exclude_domains:
-            params["exclude_domains"] = [
-                s.strip() for s in exclude_domains.split(",") if s.strip()
-            ]
+            params['exclude_domains'] = [s.strip() for s in exclude_domains.split(',') if s.strip()]
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("tavily", query, params, json, verbose, plain)
+        return await self._search_engine('tavily', query, params, json, verbose, plain)
 
     async def pplx(
         self,
@@ -1002,17 +860,17 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
-            "country": country,
-            "language": language,
-            "safe_search": safe_search,
-            "time_frame": time_frame,
-            "api_key": api_key,
-            "model": model,
+            'num_results': num_results,
+            'country': country,
+            'language': language,
+            'safe_search': safe_search,
+            'time_frame': time_frame,
+            'api_key': api_key,
+            'model': model,
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("pplx", query, params, json, verbose, plain)
+        return await self._search_engine('pplx', query, params, json, verbose, plain)
 
     async def you(
         self,
@@ -1050,16 +908,16 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
-            "country": country,
-            "language": language,
-            "safe_search": safe_search,
-            "time_frame": time_frame,
-            "api_key": api_key,
+            'num_results': num_results,
+            'country': country,
+            'language': language,
+            'safe_search': safe_search,
+            'time_frame': time_frame,
+            'api_key': api_key,
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("you", query, params, json, verbose, plain)
+        return await self._search_engine('you', query, params, json, verbose, plain)
 
     async def you_news(
         self,
@@ -1097,17 +955,22 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
-            "country": country,
-            "language": language,
-            "safe_search": safe_search,
-            "time_frame": time_frame,
-            "api_key": api_key,
+            'num_results': num_results,
+            'country': country,
+            'language': language,
+            'safe_search': safe_search,
+            'time_frame': time_frame,
+            'api_key': api_key,
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
         return await self._search_engine(
-            "you_news", query, params, json, verbose, plain
+            'you_news',
+            query,
+            params,
+            json,
+            verbose,
+            plain,
         )
 
     async def duckduckgo(
@@ -1148,17 +1011,22 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
-            "region": country,  # remap country -> region
-            "safesearch": safe_search,  # remap safe_search -> safesearch
-            "time_range": time_frame,  # remap time_frame -> time_range
-            "proxy": proxy,
-            "timeout": timeout,
+            'num_results': num_results,
+            'region': country,  # remap country -> region
+            'safesearch': safe_search,  # remap safe_search -> safesearch
+            'time_range': time_frame,  # remap time_frame -> time_range
+            'proxy': proxy,
+            'timeout': timeout,
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
         return await self._search_engine(
-            "duckduckgo", query, params, json, verbose, plain
+            'duckduckgo',
+            query,
+            params,
+            json,
+            verbose,
+            plain,
         )
 
     async def hasdata_google(
@@ -1166,7 +1034,7 @@ class SearchCLI:
         query: str,
         num_results: int = 5,
         location: str | None = None,
-        device_type: str = "desktop",
+        device_type: str = 'desktop',
         api_key: str | None = None,
         verbose: bool = False,
         json: bool = False,
@@ -1193,15 +1061,20 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
-            "location": location,
-            "device_type": device_type,
-            "api_key": api_key,
+            'num_results': num_results,
+            'location': location,
+            'device_type': device_type,
+            'api_key': api_key,
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
         return await self._search_engine(
-            "hasdata-google", query, params, json, verbose, plain
+            'hasdata-google',
+            query,
+            params,
+            json,
+            verbose,
+            plain,
         )
 
     async def hasdata_google_light(
@@ -1234,15 +1107,197 @@ class SearchCLI:
         self._configure_logging(verbose)
 
         params: dict[str, Any] = {
-            "num_results": num_results,
-            "location": location,
-            "api_key": api_key,
+            'num_results': num_results,
+            'location': location,
+            'api_key': api_key,
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
         return await self._search_engine(
-            "hasdata-google-light", query, params, json, verbose, plain
+            'hasdata-google-light',
+            query,
+            params,
+            json,
+            verbose,
+            plain,
         )
+
+
+def _check_engine_availability(self, engine_name: str) -> bool:
+    return is_engine_available(engine_name)
+
+
+def _get_engine_info(
+    self,
+    engine_name: str,
+    engine_config: Any,
+    registered_engines: dict,
+) -> dict:
+    api_key_required = False
+    api_key_set = False
+    env_vars = []
+    if hasattr(engine_config, 'api_key') and engine_config.api_key is not None:
+        api_key_required = True
+        api_key_set = True
+    if engine_name in registered_engines:
+        engine_class = registered_engines.get(engine_name)
+        if engine_class and hasattr(engine_class, 'env_api_key_names'):
+            api_key_required = bool(engine_class.env_api_key_names)
+            env_vars = [
+                {'name': env_name, 'set': bool(os.environ.get(env_name))} for env_name in engine_class.env_api_key_names
+            ]
+    default_params = (
+        engine_config.default_params
+        if hasattr(
+            engine_config,
+            'default_params',
+        )
+        else {}
+    )
+    return {
+        'enabled': engine_config.enabled if hasattr(engine_config, 'enabled') else False,
+        'api_key_required': api_key_required,
+        'api_key_set': api_key_set,
+        'env_vars': env_vars,
+        'default_params': default_params,
+    }
+
+
+def _process_results(self, results: list) -> list[dict[str, Any]]:
+    processed = []
+    engine_results: dict[str, list] = {}
+
+    # Group results by engine
+    for result in results:
+        engine_name = getattr(result, 'source', None) or 'unknown'
+        engine_results.setdefault(engine_name, []).append(result)
+
+    # Process all results from each engine
+    for engine, engine_results_list in engine_results.items():
+        if not engine_results_list:
+            processed.append(
+                {
+                    'engine': engine,
+                    'status': '❌ No results',
+                    'url': 'N/A',
+                    'title': 'N/A',
+                    'snippet': 'N/A',
+                    'raw_result': None,
+                    'is_first': True,  # Flag to help with UI rendering
+                },
+            )
+            continue
+
+        # Process all results for the engine, not just the first one
+        for idx, result in enumerate(engine_results_list):
+            url = str(result.url)
+            processed.append(
+                {
+                    'engine': engine,
+                    'status': '✅ Success',
+                    'url': url,
+                    'title': result.title,
+                    'snippet': result.snippet[:100] + '...' if len(result.snippet) > 100 else result.snippet,
+                    'raw_result': getattr(result, 'raw', None),
+                    'is_first': idx == 0,  # Flag to help with UI rendering
+                },
+            )
+    return processed
+
+
+def _display_results(
+    self,
+    processed_results: list[dict[str, Any]],
+    verbose: bool = False,
+    plain: bool = False,
+) -> None:
+    if not processed_results:
+        if plain:
+            return
+        console.print('[bold red]No results found![/bold red]')
+        return
+
+    if plain:
+        # For plain output, just print a sorted and deduped list of URLs
+        urls = set()
+        for result in processed_results:
+            if '❌' not in result['status'] and result['url'] != 'N/A':
+                urls.add(result['url'])
+        for url in sorted(urls):
+            console.print(url)
+        return
+
+    # Always use the compact table format unless verbose is specifically requested
+    table = Table()  # Remove show_lines=True to eliminate row separator lines
+    table.add_column('Engine', style='cyan', no_wrap=True)
+
+    if verbose:
+        table.add_column('Status', style='magenta')
+        table.add_column('Title', style='green')
+        table.add_column('URL', style='blue', overflow='fold')
+        for result in processed_results:
+            # Only show engine name for the first result of each engine
+            engine_display = result['engine'] if result['is_first'] else ''
+            table.add_row(
+                engine_display,
+                result['status'],
+                result['title'],
+                result['url'],
+            )
+    else:
+        # Set the URL column to wrap, with enough width to display most URLs
+        table.add_column('URL', style='blue', overflow='fold', max_width=70)
+        for result in processed_results:
+            if '❌' in result['status']:
+                continue
+            table.add_row(result['engine'], result['url'])
+
+    console.print(table)
+
+    # Only print the raw results when verbose is true
+    if verbose:
+        for result in processed_results:
+            if '❌' not in result['status']:
+                console.print(result)
+
+
+def _display_errors(self, error_messages: list[str]) -> None:
+    if not error_messages:
+        return
+    table = Table(title='❌ Search Errors')
+    table.add_column('Error', style='red')
+    for error in error_messages:
+        table.add_row(error)
+    console.print(table)
+
+
+def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:
+    """Format and print results as JSON."""
+    results_by_engine: dict[str, dict[str, list[dict[str, Any]]]] = {}
+
+    # Group results by engine
+    for result in processed_results:
+        engine = result['engine']
+
+        # Initialize engine results list if it doesn't exist
+        if engine not in results_by_engine:
+            results_by_engine[engine] = {'results': []}
+
+        # Skip error results
+        if '❌' in result['status']:
+            continue
+
+        # Add the current result to the engine's results list
+        results_by_engine[engine]['results'].append(
+            {
+                'url': result['url'] if result['url'] != 'N/A' else None,
+                'title': result['title'] if result['title'] != 'N/A' else None,
+                'snippet': result.get('snippet') if result.get('snippet') != 'N/A' else None,
+                'raw': result.get('raw_result'),
+            },
+        )
+
+    # Print the JSON output
 
 
 def main() -> None:
@@ -1250,5 +1305,5 @@ def main() -> None:
     fire.Fire(SearchCLI)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -78,6 +78,7 @@ src/
       api.py
       cli.py
       config.py
+      engine_constants.py
       exceptions.py
       models.py
       utils.py
@@ -103,8 +104,11 @@ tests/
   test_twat_search.py
 .gitignore
 .pre-commit-config.yaml
+CHANGELOG.md
 cleanup.py
+fix_name_attribute.py
 LICENSE
+NEXTENGINES.md
 PROGRESS.md
 pyproject.toml
 README.md
@@ -152,78 +156,88 @@ File: .cursor/rules/filetree.mdc
 description: File tree of the project
 globs: 
 ---
-[ 928]  .
+[1.0K]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 558]  cleanup.mdc
-│       └── [4.6K]  filetree.mdc
+│       └── [5.7K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
 │       └── [1.4K]  release.yml
 ├── [3.5K]  .gitignore
-├── [ 532]  .pre-commit-config.yaml
-├── [  96]  .specstory
-│   └── [ 800]  history
-│       ├── [2.0K]  .what-is-this.md
-│       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
-│       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
-│       ├── [ 11K]  2025-02-25_02-24-planning-tests-for-twat-search-web-package.md
-│       ├── [196K]  2025-02-25_02-27-implementing-tests-for-twat-search-package.md
-│       ├── [ 46K]  2025-02-25_02-58-transforming-python-script-into-cli-tool.md
-│       ├── [ 93K]  2025-02-25_03-09-generating-a-name-for-the-chat.md
-│       ├── [5.5K]  2025-02-25_03-33-untitled.md
-│       ├── [ 57K]  2025-02-25_03-54-integrating-search-engines-into-twat-search.md
-│       ├── [ 72K]  2025-02-25_04-05-consolidating-you-py-and-youcom-py.md
-│       ├── [6.1K]  2025-02-25_04-13-missing-env-api-key-names-in-pplx-py.md
-│       ├── [118K]  2025-02-25_04-16-implementing-functions-for-brave-search-engines.md
-│       ├── [286K]  2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md
-│       ├── [ 83K]  2025-02-25_05-36-implementing-duckduckgo-search-engine.md
-│       ├── [194K]  2025-02-25_05-43-implementing-the-webscout-search-engine.md
-│       ├── [ 23K]  2025-02-25_06-07-implementing-bing-scraper-engine.md
-│       ├── [ 15K]  2025-02-25_06-12-continuing-bing-scraper-engine-implementation.md
-│       ├── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
-│       ├── [9.9K]  2025-02-25_07-09-refactoring-plan-and-progress-update.md
-│       ├── [ 40K]  2025-02-25_07-17-implementing-phase-1-from-todo-md.md
-│       ├── [292K]  2025-02-25_07-34-integrating-hasdata-google-serp-apis.md
-│       ├── [142K]  2025-02-25_08-19-implementing-search-engines-from-nextengines-md.md
-│       └── [ 34K]  2025-02-26_09-54-implementing-plain-option-for-search-commands.md
+├── [1.5K]  .pre-commit-config.yaml
+├── [ 128]  .specstory
+│   ├── [ 992]  history
+│   │   ├── [2.0K]  .what-is-this.md
+│   │   ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
+│   │   ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
+│   │   ├── [ 11K]  2025-02-25_02-24-planning-tests-for-twat-search-web-package.md
+│   │   ├── [196K]  2025-02-25_02-27-implementing-tests-for-twat-search-package.md
+│   │   ├── [ 46K]  2025-02-25_02-58-transforming-python-script-into-cli-tool.md
+│   │   ├── [ 93K]  2025-02-25_03-09-generating-a-name-for-the-chat.md
+│   │   ├── [5.5K]  2025-02-25_03-33-untitled.md
+│   │   ├── [ 57K]  2025-02-25_03-54-integrating-search-engines-into-twat-search.md
+│   │   ├── [ 72K]  2025-02-25_04-05-consolidating-you-py-and-youcom-py.md
+│   │   ├── [6.1K]  2025-02-25_04-13-missing-env-api-key-names-in-pplx-py.md
+│   │   ├── [118K]  2025-02-25_04-16-implementing-functions-for-brave-search-engines.md
+│   │   ├── [286K]  2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md
+│   │   ├── [ 83K]  2025-02-25_05-36-implementing-duckduckgo-search-engine.md
+│   │   ├── [194K]  2025-02-25_05-43-implementing-the-webscout-search-engine.md
+│   │   ├── [ 23K]  2025-02-25_06-07-implementing-bing-scraper-engine.md
+│   │   ├── [ 15K]  2025-02-25_06-12-continuing-bing-scraper-engine-implementation.md
+│   │   ├── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
+│   │   ├── [9.9K]  2025-02-25_07-09-refactoring-plan-and-progress-update.md
+│   │   ├── [ 40K]  2025-02-25_07-17-implementing-phase-1-from-todo-md.md
+│   │   ├── [292K]  2025-02-25_07-34-integrating-hasdata-google-serp-apis.md
+│   │   ├── [142K]  2025-02-25_08-19-implementing-search-engines-from-nextengines-md.md
+│   │   ├── [175K]  2025-02-26_09-54-implementing-plain-option-for-search-commands.md
+│   │   ├── [264K]  2025-02-26_10-55-standardizing-engine-naming-conventions.md
+│   │   ├── [4.3K]  2025-02-26_11-30-untitled.md
+│   │   ├── [102K]  2025-02-26_12-11-update-config-py-to-use-engine-constants.md
+│   │   ├── [278K]  2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md
+│   │   ├── [268K]  2025-02-26_13-40-search-engine-initialization-errors.md
+│   │   └── [ 54K]  2025-02-26_14-15-untitled.md
+│   └── [2.2M]  history.txt
+├── [3.2K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
-├── [ 64K]  NEXTENGINES.md
+├── [ 30K]  NEXTENGINES.md
 ├── [1.2K]  PROGRESS.md
 ├── [ 21K]  README.md
-├── [4.1K]  TODO.md
+├── [5.0K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [ 192]  dist
-├── [9.8K]  pyproject.toml
+├── [1.5K]  fix_name_attribute.py
+├── [ 10K]  pyproject.toml
 ├── [ 128]  src
 │   └── [ 256]  twat_search
-│       ├── [ 556]  __init__.py
-│       ├── [2.0K]  __main__.py
-│       └── [ 384]  web
-│           ├── [1.6K]  __init__.py
-│           ├── [4.8K]  api.py
-│           ├── [ 43K]  cli.py
-│           ├── [4.3K]  config.py
+│       ├── [ 577]  __init__.py
+│       ├── [2.4K]  __main__.py
+│       └── [ 416]  web
+│           ├── [1.7K]  __init__.py
+│           ├── [5.8K]  api.py
+│           ├── [ 45K]  cli.py
+│           ├── [ 13K]  config.py
+│           ├── [2.6K]  engine_constants.py
 │           ├── [ 576]  engines
-│           │   ├── [4.9K]  __init__.py
-│           │   ├── [ 24K]  anywebsearch.py
-│           │   ├── [3.7K]  base.py
+│           │   ├── [8.5K]  __init__.py
+│           │   ├── [ 25K]  anywebsearch.py
+│           │   ├── [4.4K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
-│           │   ├── [7.6K]  brave.py
-│           │   ├── [8.2K]  critique.py
-│           │   ├── [6.7K]  duckduckgo.py
+│           │   ├── [7.9K]  brave.py
+│           │   ├── [8.5K]  critique.py
+│           │   ├── [6.9K]  duckduckgo.py
 │           │   ├── [ 12K]  google_scraper.py
-│           │   ├── [7.1K]  hasdata.py
-│           │   ├── [4.9K]  pplx.py
-│           │   ├── [ 25K]  searchit.py
-│           │   ├── [6.9K]  serpapi.py
-│           │   ├── [7.4K]  tavily.py
-│           │   └── [7.3K]  you.py
+│           │   ├── [7.5K]  hasdata.py
+│           │   ├── [5.1K]  pplx.py
+│           │   ├── [ 26K]  searchit.py
+│           │   ├── [7.2K]  serpapi.py
+│           │   ├── [7.6K]  tavily.py
+│           │   └── [7.5K]  you.py
 │           ├── [1.0K]  exceptions.py
 │           ├── [1.3K]  models.py
 │           └── [1.5K]  utils.py
@@ -246,9 +260,10 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-└── [ 89K]  twat_search.txt
+├── [158K]  twat_search.txt
+└── [267K]  uv.lock
 
-19 directories, 76 files
+19 directories, 87 files
 
 ================
 File: .github/workflows/push.yml
@@ -404,24 +419,23 @@ jobs:
 ================
 File: src/twat_search/web/engines/__init__.py
 ================
-logger = logging.getLogger(__name__)
     __all__.extend(
-    __all__.extend(["SerpApiSearchEngine", "serpapi"])
+    __all__.extend(["SerpApiSearchEngine", "google_serpapi"])
     __all__.extend(["TavilySearchEngine", "tavily"])
     __all__.extend(["PerplexitySearchEngine", "pplx"])
     __all__.extend(["YouNewsSearchEngine", "YouSearchEngine", "you", "you_news"])
     __all__.extend(["CritiqueSearchEngine", "critique"])
     __all__.extend(["DuckDuckGoSearchEngine", "duckduckgo"])
     __all__.extend(["BingScraperSearchEngine", "bing_scraper"])
-    logger.debug("Imported google_scraper module")
+    logger.warning(f"Failed to import bing_scraper: {e}")
+    __all__.extend(["GoogleScraperEngine", "google_scraper"])
     logger.warning(f"Failed to import google_scraper module: {e}")
-    logger.debug("Imported searchit module")
     logger.warning(f"Failed to import searchit module: {e}")
-    logger.debug("Imported anywebsearch module")
     logger.warning(f"Failed to import anywebsearch module: {e}")
 def is_engine_available(engine_name: str) -> bool:
+    standardized_name = standardize_engine_name(engine_name)
 def get_engine_function(
-    return available_engine_functions.get(engine_name)
+    return available_engine_functions.get(standardized_name)
 def get_available_engines() -> list[str]:
     return list(available_engine_functions.keys())
 
@@ -448,7 +462,7 @@ class AnyWebSearchEngine(SearchEngine):
         self.ya_fldid: str | None = kwargs.get(
         ) or self.config.default_params.get("ya_fldid", None)
     def _convert_result(self, result: AnySearchResult) -> SearchResult | None:
-            logger.warning(f"Empty result received from {self.name}")
+            logger.warning(f"Empty result received from {self.engine_code}")
             validated = AnyWebSearchResult(
                 if hasattr(result, "description")
             return SearchResult(
@@ -459,7 +473,7 @@ class AnyWebSearchEngine(SearchEngine):
         return Settings(
 class GoogleAnyWebSearchEngine(AnyWebSearchEngine):
     async def search(self, query: str) -> list[SearchResult]:
-            raise EngineError(self.name, "Search query cannot be empty")
+            raise EngineError(self.engine_code, "Search query cannot be empty")
         logger.info(f"Searching Google (anywebsearch) with query: '{query}'")
         logger.debug(f"Using max_results={self.max_results}, language={self.language}")
             settings = self._create_settings()
@@ -472,14 +486,14 @@ class GoogleAnyWebSearchEngine(AnyWebSearchEngine):
             logger.info(
                 f"Returning {len(results)} validated results from Google (anywebsearch)"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
 class BingAnyWebSearchEngine(AnyWebSearchEngine):
         logger.info(f"Searching Bing (anywebsearch) with query: '{query}'")
                 logger.info("No results returned from Bing (anywebsearch)")
                 f"Received {len(raw_results_list)} raw results from Bing (anywebsearch)"
                 f"Returning {len(results)} validated results from Bing (anywebsearch)"
 class BraveAnyWebSearchEngine(AnyWebSearchEngine):
-            raise EngineError(self.name, "Brave API key is required for Brave search")
+            raise EngineError(
         logger.info(f"Searching Brave (anywebsearch) with query: '{query}'")
                 logger.info("No results returned from Brave (anywebsearch)")
                 f"Received {len(raw_results_list)} raw results from Brave (anywebsearch)"
@@ -490,7 +504,6 @@ class QwantAnyWebSearchEngine(AnyWebSearchEngine):
                 f"Received {len(raw_results_list)} raw results from Qwant (anywebsearch)"
                 f"Returning {len(results)} validated results from Qwant (anywebsearch)"
 class YandexAnyWebSearchEngine(AnyWebSearchEngine):
-            raise EngineError(
         logger.info(f"Searching Yandex (anywebsearch) with query: '{query}'")
                 logger.info("No results returned from Yandex (anywebsearch)")
                 f"Received {len(raw_results_list)} raw results from Yandex (anywebsearch)"
@@ -516,11 +529,12 @@ class SearchEngine(abc.ABC):
     async def search(self, query: str) -> list[SearchResult]:
 def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
     if not hasattr(engine_class, "env_api_key_names"):
-        engine_class.env_api_key_names = [f"{engine_class.name.upper()}_API_KEY"]
+        engine_class.env_api_key_names = [f"{engine_class.engine_code.upper()}_API_KEY"]
     if not hasattr(engine_class, "env_enabled_names"):
-        engine_class.env_enabled_names = [f"{engine_class.name.upper()}_ENABLED"]
+        engine_class.env_enabled_names = [f"{engine_class.engine_code.upper()}_ENABLED"]
     if not hasattr(engine_class, "env_params_names"):
-        engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]
+            f"{engine_class.engine_code.upper()}_DEFAULT_PARAMS"
+            engine_class.friendly_engine_name = ENGINE_FRIENDLY_NAMES.get(
 def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:
     engine_class = _engine_registry.get(engine_name)
     return engine_class(config, **kwargs)
@@ -530,10 +544,10 @@ def get_registered_engines() -> dict[str, type[SearchEngine]]:
 ================
 File: src/twat_search/web/engines/bing_scraper.py
 ================
+logger = logging.getLogger(__name__)
     class BingScraper:  # type: ignore
         def __init__(
         def search(self, query: str, num_results: int = 10) -> list[Any]:
-logger = logging.getLogger(__name__)
 class BingScraperResult(BaseModel):
 class BingScraperSearchEngine(SearchEngine):
         super().__init__(config, **kwargs)
@@ -559,14 +573,14 @@ class BingScraperSearchEngine(SearchEngine):
             logger.warning(f"Validation error for result: {exc}")
             logger.warning(f"Unexpected error converting result: {exc}")
     async def search(self, query: str) -> list[SearchResult]:
-            raise EngineError(self.name, "Search query cannot be empty")
+            raise EngineError(self.engine_code, "Search query cannot be empty")
         logger.info(f"Searching Bing with query: '{query}'")
             scraper = BingScraper(
             raw_results = scraper.search(query, num_results=self.max_results)
                 logger.info("No results returned from Bing Scraper")
             logger.debug(f"Received {len(raw_results)} raw results from Bing Scraper")
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
                 self._convert_result(result) for result in raw_results
         logger.info(f"Returning {len(results)} validated results from Bing Scraper")
 async def bing_scraper(
@@ -604,8 +618,6 @@ class BaseBraveEngine(SearchEngine):
                 if section.get("results"):
                             parsed = self.result_model(**result)
                             results.append(self.convert_result(parsed, result))
-                raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
-                raise EngineError(self.name, f"Response parsing error: {exc}") from exc
     def convert_result(self, parsed: BaseModel, raw: dict[str, Any]) -> SearchResult:
             publisher = getattr(parsed, "publisher", None)
             published_time = getattr(parsed, "published_time", None)
@@ -644,8 +656,8 @@ class CritiqueSearchEngine(SearchEngine):
                 response = await client.get(image_url, timeout=30)
                 response.raise_for_status()
                 encoded = base64.b64encode(response.content).decode("utf-8")
-            raise EngineError(self.name, f"Failed to fetch image from URL: {e}")
-            raise EngineError(self.name, f"Error processing image: {e}")
+            raise EngineError(self.engine_code, f"Failed to fetch image from URL: {e}")
+            raise EngineError(self.engine_code, f"Error processing image: {e}")
     async def _build_payload(self, query: str) -> dict[str, Any]:
             payload["image"] = await self._convert_image_url_to_base64(self.image_url)
     def _build_result(self, item: CritiqueResult, rank: int) -> SearchResult:
@@ -668,9 +680,7 @@ class CritiqueSearchEngine(SearchEngine):
                 response = await client.post(
                 data = response.json()
                 return self._parse_results(data)
-                raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
-                raise EngineError(self.name, f"Response parsing error: {exc}") from exc
-                raise EngineError(self.name, f"Search failed: {exc}") from exc
+                raise EngineError(self.engine_code, f"Search failed: {exc}") from exc
 async def critique(
     config = EngineConfig(api_key=api_key, enabled=True)
     engine = CritiqueSearchEngine(
@@ -708,7 +718,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
             raw_results = ddgs.text(**params)
                 converted = self._convert_result(raw)
                     results.append(converted)
-            raise EngineError(self.name, f"Search failed: {exc}") from exc
+            raise EngineError(self.engine_code, f"Search failed: {exc}") from exc
 async def duckduckgo(
     return await search(
 
@@ -747,14 +757,14 @@ class GoogleScraperEngine(SearchEngine):
             logger.warning(f"Validation error for result: {exc}")
             logger.warning(f"Unexpected error converting result: {exc}")
     async def search(self, query: str) -> list[SearchResult]:
-            raise EngineError(self.name, "Search query cannot be empty")
+            raise EngineError(self.engine_code, "Search query cannot be empty")
         logger.info(f"Searching Google with query: '{query}'")
             raw_results = list(
                 google_search(
                 logger.info("No results returned from Google Scraper")
             logger.debug(f"Received {len(raw_results)} raw results from Google Scraper")
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
                 self._convert_result(cast(GoogleSearchResult, result))
         logger.info(f"Returning {len(results)} validated results from Google Scraper")
 async def google_scraper(
@@ -788,16 +798,13 @@ class HasDataBaseEngine(SearchEngine):
                         parsed = HasDataGoogleResult.from_api_result(result)
                         results.append(
                             SearchResult(
-                raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
-                raise EngineError(self.name, f"Response parsing error: {exc}") from exc
-                raise EngineError(self.name, f"Invalid JSON response: {exc}") from exc
 class HasDataGoogleEngine(HasDataBaseEngine):
 class HasDataGoogleLightEngine(HasDataBaseEngine):
-async def hasdata_google(
+async def hasdata_google_full(
     config = EngineConfig(api_key=api_key, enabled=True)
     engine = HasDataGoogleEngine(
     return await engine.search(query)
-async def hasdata_google_light(
+async def hasdata_google(
     engine = HasDataGoogleLightEngine(
 
 ================
@@ -819,7 +826,7 @@ class PerplexitySearchEngine(SearchEngine):
                 response = await client.post(
                 response.raise_for_status()
                 data = response.json()
-            raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
+            raise EngineError(self.engine_code, f"HTTP Request failed: {exc}") from exc
         for choice in data.get("choices", []):
             answer = choice.get("message", {}).get("content", "")
                 pr = PerplexityResult(answer=answer, url=url, title=title)
@@ -861,9 +868,9 @@ class SearchitEngine(SearchEngine):
             unused_params.append(f"safe_search={safe_search}")
             unused_params.append(f"time_frame='{time_frame}'")
             logger.debug(
-                f"Parameters {', '.join(unused_params)} set but not used by {self.name}"
+                f"Parameters {', '.join(unused_params)} set but not used by {self.engine_code}"
     def _convert_result(self, result: SearchitResult) -> SearchResult | None:
-            logger.warning(f"Empty result received from {self.name}")
+            logger.warning(f"Empty result received from {self.engine_code}")
             validated = SearchitScraperResult(
                 if hasattr(result, "description")
             return SearchResult(
@@ -878,7 +885,7 @@ class SearchitEngine(SearchEngine):
             raise EngineError(
 class GoogleSearchitEngine(SearchitEngine):
     async def search(self, query: str) -> list[SearchResult]:
-            raise EngineError(self.name, "Search query cannot be empty")
+            raise EngineError(self.engine_code, "Search query cannot be empty")
         logger.info(f"Searching Google (searchit) with query: '{query}'")
             request = ScrapeRequest(
             scraper = GoogleScraper(max_results_per_page=min(100, self.max_results))
@@ -889,7 +896,7 @@ class GoogleSearchitEngine(SearchitEngine):
             logger.info(
                 f"Returning {len(results)} validated results from Google (searchit)"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
 class YandexSearchitEngine(SearchitEngine):
         logger.info(f"Searching Yandex (searchit) with query: '{query}'")
             scraper = YandexScraper(max_results_per_page=min(10, self.max_results))
@@ -946,9 +953,7 @@ class SerpApiSearchEngine(SearchEngine):
                         results.append(
                             SearchResult(
                                 raw=result.model_dump(),  # Include raw result for debugging
-                raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
-                raise EngineError(self.name, f"Response parsing error: {exc}") from exc
-async def serpapi(
+async def google_serpapi(
     config = EngineConfig(
     engine = SerpApiSearchEngine(
     return await engine.search(query)
@@ -986,9 +991,9 @@ class TavilySearchEngine(SearchEngine):
                 response = await client.post(
                 response.raise_for_status()
                 data = response.json()
-                raise EngineError(self.name, f"HTTP error: {e}")
-                raise EngineError(self.name, f"Request error: {e}")
-                raise EngineError(self.name, f"Error: {e!s}")
+                raise EngineError(self.engine_code, f"HTTP error: {e}")
+                raise EngineError(self.engine_code, f"Request error: {e}")
+                raise EngineError(self.engine_code, f"Error: {e!s}")
             parsed_response = TavilySearchResponse.parse_obj(data)
             items = [item.dict() for item in parsed_response.results]
             items = data.get("results", [])
@@ -1058,13 +1063,19 @@ File: src/twat_search/web/api.py
 ================
 logger = logging.getLogger(__name__)
 def get_engine_params(
-        k[len(engine_name) + 1 :]: v
+    std_engine_name = standardize_engine_name(engine_name)
+    for k, v in kwargs.items():
+        if k.startswith(std_engine_name + "_"):
+            engine_specific[k[len(std_engine_name) + 1 :]] = v
+        elif k.startswith(engine_name + "_"):  # For backward compatibility
+            engine_specific[k[len(engine_name) + 1 :]] = v
+    std_engines = [standardize_engine_name(e) for e in engines]
         for k, v in kwargs.items()
-        if k.startswith(engine_name + "_")
-        if not any(k.startswith(e + "_") for e in engines)
+        if not any(k.startswith(e + "_") for e in std_engines + engines)
 def init_engine_task(
-    engine_config = config.engines.get(engine_name)
-        logger.warning(f"Engine '{engine_name}' not configured.")
+    engine_config = config.engines.get(std_engine_name)
+        engine_config = config.engines.get(engine_name)
+            logger.warning(f"Engine '{engine_name}' not configured.")
         engine_params = get_engine_params(engine_name, engines, kwargs, common_params)
         engine_instance: SearchEngine = get_engine(
         logger.info(f"🔍 Querying engine: {engine_name}")
@@ -1075,6 +1086,7 @@ async def search(
         config = config or Config()
         engines = engines or list(config.engines.keys())
             raise SearchError(msg)
+        engines = [standardize_engine_name(e) for e in engines]
             }.items()
             task = init_engine_task(
                 engine_names.append(task[0])
@@ -1115,9 +1127,17 @@ class SearchCLI:
         logging.getLogger("httpx").setLevel(level)
     def _parse_engines(self, engines_arg: Any) -> list[str] | None:
         if isinstance(engines_arg, str):
-            return [e.strip() for e in engines_arg.split(",") if e.strip()]
+            if engines_arg.strip().lower() == "free":
+                self.logger.info(f"Using 'free' engines: {', '.join(engines)}")
+            elif engines_arg.strip().lower() == "best":
+                self.logger.info(f"Using 'best' engines: {', '.join(engines)}")
+            elif engines_arg.strip().lower() == "all":
+                engines = get_available_engines()
+                self.logger.info(f"Using 'all' available engines: {', '.join(engines)}")
+            engines = [e.strip() for e in engines_arg.split(",") if e.strip()]
+            return [standardize_engine_name(e) for e in engines]
         if isinstance(engines_arg, list | tuple):
-            return [str(e).strip() for e in engines_arg if str(e).strip()]
+            engines = [str(e).strip() for e in engines_arg if str(e).strip()]
             f"Unexpected engines type: {type(engines_arg)}. Using all available engines."
     async def _run_search(
                 if engine == "all" or is_engine_available(engine):
@@ -1165,7 +1185,10 @@ class SearchCLI:
             engine_func = get_engine_function(engine)
                 self.logger.warning(error_msg)
                 self._display_errors([error_msg])
-        friendly = friendly_names.get(engine, engine)
+            registered_engines = get_registered_engines()
+            engine_class = registered_engines.get(engine)
+                else ENGINE_FRIENDLY_NAMES.get(engine, engine)
+            friendly = ENGINE_FRIENDLY_NAMES.get(engine, engine)
             self.console.print(f"[bold]Searching {friendly}[/bold]: {query}")
             results = await engine_func(query=query, **params)
             processed_results = self._process_results(results)
@@ -1174,6 +1197,7 @@ class SearchCLI:
             self.logger.error(f"{friendly} search failed: {e}")
     def q(
         self._configure_logging(verbose)
+            self.logger.debug("No engines specified, using 'best' engines preset")
         engine_list = self._parse_engines(engines)
         common_params = {k: v for k, v in common_params.items() if v is not None}
             results = asyncio.run(
@@ -1196,10 +1220,8 @@ class SearchCLI:
         table = Table(title="🔎 Available Search Engines")
         table.add_column("Enabled", style="magenta")
         table.add_column("API Key Required", style="yellow")
-            registered_engines = get_registered_engines()
         sorted_engines = sorted(config.engines.items(), key=lambda x: x[0])
                 hasattr(engine_config, "api_key") and engine_config.api_key is not None
-                engine_class = registered_engines.get(engine)
                 if engine_class and hasattr(engine_class, "env_api_key_names"):
                     api_key_required = bool(engine_class.env_api_key_names)
         self.console.print(table)
@@ -1209,7 +1231,9 @@ class SearchCLI:
                 self.console.print(f"- {name}")
             engine_class = registered_engines.get(engine_name)
                 and hasattr(engine_class, "env_api_key_names")
-            self.console.print(f"\n[bold cyan]🔍 Engine: {engine_name}[/bold cyan]")
+                if engine_class and hasattr(engine_class, "friendly_name")
+                else ENGINE_FRIENDLY_NAMES.get(engine_name, engine_name)
+            self.console.print(f"\n[bold cyan]🔍 Engine: {friendly_name}[/bold cyan]")
                 self.console.print("\n[bold]API Key Environment Variables:[/bold]")
                     value_status = "✅" if os.environ.get(env_name) else "❌"
                     self.console.print(f"  {env_name}: {value_status}")
@@ -1263,31 +1287,62 @@ class SearchCLI:
     async def hasdata_google(
     async def hasdata_google_light(
 def main() -> None:
-    fire.Fire(SearchCLI())
+    fire.core.Display = lambda lines, out: console.print(*lines)
+    fire.Fire(SearchCLI)
     main()
 
 ================
 File: src/twat_search/web/config.py
 ================
-    load_dotenv()  # Load variables from .env file into environment
+logger = logging.getLogger(__name__)
 class EngineConfig(BaseModel):
     default_params: dict[str, Any] = Field(default_factory=dict)
-class Config:
-    def __init__(self, **kwargs: Any) -> None:
-        self.engines: dict[str, EngineConfig] = kwargs.get("engines", {})
-            self._load_engine_configs()
-    def _load_engine_configs(self) -> None:
-            registered_engines = get_registered_engines()
-        for engine_name, engine_class in registered_engines.items():
-                api_key = os.environ.get(env_name)
-                enabled = os.environ.get(env_name)
-                    engine_settings[engine_name]["enabled"] = enabled.lower() in (
-                params = os.environ.get(env_name)
-                        engine_settings[engine_name]["default_params"] = json.loads(
-        for engine_name, settings in engine_settings.items():
-                for key, value in settings.items():
-                    setattr(existing_config, key, value)
-                self.engines[engine_name] = EngineConfig(**settings)
+class Config(BaseModel):
+    engines: dict[str, EngineConfig] = Field(default_factory=dict)
+    def get_config_path(cls) -> Path:
+            return Path(cls.config_path)
+        config_dir = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    def __init__(self, **data: Any) -> None:
+        config_data = DEFAULT_CONFIG.copy()
+        config_file = self.get_config_path()
+        if config_file.exists():
+                with open(config_file, encoding="utf-8") as f:
+                    user_config = json.load(f)
+                    self._merge_config(config_data, user_config)
+                logger.warning(f"Failed to load configuration from {config_file}: {e}")
+        self._apply_env_overrides(config_data)
+        self._merge_config(config_data, data)
+        engines_data = config_data.get("engines", {})
+        for engine_name, engine_config in engines_data.items():
+            std_name = standardize_engine_name(engine_name)
+        super().__init__(**config_data)
+    def _apply_env_overrides(self, config_data: dict[str, Any]) -> None:
+        engine_settings = config_data.get("engines", {})
+            std_engine_name = standardize_engine_name(engine_name)
+                f"{std_engine_name.upper()}_API_KEY",
+                f"TWAT_SEARCH_{std_engine_name.upper()}_API_KEY",
+                f"{std_engine_name.upper()}_ENABLED",
+                f"TWAT_SEARCH_{std_engine_name.upper()}_ENABLED",
+                    ].lower() in ("true", "1", "yes", "y")
+                f"{std_engine_name.upper()}_DEFAULT_PARAMS",
+                f"TWAT_SEARCH_{std_engine_name.upper()}_DEFAULT_PARAMS",
+                        params = json.loads(os.environ[env_var])
+                        if isinstance(params, dict):
+                            engine_settings[std_engine_name]["default_params"].update(
+                        logger.warning(
+    def _merge_config(self, target: dict[str, Any], source: dict[str, Any]) -> None:
+        for key, value in source.items():
+                and isinstance(target[key], dict)
+                and isinstance(value, dict)
+                self._merge_config(target[key], value)
+    def add_engine(
+        self.engines[std_engine_name] = EngineConfig(
+
+================
+File: src/twat_search/web/engine_constants.py
+================
+def standardize_engine_name(engine_name: str) -> str:
+    return engine_name.replace("-", "_")
 
 ================
 File: src/twat_search/web/exceptions.py
@@ -1345,7 +1400,12 @@ class TwatSearchCLI:
         console.print(
     def version(self) -> str:
 def main() -> None:
-    fire.Fire(TwatSearchCLI(), name="twat-search")
+    install(show_locals=True)
+    ansi_decoder = AnsiDecoder()
+    console = Console(theme=Theme({"prompt": "cyan", "question": "bold cyan"}))
+    def display(lines, out):
+        console.print(Group(*map(ansi_decoder.decode_line, lines)))
+    fire.Fire(TwatSearchCLI, name="twat-search")
     main()
 
 ================
@@ -1950,25 +2010,119 @@ _private
 File: .pre-commit-config.yaml
 ================
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
+  - hooks:
+      - args: [--fix]
+        id: ruff
+      - args: [--respect-gitignore]
+        id: ruff-format
+    repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.3.4
-    hooks:
-      - id: ruff
-        args: [--fix]
-      - id: ruff-format
-        args: [--respect-gitignore]
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
-    hooks:
-      - id: trailing-whitespace
+  - hooks:
+      - id: absolufy-imports
+    repo: https://github.com/MarcoGorelli/absolufy-imports
+    rev: v0.3.1
+  - hooks:
       - id: end-of-file-fixer
       - id: check-yaml
-      - id: check-toml
-      - id: check-added-large-files
-      - id: debug-statements
-      - id: check-case-conflict
-      - id: mixed-line-ending
-        args: [--fix=lf]
+      - id: double-quote-string-fixer
+      - id: requirements-txt-fixer
+    repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+  - hooks:
+      - args: [--py311-plus, --add-import, 'from __future__ import annotations']
+        exclude: ^(pre_commit/resources/|testing/resources/python3_hooks_repo/)
+        id: reorder-python-imports
+    repo: https://github.com/asottile/reorder-python-imports
+    rev: v3.14.0
+  - hooks:
+      - id: add-trailing-comma
+    repo: https://github.com/asottile/add-trailing-comma
+    rev: v3.1.0
+  - hooks:
+      - args: [--py311-plus]
+        id: pyupgrade
+    repo: https://github.com/asottile/pyupgrade
+    rev: v3.19.1
+  - hooks:
+      - id: autopep8
+    repo: https://github.com/hhatto/autopep8
+    rev: v2.3.2
+  - hooks:
+      - id: flake8
+    repo: https://github.com/PyCQA/flake8
+    rev: 7.1.2
+  - hooks:
+      - additional_dependencies: [types-pyyaml]
+        exclude: ^testing/resources/
+        id: mypy
+    repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.15.0
+  - hooks:
+      - id: isort
+    repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+
+================
+File: CHANGELOG.md
+================
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## Changes by date
+
+### 2025-02-26
+
+#### Changed
+
+- Refactored the CLI to import engine functions more safely, handling missing dependencies.
+- Updated the CLI to use a dictionary to map the registered engines to their convenience functions, making it easier to call functions.
+- Standardized engine names to use underscores internally.
+- Modified the `_parse_engines` method in the CLI to handle special strings ("free", "best", "all") for selecting groups of engines.
+- Updated the `q` method in the CLI to use unified parameters and to control verbose output.
+- Updated the `info` method in the CLI to use unified parameters, to list engines, and to provide detailed information about specific engines.
+- Updated `_display_results` in the CLI to handle multiple results per engine and optional plain-text output (no table, just URLs).
+- Updated the `_display_json_results` function in the CLI to create JSON output.
+- Updated the `config` class to parse environment variables for engines using a regular expression, addressing issues with engine configuration.
+- Updated various engine implementations (Brave, Tavily, You, Perplexity, SerpApi) to use unified parameters and improve URL handling.
+
+#### Added
+
+- Implemented `bing_scraper` convenience function.
+- Added comprehensive tests to verify the correct behavior of the `bing_scraper` convenience function.
+- Implemented the `WebScoutEngine` class, providing basic search functionality.
+- Added new search engine integrations:
+    - `google_scraper.py`: Implemented a `GoogleScraperEngine` and a `google_scraper` convenience function.
+    - `searchit.py`: Implemented several search engines using the `searchit` library: `GoogleSearchitEngine`, `YandexSearchitEngine`, `QwantSearchitEngine`, `BingSearchitEngine`.
+    - `anywebsearch.py`: Implemented multiple search engines using the `anywebsearch` library: `GoogleAnyWebSearchEngine`, `BingAnyWebSearchEngine`, `BraveAnyWebSearchEngine`, `QwantAnyWebSearchEngine`, `YandexAnyWebSearchEngine`.
+    - `hasdata.py`: Implemented `HasDataGoogleEngine` and `HasDataGoogleLightEngine`.
+- Added tests for `bing_scraper`.
+
+### 2025-02-25
+
+#### Added
+
+- Created initial project structure and implemented several search engine integrations (Brave, Google, Tavily, Perplexity, You.com).
+- Developed core functionality, including a command-line interface (CLI) and asynchronous search capabilities.
+- Implemented configuration management and exception handling.
+- Implemented rate limiting utility.
+- Added Pydantic models for data validation.
+- Added unit tests for the models, configuration, utility functions, exceptions, and the base search engine class.
+
+#### Changed
+
+- Updated the `config.py` file to correctly import BaseSettings from the pydantic-settings package.
+- Updated the `pyproject.toml` file to add pydantic-settings as a dependency.
+- Updated the example usage in `example.py`.
+- Completed the implementation of the web search functionality as specified in TODO.md.
+- Planned comprehensive tests for the package.
+
+### 2025-02-25 - Initial Development
+
+- Created initial project structure and files.
+- Created a preliminary TODO.md, PROGRESS.md, and research.txt.
+
+---
 
 ================
 File: cleanup.py
@@ -2105,6 +2259,28 @@ def main() -> NoReturn:
             cleanup.push()
         log_message(f"Error: {e}")
     repomix()
+    pprint(LOG_FILE.read_text())
+    main()
+
+================
+File: fix_name_attribute.py
+================
+def fix_file(file_path: str) -> None:
+    print(f"Processing {file_path}...")
+    with open(file_path, "r", encoding="utf-8") as file:
+        content = file.read()
+    content = re.sub(r"self\.name(?!\w)", "self.engine_code", content)
+        print(f"  Found and replaced references in {file_path}")
+        with open(file_path, "w", encoding="utf-8") as file:
+            file.write(content)
+        print(f"  No references found in {file_path}")
+def main() -> None:
+    if not os.path.exists(engine_dir):
+        print(f"Error: Directory {engine_dir} does not exist")
+    for file_path in glob.glob(f"{engine_dir}/*.py"):
+        if os.path.basename(file_path) not in ["__init__.py", "base.py"]:
+            fix_file(file_path)
+    print("Done!")
     main()
 
 ================
@@ -2131,6 +2307,1189 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+================
+File: NEXTENGINES.md
+================
+# Next backends and engines to implement
+
+## https://github.com/Sanix-Darker/falla
+
+Implement all engines as `*-falla` from this. 
+
+Token Usage:
+GitHub Tokens: 7766
+LLM Input Tokens: 0
+LLM Output Tokens: 0
+Total Tokens: 7766
+
+FileTree:
+.gitignore
+README.md
+app/__init__.py
+app/core/Aol.py
+app/core/Ask.py
+app/core/Bing.py
+app/core/DogPile.py
+app/core/DuckDuckGo.py
+app/core/Falla.py
+app/core/Gibiru.py
+app/core/Google.py
+app/core/Mojeek.py
+app/core/Qwant.py
+app/core/SearchEncrypt.py
+app/core/StartPage.py
+app/core/Yahoo.py
+app/core/Yandex.py
+app/core/__init__.py
+app/main.py
+app/settings.py
+app/utils.py
+example.config.txt
+requirements.txt
+tests/test.py
+
+Analysis:
+.gitignore
+```.gitignore
+config.txt
+*__pycache__
+.idea
+.vscode
+.history
+*.json
+*.log
+*.pyc
+```
+README.md
+# FAllA
+
+A search-engine-cli-scraper for more than 15 search engines, including Google. duckduckgo, Bing, Ask, etc...
+<br>
+**NOTE:** For educationnal purpose, am not responsible of the bad use of this tool !
+
+## Requirements
+- Python (3.x)
+- Docker-CE (Not required for all search-engine, just few of them)
+
+## How to install
+
+- You need to install all requirements :
+```shell-script
+pip3 install -r requirements.txt
+```
+- Install geckodriver :
+```shell-script
+# For linux users
+sudo apt install firefox-geckodriver
+
+# For other OS's users, please check releases on https://github.com/mozilla/geckodriver/releases
+```
+
+- Pull and run the splash-scrap module from docker-hub (Some of search engine need this):
+```shell-script
+docker run -p 8050:8050 scrapinghub/splash
+```
+
+- Replace `example.config.txt` by `config.txt` and provide the running IP for the splash-scrap
+
+## How to launch
+
+How to use Falla:
+```shell-script
+usage: main.py [-h] [-e ENGINE] [-q QUERY]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -e ENGINE, --engine ENGINE
+                        The search engine
+  -q QUERY, --query QUERY
+                        The query text
+```
+
+- To list all search-engine:
+```shell-script
+$ python3 -m app.main
+# output
+[+] Falla [the search-engine-scraper]
+[+] Listing search-Engines
+[+] > google
+[+] > bing
+[+] > aol
+[+] > dogpile
+[+] > falla
+[+] > ask
+[+] > qwant
+[+] > duckduckgo
+[+] > mojeek
+[+] > gibiru
+[+] > yandex
+[+] > yahoo
+[+] > searchencrypt
+[+] > iem
+[+] > kallasearch
+[+] > wosx
+```
+
+- To search something:
+```shell-script
+$ python3 -m app.main -e google -q "sanix darker"
+# output
+```
+<img src="./images/falla.png">
+## Author
+
+- Sanix-darker
+app/__init__.py
+```.py
+
+```
+app/core/Aol.py
+```.py
+# Falla-Aol
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from app.core.Falla import Falla
+
+
+class Aol(Falla):
+    def __init__(self):
+        self.try_it = 0
+        self.max_retry = 3
+        self.source = "Aol"
+        self.mode = "requests"
+        self.results_box = "//div[@id='web']"
+        self.each_element = {
+            "tag": "li"
+        }
+        self.href = {
+            "tag": "a",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "a",
+            "type": "text"
+        }
+        self.cite = {
+            "tag": "div:compText",
+            "child": {
+                "tag": "p",
+                "type": "text"
+            }
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://search.aol.com/aol/search?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# a = Aol()
+# print(a.search("un avion"))
+
+```
+app/core/Ask.py
+```.py
+# Falla-Ask
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from app.core.Falla import Falla
+
+
+class Ask(Falla):
+    def __init__(self):
+        self.try_it = 0
+        self.max_retry = 3
+        self.source = "Ask"
+        self.mode = "requests"
+        self.results_box = "//div[@class='l-mid-content']"
+        self.each_element = {
+            "tag": "div",
+            "attr": {"class": "PartialSearchResults-item"}
+        }
+        self.href = {
+            "tag": "a:PartialSearchResults-item-title-link",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "a:PartialSearchResults-item-title-link",
+            "type": "text"
+        }
+        self.cite = {
+            "tag": "p:PartialSearchResults-item-abstract",
+            "type": "text"
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://www.ask.com/web?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# ak = Ask()
+# print(ak.search("un avion"))
+
+```
+app/core/Bing.py
+```.py
+# Falla-Bing
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
+from app.core.Falla import Falla
+
+
+class Bing(Falla):
+    def __init__(self):
+        self.source = "Bing"
+        self.mode = "splash_scrap"
+        self.try_it = 0
+        self.max_retry = 3
+        self.results_box = "//ol[@id='b_results']"
+        self.each_element = {
+            "tag": "li",
+            "attr": {"class": "b_algo"}
+        }
+        self.href = {
+            "tag": "a",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "h2",
+            "type": "text",
+            "child": {}
+        }
+        self.cite = {
+            "tag": "div:b_caption",
+            "child": {
+                "tag": "p",
+                "type": "text"
+            }
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://www.bing.com/search?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# b = Bing()
+# print(b.search("un avion"))
+
+```
+app/core/DogPile.py
+```.py
+# Falla-DogPile
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from app.core.Falla import Falla
+
+
+class DogPile(Falla):
+    def __init__(self):
+        self.try_it = 0
+        self.max_retry = 3
+        self.source = "DogPile"
+        self.mode = "requests"
+        self.results_box = "//div[@class='mainline-results']"
+        self.each_element = {
+            "tag": "div",
+            "attr": {"class": "web-bing__result"}
+        }
+        self.href = {
+            "tag": "a:web-bing__title",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "a:web-bing__title",
+            "type": "text"
+        }
+        self.cite = {
+            "tag": "span:web-bing__description",
+            "type": "text"
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://www.dogpile.com/serp?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# dp = DogPile()
+# print(dp.search("un avion"))
+
+```
+app/core/DuckDuckGo.py
+```.py
+# Falla-DuckDuckGo
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
+from app.core.Falla import Falla
+
+
+class DuckDuckGo(Falla):
+    def __init__(self):
+        self.option = Options()
+        self.option.headless = True
+        self.driver = webdriver.Firefox(options=self.option)
+
+        self.source = "DuckDuckGo"
+        self.mode = "selenium"
+        self.try_it = 0
+        self.max_retry = 3
+        self.results_box = "//div[@id='links']"
+        self.each_element = {
+            "tag": "div",
+            "attr": {"class": "result__body"}
+        }
+        self.href = {
+            "tag": "a:result__a",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "a:result__a",
+            "type": "text",
+            "child": {}
+        }
+        self.cite = {
+            "tag": "div:result__snippet",
+            "type": "text",
+            "child": {}
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://duckduckgo.com/?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# d = DuckDuckGo()
+# print(d.search("un avion"))
+
+```
+app/core/Falla.py
+```.py
+# Falla
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+import json
+import sys
+import time
+import traceback
+import requests
+from bs4 import BeautifulSoup
+
+from app.settings import *
+
+
+class Falla:
+    def __init__(self, results_box, each_element, href, title, cite):
+        self.driver = None
+        self.results_box = results_box
+        self.each_element = each_element
+        self.href = href
+        self.title = title
+        self.cite = cite
+        self.try_it = 0
+        self.max_retry = 4
+        self.source = "Falla"
+        self.mode = "requests"
+
+        self.option = None
+        self.option.headless = None
+        self.driver = None
+
+    def get_trace(self):
+        """
+        This method will just print the Traceback after an error occur
+        """
+        print("Exception in code:")
+        print("-" * 60)
+        traceback.print_exc(file=sys.stdout)
+        print("-" * 60)
+
+    def get_element_from_type(self, to_return, the_filter=None):
+        """
+        A parse-method to extract from parse_entry_point an element as attribute or text
+
+        to_return: The BeautifulSoup object
+        the_filter: The Json-Filter
+        """
+        if the_filter["type"] == "text":
+            to_return = to_return.getText()
+        elif the_filter["type"] == "attribute":
+            try:
+                to_return = to_return[the_filter["key"]]
+            except Exception:
+                self.get_trace()
+                to_return = ""
+        else:
+            print("[x] Error, specify a valid type !")
+
+        return to_return
+
+    def get_tag(self, element, tag):
+        """
+        This method will extract the tag having a attriute or not
+
+        element: The Beautifull-Soup object
+        tag: The Json tag (can be a class or other)
+        """
+        if ":" in tag:
+            return element.find(tag.split(":")[0], {"class": tag.split(":")[1]})
+        else:
+            return element.find(tag)
+
+    def parse_entry_point(self, element, the_filter):
+        """
+        This method will extract the href, the title and the cite in result
+
+        element: The Beautifull-Soup Object
+        the_filter: The JSON object for the Filter
+        """
+        to_return = self.get_tag(element, the_filter["tag"])
+
+        if "type" in the_filter:
+            to_return = self.get_element_from_type(to_return, the_filter)
+        else:
+            if bool(the_filter["child"]):  # There are some child
+                to_return = self.get_tag(to_return, the_filter["child"]["tag"])
+
+                to_return = self.get_element_from_type(to_return, the_filter["child"])
+            else:
+                print("[x] Malformed filter !")
+
+        return ' '.join(str(to_return).split())
+
+    def get_each_elements(self, soup):
+        """
+        Get all elements list from Beautifull-Soup object
+
+        soup: The Beautiful-Soup object
+        """
+        fetchs = []
+        if "attr" in self.each_element:
+            if self.each_element["attr"] is not None:
+                fetchs = soup.findAll(self.each_element["tag"], self.each_element["attr"])
+            else:
+                fetchs = soup.findAll(self.each_element["tag"])
+        else:
+            fetchs = soup.findAll(self.each_element["tag"])
+
+        return fetchs
+
+    def scrapy_splash_request(self, to_fetch_url):
+        """
+        This method is responsible for scrapping a html_content from a url using splash-scrap
+
+        to_fetch_url: The url of the website
+        """
+        json_data = {
+            "response_body": False,
+            "lua_source": "function main(splash, args)\r\n  assert(splash:go(args.url))\r\n  assert(splash:wait("
+                          "0.5))\r\n  return {\r\n    html = splash:html(),\r\n    png = splash:png(),\r\n    har = "
+                          "splash:har(),\r\n  }\r\nend",
+            "url": to_fetch_url,
+            "html5_media": False,
+            "save_args": [],
+            "viewport": "1024x768",
+            "http_method": "GET",
+            "resource_timeout": 0,
+            "render_all": False,
+            "png": 1,
+            "har": 1,
+            "timeout": 90,
+            "request_body": False,
+            "load_args": {},
+            "html": 1,
+            "images": 1,
+            "wait": 0.7
+        }
+
+        r = requests.post(SPLASH_SCRAP_URL + "/execute", json=json_data)
+        html_string = json.loads(r.content.decode())["html"]
+
+        return html_string
+
+    def get_html_content(self, url):
+        """
+        This method will check the mode of fetching and proceed
+
+        url: The url of the target
+        """
+        html_content = ""
+        if self.mode == "selenium":
+            self.driver.get(url)
+            self.driver.implicitly_wait(10)  # in seconds
+
+            element = self.driver.find_element_by_xpath(self.results_box)
+            html_content = element.get_attribute('outerHTML')
+        elif self.mode == "splash_scrap":
+            html_content = self.scrapy_splash_request(url)
+
+        elif self.mode == "requests":
+            r = requests.get(url, headers={"Upgrade-Insecure-Requests": "1",
+                                           "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, "
+                                                         "like Gecko) Chrome/80.0.3987.100 Safari/537.36",
+                                           "Sec-Fetch-Dest": "document",
+                                           "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,"
+                                                     "image/webp,image/apng,*/*;q=0.8,"
+                                                     "application/signed-exchange;v=b3;q=0.9 "
+                                           })
+            html_content = r.content.decode()
+
+        return html_content
+
+    def fetch(self, url):
+        """
+        The main method for fetching results from url
+
+        url: The url of the target
+        """
+        html_content = self.get_html_content(url)
+        soup = BeautifulSoup(html_content, 'html.parser')
+        fetchs = self.get_each_elements(soup)
+
+        results = []
+        # print("fetchs: ", fetchs)
+        # print("self.parse_entry_point(elt, self.href): ", self.parse_entry_point(fetchs[0], self.href))
+        for elt in fetchs:
+            try:
+                element = {
+                    "source": self.source,
+                    "href": self.parse_entry_point(elt, self.href),  # elt.find("a")["href"]
+                    "title": self.parse_entry_point(elt, self.title),  # str(elt.find("a").find("h3").getText())
+                    "cite": self.parse_entry_point(elt, self.cite)  # str(elt.find("a").find("cite").getText())
+                }
+                results.append(element)
+            except Exception:
+                self.get_trace()
+
+        if len(results) == 0 and self.try_it < self.max_retry:
+            self.try_it += 1
+            time.sleep(0.5)
+            print("[+] try: ", self.try_it)
+            self.fetch(url)
+
+        if self.mode == "selenium":
+            self.driver.quit()
+
+        return json.dumps(results, ensure_ascii=False)
+
+```
+app/core/Gibiru.py
+```.py
+# Falla-Gibiru
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from app.core.Falla import Falla
+
+
+class Gibiru(Falla):
+    def __init__(self):
+        self.source = "Gibiru"
+        self.mode = "splash_scrap"
+        self.try_it = 0
+        self.max_retry = 3
+        self.results_box = "//div[@class='gsc-resultsRoot']"
+        self.each_element = {
+            "tag": "div",
+            "attr": {"class": "gs-webResult"}
+        }
+        self.href = {
+            "tag": "a:gs-title",
+            "type": "attribute",
+            "key": "data-ctorig",
+            "child": {}
+        }
+        self.title = {
+            "tag": "a:gs-title",
+            "type": "text",
+            "child": {}
+        }
+        self.cite = {
+            "tag": "div:gs-snippet",
+            "type": "text",
+            "child": {}
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://gibiru.com/results.html?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# gi = Gibiru()
+# print(gi.search("un avion"))
+
+```
+app/core/Google.py
+```.py
+# Falla-Google
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+import json
+import time
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
+from app.core.Falla import Falla
+
+
+class Google(Falla):
+    def __init__(self):
+        self.option = Options()
+        self.option.headless = True
+        self.driver = webdriver.Firefox(options=self.option)
+
+        self.try_it = 0
+        self.max_retry = 3
+        self.source = "Google"
+        self.mode = "selenium"
+        self.results_box = "//div[@id='search']"
+        self.each_element = {
+            "tag": "div",
+            "attr": {"class": "g"}
+        }
+        self.href = {
+            "tag": "a",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "a",
+            "child": {
+                "tag": "h3",
+                "type": "text"
+            }
+        }
+        self.cite = {
+            "tag": "a",
+            "child": {
+                "tag": "cite",
+                "type": "text"
+            }
+        }
+
+    def search(self, search_text, pages=""):
+
+        base_url = "https://www.google.com/search?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + base_url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        # results = json.loads(self.fetch(base_url))
+        #
+        # if pages > 1:
+        #     for nb_page in range(pages):
+        #         url = base_url + "&start=" + str(nb_page + 1) + "0"
+        #         time.sleep(1)
+        #         results = results + self.fetch(url)
+        #
+        # results = json.dumps(results)
+
+        return self.fetch(base_url)
+
+
+# g = Google()
+# print(g.search("un avion"))
+
+```
+app/core/Mojeek.py
+```.py
+# Falla-Mojeek
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from app.core.Falla import Falla
+
+
+class Mojeek(Falla):
+    def __init__(self):
+        self.try_it = 0
+        self.max_retry = 3
+        self.source = "Mojeek"
+        self.mode = "requests"
+        self.results_box = "//ul[@class='results-standard']"
+        self.each_element = {
+            "tag": "li"
+        }
+        self.href = {
+            "tag": "a:ob",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "a:ob",
+            "type": "text"
+        }
+        self.cite = {
+            "tag": "p:s",
+            "type": "text"
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://www.mojeek.com/search?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# mk = Mojeek()
+# print(mk.search("un avion"))
+
+```
+app/core/Qwant.py
+```.py
+# Falla-Qwant
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
+from app.core.Falla import Falla
+
+
+class Qwant(Falla):
+    def __init__(self):
+        self.option = Options()
+        self.option.headless = True
+        self.driver = webdriver.Firefox(options=self.option)
+
+        self.try_it = 0
+        self.max_retry = 3
+        self.source = "Qwant"
+        self.mode = "selenium"
+        self.results_box = "//div[@class='result_fragment']"
+        self.each_element = {
+            "tag": "div",
+            "attr": {"class": "result--web"}
+        }
+        self.href = {
+            "tag": "a:result--web--link",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "span:result--web--title",
+            "type": "text",
+            "child": {}
+        }
+        self.cite = {
+            "tag": "div:result--web",
+            "child": {
+                "tag": "p",
+                "type": "text"
+            }
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://www.qwant.com/?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# qw = Qwant()
+# print(qw.search("un avion"))
+
+```
+app/core/SearchEncrypt.py
+```.py
+# Falla-SearchEncrypt
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from app.core.Falla import Falla
+
+
+class SearchEncrypt(Falla):
+    def __init__(self):
+        self.try_it = 0
+        self.max_retry = 3
+        self.source = "SearchEncrypt"
+        self.mode = "requests"
+        self.results_box = "//section[@class='serp__results']"
+        self.each_element = {
+            "tag": "div",
+            "attr": {"class": "web-result"}
+        }
+        self.href = {
+            "tag": "a:web-result__link",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "a:web-result__link",
+            "type": "text",
+            "child": {}
+        }
+        self.cite = {
+            "tag": "p:web-result__description",
+            "child": {
+                "tag": "span",
+                "type": "text"
+            }
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://www.searchencrypt.com/search/?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# se = SearchEncrypt()
+# print(se.search("un avion"))
+
+```
+app/core/StartPage.py
+```.py
+# Falla-StartPage
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from app.core.Falla import Falla
+
+
+class StartPage(Falla):
+    def __init__(self):
+        self.try_it = 0
+        self.max_retry = 3
+        self.source = "StartPage"
+        self.mode = "requests"
+        self.results_box = "//section[@id='w-gl--default']"
+        self.each_element = {
+            "tag": "div",
+            "attr": {"class": "w-gl__result"}
+        }
+        self.href = {
+            "tag": "a:w-gl__result-title",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "a:w-gl__result-title",
+            "child": {
+                "tag": "h3",
+                "type": "text"
+            }
+        }
+        self.cite = {
+            "tag": "p:w-gl__description",
+            "type": "text",
+            "child": {}
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://www.startpage.com/sp/search?q=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# sp = StartPage()
+# print(sp.search("un avion"))
+
+```
+app/core/Yahoo.py
+```.py
+# Falla-Yahoo
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
+from app.core.Falla import Falla
+
+
+class Yahoo(Falla):
+    def __init__(self):
+        self.option = Options()
+        self.option.headless = True
+        self.driver = webdriver.Firefox(options=self.option)
+
+        self.try_it = 0
+        self.max_retry = 3
+        self.source = "Yahoo"
+        self.mode = "selenium"
+        self.results_box = "//div[@id='web']"
+        self.each_element = {
+            "tag": "li"
+        }
+        self.href = {
+            "tag": "a",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "a",
+            "type": "text"
+        }
+        self.cite = {
+            "tag": "div:compText",
+            "child": {
+                "tag": "p",
+                "type": "text"
+            }
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://search.yahoo.com/search?p=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# y = Yahoo()
+# print(y.search("un avion"))
+
+```
+app/core/Yandex.py
+```.py
+# Falla-Yandex
+# -*- encoding: utf-8 -*-
+# Sanix-darker
+
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
+from app.core.Falla import Falla
+
+
+class Yandex(Falla):
+    def __init__(self):
+        self.option = Options()
+        self.option.headless = True
+        self.driver = webdriver.Firefox(options=self.option)
+
+        self.try_it = 0
+        self.max_retry = 3
+        self.source = "Yandex"
+        self.mode = "selenium"
+        self.results_box = "//div[@class='content__left']"
+        self.each_element = {
+            "tag": "li",
+            "attr": {"class": "serp-item"}
+        }
+        self.href = {
+            "tag": "a:link",
+            "type": "attribute",
+            "key": "href",
+            "child": {}
+        }
+        self.title = {
+            "tag": "div:organic__url-text",
+            "type": "text"
+        }
+        self.cite = {
+            "tag": "div:organic__content-wrapper",
+            "child": {
+                "tag": "div:text-container",
+                "type": "text"
+            }
+        }
+
+    def search(self, search_text, pages=""):
+        url = "https://yandex.com/search/?text=" + search_text.replace(" ", "+") + pages
+        print("[+] Searching results for '" + url.split("=")[1].replace("+", " ") +
+              "' on '" + self.source + "' :\n")
+
+        return self.fetch(url)
+
+# y = Yandex()
+# print(y.search("un avion"))
+
+```
+app/core/__init__.py
+```.py
+from app.core.Aol import Aol
+from app.core.Ask import Ask
+from app.core.Bing import Bing
+from app.core.DogPile import DogPile
+from app.core.DuckDuckGo import DuckDuckGo
+from app.core.Gibiru import Gibiru
+from app.core.Mojeek import Mojeek
+from app.core.Google import Google
+from app.core.Qwant import Qwant
+from app.core.SearchEncrypt import SearchEncrypt
+from app.core.StartPage import StartPage
+from app.core.Yahoo import Yahoo
+from app.core.Yandex import Yandex
+
+```
+app/main.py
+```.py
+# main-script
+# -*- encoding: utf-8 -*-
+#  _____ _    _     _        _    
+# |  ___/ \  | |   | |      / \   
+# | |_ / _ \ | |   | |     / _ \  
+# |  _/ ___ \| |___| |___ / ___ \ 
+# |_|/_/   \_\_____|_____/_/   \_\
+#
+# By Sanix-darker
+__version__ = 0.1
+__author__ = "Sanix-darker"
+
+import argparse
+from app.utils import *
+
+if __name__ == "__main__":
+    # Initialize the arguments
+    # python3 -m app.main # Search-Engine list
+    # python3 -m app.main -e aol -q "sanix darker"
+    #
+    # python3 -m app.main -e google -q "sanix darker" -p "&start=10"
+    prs = argparse.ArgumentParser()
+    prs.add_argument('-e', '--engine', help='The search engine', type=str, default="google")
+    prs.add_argument('-q', '--query', help='The query text', type=str)
+    prs.add_argument('-p', '--page', help='Number of pages to fetch', type=str, default="")
+    prs = prs.parse_args()
+
+    print("[+] Falla [the search-engine-scraper]")
+    if prs.engine is not None and prs.query is not None:
+        get_results(engine=prs.engine.lower(), query=prs.query.lower(), pages=prs.page)
+    else:
+        list_engines()
+
+```
+app/settings.py
+```.py
+import configparser as ConfigParser
+
+# Configs parameters configParser.get('your-config', 'path1')
+configParser = ConfigParser.RawConfigParser()
+configFilePath = r'config.txt'
+configParser.read(configFilePath)
+
+# Filling parameters
+SPLASH_SCRAP_URL = configParser.get('falla-config', 'SPLASH_SCRAP_URL')
+
+```
+app/utils.py
+```.py
+from os import listdir as ls
+from app.core import *
+import json
+
+
+class Bcolors:
+    """[summary]
+    """
+    AUTRE = '\033[96m'  # rose
+    HEADER = '\033[95m'  # rose
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'  # jaune
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
+def list_engines():
+    print(Bcolors().OKBLUE + "[+] Listing search-Engines" + Bcolors().ENDC)
+    engines = [elt.replace(".py", "").lower() for elt in ls("./app/core/") if
+               ".py" in elt and "__" not in elt and "falla" not in elt]
+    for e in engines:
+        print("[+] > " + Bcolors().AUTRE + e + Bcolors().ENDC)
+
+
+def get_results(engine, query, pages):
+    if engine == "aol" or engine == "al":
+        f = Aol()
+    elif engine == "ask" or engine == "ak":
+        f = Ask()
+    elif engine == "bing" or engine == "b":
+        f = Bing()
+    elif engine == "dogpile" or engine == "dp":
+        f = DogPile()
+    elif engine == "duckduckgo" or engine == "dd":
+        f = DuckDuckGo()
+    elif engine == "gibiru" or engine == "gu":
+        f = Gibiru()
+    elif engine == "mojeek" or engine == "m":
+        f = Mojeek()
+    elif engine == "qwant" or engine == "q":
+        f = Qwant()
+    elif engine == "searchencrypt" or engine == "se":
+        f = SearchEncrypt()
+    elif engine == "startpage" or engine == "sp":
+        f = StartPage()
+    elif engine == "yahoo" or engine == "y":
+        f = Yahoo()
+    elif engine == "google" or engine == "g":
+        f = Google()
+    else:
+        f = Google()
+
+    results = json.loads(f.search(query, pages))
+    bcolors = Bcolors()
+
+    for elt in results:
+        print("|> " + bcolors.OKBLUE + elt["title"] + bcolors.ENDC)
+        print("|- " + bcolors.WARNING + elt["href"] + bcolors.ENDC)
+        print("|| " + elt["cite"])
+        print("")
+
+```
+example.config.txt
+```.txt
+[falla-config]
+SPLASH_SCRAP_URL = http://127.0.0.1:8050
+
+```
+requirements.txt
+```.txt
+requests==2.31.0
+pandas==1.0.1
+lxml==4.9.1
+beautifulsoup4==4.8.2
+selenium==3.141.0
+configparser
+
+```
+tests/test.py
+```.py
+
+```
 
 ================
 File: PROGRESS.md
@@ -2269,6 +3628,11 @@ dependencies = [
     "pytest-cov",           # Coverage reporting
     "mypy>=1.15.0",         # Static type checker
     "ruff>=0.9.6",          # Fast Python linter
+    "absolufy-imports>=0.3.1",
+    "pre-commit>=4.1.0",
+    "pyupgrade>=3",
+    "isort>=6.0.0",
+
 ]
 
 # Scripts available in the default environment
@@ -2288,6 +3652,10 @@ detached = true  # Run in isolated environment
 dependencies = [
     "mypy>=1.15.0",         # Static type checker
     "ruff>=0.9.6",          # Fast Python linter
+    "absolufy-imports>=0.3.1",
+    "pre-commit>=4.1.0",
+    "pyupgrade>=3",
+    "isort>=6.0.0",
 ]
 
 # Linting environment scripts
@@ -2384,7 +3752,7 @@ test = [
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
     "pytest-xdist>=3.6.1",                # For parallel test execution
-    "pytest-benchmark[histogram]>=5.1.0", 
+    "pytest-benchmark[histogram]>=5.1.0",
     "pytest-asyncio>=0.25.3", # For async test execution
 ]
 
@@ -2392,6 +3760,9 @@ dev = [
     "pre-commit>=4.1.0",     # Git pre-commit hooks
     "ruff>=0.9.6",           # Fast Python linter
     "mypy>=1.15.0",          # Static type checker
+    "absolufy-imports>=0.3.1",
+    "pyupgrade>=3",
+    "isort>=6.0.0",
 ]
 
 # Search engine dependencies
@@ -3052,9 +4423,10 @@ from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.models import SearchResult
 from twat_search.web.config import EngineConfig
 
+
 @register_engine
 class MyNewSearchEngine(SearchEngine):
-    name = "my_new_engine"
+    engine_code = "my_new_engine"
     env_api_key_names = ["MY_NEW_ENGINE_API_KEY"]
 
     def __init__(self, config: EngineConfig, **kwargs) -> None:
@@ -3072,10 +4444,11 @@ class MyNewSearchEngine(SearchEngine):
             )
         ]
 
+
 # Convenience function
 async def my_new_engine(query: str, **kwargs):
-    # Implement convenience function
-    # ...
+# Implement convenience function
+# ...
 ```
 
 ### Development setup
@@ -3214,116 +4587,115 @@ The basic implementation of the `twat-search` web package is complete.
 
 Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
 
-## 1. Phase 1
+## TODO
 
-### 1.1. Complete Bing Scraper Implementation
+### Critical Issues
 
-- [ ] Fix implementation issues in bing_scraper.py
-  - Add proper type annotations to all methods
-  - Implement better error handling with appropriate context
-- [ ] Complete test coverage for BingScraperSearchEngine
-  - Fix skipped tests in test_bing_scraper.py
-  - Add tests for error conditions and edge cases
-- [ ] Document Bing Scraper functionality
-  - Add comprehensive docstrings
-  - Include usage examples in README
+1. **Fix `num_results` parameter not being respected**
+   - Currently, specifying `-n 1` or `--num_results=1` is ignored and engines fetch more results
+   - Root cause: In `api.py`, the `num_results` param is passed to engine constructors, but many engines:
+     - Override with their own defaults
+     - Use different parameter names (`max_results`, `count`, etc.)
+     - Have hardcoded minimums that override user preference
+   - Fix:
+     - Standardize parameter handling across all engines
+     - Make sure constructors respect the passed `num_results` value
+     - Update engine implementations to respect the limit even when calling external libraries
 
+2. **Fix API key detection issues**
+   - Multiple engines fail despite environment variables being set
+   - Affected engines: `brave_anyws`, `brave_news`, `critique`, `google_serpapi`, `pplx`, `you`, `you_news`
+   - Root cause: Likely incorrect environment variable loading or case sensitivity issues
+   - Fix:
+     - Debug environment variable loading in `config.py`
+     - Add more logging to show which environment variables are detected/loaded
+     - Ensure case sensitivity is handled correctly
+     - Add explicit fallbacks for common API key name variations
 
-### 1.2. Documentation and Examples
+3. **Fix failing scrapers with no results**
+   - Several engines return no results: `bing_anyws`, `bing_searchit`, `google_anyws`, `google_searchit`, `qwant_anyws`, `qwant_searchit`
+   - Root cause: Library-specific issues, timeouts, or blocking
+   - Fix:
+     - Add better error handling and diagnostics
+     - Try using different timeouts, headers, or user agents
+     - Improve robustness against temporary blocking
+     - Implement circuit breakers for consistently failing engines
 
-- [ ] Add comprehensive docstrings to all classes and methods
-  - Include parameter descriptions
-  - Document exceptions that can be raised
-  - Add usage examples
-- [ ] Create detailed README examples
-  - Basic usage examples for each engine
-  - Advanced configuration examples
-  - Error handling examples
-- [ ] Document environment variable configuration
-  - Create a comprehensive list of all supported environment variables
-  - Add examples of .env file configuration
+4. **Eliminate unexpected engine fallback behavior**
+   - When a specified engine fails, the code sometimes falls back to other engines
+   - This creates confusing output for users who expect specific engines
+   - Fix:
+     - Remove automatic fallback when a specific engine is requested
+     - Only use fallbacks when no engine is explicitly specified
+     - Add clear messages when specified engines fail
 
+### Implementation Tasks
 
-## 2. Phase 2
+5. **Add comprehensive error handling**
+   - Improve error messages to clearly indicate why an engine failed
+   - Add more fine-grained error types that distinguish between:
+     - API key issues
+     - Network/connection problems
+     - Rate limiting/blocking
+     - Empty results (which may be legitimate)
+   - Create a standard approach to logging that's consistent across engines
 
-### 2.1. Type Checking Errors
+6. **Improve engine initialization process**
+   - Create a more robust engine discovery and initialization process
+   - Add capability tests for engines during initialization
+   - Add a verbose debug mode that shows detailed initialization steps
+   - Consider implementing a cache for engine availability status
 
-- [ ] Fix missing type stubs for third-party modules
-  - `duckduckgo_search` and `scrape_bing` are showing import-not-found errors
-  - Create local stub files or install type stubs if available
-- [ ] Add type annotations to functions missing them
-  - Particularly in bing_scraper.py, need to add annotations to search methods
-- [ ] Fix attribute errors in You.py engine
-  - "YouBaseEngine" has no attribute errors for num_results_param and base_url
-- [ ] Resolve incompatible types in engine assignments in **init**.py
-- [ ] Fix the test_config_with_env_vars failure (api_key not being set correctly)
+7. **Standardize parameter handling**
+   - Create consistent parameter names across all engines
+   - Establish clear precedence rules for parameters:
+     - Command line arguments
+     - Environment variables
+     - Config file defaults
+   - Document each engine's parameter support and quirks
 
-### 2.2. Linting Issues
+8. **Enhance testing and reliability**
+   - Add automated tests for each engine
+   - Create mock responses for offline testing
+   - Implement retries with backoff for transient failures
+   - Add circuit breaker patterns to fail fast for consistently failing engines
 
-- [ ] Address boolean parameter warnings (FBT001, FBT002)
-  - Consider using keyword-only arguments for boolean parameters
-  - Or create specific enum types for boolean options
-- [ ] Fix functions with too many parameters (PLR0913)
-  - Refactor using parameter objects or configuration objects
-  - Consider breaking down complex functions
-- [ ] Resolve magic values in code (PLR2004)
-  - Replace hardcoded numbers like 100, 5, 10 with named constants
-- [ ] Clean up unused imports (F401)
-  - Remove or properly use imported modules
+### User Experience Improvements
 
-### 2.3. Improve Test Framework
+9. **Improve CLI usability**
+   - Add clearer error messages for common issues
+   - Improve help text with more examples
+   - Add command to test an engine's configuration
+   - Implement a "dry run" mode that validates settings without performing searches
 
-- [ ] Implement mock search engines for all providers
-  - Create standardized mock responses
-  - Enable offline testing without API keys
-- [ ] Add integration tests
-  - Test the entire search workflow
-  - Test concurrent searches across multiple engines
-- [ ] Create test fixtures for common configurations
-  - Standard API response data
-  - Common error cases
-- [ ] Fix test_config_with_env_vars failure
-  - Debug why environment variables aren't being properly loaded
+10. **Enhance output formats**
+    - Fix JSON mode to properly handle errors
+    - Add more structured output formats (CSV, YAML, etc.)
+    - Improve the default display format for better readability
+    - Add highlighting options for search terms
 
-## 3. Phase 3
+11. **Add configuration workflow**
+    - Create a command to guide users through setting up API keys
+    - Add a validation command to check which engines are properly configured
+    - Implement a configuration wizard for new users
+    - Add configuration profiles for different use cases
 
-### 3.1. Enhance Engine Implementations
+### Engine-Specific Fixes
 
-- [ ] Standardize error handling across all engines
-  - Use consistent error context and messages
-  - Properly propagate exceptions with 'from exc'
-- [ ] Optimize parameter handling in engines
-  - Reduce code duplication in parameter mapping
-  - Create utility functions for common parameter conversions
-- [ ] Add timeouts to all HTTP requests
-  - Ensure all engines have consistent timeout handling
-  - Add configurable timeout parameters
+12. **Brave API fix**
+    - Debug why `BRAVE_API_KEY` isn't being recognized
+    - Add clearer error messaging specific to Brave setup
 
-## 4. Phase 4
+13. **Fix scrapers**
+    - Troubleshoot each failing scraper individually
+    - Consider alternative libraries or approaches for consistently failing scrapers
+    - Add custom user agents and request headers for problematic engines
 
-### 4.1. Additional Features
-
-- [ ] Add result caching mechanism
-  - Implement optional caching of search results
-  - Add configurable cache expiration
-- [ ] Implement rate limiting for all engines
-  - Ensure all engines respect API rate limits
-  - Add configurable backoff strategies
-- [ ] Add result normalization
-  - Create a more consistent result format across engines
-  - Implement result scoring and ranking
-
-### 4.2. Performance Improvements
-
-- [ ] Profile search performance across engines
-  - Measure latency and throughput
-  - Identify performance bottlenecks
-- [ ] Implement connection pooling for HTTP clients
-  - Reuse connections where possible
-  - Configure appropriate connection limits
-- [ ] Add parallelization options for multiple searches
-  - Control concurrency limits
-  - Implement proper resource cleanup
+14. **API key management**
+    - Improve how API keys are discovered and validated
+    - Add a command to test API keys without performing a search
+    - Consider secure local storage options for API keys
+    - Add key rotation support for services with usage limits
 
 ================
 File: VERSION.txt
