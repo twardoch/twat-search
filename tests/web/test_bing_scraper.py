@@ -66,7 +66,7 @@ class TestBingScraperEngine:
     @patch("twat_search.web.engines.bing_scraper.BingScraper")
     def test_init(self, mock_BingScraper: MagicMock, engine: Any) -> None:
         """Test BingScraperSearchEngine initialization."""
-        assert engine.name == "bing-scraper"
+        assert engine.name == "bing_scraper"
         assert engine.max_results == 5
         assert engine.max_retries == 3
         assert engine.delay_between_requests == 1.0
@@ -96,7 +96,7 @@ class TestBingScraperEngine:
         assert results[0].title == "Test Result 1"
         assert str(results[0].url) == "https://example.com/1"
         assert results[0].snippet == "First test result"
-        assert results[0].source == "bing-scraper"
+        assert results[0].source == "bing_scraper"
 
         # Verify search parameters
         mock_BingScraper.assert_called_once_with(
@@ -178,7 +178,7 @@ class TestBingScraperEngine:
                 title="Test Result",
                 url=HttpUrl("https://example.com"),
                 snippet="Test description",
-                source="bing-scraper",
+                source="bing_scraper",
             )
         ]
         mock_search.return_value = mock_results
@@ -198,7 +198,7 @@ class TestBingScraperEngine:
         mock_search.assert_called_once()
         call_args, call_kwargs = mock_search.call_args
         assert call_args[0] == "test query"
-        assert call_kwargs["engines"] == ["bing-scraper"]
+        assert call_kwargs["engines"] == ["bing_scraper"]
         assert call_kwargs["num_results"] == 10
         assert call_kwargs["bing_scraper_max_retries"] == 5
         assert call_kwargs["bing_scraper_delay_between_requests"] == 2.0

@@ -91,11 +91,11 @@ class BingScraperSearchEngine(SearchEngine):
     configurable retry behavior and delay between requests.
 
     Attributes:
-        name: The name of the search engine ("bing-scraper")
+        name: The name of the search engine ("bing_scraper")
         env_api_key_names: Empty list since no API key is needed
     """
 
-    name = "bing-scraper"
+    name = "bing_scraper"
     env_api_key_names: ClassVar[list[str]] = []  # No API key needed
 
     def __init__(
@@ -301,7 +301,7 @@ async def bing_scraper(
 
     return await search(
         query,
-        engines=["bing-scraper"],
+        engines=["bing_scraper"],
         num_results=num_results,
         bing_scraper_max_retries=max_retries,
         bing_scraper_delay_between_requests=delay_between_requests,

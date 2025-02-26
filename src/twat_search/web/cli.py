@@ -12,7 +12,6 @@ displays the results in a formatted table.
 """
 
 import asyncio
-import importlib
 import json as json_lib
 import logging
 import os
@@ -32,6 +31,7 @@ from twat_search.web.engines import (
     get_available_engines,
     get_engine_function,
     is_engine_available,
+    standardize_engine_name,
 )
 
 if TYPE_CHECKING:
@@ -120,7 +120,7 @@ class SearchCLI:
         if isinstance(engines_arg, str):
             if engines_arg.strip().lower() == "free":
                 # Engines that don't require an API key
-                engines = ["duckduckgo", "hasdata-google-light"]
+                engines = ["duckduckgo", "hasdata_google_light"]
                 self.logger.info(f"Using 'free' engines: {', '.join(engines)}")
                 return engines
             elif engines_arg.strip().lower() == "best":
@@ -135,10 +135,14 @@ class SearchCLI:
                 return engines
 
             # Normal case: comma-separated string
-            return [e.strip() for e in engines_arg.split(",") if e.strip()]
+            engines = [e.strip() for e in engines_arg.split(",") if e.strip()]
+            # Standardize engine names (replace hyphens with underscores)
+            return [standardize_engine_name(e) for e in engines]
 
         if isinstance(engines_arg, list | tuple):
-            return [str(e).strip() for e in engines_arg if str(e).strip()]
+            engines = [str(e).strip() for e in engines_arg if str(e).strip()]
+            # Standardize engine names (replace hyphens with underscores)
+            return [standardize_engine_name(e) for e in engines]
 
         self.logger.warning(
             f"Unexpected engines type: {type(engines_arg)}. Using all available engines."

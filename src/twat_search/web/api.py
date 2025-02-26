@@ -6,6 +6,7 @@ from .config import Config
 from .models import SearchResult
 from .engines.base import SearchEngine, get_engine
 from .exceptions import SearchError
+from .engines import standardize_engine_name
 
 logger = logging.getLogger(__name__)
 
@@ -19,16 +20,25 @@ def get_engine_params(
     - any non-prefixed parameters,
     - and the common parameters.
     """
-    engine_specific = {
-        k[len(engine_name) + 1 :]: v
-        for k, v in kwargs.items()
-        if k.startswith(engine_name + "_")
-    }
+    # Standardize engine name for parameter lookup
+    std_engine_name = standardize_engine_name(engine_name)
+
+    # Look for parameters with both standardized and original name prefixes
+    engine_specific = {}
+    for k, v in kwargs.items():
+        if k.startswith(std_engine_name + "_"):
+            engine_specific[k[len(std_engine_name) + 1 :]] = v
+        elif k.startswith(engine_name + "_"):  # For backward compatibility
+            engine_specific[k[len(engine_name) + 1 :]] = v
+
+    # Get non-prefixed parameters
+    std_engines = [standardize_engine_name(e) for e in engines]
     non_prefixed = {
         k: v
         for k, v in kwargs.items()
-        if not any(k.startswith(e + "_") for e in engines)
+        if not any(k.startswith(e + "_") for e in std_engines + engines)
     }
+
     return {**common_params, **engine_specific, **non_prefixed}
 
 
@@ -44,15 +54,22 @@ def init_engine_task(
     Initialize a search engine task. If the engine is not configured or fails
     to initialize (due to missing dependencies, etc.), return None.
     """
-    engine_config = config.engines.get(engine_name)
+    # Standardize engine name
+    std_engine_name = standardize_engine_name(engine_name)
+
+    # Try both standardized and original names for backward compatibility
+    engine_config = config.engines.get(std_engine_name)
     if not engine_config:
-        logger.warning(f"Engine '{engine_name}' not configured.")
-        return None
+        engine_config = config.engines.get(engine_name)
+        if not engine_config:
+            logger.warning(f"Engine '{engine_name}' not configured.")
+            return None
 
     try:
         engine_params = get_engine_params(engine_name, engines, kwargs, common_params)
+        # Use standardized name to get the engine
         engine_instance: SearchEngine = get_engine(
-            engine_name, engine_config, **engine_params
+            std_engine_name, engine_config, **engine_params
         )
         logger.info(f"🔍 Querying engine: {engine_name}")
         return (engine_name, engine_instance.search(query))
@@ -104,6 +121,9 @@ async def search(
         if not engines:
             msg = "No search engines configured"
             raise SearchError(msg)
+
+        # Standardize engine names
+        engines = [standardize_engine_name(e) for e in engines]
 
         common_params = {
             k: v
