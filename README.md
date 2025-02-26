@@ -563,9 +563,10 @@ from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.models import SearchResult
 from twat_search.web.config import EngineConfig
 
+
 @register_engine
 class MyNewSearchEngine(SearchEngine):
-    name = "my_new_engine"
+    engine_code = "my_new_engine"
     env_api_key_names = ["MY_NEW_ENGINE_API_KEY"]
 
     def __init__(self, config: EngineConfig, **kwargs) -> None:
@@ -583,10 +584,11 @@ class MyNewSearchEngine(SearchEngine):
             )
         ]
 
+
 # Convenience function
 async def my_new_engine(query: str, **kwargs):
-    # Implement convenience function
-    # ...
+# Implement convenience function
+# ...
 ```
 
 ### Development setup

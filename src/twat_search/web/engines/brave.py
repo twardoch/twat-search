@@ -1,11 +1,14 @@
-import httpx
 from typing import Any, ClassVar
-from pydantic import BaseModel, ValidationError, HttpUrl
+
+import httpx
+from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+from twat_search.web.engines import BRAVE, BRAVE_NEWS, ENGINE_FRIENDLY_NAMES
 from twat_search.web.exceptions import EngineError
+from twat_search.web.models import SearchResult
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 # Pydantic models for individual results
@@ -63,7 +66,7 @@ class BaseBraveEngine(SearchEngine):
 
         if not self.config.api_key:
             raise EngineError(
-                self.name,
+                self.engine_code,
                 f"Brave API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
         self.headers = {
@@ -103,14 +106,18 @@ class BaseBraveEngine(SearchEngine):
                 return results
 
             except httpx.RequestError as exc:
-                raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
+                raise EngineError(
+                    self.engine_code, f"HTTP Request failed: {exc}"
+                ) from exc
             except httpx.HTTPStatusError as exc:
                 raise EngineError(
-                    self.name,
+                    self.engine_code,
                     f"HTTP Status error: {exc.response.status_code} - {exc.response.text}",
                 ) from exc
             except ValidationError as exc:
-                raise EngineError(self.name, f"Response parsing error: {exc}") from exc
+                raise EngineError(
+                    self.engine_code, f"Response parsing error: {exc}"
+                ) from exc
 
     def convert_result(self, parsed: BaseModel, raw: dict[str, Any]) -> SearchResult:
         snippet = parsed.description
@@ -126,15 +133,15 @@ class BaseBraveEngine(SearchEngine):
             title=parsed.title,
             url=parsed.url,
             snippet=snippet,
-            source=self.name,
+            source=self.engine_code,
             raw=raw,
         )
 
 
 @register_engine
 class BraveSearchEngine(BaseBraveEngine):
-    name = "brave"
-    friendly_name = "Brave"
+    engine_code = BRAVE
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[BRAVE]
     base_url = "https://api.search.brave.com/res/v1/web/search"
     response_key = "web"
     result_model = BraveResult
@@ -142,8 +149,8 @@ class BraveSearchEngine(BaseBraveEngine):
 
 @register_engine
 class BraveNewsSearchEngine(BaseBraveEngine):
-    name = "brave-news"
-    friendly_name = "Brave News"
+    engine_code = BRAVE_NEWS
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[BRAVE_NEWS]
     base_url = "https://api.search.brave.com/res/v1/news/search"
     response_key = "news"
     result_model = BraveNewsResult

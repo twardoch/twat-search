@@ -11,8 +11,8 @@ import abc
 from typing import Any, ClassVar
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.models import SearchResult
 from twat_search.web.exceptions import SearchError
+from twat_search.web.models import SearchResult
 
 
 class SearchEngine(abc.ABC):
@@ -23,8 +23,8 @@ class SearchEngine(abc.ABC):
     the search method.
     """
 
-    name: ClassVar[str] = ""  # Class attribute that must be defined by subclasses
-    friendly_name: ClassVar[str] = ""  # User-friendly name for display purposes
+    engine_code: ClassVar[str] = ""  # Class attribute that must be defined by subclasses
+    friendly_engine_name: ClassVar[str] = ""  # User-friendly name for display purposes
 
     # Class attributes for environment variables
     env_api_key_names: ClassVar[list[str]] = []  # Override with engine-specific names
@@ -50,7 +50,7 @@ class SearchEngine(abc.ABC):
         self.time_frame = kwargs.get("time_frame", None)
 
         if not config.enabled:
-            msg = f"Engine '{self.name}' is disabled."
+            msg = f"Engine '{self.engine_code}' is disabled."
             raise SearchError(msg)
 
     @abc.abstractmethod
@@ -81,26 +81,26 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
     Returns:
         The registered search engine class
     """
-    _engine_registry[engine_class.name] = engine_class
+    _engine_registry[engine_class.engine_code] = engine_class
 
     # Auto-generate environment variable names if not explicitly set
     if not hasattr(engine_class, "env_api_key_names"):
-        engine_class.env_api_key_names = [f"{engine_class.name.upper()}_API_KEY"]
+        engine_class.env_api_key_names = [f"{engine_class.engine_code.upper()}_API_KEY"]
     if not hasattr(engine_class, "env_enabled_names"):
-        engine_class.env_enabled_names = [f"{engine_class.name.upper()}_ENABLED"]
+        engine_class.env_enabled_names = [f"{engine_class.engine_code.upper()}_ENABLED"]
     if not hasattr(engine_class, "env_params_names"):
-        engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]
+        engine_class.env_params_names = [f"{engine_class.engine_code.upper()}_DEFAULT_PARAMS"]
 
     # Set friendly_name if not defined but it exists in ENGINE_FRIENDLY_NAMES
-    if not engine_class.friendly_name:
+    if not engine_class.friendly_engine_name:
         try:
             from twat_search.web.engines import ENGINE_FRIENDLY_NAMES
 
-            engine_class.friendly_name = ENGINE_FRIENDLY_NAMES.get(
-                engine_class.name, engine_class.name
+            engine_class.friendly_engine_name = ENGINE_FRIENDLY_NAMES.get(
+                engine_class.engine_code, engine_class.engine_code
             )
         except ImportError:
-            engine_class.friendly_name = engine_class.name
+            engine_class.friendly_engine_name = engine_class.engine_code
 
     return engine_class
 

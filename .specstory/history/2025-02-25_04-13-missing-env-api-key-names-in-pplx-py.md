@@ -105,9 +105,10 @@ _**Assistant**_
 <think>I've successfully added the `env_api_key_names` class variable to the `PerplexitySearchEngine` class, but I notice in the error message that appears after the cursor position, there's a hardcoded mention of "PERPLEXITYAI_API_KEY" in the error message. Now I should update this error message to reference the environment variables listed in the `env_api_key_names` class variable for consistency.
 
 The current error message is:
+
 ```python
 raise EngineError(
-    self.name,
+    self.engine_code,
     "Perplexity API key is required. Set it in config or the PERPLEXITYAI_API_KEY env var.",
 )
 ```

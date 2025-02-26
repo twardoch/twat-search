@@ -20,9 +20,11 @@ from typing import Any, ClassVar, cast
 
 from pydantic import BaseModel, HttpUrl, ValidationError, field_validator
 
+from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, GOOGLE_SCRAPER
+
 try:
-    from googlesearch import search as google_search
     from googlesearch import SearchResult as GoogleSearchResult
+    from googlesearch import search as google_search
 except ImportError:
     # For type checking when googlesearch-python is not installed
     class GoogleSearchResult:  # type: ignore
@@ -49,7 +51,8 @@ except ImportError:
 from twat_search.web.config import EngineConfig
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +96,8 @@ class GoogleScraperEngine(SearchEngine):
         env_api_key_names: Empty list since no API key is needed
     """
 
-    name = "google-scraper"
+    engine_code = GOOGLE_SCRAPER
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[GOOGLE_SCRAPER]
     env_api_key_names: ClassVar[list[str]] = []  # No API key needed
 
     def __init__(

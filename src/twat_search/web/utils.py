@@ -6,8 +6,8 @@ Utility functions for the web search API.
 This module provides utility functions and classes used by the web search API.
 """
 
-import time
 import logging
+import time
 
 # Set up logging
 logger = logging.getLogger(__name__)

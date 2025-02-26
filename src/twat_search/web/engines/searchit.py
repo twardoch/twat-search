@@ -20,14 +20,13 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, HttpUrl, ValidationError, field_validator
 
+from twat_search.web.engines import (BING_SEARCHIT, ENGINE_FRIENDLY_NAMES,
+                                     GOOGLE_SEARCHIT, QWANT_SEARCHIT,
+                                     YANDEX_SEARCHIT)
+
 try:
-    from searchit import (
-        GoogleScraper,
-        YandexScraper,
-        BingScraper,
-        QwantScraper,
-        ScrapeRequest,
-    )
+    from searchit import (BingScraper, GoogleScraper, QwantScraper,
+                          ScrapeRequest, YandexScraper)
     from searchit.scrapers.scraper import SearchResult as SearchitResult
 except ImportError:
     # For type checking when searchit is not installed
@@ -182,7 +181,8 @@ except ImportError:
 from twat_search.web.config import EngineConfig
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 logger = logging.getLogger(__name__)
 
@@ -226,7 +226,7 @@ class SearchitEngine(SearchEngine):
         env_api_key_names: Empty list for scrapers as they don't need API keys
     """
 
-    name = ""  # Must be overridden by subclasses
+    engine_code = ""  # Must be overridden by subclasses
     env_api_key_names: ClassVar[list[str]] = []  # No API key needed for scrapers
 
     def __init__(
@@ -369,7 +369,8 @@ class GoogleSearchitEngine(SearchitEngine):
         name: The name of the search engine ("google-searchit")
     """
 
-    name = "google-searchit"
+    engine_code = GOOGLE_SEARCHIT
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[GOOGLE_SEARCHIT]
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -447,7 +448,8 @@ class YandexSearchitEngine(SearchitEngine):
         name: The name of the search engine ("yandex-searchit")
     """
 
-    name = "yandex-searchit"
+    engine_code = YANDEX_SEARCHIT
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[YANDEX_SEARCHIT]
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -525,7 +527,8 @@ class QwantSearchitEngine(SearchitEngine):
         name: The name of the search engine ("qwant-searchit")
     """
 
-    name = "qwant-searchit"
+    engine_code = QWANT_SEARCHIT
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[QWANT_SEARCHIT]
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -602,7 +605,8 @@ class BingSearchitEngine(SearchitEngine):
         name: The name of the search engine ("bing-searchit")
     """
 
-    name = "bing-searchit"
+    engine_code = BING_SEARCHIT
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[BING_SEARCHIT]
 
     async def search(self, query: str) -> list[SearchResult]:
         """

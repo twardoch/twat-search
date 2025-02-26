@@ -20,7 +20,7 @@ from twat_search.web.models import SearchResult
 class MockSearchEngine(SearchEngine):
     """Mock search engine for testing."""
 
-    name = "mock"
+    engine_code = "mock"
 
     def __init__(self, config: EngineConfig, **kwargs: Any) -> None:
         """Initialize mock engine."""

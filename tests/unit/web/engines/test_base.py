@@ -13,7 +13,8 @@ import pytest
 from pydantic import HttpUrl
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.engines.base import SearchEngine, register_engine, get_engine
+from twat_search.web.engines.base import (SearchEngine, get_engine,
+                                          register_engine)
 from twat_search.web.exceptions import SearchError
 from twat_search.web.models import SearchResult
 
@@ -21,7 +22,7 @@ from twat_search.web.models import SearchResult
 class TestSearchEngine(SearchEngine):
     """Test implementation of the SearchEngine abstract base class."""
 
-    name = "test_engine"
+    engine_code = "test_engine"
 
     async def search(self, query: str) -> list[SearchResult]:
         """Test implementation of the search method."""
@@ -42,7 +43,7 @@ register_engine(TestSearchEngine)
 class DisabledTestSearchEngine(SearchEngine):
     """Test implementation with disabled status for testing."""
 
-    name = "disabled_engine"
+    engine_code = "disabled_engine"
 
     async def search(self, query: str) -> list[SearchResult]:
         """Search implementation that should never be called."""
@@ -71,7 +72,7 @@ def test_search_engine_name_class_var() -> None:
     assert hasattr(SearchEngine, "name")
 
     # The default value should be an empty string (not None)
-    assert SearchEngine.name == ""
+    assert SearchEngine.engine_code == ""
 
     # Check that our test classes have set the name
     assert TestSearchEngine.name == "test_engine"
@@ -83,7 +84,7 @@ def test_engine_registration() -> None:
 
     # Create a new engine class
     class NewEngine(SearchEngine):
-        name = "new_engine"
+        engine_code = "new_engine"
 
         async def search(self, query: str) -> list[SearchResult]:
             return []

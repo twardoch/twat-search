@@ -7,128 +7,88 @@ Each module in this package implements one or more search engines
 that can be used with the API.
 """
 
-import logging
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
-from collections.abc import Callable
-from collections.abc import Coroutine
+from collections.abc import Callable, Coroutine
+from typing import Any
 
-from twat_search.web.models import SearchResult
 from loguru import logger
 
+from twat_search.web.models import SearchResult
 
-def standardize_engine_name(engine_name: str) -> str:
-    """Standardize engine name by replacing hyphens with underscores.
-
-    Args:
-        engine_name: The engine name to standardize
-
-    Returns:
-        The standardized engine name
-    """
-    return engine_name.replace("-", "_")
-
-
-# Engine name constants for use throughout the codebase
-# These constants should be used instead of string literals
-BRAVE = "brave"
-BRAVE_NEWS = "brave_news"
-SERPAPI = "serpapi"
-SERPAPI_GOOGLE = "serpapi_google"
-TAVILY = "tavily"
-PERPLEXITY = "perplexity"
-YOU = "you"
-YOU_NEWS = "you_news"
-CRITIQUE = "critique"
-DUCKDUCKGO = "duckduckgo"
-BING_SCRAPER = "bing_scraper"
-GOOGLE_SCRAPER = "google_scraper"
-HASDATA_GOOGLE = "hasdata_google"
-HASDATA_GOOGLE_LIGHT = "hasdata_google_light"
-
-# Complete list of all possible engines
-ALL_POSSIBLE_ENGINES = [
+# Import engine constants from the dedicated module
+from twat_search.web.engine_constants import (
+    ALL_POSSIBLE_ENGINES,
+    BING_ANYWS,
+    BING_SCRAPER,
+    BING_SEARCHIT,
     BRAVE,
+    BRAVE_ANYWS,
     BRAVE_NEWS,
-    SERPAPI,
-    SERPAPI_GOOGLE,
-    TAVILY,
-    PERPLEXITY,
-    YOU,
-    YOU_NEWS,
     CRITIQUE,
     DUCKDUCKGO,
-    BING_SCRAPER,
+    ENGINE_FRIENDLY_NAMES,
+    GOOGLE_ANYWS,
+    GOOGLE_HASDATA,
+    GOOGLE_HASDATA_FULL,
     GOOGLE_SCRAPER,
-    HASDATA_GOOGLE,
-    HASDATA_GOOGLE_LIGHT,
-]
+    GOOGLE_SEARCHIT,
+    GOOGLE_SERPAPI,
+    PPLX,
+    QWANT_ANYWS,
+    QWANT_SEARCHIT,
+    TAVILY,
+    YANDEX_ANYWS,
+    YANDEX_SEARCHIT,
+    YOU,
+    YOU_NEWS,
+    standardize_engine_name,
+)
 
-# Dictionary of friendly names for engines
-ENGINE_FRIENDLY_NAMES = {
-    BRAVE: "Brave",
-    BRAVE_NEWS: "Brave News",
-    SERPAPI: "SerpAPI (Google)",
-    SERPAPI_GOOGLE: "SerpAPI Google",
-    TAVILY: "Tavily AI",
-    PERPLEXITY: "Perplexity AI",
-    YOU: "You.com",
-    YOU_NEWS: "You.com News",
-    CRITIQUE: "Critique",
-    DUCKDUCKGO: "DuckDuckGo",
-    BING_SCRAPER: "Bing Scraper",
-    GOOGLE_SCRAPER: "Google Scraper",
-    HASDATA_GOOGLE: "HasData Google",
-    HASDATA_GOOGLE_LIGHT: "HasData Google Light",
-}
-
-# Initialize __all__ list - remove undefined references
+# Initialize __all__ list with engine name constants
 __all__ = [
+    # Engine name constants
+    "BING_ANYWS",
     "BING_SCRAPER",
+    "BING_SEARCHIT",
     "BRAVE",
+    "BRAVE_ANYWS",
     "BRAVE_NEWS",
     "CRITIQUE",
     "DUCKDUCKGO",
+    "GOOGLE_ANYWS",
+    "GOOGLE_HASDATA",
+    "GOOGLE_HASDATA_FULL",
     "GOOGLE_SCRAPER",
-    "HASDATA_GOOGLE",
-    "HASDATA_GOOGLE_LIGHT",
-    "PERPLEXITY",
-    "SERPAPI",
-    # Engine name constants
-    "SERPAPI_GOOGLE",
+    "GOOGLE_SEARCHIT",
+    "GOOGLE_SERPAPI",
+    "PPLX",
+    "QWANT_ANYWS",
+    "QWANT_SEARCHIT",
     "TAVILY",
+    "YANDEX_ANYWS",
+    "YANDEX_SEARCHIT",
     "YOU",
     "YOU_NEWS",
-    "BingScraperSearchEngine",
-    "BraveNewsSearchEngine",
-    # Engine classes
-    "BraveSearchEngine",
-    "CritiqueSearchEngine",
-    "DuckDuckGoSearchEngine",
-    "HasDataGoogleEngine",
-    "HasDataGoogleLightEngine",
-    "PerplexitySearchEngine",
-    # Base engine types
-    "SearchEngine",
-    "SerpApiSearchEngine",
-    "TavilySearchEngine",
-    "YouNewsSearchEngine",
-    "YouSearchEngine",
+    # Helper functions
+    "ALL_POSSIBLE_ENGINES",
+    "ENGINE_FRIENDLY_NAMES",
     "available_engine_functions",
-    "get_engine",
-    # Functions
     "get_engine_function",
-    "get_registered_engines",
+    "get_available_engines",
     "is_engine_available",
-    "register_engine",
     "standardize_engine_name",
 ]
 
-# Dict to track available engine functions
-available_engine_functions = {}
+# Dict to track available engine functions - using Any type to avoid signature incompatibilities
+available_engine_functions: dict[str, Any] = {}
 
 # Import base functionality first
 try:
-    from .base import register_engine, get_engine, get_registered_engines, SearchEngine
+    from twat_search.web.engines.base import (
+        SearchEngine,
+        get_engine,
+        get_registered_engines,
+        register_engine,
+    )
 
     __all__.extend(
         ["SearchEngine", "get_engine", "get_registered_engines", "register_engine"]
@@ -138,7 +98,12 @@ except ImportError:
 
 # Import each engine module and add its components to __all__ if successful
 try:
-    from .brave import BraveSearchEngine, BraveNewsSearchEngine, brave, brave_news
+    from twat_search.web.engines.brave import (
+        BraveNewsSearchEngine,
+        BraveSearchEngine,
+        brave,
+        brave_news,
+    )
 
     available_engine_functions["brave"] = brave
     available_engine_functions["brave_news"] = brave_news
@@ -148,16 +113,17 @@ try:
 except ImportError:
     pass
 
+# Try to import SerpAPI engine
 try:
-    from .serpapi import SerpApiSearchEngine, serpapi
+    from twat_search.web.engines.serpapi import SerpApiSearchEngine, google_serpapi
 
-    available_engine_functions["serpapi"] = serpapi
-    __all__.extend(["SerpApiSearchEngine", "serpapi"])
-except ImportError:
+    available_engine_functions["google_serpapi"] = google_serpapi
+    __all__.extend(["SerpApiSearchEngine", "google_serpapi"])
+except (ImportError, AttributeError):
     pass
 
 try:
-    from .tavily import TavilySearchEngine, tavily
+    from twat_search.web.engines.tavily import TavilySearchEngine, tavily
 
     available_engine_functions["tavily"] = tavily
     __all__.extend(["TavilySearchEngine", "tavily"])
@@ -165,7 +131,7 @@ except ImportError:
     pass
 
 try:
-    from .pplx import PerplexitySearchEngine, pplx
+    from twat_search.web.engines.pplx import PerplexitySearchEngine, pplx
 
     available_engine_functions["pplx"] = pplx
     __all__.extend(["PerplexitySearchEngine", "pplx"])
@@ -173,7 +139,12 @@ except ImportError:
     pass
 
 try:
-    from .you import YouSearchEngine, YouNewsSearchEngine, you, you_news
+    from twat_search.web.engines.you import (
+        YouNewsSearchEngine,
+        YouSearchEngine,
+        you,
+        you_news,
+    )
 
     available_engine_functions["you"] = you
     available_engine_functions["you_news"] = you_news
@@ -182,7 +153,7 @@ except ImportError:
     pass
 
 try:
-    from .critique import CritiqueSearchEngine, critique
+    from twat_search.web.engines.critique import CritiqueSearchEngine, critique
 
     available_engine_functions["critique"] = critique
     __all__.extend(["CritiqueSearchEngine", "critique"])
@@ -190,108 +161,130 @@ except ImportError:
     pass
 
 try:
-    from .duckduckgo import DuckDuckGoSearchEngine, duckduckgo
+    from twat_search.web.engines.duckduckgo import DuckDuckGoSearchEngine, duckduckgo
 
     available_engine_functions["duckduckgo"] = duckduckgo
     __all__.extend(["DuckDuckGoSearchEngine", "duckduckgo"])
 except ImportError:
     pass
 
+# Try to import bing_scraper engine
 try:
-    # Import the bing_scraper module and explicitly expose BingScraperSearchEngine
-    from .bing_scraper import BingScraperSearchEngine, bing_scraper
+    from twat_search.web.engines.bing_scraper import (
+        BingScraperSearchEngine,
+        bing_scraper,
+    )
 
     available_engine_functions["bing_scraper"] = bing_scraper
     __all__.extend(["BingScraperSearchEngine", "bing_scraper"])
 except ImportError as e:
     logger.warning(f"Failed to import bing_scraper: {e}")
-    # Define a fallback to ensure the class is available for testing
-    try:
-        from .base import SearchEngine, register_engine
-        from typing import Any, ClassVar
-
-        @register_engine
-        class BingScraperSearchEngine(SearchEngine):
-            """Fallback implementation for testing."""
-
-            name = "bing_scraper"
-            env_api_key_names: ClassVar[list[str]] = []
-
-            def __init__(
-                self,
-                config: Any,
-                num_results: int = 5,
-                **kwargs: Any,
-            ) -> None:
-                super().__init__(config, **kwargs)
-                self.max_results = num_results
-
-            async def search(self, query: str) -> list[SearchResult]:
-                """Fallback search method that returns an empty list."""
-                return []
-
-        async def bing_scraper(
-            query: str, num_results: int = 5, **kwargs: Any
-        ) -> list[SearchResult]:
-            """Fallback bing_scraper function."""
-            from twat_search.web.api import search
-
-            return await search(
-                query,
-                engines=["bing_scraper"],
-                num_results=num_results,
-                **kwargs,
-            )
-
-        available_engine_functions["bing_scraper"] = bing_scraper
-    except ImportError as e:
-        logger.warning(f"Could not create fallback BingScraperSearchEngine: {e}")
 
 # Import HasData engines
 try:
-    from .hasdata import (
+    from twat_search.web.engines.hasdata import (
         HasDataGoogleEngine,
         HasDataGoogleLightEngine,
         hasdata_google,
-        hasdata_google_light,
+        hasdata_google_full,
     )
 
     available_engine_functions["hasdata_google"] = hasdata_google
-    available_engine_functions["hasdata_google_light"] = hasdata_google_light
+    available_engine_functions["hasdata_google_full"] = hasdata_google_full
     __all__.extend(
         [
             "HasDataGoogleEngine",
             "HasDataGoogleLightEngine",
             "hasdata_google",
-            "hasdata_google_light",
+            "hasdata_google_full",
         ]
     )
 except ImportError:
     pass
 
+# Import Google Scraper engine
 try:
-    from . import google_scraper  # noqa: F401
+    from twat_search.web.engines.google_scraper import (
+        GoogleScraperEngine,
+        google_scraper,
+    )
 
-    logger.debug("Imported google_scraper module")
+    available_engine_functions["google_scraper"] = google_scraper
+    __all__.extend(["GoogleScraperEngine", "google_scraper"])
 except (ImportError, SyntaxError) as e:
     logger.warning(f"Failed to import google_scraper module: {e}")
 
+# Import Searchit engines
 try:
-    from . import searchit  # noqa: F401
+    from twat_search.web.engines.searchit import (
+        BingSearchitEngine,
+        GoogleSearchitEngine,
+        QwantSearchitEngine,
+        YandexSearchitEngine,
+        bing_searchit,
+        google_searchit,
+        qwant_searchit,
+        yandex_searchit,
+    )
 
-    logger.debug("Imported searchit module")
+    available_engine_functions["bing_searchit"] = bing_searchit
+    available_engine_functions["google_searchit"] = google_searchit
+    available_engine_functions["qwant_searchit"] = qwant_searchit
+    available_engine_functions["yandex_searchit"] = yandex_searchit
+    __all__.extend(
+        [
+            "BingSearchitEngine",
+            "GoogleSearchitEngine",
+            "QwantSearchitEngine",
+            "YandexSearchitEngine",
+            "bing_searchit",
+            "google_searchit",
+            "qwant_searchit",
+            "yandex_searchit",
+        ]
+    )
 except (ImportError, SyntaxError) as e:
     logger.warning(f"Failed to import searchit module: {e}")
 
+# Import AnyWebSearch engines
 try:
-    from . import anywebsearch  # noqa: F401
+    from twat_search.web.engines.anywebsearch import (
+        BingAnyWebSearchEngine,
+        BraveAnyWebSearchEngine,
+        GoogleAnyWebSearchEngine,
+        QwantAnyWebSearchEngine,
+        YandexAnyWebSearchEngine,
+        bing_anyws,
+        brave_anyws,
+        google_anyws,
+        qwant_anyws,
+        yandex_anyws,
+    )
 
-    logger.debug("Imported anywebsearch module")
+    available_engine_functions["bing_anyws"] = bing_anyws
+    available_engine_functions["brave_anyws"] = brave_anyws
+    available_engine_functions["google_anyws"] = google_anyws
+    available_engine_functions["qwant_anyws"] = qwant_anyws
+    available_engine_functions["yandex_anyws"] = yandex_anyws
+    __all__.extend(
+        [
+            "BingAnyWebSearchEngine",
+            "BraveAnyWebSearchEngine",
+            "GoogleAnyWebSearchEngine",
+            "QwantAnyWebSearchEngine",
+            "YandexAnyWebSearchEngine",
+            "bing_anyws",
+            "brave_anyws",
+            "google_anyws",
+            "qwant_anyws",
+            "yandex_anyws",
+        ]
+    )
 except (ImportError, SyntaxError) as e:
     logger.warning(f"Failed to import anywebsearch module: {e}")
 
 
-# Add helper functions to the exports
+# Add helper functions
 def is_engine_available(engine_name: str) -> bool:
     """Check if an engine is available (its dependencies are installed).
 
@@ -327,15 +320,3 @@ def get_available_engines() -> list[str]:
         List of available engine names
     """
     return list(available_engine_functions.keys())
-
-
-# Add helper functions to exports
-__all__.extend(
-    [
-        "available_engine_functions",
-        "get_available_engines",
-        "get_engine_function",
-        "is_engine_available",
-        "standardize_engine_name",
-    ]
-)

@@ -20,8 +20,12 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, HttpUrl, ValidationError, field_validator
 
+from twat_search.web.engines import (BING_ANYWS, BRAVE_ANYWS,
+                                     ENGINE_FRIENDLY_NAMES, GOOGLE_ANYWS,
+                                     QWANT_ANYWS, YANDEX_ANYWS)
+
 try:
-    from anywebsearch import multi_search, Settings
+    from anywebsearch import Settings, multi_search
     from anywebsearch.tools import SearchResult as AnySearchResult
 except ImportError:
     # For type checking when anywebsearch is not installed
@@ -76,7 +80,8 @@ except ImportError:
 from twat_search.web.config import EngineConfig
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 logger = logging.getLogger(__name__)
 
@@ -119,8 +124,11 @@ class AnyWebSearchEngine(SearchEngine):
         env_api_key_names: API key names for engines that need them
     """
 
-    name = ""  # Must be overridden by subclasses
-    engine_name = ""  # Must be overridden - the name used by anywebsearch library
+    engine_code = ""  # Must be overridden by subclasses
+    friendly_engine_name = ""  # Must be overridden by subclasses
+    anywebsearch_lib_name = (
+        ""  # Must be overridden - the name used by anywebsearch library
+    )
     env_api_key_names: ClassVar[list[str]] = []  # Override as needed
 
     def __init__(
@@ -233,10 +241,10 @@ class AnyWebSearchEngine(SearchEngine):
         settings_kwargs = {}
 
         # Add API keys if needed
-        if self.engine_name == "brave" and self.brave_key:
+        if self.anywebsearch_lib_name == "brave" and self.brave_key:
             settings_kwargs["brave_key"] = self.brave_key
 
-        if self.engine_name == "yandex" and self.ya_key and self.ya_fldid:
+        if self.anywebsearch_lib_name == "yandex" and self.ya_key and self.ya_fldid:
             settings_kwargs["ya_key"] = self.ya_key
             settings_kwargs["ya_fldid"] = self.ya_fldid
 
@@ -245,7 +253,7 @@ class AnyWebSearchEngine(SearchEngine):
             language=self.language,
             num_results=self.max_results,
             merge=True,  # Always merge for single engine
-            engines=[self.engine_name],
+            engines=[self.anywebsearch_lib_name],
             **settings_kwargs,
         )
 
@@ -257,11 +265,12 @@ class GoogleAnyWebSearchEngine(AnyWebSearchEngine):
 
     Attributes:
         name: The name of the search engine ("google-anyws")
-        engine_name: Name used in anywebsearch library ("google")
+        anywebsearch_lib_name: Name used in anywebsearch library ("google")
     """
 
-    name = "google-anyws"
-    engine_name = "google"
+    engine_code = GOOGLE_ANYWS
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[GOOGLE_ANYWS]
+    anywebsearch_lib_name = "google"
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -334,7 +343,8 @@ class BingAnyWebSearchEngine(AnyWebSearchEngine):
         engine_name: Name used in anywebsearch library ("duck")
     """
 
-    name = "bing-anyws"
+    engine_code = BING_ANYWS
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[BING_ANYWS]
     engine_name = "duck"  # anywebsearch uses DuckDuckGo API which uses Bing backend
 
     async def search(self, query: str) -> list[SearchResult]:
@@ -409,9 +419,10 @@ class BraveAnyWebSearchEngine(AnyWebSearchEngine):
         env_api_key_names: API key environment variable names
     """
 
-    name = "brave-anyws"
+    engine_code = BRAVE_ANYWS
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[BRAVE_ANYWS]
     engine_name = "brave"
-    env_api_key_names: ClassVar[list[str]] = ["BRAVE_API_KEY", "BRAVE_KEY"]
+    env_api_key_names: ClassVar[list[str]] = ["BRAVE_API_KEY"]
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -487,7 +498,8 @@ class QwantAnyWebSearchEngine(AnyWebSearchEngine):
         engine_name: Name used in anywebsearch library ("qwant")
     """
 
-    name = "qwant-anyws"
+    engine_code = QWANT_ANYWS
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[QWANT_ANYWS]
     engine_name = "qwant"
 
     async def search(self, query: str) -> list[SearchResult]:
@@ -562,7 +574,8 @@ class YandexAnyWebSearchEngine(AnyWebSearchEngine):
         env_api_key_names: API key environment variable names
     """
 
-    name = "yandex-anyws"
+    engine_code = YANDEX_ANYWS
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[YANDEX_ANYWS]
     engine_name = "yandex"
     env_api_key_names: ClassVar[list[str]] = ["YANDEX_API_KEY", "YA_KEY"]
 

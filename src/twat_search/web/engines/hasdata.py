@@ -8,15 +8,19 @@ This module implements search engines that use the HasData APIs:
 - hasdata-google-light: Light version of Google SERP API
 """
 
-import httpx
 import json
 from typing import Any, ClassVar
-from pydantic import BaseModel, ValidationError, HttpUrl
+
+import httpx
+from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+from twat_search.web.engines import (ENGINE_FRIENDLY_NAMES, GOOGLE_HASDATA,
+                                     GOOGLE_HASDATA_FULL)
 from twat_search.web.exceptions import EngineError
+from twat_search.web.models import SearchResult
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 # Pydantic models for HasData Google search results
@@ -80,7 +84,7 @@ class HasDataBaseEngine(SearchEngine):
 
         if not self.config.api_key:
             raise EngineError(
-                self.name,
+                self.engine_code,
                 f"HasData API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
@@ -135,7 +139,7 @@ class HasDataBaseEngine(SearchEngine):
                                 title=parsed.title,
                                 url=parsed.url,
                                 snippet=parsed.snippet,
-                                source=self.name,
+                                source=self.engine_code,
                                 rank=i + 1,
                                 raw=result,
                             )
@@ -146,23 +150,30 @@ class HasDataBaseEngine(SearchEngine):
                 return results
 
             except httpx.RequestError as exc:
-                raise EngineError(self.name, f"HTTP Request failed: {exc}") from exc
+                raise EngineError(
+                    self.engine_code, f"HTTP Request failed: {exc}"
+                ) from exc
             except httpx.HTTPStatusError as exc:
                 raise EngineError(
-                    self.name,
+                    self.engine_code,
                     f"HTTP Status error: {exc.response.status_code} - {exc.response.text}",
                 ) from exc
             except ValidationError as exc:
-                raise EngineError(self.name, f"Response parsing error: {exc}") from exc
+                raise EngineError(
+                    self.engine_code, f"Response parsing error: {exc}"
+                ) from exc
             except json.JSONDecodeError as exc:
-                raise EngineError(self.name, f"Invalid JSON response: {exc}") from exc
+                raise EngineError(
+                    self.engine_code, f"Invalid JSON response: {exc}"
+                ) from exc
 
 
 @register_engine
 class HasDataGoogleEngine(HasDataBaseEngine):
     """HasData Google SERP search engine."""
 
-    name = "hasdata-google"
+    engine_code = GOOGLE_HASDATA_FULL
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[GOOGLE_HASDATA_FULL]
     base_url = "https://api.hasdata.com/scrape/google/serp"
     supports_device_type: ClassVar[bool] = True
 
@@ -171,12 +182,13 @@ class HasDataGoogleEngine(HasDataBaseEngine):
 class HasDataGoogleLightEngine(HasDataBaseEngine):
     """HasData Google SERP Light search engine."""
 
-    name = "hasdata-google-light"
+    engine_code = GOOGLE_HASDATA
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[GOOGLE_HASDATA]
     base_url = "https://api.hasdata.com/scrape/google-light/serp"
     supports_device_type: ClassVar[bool] = False
 
 
-async def hasdata_google(
+async def hasdata_google_full(
     query: str,
     num_results: int = 5,
     location: str | None = None,
@@ -206,7 +218,7 @@ async def hasdata_google(
     return await engine.search(query)
 
 
-async def hasdata_google_light(
+async def hasdata_google(
     query: str,
     num_results: int = 5,
     location: str | None = None,

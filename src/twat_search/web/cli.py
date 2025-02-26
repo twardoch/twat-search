@@ -15,24 +15,21 @@ import asyncio
 import json as json_lib
 import logging
 import os
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import fire
 import fire.core
 from rich.console import Console
-from rich.table import Table
 from rich.logging import RichHandler
+from rich.table import Table
 
 from twat_search.web.api import search
 from twat_search.web.config import Config
-from twat_search.web.engines import (
-    ALL_POSSIBLE_ENGINES,
-    ENGINE_FRIENDLY_NAMES,
-    get_available_engines,
-    get_engine_function,
-    is_engine_available,
-    standardize_engine_name,
-)
+from twat_search.web.engines import (ALL_POSSIBLE_ENGINES,
+                                     ENGINE_FRIENDLY_NAMES,
+                                     get_available_engines,
+                                     get_engine_function, is_engine_available,
+                                     standardize_engine_name)
 
 if TYPE_CHECKING:
     from twat_search.web.config import Config
@@ -356,7 +353,7 @@ class SearchCLI:
             registered_engines = get_registered_engines()
             engine_class = registered_engines.get(engine)
             friendly = (
-                engine_class.friendly_name
+                engine_class.friendly_engine_name
                 if engine_class
                 else ENGINE_FRIENDLY_NAMES.get(engine, engine)
             )
@@ -571,7 +568,7 @@ class SearchCLI:
 
             # Get friendly name from the engine class first, fall back to the dictionary
             friendly_name = (
-                engine_class.friendly_name
+                engine_class.friendly_engine_name
                 if engine_class and hasattr(engine_class, "friendly_name")
                 else ENGINE_FRIENDLY_NAMES.get(engine_name, engine_name)
             )

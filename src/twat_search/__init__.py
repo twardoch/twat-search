@@ -10,7 +10,7 @@ __all__ = []
 
 # Include version
 try:
-    from .__version__ import version as __version__
+    from twat_search.__version__ import version as __version__
 
     __all__.append("__version__")
 except ImportError:
@@ -19,7 +19,7 @@ except ImportError:
 
 # Import submodules if available
 try:
-    from . import web
+    from twat_search import web
 
     __all__.append("web")
 except ImportError:

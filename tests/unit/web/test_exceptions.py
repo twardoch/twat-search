@@ -7,7 +7,7 @@ Unit tests for the twat_search.web.exceptions module.
 This module tests the custom exceptions used in the web search API.
 """
 
-from twat_search.web.exceptions import SearchError, EngineError
+from twat_search.web.exceptions import EngineError, SearchError
 
 
 def test_search_error() -> None:

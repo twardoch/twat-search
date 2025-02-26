@@ -6,16 +6,19 @@ Tavily Search engine implementation.
 This module implements the Tavily Search API integration.
 """
 
-import httpx
 import textwrap
 from typing import Any, ClassVar
+
+import httpx
 from pydantic import BaseModel, ValidationError
 from pydantic.networks import HttpUrl
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, TAVILY
 from twat_search.web.exceptions import EngineError
+from twat_search.web.models import SearchResult
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 class TavilySearchResult(BaseModel):
@@ -47,7 +50,8 @@ class TavilySearchResponse(BaseModel):
 class TavilySearchEngine(SearchEngine):
     """Implementation of the Tavily AI Search API."""
 
-    name = "tavily"
+    engine_code = TAVILY
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[TAVILY]
     env_api_key_names: ClassVar[list[str]] = ["TAVILY_API_KEY"]
 
     def __init__(

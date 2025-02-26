@@ -11,8 +11,8 @@ for the web search functionality.
 import asyncio
 import contextlib
 import logging
-from typing import Any, TypeVar
 from collections.abc import AsyncGenerator, Awaitable, Callable
+from typing import Any, TypeVar
 
 import pytest
 from pydantic import HttpUrl
@@ -23,7 +23,6 @@ from twat_search.web.config import Config, EngineConfig
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import SearchError
 from twat_search.web.models import SearchResult
-
 
 # Setup logging for tests
 logging.basicConfig(level=logging.DEBUG)
@@ -37,7 +36,7 @@ AsyncFixture = Callable[..., Awaitable[T]]
 class MockSearchEngine(SearchEngine):
     """Mock search engine for testing."""
 
-    name = "mock"
+    engine_code = "mock"
 
     def __init__(self, config: EngineConfig, **kwargs: Any) -> None:
         """Initialize mock engine."""

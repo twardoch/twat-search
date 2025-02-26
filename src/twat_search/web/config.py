@@ -15,13 +15,42 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
 
+# Import engine name constants from the dedicated constants module
+from twat_search.web.engine_constants import (
+    ALL_POSSIBLE_ENGINES,
+    BING_ANYWS,
+    BING_SCRAPER,
+    BING_SEARCHIT,
+    BRAVE,
+    BRAVE_ANYWS,
+    BRAVE_NEWS,
+    CRITIQUE,
+    DUCKDUCKGO,
+    ENGINE_FRIENDLY_NAMES,
+    GOOGLE_ANYWS,
+    GOOGLE_HASDATA,
+    GOOGLE_HASDATA_FULL,
+    GOOGLE_SCRAPER,
+    GOOGLE_SEARCHIT,
+    GOOGLE_SERPAPI,
+    PPLX,
+    QWANT_ANYWS,
+    QWANT_SEARCHIT,
+    TAVILY,
+    YANDEX_ANYWS,
+    YANDEX_SEARCHIT,
+    YOU,
+    YOU_NEWS,
+    standardize_engine_name,
+)
+
 logger = logging.getLogger(__name__)
 
 # Default configuration dictionary
 DEFAULT_CONFIG: dict[str, Any] = {
     "engines": {
         # Brave Search
-        "brave": {
+        BRAVE: {
             "enabled": True,
             "api_key": None,
             "default_params": {
@@ -30,17 +59,27 @@ DEFAULT_CONFIG: dict[str, Any] = {
                 "safe_search": True,
             },
         },
-        "brave_news": {
+        BRAVE_NEWS: {
             "enabled": True,
             "api_key": None,
             "default_params": {
                 "country": "US",
                 "language": "en-US",
                 "safe_search": True,
+            },
+        },
+        # Brave AnyWebSearch
+        BRAVE_ANYWS: {
+            "enabled": True,
+            "api_key": None,  # BRAVE_API_KEY
+            "default_params": {
+                "language": "en",
+                "num_results": 10,
+                "merge": True,
             },
         },
         # SerpAPI (Google)
-        "serpapi": {
+        GOOGLE_SERPAPI: {
             "enabled": True,
             "api_key": None,
             "default_params": {
@@ -49,8 +88,43 @@ DEFAULT_CONFIG: dict[str, Any] = {
                 "safe_search": True,
             },
         },
+        # Google AnyWebSearch
+        GOOGLE_ANYWS: {
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "language": "en",
+                "num_results": 10,
+                "merge": True,
+            },
+        },
+        # Google Scraper
+        GOOGLE_SCRAPER: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "language": "en",
+                "region": "us",
+                "safe": "active",
+                "sleep_interval": 0.0,
+                "ssl_verify": True,
+                "proxy": None,
+                "unique": True,
+            },
+        },
+        # Google SearchIT
+        GOOGLE_SEARCHIT: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "language": "en",
+                "domain": "com",
+                "sleep_interval": 0,
+                "proxy": None,
+            },
+        },
         # Tavily Search
-        "tavily": {
+        TAVILY: {
             "enabled": True,
             "api_key": None,
             "default_params": {
@@ -63,7 +137,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
             },
         },
         # Perplexity AI
-        "pplx": {
+        PPLX: {
             "enabled": True,
             "api_key": None,
             "default_params": {
@@ -71,18 +145,18 @@ DEFAULT_CONFIG: dict[str, Any] = {
             },
         },
         # You.com Search
-        "you": {
+        YOU: {
             "enabled": True,
             "api_key": None,
             "default_params": {},
         },
-        "you_news": {
+        YOU_NEWS: {
             "enabled": True,
             "api_key": None,
             "default_params": {},
         },
         # Critique Labs
-        "critique": {
+        CRITIQUE: {
             "enabled": True,
             "api_key": None,
             "default_params": {
@@ -93,26 +167,90 @@ DEFAULT_CONFIG: dict[str, Any] = {
             },
         },
         # DuckDuckGo
-        "duckduckgo": {
+        DUCKDUCKGO: {
             "enabled": True,
             "api_key": None,  # DuckDuckGo doesn't require an API key
             "default_params": {"timeout": 10},
         },
         # Bing Scraper
-        "bing_scraper": {
+        BING_SCRAPER: {
             "enabled": True,
             "api_key": None,  # No API key required, it's a scraper
             "default_params": {"num_pages": 1, "delay": 0.5},
         },
-        # HasData Google
-        "hasdata_google": {
+        # Bing AnyWebSearch
+        BING_ANYWS: {
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "language": "en",
+                "num_results": 10,
+                "merge": True,
+            },
+        },
+        # Bing SearchIT
+        BING_SEARCHIT: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "language": "en",
+                "domain": "com",
+                "sleep_interval": 0,
+                "proxy": None,
+            },
+        },
+        # Qwant AnyWebSearch
+        QWANT_ANYWS: {
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "language": "en",
+                "num_results": 10,
+                "merge": True,
+            },
+        },
+        # Qwant SearchIT
+        QWANT_SEARCHIT: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "language": "en",
+                "geo": "us",
+                "sleep_interval": 0,
+                "proxy": None,
+            },
+        },
+        # Yandex AnyWebSearch
+        YANDEX_ANYWS: {
+            "enabled": True,
+            "api_key": None,  # YA_KEY and YA_FLDID environment variables
+            "default_params": {
+                "language": "en",
+                "num_results": 10,
+                "merge": True,
+            },
+        },
+        # Yandex SearchIT
+        YANDEX_SEARCHIT: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "language": "en",
+                "country": "us",
+                "sleep_interval": 0,
+                "proxy": None,
+            },
+        },
+        # HasData Google (Full version)
+        GOOGLE_HASDATA_FULL: {
             "enabled": True,
             "api_key": None,
             "default_params": {
                 "device_type": "desktop",
             },
         },
-        "hasdata_google_light": {
+        # HasData Google (Light version)
+        GOOGLE_HASDATA: {
             "enabled": True,
             "api_key": None,
             "default_params": {},
@@ -128,10 +266,6 @@ class EngineConfig(BaseModel):
     enabled: bool = True
     api_key: str | None = None
     default_params: dict[str, Any] = Field(default_factory=dict)
-
-
-# Import standardize_engine_name only after defining all classes to avoid circular imports
-from .engines import standardize_engine_name
 
 
 # Main configuration model

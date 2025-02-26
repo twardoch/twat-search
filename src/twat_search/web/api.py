@@ -2,11 +2,11 @@ import asyncio
 import logging
 from typing import Any, Optional
 
-from .config import Config
-from .models import SearchResult
-from .engines.base import SearchEngine, get_engine
-from .exceptions import SearchError
-from .engines import standardize_engine_name
+from twat_search.web.config import Config
+from twat_search.web.engines import standardize_engine_name
+from twat_search.web.engines.base import SearchEngine, get_engine
+from twat_search.web.exceptions import SearchError
+from twat_search.web.models import SearchResult
 
 logger = logging.getLogger(__name__)
 

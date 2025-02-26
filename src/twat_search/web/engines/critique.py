@@ -4,15 +4,18 @@ Critique Labs search engine implementation.
 This module implements the Critique Labs AI API integration.
 """
 
-import httpx
 import base64
 from typing import Any, ClassVar
-from pydantic import BaseModel, ValidationError, HttpUrl, Field
+
+import httpx
+from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+from twat_search.web.engines import CRITIQUE, ENGINE_FRIENDLY_NAMES
 from twat_search.web.exceptions import EngineError
+from twat_search.web.models import SearchResult
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 class CritiqueResult(BaseModel):
@@ -41,7 +44,8 @@ class CritiqueResponse(BaseModel):
 class CritiqueSearchEngine(SearchEngine):
     """Implementation of the Critique Labs AI Search API."""
 
-    name = "critique"
+    engine_code = CRITIQUE
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[CRITIQUE]
     env_api_key_names: ClassVar[list[str]] = [
         "CRITIQUE_LABS_API_KEY",
         "CRITIQUE_API_KEY",

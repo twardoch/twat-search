@@ -20,8 +20,19 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, HttpUrl, ValidationError
 
+from twat_search.web.config import EngineConfig
+from twat_search.web.engine_constants import BING_SCRAPER, ENGINE_FRIENDLY_NAMES
+from twat_search.web.exceptions import EngineError
+from twat_search.web.models import SearchResult
+
+from twat_search.web.engines.base import SearchEngine, register_engine
+
+# Set up logger
+logger = logging.getLogger(__name__)
+
+# Import the BingScraper class from scrape-bing package
 try:
-    from scrape_bing import BingScraper
+    from scrape_bing import BingScraper  # type: ignore
 except ImportError:
     # For type checking when scrape-bing is not installed
     class BingScraper:  # type: ignore
@@ -52,14 +63,6 @@ except ImportError:
                 Empty list (dummy implementation)
             """
             return []
-
-
-from twat_search.web.config import EngineConfig
-from twat_search.web.exceptions import EngineError
-from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
-
-logger = logging.getLogger(__name__)
 
 
 class BingScraperResult(BaseModel):
@@ -95,7 +98,8 @@ class BingScraperSearchEngine(SearchEngine):
         env_api_key_names: Empty list since no API key is needed
     """
 
-    name = "bing_scraper"
+    engine_code = BING_SCRAPER
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[BING_SCRAPER]
     env_api_key_names: ClassVar[list[str]] = []  # No API key needed
 
     def __init__(
@@ -184,7 +188,7 @@ class BingScraperSearchEngine(SearchEngine):
                 title=validated.title,
                 url=validated.url,
                 snippet=validated.description or "",
-                source=self.name,
+                source=self.engine_code,
                 raw={
                     "title": result.title,
                     "url": str(result.url),
@@ -218,7 +222,7 @@ class BingScraperSearchEngine(SearchEngine):
                          parsing errors, or other exceptions
         """
         if not query:
-            raise EngineError(self.name, "Search query cannot be empty")
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Bing with query: '{query}'")
         logger.debug(
@@ -244,19 +248,19 @@ class BingScraperSearchEngine(SearchEngine):
         except ValueError as exc:
             error_msg = f"Invalid input for Bing search: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
         except ConnectionError as exc:
             error_msg = f"Network error connecting to Bing: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
         except RuntimeError as exc:
             error_msg = f"Error parsing Bing search results: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
         except Exception as exc:
             error_msg = f"Unexpected error during Bing search: {exc}"
             logger.error(error_msg)
-            raise EngineError(self.name, error_msg) from exc
+            raise EngineError(self.engine_code, error_msg) from exc
 
         # Convert and filter results in a single comprehension
         results: list[SearchResult] = [

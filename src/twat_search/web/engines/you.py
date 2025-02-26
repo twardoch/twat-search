@@ -1,11 +1,14 @@
-import httpx
 from typing import Any, ClassVar
-from pydantic import BaseModel, ValidationError, HttpUrl, Field
+
+import httpx
+from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, YOU, YOU_NEWS
 from twat_search.web.exceptions import EngineError
+from twat_search.web.models import SearchResult
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 class YouSearchHit(BaseModel):
@@ -52,7 +55,7 @@ class YouBaseEngine(SearchEngine):
 
         if not self.config.api_key:
             raise EngineError(
-                self.__class__.name,
+                self.__class__.engine_code,
                 f"You.com API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
@@ -95,11 +98,11 @@ class YouBaseEngine(SearchEngine):
                 return response.json()
             except httpx.RequestError as exc:
                 raise EngineError(
-                    self.__class__.name, f"HTTP Request failed: {exc}"
+                    self.__class__.engine_code, f"HTTP Request failed: {exc}"
                 ) from exc
             except httpx.HTTPStatusError as exc:
                 raise EngineError(
-                    self.__class__.name,
+                    self.__class__.engine_code,
                     f"HTTP Status error: {exc.response.status_code} - {exc.response.text}",
                 ) from exc
 
@@ -108,7 +111,8 @@ class YouBaseEngine(SearchEngine):
 class YouSearchEngine(YouBaseEngine):
     """Implementation of the You.com Web Search API."""
 
-    name = "you"
+    engine_code = YOU
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[YOU]
     base_url = "https://api.you.com/api/search"
     num_results_param = "num_web_results"
 
@@ -142,7 +146,8 @@ class YouSearchEngine(YouBaseEngine):
 class YouNewsSearchEngine(YouBaseEngine):
     """Implementation of the You.com News Search API."""
 
-    name = "you-news"
+    engine_code = YOU_NEWS
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[YOU_NEWS]
     base_url = "https://api.you.com/api/news"
     num_results_param = "num_news_results"
 

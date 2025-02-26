@@ -6,15 +6,18 @@ Perplexity AI search engine implementation.
 This module implements the Perplexity AI API integration.
 """
 
+from typing import Any, ClassVar
+
 import httpx
-from typing import ClassVar, Any
 from pydantic import BaseModel, Field, ValidationError
 from pydantic.networks import HttpUrl
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, PPLX
 from twat_search.web.exceptions import EngineError
+from twat_search.web.models import SearchResult
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 class PerplexityResult(BaseModel):
@@ -31,7 +34,8 @@ class PerplexityResult(BaseModel):
 class PerplexitySearchEngine(SearchEngine):
     """Implementation of the Perplexity AI API."""
 
-    name = "pplx"
+    engine_code = PPLX
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[PPLX]
     env_api_key_names: ClassVar[list[str]] = [
         "PERPLEXITYAI_API_KEY",
         "PERPLEXITY_API_KEY",

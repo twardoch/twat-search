@@ -9,10 +9,11 @@ associated functionality. The tests use mocking to avoid making actual
 network requests during testing.
 """
 
-import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
-from pydantic import HttpUrl
 from typing import Any
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+from pydantic import HttpUrl
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.engines import BingScraperSearchEngine
@@ -66,7 +67,7 @@ class TestBingScraperEngine:
     @patch("twat_search.web.engines.bing_scraper.BingScraper")
     def test_init(self, mock_BingScraper: MagicMock, engine: Any) -> None:
         """Test BingScraperSearchEngine initialization."""
-        assert engine.name == "bing_scraper"
+        assert engine.engine_code == "bing_scraper"
         assert engine.max_results == 5
         assert engine.max_retries == 3
         assert engine.delay_between_requests == 1.0

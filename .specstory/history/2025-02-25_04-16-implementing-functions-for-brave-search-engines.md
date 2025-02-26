@@ -3168,7 +3168,7 @@ results.append(
         title=brave_result.title,
         url=brave_result.url,
         snippet=brave_result.description,
-        source=self.name,
+        source=self.engine_code,
         raw=result,  # Include raw result for debugging
     )
 )

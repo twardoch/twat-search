@@ -17,9 +17,11 @@ from duckduckgo_search import DDGS
 from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
+from twat_search.web.engines import DUCKDUCKGO, ENGINE_FRIENDLY_NAMES
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,8 @@ class DuckDuckGoResult(BaseModel):
 class DuckDuckGoSearchEngine(SearchEngine):
     """Implementation of the DuckDuckGo Search API."""
 
-    name = "duckduckgo"
+    engine_code = DUCKDUCKGO
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[DUCKDUCKGO]
     env_api_key_names: ClassVar[list[str]] = []  # No API key needed
 
     def __init__(

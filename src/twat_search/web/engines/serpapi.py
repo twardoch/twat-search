@@ -4,14 +4,17 @@ SerpApi Google search engine implementation.
 This module implements the SerpApi Google Search API integration.
 """
 
-import httpx
 from typing import Any, ClassVar
-from pydantic import BaseModel, ValidationError, HttpUrl
+
+import httpx
+from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.models import SearchResult
-from .base import SearchEngine, register_engine
+from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, GOOGLE_SERPAPI
 from twat_search.web.exceptions import EngineError
+from twat_search.web.models import SearchResult
+
+from twat_search.web.engines.base import SearchEngine, register_engine
 
 
 class SerpApiResult(BaseModel):
@@ -43,7 +46,8 @@ class SerpApiResponse(BaseModel):
 class SerpApiSearchEngine(SearchEngine):
     """Implementation of the SerpApi Google Search API."""
 
-    name = "serpapi"
+    engine_code = GOOGLE_SERPAPI
+    friendly_engine_name = ENGINE_FRIENDLY_NAMES[GOOGLE_SERPAPI]
     env_api_key_names: ClassVar[list[str]] = ["SERPAPI_API_KEY"]
 
     def __init__(
@@ -163,7 +167,7 @@ class SerpApiSearchEngine(SearchEngine):
                 raise EngineError(self.name, f"Response parsing error: {exc}") from exc
 
 
-async def serpapi(
+async def google_serpapi(
     query: str,
     num_results: int = 5,
     country: str | None = None,
