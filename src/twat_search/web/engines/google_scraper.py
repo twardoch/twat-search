@@ -21,6 +21,7 @@ from typing import Any, ClassVar, cast
 
 from pydantic import BaseModel, HttpUrl, ValidationError, field_validator
 
+from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, GOOGLE_SCRAPER
 
 try:
@@ -75,12 +76,6 @@ class GoogleScraperResult(BaseModel):
     url: HttpUrl
     description: str = ""
 
-    @field_validator("title", "description")
-    @classmethod
-    def validate_non_empty(cls, v: str) -> str:
-        """Ensure string fields are not None and convert to empty string if None."""
-        return v or ""
-
 
 @register_engine
 class GoogleScraperEngine(SearchEngine):
@@ -103,7 +98,7 @@ class GoogleScraperEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | str | None = True,
@@ -127,9 +122,9 @@ class GoogleScraperEngine(SearchEngine):
                 unique: Whether to return only unique results
         """
         super().__init__(config, **kwargs)
-        self.max_results: int = num_results or self.config.default_params.get(
-            "max_results",
-            5,
+        self.num_results: int = num_results or self.config.default_params.get(
+            "num_results",
+            DEFAULT_NUM_RESULTS,
         )
         self.language: str = language or self.config.default_params.get(
             "language",
@@ -187,11 +182,15 @@ class GoogleScraperEngine(SearchEngine):
             return None
 
         try:
+            # Ensure title and description are at least empty strings
+            title = getattr(result, "title", "") or ""
+            description = getattr(result, "description", "") or ""
+
             # Validate result fields
             validated = GoogleScraperResult(
-                title=result.title,
+                title=title,
                 url=HttpUrl(result.url),
-                description=result.description if hasattr(result, "description") else "",
+                description=description,
             )
 
             # Create and return the SearchResult
@@ -201,9 +200,9 @@ class GoogleScraperEngine(SearchEngine):
                 snippet=validated.description,
                 source=self.engine_code,
                 raw={
-                    "title": result.title,
+                    "title": title,
                     "url": str(result.url),
-                    "description": result.description if hasattr(result, "description") else "",
+                    "description": description,
                 },
             )
         except ValidationError as exc:
@@ -235,7 +234,7 @@ class GoogleScraperEngine(SearchEngine):
 
         logger.info(f"Searching Google with query: '{query}'")
         logger.debug(
-            f"Using max_results={self.max_results}, language={self.language}, "
+            f"Using num_results={self.num_results}, language={self.language}, "
             f"region={self.region}, safe={self.safe}, sleep_interval={self.sleep_interval}, "
             f"ssl_verify={self.ssl_verify}, proxy={self.proxy}, unique={self.unique}",
         )
@@ -245,7 +244,7 @@ class GoogleScraperEngine(SearchEngine):
             raw_results = list(
                 google_search(
                     query,
-                    num_results=self.max_results,
+                    num_results=self.num_results,
                     lang=self.language,
                     region=self.region,
                     safe=self.safe,
@@ -297,7 +296,7 @@ class GoogleScraperEngine(SearchEngine):
 
 async def google_scraper(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     language: str = "en",
     country: str | None = None,
     safe_search: bool = True,

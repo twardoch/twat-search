@@ -25,6 +25,7 @@ from twat_search.web.engine_constants import (
     BRAVE,
     BRAVE_NEWS,
     CRITIQUE,
+    DEFAULT_NUM_RESULTS,
     DUCKDUCKGO,
     GOOGLE_HASDATA,
     GOOGLE_HASDATA_FULL,
@@ -56,7 +57,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
                 "region": "us-en",
                 "safesearch": "moderate",
                 "timelimit": "y",  # past year
-                "max_results": 20,
+                "num_results": 20,
             },
         },
         # Brave API-based
@@ -84,7 +85,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
             "enabled": True,
             "api_key": None,  # TAVILY_API_KEY
             "default_params": {
-                "max_results": 5,
+                "num_results": DEFAULT_NUM_RESULTS,
                 "search_depth": "basic",  # or "advanced"
                 "include_domains": [],
                 "exclude_domains": [],
@@ -98,7 +99,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
             "enabled": True,
             "api_key": None,  # YOU_API_KEY
             "default_params": {
-                "n_results": 5,
+                "num_results": DEFAULT_NUM_RESULTS,
                 "country_code": "us",
                 "safe_search": True,
             },
@@ -108,7 +109,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
             "enabled": True,
             "api_key": None,  # YOU_API_KEY (same as You.com)
             "default_params": {
-                "n_results": 5,
+                "num_results": DEFAULT_NUM_RESULTS,
                 "country_code": "us",
                 "safe_search": True,
             },
@@ -118,7 +119,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
             "enabled": True,
             "api_key": None,  # PPLX_API_KEY
             "default_params": {
-                "num_results": 5,
+                "num_results": DEFAULT_NUM_RESULTS,
                 "focus": None,  # None, "research", "writing", "coding", "scholar", "wolfram", "youtube"
             },
         },
@@ -127,7 +128,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
             "enabled": True,
             "api_key": None,  # CRITIQUE_API_KEY
             "default_params": {
-                "num_results": 5,
+                "num_results": DEFAULT_NUM_RESULTS,
                 "relevance_adjustment": 0.5,
             },
         },
@@ -146,7 +147,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
             "enabled": True,
             "api_key": None,  # HASDATA_API_KEY
             "default_params": {
-                "num_results": 10,
+                "num_results": DEFAULT_NUM_RESULTS,
                 "language": "en",
             },
         },
@@ -155,7 +156,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
             "enabled": True,
             "api_key": None,  # HASDATA_API_KEY (same as Google HasData)
             "default_params": {
-                "num_results": 10,
+                "num_results": DEFAULT_NUM_RESULTS,
                 "language": "en",
             },
         },
@@ -163,7 +164,7 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
         GOOGLE_SCRAPER: {
             "enabled": True,
             "api_key": None,  # No API key required, it's a scraper
-            "default_params": {"num_results": 10, "language": "en", "safe": True},
+            "default_params": {"num_results": DEFAULT_NUM_RESULTS, "language": "en", "safe": True},
         },
         # Bing Scraper
         BING_SCRAPER: {
@@ -269,6 +270,38 @@ class EngineConfig(BaseModel):
     default_params: dict[str, Any] = Field(default_factory=dict)
     engine_code: str | None = None  # Added for reference during validation
 
+    def __init__(self, **data: Any) -> None:
+        """
+        Initialize the engine configuration with API key from environment variables if needed.
+
+        Args:
+            **data: Configuration data
+        """
+        # Call parent init first
+        super().__init__(**data)
+
+        # If no API key is provided but we have an engine code, try to get it from environment variables
+        if self.api_key is None and self.engine_code:
+            logger.debug(f"No API key provided for {self.engine_code}, checking environment variables")
+            try:
+                from twat_search.web.engines.base import get_registered_engines
+
+                engine_class = get_registered_engines().get(self.engine_code)
+                if engine_class and hasattr(engine_class, "env_api_key_names") and engine_class.env_api_key_names:
+                    logger.debug(
+                        f"Engine '{self.engine_code}' requires API key from env vars: {engine_class.env_api_key_names}",
+                    )
+                    # Try to get API key from environment variables
+                    for env_var in engine_class.env_api_key_names:
+                        env_value = os.environ.get(env_var)
+                        logger.debug(f"Checking env var '{env_var}' in __init__: {env_value is not None}")
+                        if env_value:
+                            logger.debug(f"Using API key from environment variable '{env_var}'")
+                            self.api_key = env_value
+                            break
+            except (ImportError, AttributeError) as e:
+                logger.debug(f"Couldn't check API key requirements for {self.engine_code}: {e}")
+
     @field_validator("api_key")
     @classmethod
     def validate_api_key(cls, v: str | None, info: Any) -> str | None:
@@ -281,6 +314,8 @@ class EngineConfig(BaseModel):
         engine instances.
         """
         engine_code = info.data.get("engine_code")
+        logger.debug(f"Validating API key for engine '{engine_code}', current value: {v is not None}")
+
         if engine_code and v is None:
             # We have an engine code but no API key - we'll check in the registry
             # if this engine requires an API key
@@ -288,14 +323,20 @@ class EngineConfig(BaseModel):
                 from twat_search.web.engines.base import get_registered_engines
 
                 engine_class = get_registered_engines().get(engine_code)
+                logger.debug(f"Found engine class for '{engine_code}': {engine_class is not None}")
 
                 # If we found the engine class and it requires an API key,
                 # check environment variables
                 if engine_class and hasattr(engine_class, "env_api_key_names") and engine_class.env_api_key_names:
+                    logger.debug(
+                        f"Engine '{engine_code}' requires API key from env vars: {engine_class.env_api_key_names}",
+                    )
                     # Try to get API key from environment variables
                     for env_var in engine_class.env_api_key_names:
                         env_value = os.environ.get(env_var)
+                        logger.debug(f"Checking env var '{env_var}': {env_value is not None}")
                         if env_value:
+                            logger.debug(f"Using API key from environment variable '{env_var}'")
                             return env_value
 
                     # If we get here, no environment variables were set

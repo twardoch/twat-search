@@ -16,6 +16,7 @@ import httpx
 from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
+from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, GOOGLE_HASDATA, GOOGLE_HASDATA_FULL
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
@@ -51,7 +52,7 @@ class HasDataBaseEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         location: str | None = None,
         device_type: str | None = None,
         **kwargs: Any,
@@ -184,7 +185,7 @@ class HasDataGoogleLightEngine(HasDataBaseEngine):
 
 async def hasdata_google_full(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     location: str | None = None,
     device_type: str = "desktop",
     api_key: str | None = None,
@@ -214,7 +215,7 @@ async def hasdata_google_full(
 
 async def hasdata_google(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     location: str | None = None,
     device_type: str = "desktop",
     api_key: str | None = None,

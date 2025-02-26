@@ -12,6 +12,7 @@ import httpx
 from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
+from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, GOOGLE_SERPAPI
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
@@ -54,7 +55,7 @@ class SerpApiSearchEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | str | None = True,
@@ -174,7 +175,7 @@ def _convert_safe(safe: bool | str | None) -> str | None:
 
 async def google_serpapi(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     country: str | None = None,
     language: str | None = None,
     safe_search: bool | str | None = True,

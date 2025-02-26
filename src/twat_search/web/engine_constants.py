@@ -9,6 +9,8 @@ This module is separate to avoid circular dependencies between engines and confi
 # These constants should be used instead of string literals
 from __future__ import annotations
 
+DEFAULT_NUM_RESULTS = 5
+
 BING_SCRAPER = "bing_scraper"
 BING_SEARCHIT = "bing_searchit"
 BRAVE = "brave"

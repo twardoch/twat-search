@@ -22,7 +22,7 @@ from typing import Any, ClassVar
 from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.engine_constants import BING_SCRAPER, ENGINE_FRIENDLY_NAMES
+from twat_search.web.engine_constants import BING_SCRAPER, DEFAULT_NUM_RESULTS, ENGINE_FRIENDLY_NAMES
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
@@ -107,7 +107,7 @@ class BingScraperSearchEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | str | None = True,
@@ -130,7 +130,7 @@ class BingScraperSearchEngine(SearchEngine):
         """
         super().__init__(config, **kwargs)
         # Set max_results from num_results or fall back to config default
-        self.max_results_value = self._get_num_results(param_name="num_results", min_value=1)
+        self.num_results = num_results
 
         self.max_retries: int = kwargs.get(
             "max_retries",
@@ -232,7 +232,7 @@ class BingScraperSearchEngine(SearchEngine):
             )
 
             # Perform the search
-            raw_results = scraper.search(query, num_results=self.max_results_value)
+            raw_results = scraper.search(query, num_results=self.num_results)
 
             # Return an empty list if no results
             if not raw_results:
@@ -245,12 +245,12 @@ class BingScraperSearchEngine(SearchEngine):
 
             # Convert the results - respecting max_results
             results = []
-            for result in raw_results[: self.max_results_value]:
+            for result in raw_results[: self.num_results]:
                 search_result = self._convert_result(result)
                 if search_result:
                     results.append(search_result)
                     # Stop if we've reached the desired number of results
-                    if len(results) >= self.max_results_value:
+                    if len(results) >= self.num_results:
                         break
 
             logger.info(
@@ -270,7 +270,7 @@ class BingScraperSearchEngine(SearchEngine):
 
 async def bing_scraper(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     max_retries: int = 3,
     delay_between_requests: float = 1.0,
     **kwargs: Any,

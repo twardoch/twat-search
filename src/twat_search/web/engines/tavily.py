@@ -15,6 +15,7 @@ from pydantic import BaseModel, ValidationError
 from pydantic.networks import HttpUrl
 
 from twat_search.web.config import EngineConfig
+from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, TAVILY
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
@@ -57,7 +58,7 @@ class TavilySearchEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -80,10 +81,13 @@ class TavilySearchEngine(SearchEngine):
 
         # Use the num_results parameter directly instead of a getter method
         # This ensures we always respect the user's request
-        self.max_results = num_results
-        if self.max_results is None:
-            # Only fall back to max_results or default if num_results is None
-            self.max_results = kwargs.get("max_results") or self.config.default_params.get("max_results", 5)
+        self.num_results = num_results
+        if self.num_results is None:
+            # Only fall back to num_results or default if num_results is None
+            self.num_results = kwargs.get("num_results") or self.config.default_params.get(
+                "num_results",
+                DEFAULT_NUM_RESULTS,
+            )
 
         # The rest of the initialization remains the same
         self.search_depth = search_depth or self.config.default_params.get("search_depth", "basic")
@@ -118,7 +122,7 @@ class TavilySearchEngine(SearchEngine):
         payload = {
             "api_key": self.config.api_key,
             "query": query,
-            "max_results": self.max_results,
+            "max_results": self.num_results,
             "search_depth": self.search_depth,
             "type": self.search_type,
         }
@@ -189,7 +193,7 @@ class TavilySearchEngine(SearchEngine):
 
         # The Tavily API sometimes returns more results than requested
         # Explicitly limit the number of results we process
-        items = items[: self.max_results]
+        items = items[: self.num_results]
 
         for idx, item in enumerate(items, start=1):
             converted = self._convert_result(item, idx)
@@ -201,7 +205,7 @@ class TavilySearchEngine(SearchEngine):
 
 async def tavily(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     country: str | None = None,
     language: str | None = None,
     safe_search: bool | None = True,

@@ -66,41 +66,28 @@ def test_search_result_invalid_url() -> None:
 
 
 def test_search_result_empty_fields() -> None:
-    """Test that empty required fields raise validation errors."""
+    """Test that empty source field raises validation error, but empty title and snippet are allowed."""
     url = HttpUrl("https://example.com")
 
-    # Test empty title
+    # Test empty source (should still raise error)
     with pytest.raises(ValidationError):
-        SearchResult.model_validate(
-            {
-                "title": "",  # Empty title should fail validation
-                "url": str(url),
-                "snippet": "This is a test result",
-                "source": "test_engine",
-            },
+        SearchResult(
+            title="Test Title",
+            url=url,
+            snippet="Test snippet",
+            source="",  # Empty source should raise error
         )
 
-    # Test empty snippet
-    with pytest.raises(ValidationError):
-        SearchResult.model_validate(
-            {
-                "title": "Test Result",
-                "url": str(url),
-                "snippet": "",  # Empty snippet should fail validation
-                "source": "test_engine",
-            },
-        )
-
-    # Test empty source
-    with pytest.raises(ValidationError):
-        SearchResult.model_validate(
-            {
-                "title": "Test Result",
-                "url": str(url),
-                "snippet": "This is a test result",
-                "source": "",  # Empty source should fail validation
-            },
-        )
+    # Test empty title and snippet (should be allowed now)
+    result = SearchResult(
+        title="",
+        url=url,
+        snippet="",
+        source="test_source",
+    )
+    assert result.title == ""
+    assert result.snippet == ""
+    assert result.source == "test_source"
 
 
 def test_search_result_serialization() -> None:

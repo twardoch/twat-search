@@ -25,6 +25,7 @@ from rich.table import Table
 
 from twat_search.web.api import search
 from twat_search.web.config import Config
+from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import (
     ALL_POSSIBLE_ENGINES,
     ENGINE_FRIENDLY_NAMES,
@@ -43,6 +44,9 @@ class CustomJSONEncoder(json_lib.JSONEncoder):
     """Custom JSON encoder that converts non-serializable objects to strings."""
 
     def default(self, o: Any) -> Any:
+        # Handle Pydantic's HttpUrl objects
+        if o.__class__.__name__ == "HttpUrl":
+            return str(o)
         try:
             return json_lib.JSONEncoder.default(self, o)
         except TypeError:
@@ -118,12 +122,12 @@ class SearchCLI:
         if isinstance(engines_arg, str):
             if engines_arg.strip().lower() == "free":
                 # Engines that don't require an API key
-                engines = ["duckduckgo", "hasdata_google_light"]
+                engines = ["duckduckgo", "google_hasdata"]
                 self.logger.info(f"Using 'free' engines: {', '.join(engines)}")
                 return engines
             elif engines_arg.strip().lower() == "best":
                 # 3 recommended engines (placeholder for user to edit)
-                engines = ["brave", "duckduckgo", "serpapi"]
+                engines = ["brave", "duckduckgo", "google_serpapi"]
                 self.logger.info(f"Using 'best' engines: {', '.join(engines)}")
                 return engines
             elif engines_arg.strip().lower() == "all":
@@ -157,13 +161,25 @@ class SearchCLI:
     ) -> list[dict[str, Any]]:
         if engines:
             available = []
+            invalid_engines = []
             for engine in engines:
-                if engine == "all" or is_engine_available(engine):
+                # Check if the engine name is valid (exists in ALL_POSSIBLE_ENGINES)
+                standardized_name = standardize_engine_name(engine)
+                if engine == "all" or standardized_name in ALL_POSSIBLE_ENGINES:
                     available.append(engine)
                 else:
+                    invalid_engines.append(engine)
                     self.logger.warning(
-                        f"Engine '{engine}' is not available. The dependency may not be installed.",
+                        f"Engine '{engine}' is not valid. Valid engines are: {', '.join(ALL_POSSIBLE_ENGINES)}",
                     )
+
+            # If no engines are valid from the specified list, raise an error
+            if not available and invalid_engines:
+                error_msg = f"None of the specified engines are valid: {', '.join(invalid_engines)}"
+                self.logger.error(error_msg)
+                _display_errors([error_msg])
+                return []
+
             engines = available or None
 
         # Add debug print to see what engines are being used
@@ -171,7 +187,7 @@ class SearchCLI:
             self.logger.debug(f"Attempting to search with engines: {engines}")
 
         try:
-            results = await search(query=query, engines=engines, **kwargs)
+            results = await search(query=query, engines=engines, strict_mode=True, **kwargs)
             return _process_results(results)
         except Exception as e:
             self.logger.error(f"Search failed: {e}")
@@ -248,7 +264,7 @@ class SearchCLI:
         engines: str | list[str] | None = None,
         engine: str | None = None,  # Add alias for --engine/-e
         e: str | None = None,  # Add alias for -e
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool = True,
@@ -291,6 +307,14 @@ class SearchCLI:
         if engine is not None:
             engines = engine
 
+        # If n is provided in kwargs, use it to override num_results
+        if "n" in kwargs and kwargs["n"] is not None:
+            self.logger.debug(f"Overriding num_results={num_results} with n={kwargs['n']}")
+            num_results = kwargs["n"]
+
+        # Log the arguments for debugging
+        self.logger.debug(f"Args - n: {kwargs.get('n')}, num_results: {num_results}")
+
         # Log the num_results parameter to help with debugging
         self.logger.debug(f"Using num_results={num_results}")
 
@@ -303,6 +327,14 @@ class SearchCLI:
 
         engine_list = self._parse_engines(engines)
 
+        # Check if engine_list is empty but engines was specified (not None)
+        # This would happen if all specified engines are invalid
+        if not engine_list and engines is not None and engines != "best" and engines != "free" and engines != "all":
+            error_msg = f"No valid engines found for: {engines}"
+            self.logger.error(error_msg)
+            _display_errors([error_msg])
+            return []
+
         common_params = {
             "num_results": num_results,
             "country": country,
@@ -311,6 +343,9 @@ class SearchCLI:
             "time_frame": time_frame,
         }
         common_params = {k: v for k, v in common_params.items() if v is not None}
+
+        # Add a debug statement to verify the num_results value is correct
+        self.logger.debug(f"Right before executing search, num_results={num_results}")
 
         if json or plain:
             results = asyncio.run(
@@ -540,15 +575,13 @@ class SearchCLI:
                     engine_config,
                     registered_engines,
                 )
-        # Print JSON output
-        import json
-
-        print(json.dumps(result, indent=2))
+        # Print JSON output using the CustomJSONEncoder defined at the top of the file
+        print(json_lib.dumps(result, indent=2, cls=CustomJSONEncoder))
 
     async def critique(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -623,7 +656,7 @@ class SearchCLI:
     async def brave(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -671,7 +704,7 @@ class SearchCLI:
     async def brave_news(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -726,7 +759,7 @@ class SearchCLI:
     async def serpapi(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -774,7 +807,7 @@ class SearchCLI:
     async def tavily(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -832,7 +865,7 @@ class SearchCLI:
     async def pplx(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -866,6 +899,14 @@ class SearchCLI:
         """
         self._configure_logging(verbose)
 
+        # Debug API key
+        self.logger.debug(f"CLI pplx method called with api_key: {api_key is not None}")
+
+        # Check environment variables directly
+        for env_var in ["PERPLEXITYAI_API_KEY", "PERPLEXITY_API_KEY"]:
+            env_value = os.environ.get(env_var)
+            self.logger.debug(f"CLI pplx method - Environment variable {env_var}: {env_value is not None}")
+
         params: dict[str, Any] = {
             "num_results": num_results,
             "country": country,
@@ -875,14 +916,22 @@ class SearchCLI:
             "api_key": api_key,
             "model": model,
         }
+
+        # Debug params
+        self.logger.debug(f"CLI pplx method - params: {params}")
+
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
+
+        # Debug final params
+        self.logger.debug(f"CLI pplx method - final params: {params}")
+
         return await self._search_engine("pplx", query, params, json, verbose, plain)
 
     async def you(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -929,7 +978,7 @@ class SearchCLI:
     async def you_news(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -983,7 +1032,7 @@ class SearchCLI:
     async def duckduckgo(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -1039,7 +1088,7 @@ class SearchCLI:
     async def hasdata_google(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         location: str | None = None,
         device_type: str = "desktop",
         api_key: str | None = None,
@@ -1087,7 +1136,7 @@ class SearchCLI:
     async def hasdata_google_light(
         self,
         query: str,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         location: str | None = None,
         api_key: str | None = None,
         verbose: bool = False,
@@ -1302,10 +1351,8 @@ def _display_json_results(processed_results: list[dict[str, Any]]) -> None:
             },
         )
 
-    # Print the JSON output
-    import json
-
-    print(json.dumps(results_by_engine, indent=2))
+    # Print the JSON output using the CustomJSONEncoder defined at the top of the file
+    print(json_lib.dumps(results_by_engine, indent=2, cls=CustomJSONEncoder))
 
 
 def main() -> None:

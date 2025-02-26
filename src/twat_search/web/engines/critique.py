@@ -13,6 +13,7 @@ import httpx
 from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
+from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import CRITIQUE, ENGINE_FRIENDLY_NAMES
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
@@ -55,7 +56,7 @@ class CritiqueSearchEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | None = True,
@@ -89,10 +90,15 @@ class CritiqueSearchEngine(SearchEngine):
         )
         self.output_format = output_format or kwargs.get("output_format")
 
+        # Try to get API key from kwargs
+        api_key_from_kwargs = kwargs.get("api_key")
+        if api_key_from_kwargs:
+            self.config.api_key = api_key_from_kwargs
+
         if not self.config.api_key:
             raise EngineError(
                 self.engine_code,
-                f"Critique Labs API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
+                f"API key is required for critique. Set it via one of these env vars: {', '.join(self.env_api_key_names)} or use the --api-key parameter",
             )
 
         self.headers = {
@@ -236,7 +242,7 @@ class CritiqueSearchEngine(SearchEngine):
 
 async def critique(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     country: str | None = None,
     language: str | None = None,
     safe_search: bool | None = True,

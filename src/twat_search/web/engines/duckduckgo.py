@@ -18,6 +18,7 @@ from duckduckgo_search import DDGS
 from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
+from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import DUCKDUCKGO, ENGINE_FRIENDLY_NAMES
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
@@ -47,7 +48,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | str | None = True,
@@ -68,7 +69,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
         """
         super().__init__(config, **kwargs)
         (
-            self.max_results,
+            self.num_results,
             self.region,
             self.language,
             self.timelimit,
@@ -102,10 +103,10 @@ class DuckDuckGoSearchEngine(SearchEngine):
         """
         Map and normalize initialization parameters.
         """
-        max_results = kwargs.get(
-            "max_results",
+        num_results = kwargs.get(
+            "num_results",
             num_results,
-        ) or config.default_params.get("max_results", 10)
+        ) or config.default_params.get("num_results", 10)
         region = kwargs.get("region", country) or config.default_params.get(
             "region",
             None,
@@ -133,7 +134,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
         timeout = kwargs.get(
             "timeout",
         ) or config.default_params.get("timeout", 10)
-        return max_results, region, lang, timelimit, safesearch, proxy, timeout
+        return num_results, region, lang, timelimit, safesearch, proxy, timeout
 
     def _convert_result(self, raw: dict[str, Any]) -> SearchResult | None:
         """
@@ -185,7 +186,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
                 region=self.region or "wt-wt",  # Default to worldwide
                 safesearch=safesearch_value,
                 timelimit=self.timelimit,
-                max_results=self.max_results,
+                max_results=self.num_results,
             )
 
             results = []
@@ -194,7 +195,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
                 if converted:
                     results.append(converted)
                     # Limit results to max_results
-                    if len(results) >= self.max_results:
+                    if len(results) >= self.num_results:
                         break
             return results
 
@@ -207,7 +208,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
 
 async def duckduckgo(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     country: str | None = None,
     language: str | None = None,
     safe_search: bool = True,

@@ -7,6 +7,7 @@ import httpx
 from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
+from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, YOU, YOU_NEWS
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
@@ -43,7 +44,7 @@ class YouNewsResponse(BaseModel):
 class YouBaseEngine(SearchEngine):
     """Base class for You.com search engines, handling common API interaction logic."""
 
-    env_api_key_names: ClassVar[list[str]] = ["YOU_API_KEY"]
+    env_api_key_names: ClassVar[list[str]] = ["YOUCOM_API_KEY", "YOU_API_KEY"]
     base_url: str = ""  # Will be overridden by subclasses
     num_results_param: str = ""  # Will be overridden by subclasses
 
@@ -188,7 +189,7 @@ class YouNewsSearchEngine(YouBaseEngine):
 
 async def you(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     country: str | None = None,
     language: str | None = None,
     safe_search: bool | None = True,
@@ -230,7 +231,7 @@ async def you(
 
 async def you_news(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     country: str | None = None,
     language: str | None = None,
     safe_search: bool | None = True,

@@ -21,6 +21,7 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, HttpUrl, ValidationError, field_validator
 
+from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import (
     BING_SEARCHIT,
     ENGINE_FRIENDLY_NAMES,
@@ -240,7 +241,7 @@ class SearchitEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
         safe_search: bool | str | None = True,
@@ -262,9 +263,9 @@ class SearchitEngine(SearchEngine):
                 proxy: Proxy to use for requests
         """
         super().__init__(config, **kwargs)
-        self.max_results: int = num_results or self.config.default_params.get(
-            "max_results",
-            5,
+        self.num_results: int = num_results or self.config.default_params.get(
+            "num_results",
+            DEFAULT_NUM_RESULTS,
         )
         self.language: str = language or self.config.default_params.get(
             "language",
@@ -381,7 +382,7 @@ class GoogleSearchitEngine(SearchitEngine):
     Implementation of Google search using searchit library.
 
     Attributes:
-        engine_code: The name of the search engine ("google-searchit")
+        engine_code: The name of the search engine ("google_searchit")
     """
 
     engine_code = GOOGLE_SEARCHIT
@@ -405,7 +406,7 @@ class GoogleSearchitEngine(SearchitEngine):
 
         logger.info(f"Searching Google (searchit) with query: '{query}'")
         logger.debug(
-            f"Using max_results={self.max_results}, language={self.language}, "
+            f"Using max_results={self.num_results}, language={self.language}, "
             f"domain={self.domain}, sleep_interval={self.sleep_interval}, "
             f"proxy={self.proxy}",
         )
@@ -414,7 +415,7 @@ class GoogleSearchitEngine(SearchitEngine):
             # Create searchit request and scraper
             request = ScrapeRequest(
                 term=query,
-                count=self.max_results,
+                count=self.num_results,
                 domain=self.domain,
                 sleep=self.sleep_interval,
                 proxy=self.proxy,
@@ -422,7 +423,7 @@ class GoogleSearchitEngine(SearchitEngine):
             )
 
             scraper = GoogleScraper(
-                max_results_per_page=min(100, self.max_results),
+                max_results_per_page=min(100, self.num_results),
             )
 
             # Run the scraper
@@ -460,7 +461,7 @@ class YandexSearchitEngine(SearchitEngine):
     Implementation of Yandex search using searchit library.
 
     Attributes:
-        engine_code: The name of the search engine ("yandex-searchit")
+        engine_code: The name of the search engine ("yandex_searchit")
     """
 
     engine_code = YANDEX_SEARCHIT
@@ -484,7 +485,7 @@ class YandexSearchitEngine(SearchitEngine):
 
         logger.info(f"Searching Yandex (searchit) with query: '{query}'")
         logger.debug(
-            f"Using max_results={self.max_results}, language={self.language}, "
+            f"Using max_results={self.num_results}, language={self.language}, "
             f"domain={self.domain}, geo={self.geo}, sleep_interval={self.sleep_interval}, "
             f"proxy={self.proxy}",
         )
@@ -493,7 +494,7 @@ class YandexSearchitEngine(SearchitEngine):
             # Create searchit request and scraper
             request = ScrapeRequest(
                 term=query,
-                count=self.max_results,
+                count=self.num_results,
                 domain=self.domain,
                 sleep=self.sleep_interval,
                 proxy=self.proxy,
@@ -501,7 +502,7 @@ class YandexSearchitEngine(SearchitEngine):
             )
 
             scraper = YandexScraper(
-                max_results_per_page=min(10, self.max_results),
+                max_results_per_page=min(10, self.num_results),
             )
 
             # Run the scraper
@@ -539,7 +540,7 @@ class QwantSearchitEngine(SearchitEngine):
     Implementation of Qwant search using searchit library.
 
     Attributes:
-        engine_code: The name of the search engine ("qwant-searchit")
+        engine_code: The name of the search engine ("qwant_searchit")
     """
 
     engine_code = QWANT_SEARCHIT
@@ -563,7 +564,7 @@ class QwantSearchitEngine(SearchitEngine):
 
         logger.info(f"Searching Qwant (searchit) with query: '{query}'")
         logger.debug(
-            f"Using max_results={self.max_results}, language={self.language}, "
+            f"Using max_results={self.num_results}, language={self.language}, "
             f"geo={self.geo}, sleep_interval={self.sleep_interval}, "
             f"proxy={self.proxy}",
         )
@@ -572,14 +573,14 @@ class QwantSearchitEngine(SearchitEngine):
             # Create searchit request and scraper
             request = ScrapeRequest(
                 term=query,
-                count=self.max_results,
+                count=self.num_results,
                 sleep=self.sleep_interval,
                 proxy=self.proxy,
                 geo=self.geo,
             )
 
             scraper = QwantScraper(
-                max_results_per_page=min(10, self.max_results),
+                max_results_per_page=min(10, self.num_results),
             )
 
             # Run the scraper
@@ -617,7 +618,7 @@ class BingSearchitEngine(SearchitEngine):
     Implementation of Bing search using searchit library.
 
     Attributes:
-        engine_code: The name of the search engine ("bing-searchit")
+        engine_code: The name of the search engine ("bing_searchit")
     """
 
     engine_code = BING_SEARCHIT
@@ -641,7 +642,7 @@ class BingSearchitEngine(SearchitEngine):
 
         logger.info(f"Searching Bing (searchit) with query: '{query}'")
         logger.debug(
-            f"Using max_results={self.max_results}, language={self.language}, "
+            f"Using max_results={self.num_results}, language={self.language}, "
             f"domain={self.domain}, sleep_interval={self.sleep_interval}, "
             f"proxy={self.proxy}",
         )
@@ -650,7 +651,7 @@ class BingSearchitEngine(SearchitEngine):
             # Create searchit request and scraper
             request = ScrapeRequest(
                 term=query,
-                count=self.max_results,
+                count=self.num_results,
                 domain=self.domain,
                 sleep=self.sleep_interval,
                 proxy=self.proxy,
@@ -658,7 +659,7 @@ class BingSearchitEngine(SearchitEngine):
             )
 
             scraper = BingScraper(
-                max_results_per_page=min(30, self.max_results),
+                max_results_per_page=min(30, self.num_results),
             )
 
             # Run the scraper
@@ -693,7 +694,7 @@ class BingSearchitEngine(SearchitEngine):
 # Convenience functions for each engine
 async def google_searchit(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     language: str = "en",
     country: str | None = None,
     sleep_interval: int = 0,
@@ -722,7 +723,7 @@ async def google_searchit(
 
     return await search(
         query,
-        engines=["google-searchit"],
+        engines=["google_searchit"],
         num_results=num_results,
         language=language,
         country=country,
@@ -734,7 +735,7 @@ async def google_searchit(
 
 async def yandex_searchit(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     language: str = "en",
     country: str | None = None,
     sleep_interval: int = 0,
@@ -763,7 +764,7 @@ async def yandex_searchit(
 
     return await search(
         query,
-        engines=["yandex-searchit"],
+        engines=["yandex_searchit"],
         num_results=num_results,
         language=language,
         country=country,
@@ -775,7 +776,7 @@ async def yandex_searchit(
 
 async def qwant_searchit(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     language: str = "en",
     country: str | None = None,
     sleep_interval: int = 0,
@@ -804,7 +805,7 @@ async def qwant_searchit(
 
     return await search(
         query,
-        engines=["qwant-searchit"],
+        engines=["qwant_searchit"],
         num_results=num_results,
         language=language,
         country=country,
@@ -816,7 +817,7 @@ async def qwant_searchit(
 
 async def bing_searchit(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     language: str = "en",
     country: str | None = None,
     sleep_interval: int = 0,
@@ -845,7 +846,7 @@ async def bing_searchit(
 
     return await search(
         query,
-        engines=["bing-searchit"],
+        engines=["bing_searchit"],
         num_results=num_results,
         language=language,
         country=country,

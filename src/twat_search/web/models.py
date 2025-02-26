@@ -33,11 +33,17 @@ class SearchResult(BaseModel):
     rank: int | None = None  # For future ranking functionality
     raw: dict[str, Any] | None = None  # Store the raw API response
 
-    @field_validator("title", "snippet", "source")
+    @field_validator("source")
     @classmethod
     def validate_non_empty(cls, v: str) -> str:
-        """Validate that string fields are not empty."""
+        """Validate that source field is not empty."""
         if not v or not v.strip():
-            msg = "Field cannot be empty"
+            msg = "Source field cannot be empty"
             raise ValueError(msg)
         return v.strip()
+
+    @field_validator("title", "snippet")
+    @classmethod
+    def ensure_string(cls, v: str) -> str:
+        """Ensure string fields are not None and convert to empty string if None."""
+        return v.strip() if v and v.strip() else ""

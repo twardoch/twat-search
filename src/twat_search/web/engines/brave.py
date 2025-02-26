@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Optional
 
 import httpx
 from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
+from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import BRAVE, BRAVE_NEWS, ENGINE_FRIENDLY_NAMES
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
@@ -37,55 +38,42 @@ class BaseBraveEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
+        num_results: int = DEFAULT_NUM_RESULTS,
         country: str | None = None,
         language: str | None = None,
-        safe_search: bool | str | None = True,
+        safe_search: bool = False,
         time_frame: str | None = None,
         **kwargs: Any,
     ) -> None:
-        super().__init__(config, **kwargs)
+        """Initialize the Brave Search engine."""
+        super().__init__(
+            config=config,
+            num_results=num_results,
+            country=country,
+            language=language,
+            safe_search=safe_search,
+            time_frame=time_frame,
+        )
+        # Maximum allowed results from Brave Search API is 20
+        self.max_brave_results = 20
 
-        # Use the standardized get_num_results method to ensure the user's
-        # preference for num_results is respected
-        self.num_results = self._get_num_results(param_name="num_results", min_value=1)
-
-        self.country = country or kwargs.get("country") or self.config.default_params.get("country", None)
-        search_lang = kwargs.get("search_lang", language)
-        self.search_lang = search_lang or self.config.default_params.get(
-            "search_lang",
-            None,
-        )
-        ui_lang = kwargs.get("ui_lang", language)
-        self.ui_lang = ui_lang or self.config.default_params.get(
-            "ui_lang",
-            None,
-        )
-        safe = kwargs.get("safe_search", safe_search)
-        if isinstance(safe, bool):
-            safe = "strict" if safe else "off"
-        self.safe_search = safe or self.config.default_params.get(
-            "safe_search",
-            None,
-        )
-        freshness = kwargs.get("freshness", time_frame)
-        self.freshness = freshness or self.config.default_params.get(
-            "freshness",
-            None,
-        )
+        # Initialize the language attributes
+        self.search_lang = language
+        self.ui_lang = language
+        # Initialize the freshness attribute from time_frame
+        self.freshness = time_frame
 
         if not self.config.api_key:
-            raise EngineError(
-                self.engine_code,
-                f"Brave API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
-            )
+            raise EngineError(self.engine_code, "API key is required")
         self.headers = {
             "Accept": "application/json",
             "X-Subscription-Token": self.config.api_key,
         }
 
     async def search(self, query: str) -> list[SearchResult]:
-        params: dict[str, Any] = {"q": query, "count": self.num_results}
+        # Request at most 20 (API limit), respect the requested number exactly
+        count_param = min(self.max_brave_results, self.num_results)
+        params: dict[str, Any] = {"q": query, "count": count_param}
         if self.country:
             params["country"] = self.country
         if self.search_lang:
@@ -96,6 +84,9 @@ class BaseBraveEngine(SearchEngine):
             params["safe_search"] = self.safe_search
         if self.freshness:
             params["freshness"] = self.freshness
+
+        # Add debug logging to see the exact params we're sending
+        print(f"DEBUG: Sending API request with count={count_param}, num_results={self.num_results}")
 
         async with httpx.AsyncClient() as client:
             try:
@@ -114,9 +105,14 @@ class BaseBraveEngine(SearchEngine):
                         try:
                             parsed = self.result_model(**result)
                             results.append(self.convert_result(parsed, result))
+
+                            # Break early if we've hit the requested number of results
+                            if len(results) >= self.num_results:
+                                break
                         except ValidationError:
                             continue
-                return results
+                # Apply limit_results to ensure we respect num_results
+                return self.limit_results(results)
 
             except httpx.RequestError as exc:
                 raise EngineError(
@@ -135,7 +131,7 @@ class BaseBraveEngine(SearchEngine):
                 ) from exc
 
     def convert_result(self, parsed: BaseModel, raw: dict[str, Any]) -> SearchResult:
-        snippet = parsed.description
+        snippet = getattr(parsed, "description", "")
         # For news results, append publisher and published_time information if available.
         if self.response_key == "news":
             publisher = getattr(parsed, "publisher", None)
@@ -144,9 +140,19 @@ class BaseBraveEngine(SearchEngine):
                 snippet = f"{snippet} - {publisher} ({published_time})"
             elif publisher:
                 snippet = f"{snippet} - {publisher}"
+
+        # Use getattr to safely access properties, but ensure we have a valid HttpUrl for the URL
+        # The URL should already be a HttpUrl since the model validation would have ensured this
+        url = getattr(parsed, "url", None)
+        if not url:
+            # Fallback to prevent errors
+            from pydantic import HttpUrl
+
+            url = HttpUrl("https://brave.com")
+
         return SearchResult(
-            title=parsed.title,
-            url=parsed.url,
+            title=getattr(parsed, "title", ""),
+            url=url,
             snippet=snippet,
             source=self.engine_code,
             raw=raw,
@@ -160,18 +166,25 @@ class BaseBraveEngine(SearchEngine):
         url = self.base_url
         params = {
             "q": query,
-            "count": self.num_results,
+            "count": min(
+                self.max_brave_results,
+                self.num_results,
+            ),  # Use API limit or requested number, whichever is smaller
             "country": self.country or "US",
             "safe_search": "strict" if self.safe_search else "off",
         }
 
+        # Add debug logging to see what count is being used in the API call
+        print(f"DEBUG: In _make_api_call, using count={params['count']}")
+
         if hasattr(self, "freshness") and self.freshness:
             params["freshness"] = self.freshness
 
-        headers = {
+        # Ensure headers are correctly typed as dict[str, str]
+        headers: dict[str, str] = {
             "Accept": "application/json",
             "Accept-Encoding": "gzip",
-            "X-Subscription-Token": self.config.api_key,
+            "X-Subscription-Token": self.config.api_key or "",
         }
 
         response = await self.make_http_request(
@@ -182,13 +195,38 @@ class BaseBraveEngine(SearchEngine):
         )
 
         try:
-            data = response.json()
+            # Explicitly cast the JSON response to dict[str, Any]
+            data: dict[str, Any] = response.json()
             return data
         except Exception as e:
             raise EngineError(
                 self.engine_code,
                 f"Failed to parse response from Brave Search API: {e}",
             ) from e
+
+    def limit_results(self, results: list[SearchResult]) -> list[SearchResult]:
+        """
+        Override base limit_results method to ensure we respect the user's requested number of results.
+
+        Args:
+            results: The list of search results to limit
+
+        Returns:
+            A limited list of results based on the desired number of results
+        """
+        if not results:
+            return results
+
+        # Add debug logging
+        print(f"DEBUG: In limit_results, self.num_results={self.num_results}")
+        print(f"DEBUG: Limiting {len(results)} results to {self.num_results} results")
+
+        # Use the num_results value directly
+        limited_results = results[: self.num_results]
+
+        print(f"DEBUG: Returned {len(limited_results)} results")
+
+        return limited_results
 
 
 @register_engine
@@ -205,12 +243,18 @@ class BraveSearchEngine(BaseBraveEngine):
         """Perform a web search using Brave Search API."""
         data = await self._make_api_call(query)
 
+        # Add debug logging of raw API response for debugging
+        print(f"DEBUG: Raw API response from Brave Web: {data}")
+
         results = []
         try:
             web_result = data.get("web", {})
             items = web_result.get("results", [])
 
-            for idx, item in enumerate(items, start=1):
+            # Add debug for items extracted
+            print(f"DEBUG: Found {len(items)} web search items")
+
+            for _idx, item in enumerate(items, start=1):
                 title = item.get("title", "")
                 url = item.get("url", "")
                 description = item.get("description", "")
@@ -225,12 +269,11 @@ class BraveSearchEngine(BaseBraveEngine):
                         snippet=description,
                         source=self.engine_code,
                         raw=item,
-                        is_first=(idx == 1),
                     ),
                 )
 
-                # Break early if we've hit the max_results
-                if len(results) >= self.max_results:
+                # Break early if we've hit the requested number of results
+                if len(results) >= self.num_results:
                     break
 
             # Use the limit_results method to enforce num_results
@@ -257,12 +300,22 @@ class BraveNewsSearchEngine(BaseBraveEngine):
         """Perform a news search using Brave Search API."""
         data = await self._make_api_call(query)
 
+        # Add debug logging of raw API response
+        print(f"DEBUG: Raw API response from Brave News: {data}")
+
         results = []
         try:
-            news_results = data.get("news", {})
-            items = news_results.get("results", [])
+            # FIX: News results are in the top-level 'results' key, not in 'news.results'
+            # Before: news_results = data.get("news", {})
+            # items = news_results.get("results", [])
 
-            for idx, item in enumerate(items, start=1):
+            # Directly access the top-level 'results' array
+            items = data.get("results", [])
+
+            # Add debug for items extracted
+            print(f"DEBUG: Found {len(items)} news items")
+
+            for _idx, item in enumerate(items, start=1):
                 title = item.get("title", "")
                 url = item.get("url", "")
                 description = item.get("description", "")
@@ -278,6 +331,9 @@ class BraveNewsSearchEngine(BaseBraveEngine):
                         description = f"{description} - {source_name} ({age})"
                     elif source_name:
                         description = f"{description} - {source_name}"
+                # If no source name but we have age, append just the age
+                elif item.get("age"):
+                    description = f"{description} - {item.get('age')}"
 
                 results.append(
                     SearchResult(
@@ -286,17 +342,17 @@ class BraveNewsSearchEngine(BaseBraveEngine):
                         snippet=description,
                         source=self.engine_code,
                         raw=item,
-                        is_first=(idx == 1),
                     ),
                 )
 
-                # Break early if we've hit the max_results
-                if len(results) >= self.max_results:
+                # Break early if we've hit the requested number of results
+                if len(results) >= self.num_results:
                     break
 
             # Use the limit_results method to enforce num_results
             return self.limit_results(results)
         except Exception as e:
+            print(f"DEBUG: Exception in BraveNewsSearchEngine.search: {e!s}")
             raise EngineError(
                 self.engine_code,
                 f"Failed to process results from Brave News API: {e}",
@@ -305,7 +361,7 @@ class BraveNewsSearchEngine(BaseBraveEngine):
 
 async def brave(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     country: str | None = None,
     language: str | None = None,
     safe_search: bool | str | None = True,
@@ -328,12 +384,16 @@ async def brave(
         List of search results
     """
     config = EngineConfig(api_key=api_key, enabled=True)
+
+    # Convert safe_search to bool if it's a string or None
+    safe_search_bool = True if safe_search in (True, "strict", "moderate", None) else False
+
     engine = BraveSearchEngine(
         config,
         num_results=num_results,
         country=country,
         language=language,
-        safe_search=safe_search,
+        safe_search=safe_search_bool,
         time_frame=time_frame,
     )
     return await engine.search(query)
@@ -341,7 +401,7 @@ async def brave(
 
 async def brave_news(
     query: str,
-    num_results: int = 5,
+    num_results: int = DEFAULT_NUM_RESULTS,
     country: str | None = None,
     language: str | None = None,
     safe_search: bool | str | None = True,
@@ -364,12 +424,16 @@ async def brave_news(
         List of search results
     """
     config = EngineConfig(api_key=api_key, enabled=True)
+
+    # Convert safe_search to bool if it's a string or None
+    safe_search_bool = True if safe_search in (True, "strict", "moderate", None) else False
+
     engine = BraveNewsSearchEngine(
         config,
         num_results=num_results,
         country=country,
         language=language,
-        safe_search=safe_search,
+        safe_search=safe_search_bool,
         time_frame=time_frame,
     )
     return await engine.search(query)

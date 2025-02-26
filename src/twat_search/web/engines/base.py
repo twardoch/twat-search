@@ -11,6 +11,7 @@ from __future__ import annotations
 import abc
 import asyncio
 import logging
+import os
 import random
 from typing import Any, ClassVar
 
@@ -52,6 +53,9 @@ class SearchEngine(abc.ABC):
     # Override with engine-specific names
     env_params_names: ClassVar[list[str]] = []
 
+    # Instance variables
+    api_key: str | None
+
     def __init__(self, config: EngineConfig, **kwargs: Any) -> None:
         """
         Initialize the search engine with configuration and common parameters.
@@ -82,12 +86,38 @@ class SearchEngine(abc.ABC):
 
         # Check for API key if required
         if self.env_api_key_names:
+            # Add detailed debugging
+            logger.debug(f"Engine '{self.engine_code}' requires an API key")
+            logger.debug(f"Config API key: {self.config.api_key is not None}")
+            if self.config.api_key:
+                # Safely log a portion of the API key
+                key_value = self.config.api_key
+                key_prefix = key_value[:4] if len(key_value) > 4 else "****"
+                key_suffix = key_value[-4:] if len(key_value) > 4 else "****"
+                logger.debug(f"Config API key value: {key_prefix}...{key_suffix}")
+
+            # Check environment variables directly
+            for env_var in self.env_api_key_names:
+                env_value = os.environ.get(env_var)
+                logger.debug(f"Environment variable {env_var}: {env_value is not None}")
+                if env_value:
+                    # Safely log a portion of the environment variable value
+                    env_prefix = env_value[:4] if len(env_value) > 4 else "****"
+                    env_suffix = env_value[-4:] if len(env_value) > 4 else "****"
+                    logger.debug(f"Env var {env_var} value: {env_prefix}...{env_suffix}")
+
+            # Check if the API key is being set from the environment in the config
+            logger.debug(f"Final API key check before validation: {self.config.api_key is not None}")
+
             if not self.config.api_key:
                 msg = (
                     f"API key is required for {self.engine_code}. "
                     f"Please set it via one of these env vars: {', '.join(self.env_api_key_names)}"
                 )
+                logger.error(f"API key validation failed: {msg}")
                 raise EngineError(self.engine_code, msg)
+
+            logger.debug(f"API key validation passed for {self.engine_code}")
             self.api_key = self.config.api_key
         else:
             self.api_key = None
@@ -154,9 +184,22 @@ class SearchEngine(abc.ABC):
         Returns:
             A list limited to max_results items
         """
+        # Add debug logging
+        logger.debug(f"limit_results: Got {len(results)} results, self.num_results={self.num_results}")
+
+        # If we have no results, just return the empty list
+        if not results:
+            return results
+
         max_results = self.max_results
+        logger.debug(f"limit_results: Using max_results={max_results}")
+
         if max_results > 0 and len(results) > max_results:
-            return results[:max_results]
+            limited = results[:max_results]
+            logger.debug(f"limit_results: Limiting to {len(limited)} results")
+            return limited
+
+        logger.debug(f"limit_results: Returning all {len(results)} results (no limiting needed)")
         return results
 
     async def make_http_request(
@@ -346,6 +389,19 @@ def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchE
         available_engines = ", ".join(sorted(_engine_registry.keys()))
         msg = f"Unknown search engine: '{engine_name}'. Available engines: {available_engines}"
         raise EngineError(engine_name, msg)
+
+    # Check if the engine requires an API key
+    if hasattr(engine_class, "env_api_key_names") and engine_class.env_api_key_names:
+        # If no API key is provided in config, check environment variables
+        if not config.api_key:
+            logger.debug(f"No API key in config for {engine_name}, checking environment variables")
+            for env_var in engine_class.env_api_key_names:
+                env_value = os.environ.get(env_var)
+                if env_value:
+                    logger.debug(f"Found API key in environment variable {env_var}")
+                    # Update the config with the API key from environment
+                    config.api_key = env_value
+                    break
 
     try:
         return engine_class(config, **kwargs)
