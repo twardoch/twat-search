@@ -21,7 +21,6 @@ repos:
     hooks:
       - id: end-of-file-fixer
       - id: check-yaml
-      - id: double-quote-string-fixer
       - id: requirements-txt-fixer
 
   - repo: https://github.com/asottile/add-trailing-comma
