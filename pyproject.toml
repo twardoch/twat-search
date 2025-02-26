@@ -51,7 +51,6 @@ dependencies = [
     "python-dotenv>=1.0.1", # Environment variable management
     "fire>=0.5.0", # Command line interface generator
     "rich>=13.6.0", # Rich text and formatting for terminal output
-    "absolufy-imports>=0.3.1",
 ]
 
 # Project Authors
@@ -99,6 +98,11 @@ dependencies = [
     "pytest-cov",           # Coverage reporting
     "mypy>=1.15.0",         # Static type checker
     "ruff>=0.9.6",          # Fast Python linter
+    "absolufy-imports>=0.3.1",
+    "pre-commit>=4.1.0",
+    "pyupgrade>=3",
+    "isort>=6.0.0",
+
 ]
 
 # Scripts available in the default environment
@@ -118,6 +122,10 @@ detached = true  # Run in isolated environment
 dependencies = [
     "mypy>=1.15.0",         # Static type checker
     "ruff>=0.9.6",          # Fast Python linter
+    "absolufy-imports>=0.3.1",
+    "pre-commit>=4.1.0",
+    "pyupgrade>=3",
+    "isort>=6.0.0",
 ]
 
 # Linting environment scripts
@@ -214,7 +222,7 @@ test = [
     "pytest>=8.3.4",
     "pytest-cov>=6.0.0",
     "pytest-xdist>=3.6.1",                # For parallel test execution
-    "pytest-benchmark[histogram]>=5.1.0", 
+    "pytest-benchmark[histogram]>=5.1.0",
     "pytest-asyncio>=0.25.3", # For async test execution
 ]
 
@@ -222,6 +230,9 @@ dev = [
     "pre-commit>=4.1.0",     # Git pre-commit hooks
     "ruff>=0.9.6",           # Fast Python linter
     "mypy>=1.15.0",          # Static type checker
+    "absolufy-imports>=0.3.1",
+    "pyupgrade>=3",
+    "isort>=6.0.0",
 ]
 
 # Search engine dependencies
@@ -312,4 +323,4 @@ compare = [
 # Command line interfaces exposed by this package
 [project.scripts]
 twat-search = "twat_search.__main__:main"
-twat-search-web = "twat_search.web.cli:main" 
+twat-search-web = "twat_search.web.cli:main"
