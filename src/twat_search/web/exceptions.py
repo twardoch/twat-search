@@ -5,6 +5,7 @@ Custom exceptions for the web search API.
 This module defines the custom exceptions used by the web search API
 for handling errors in a consistent way.
 """
+
 from __future__ import annotations
 
 

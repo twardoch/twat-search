@@ -13,6 +13,7 @@ Google, Bing, Brave, Qwant, and Yandex.
 The AnyWebSearchEngine class is the base class for all anywebsearch-based engines, with
 specific implementations for each search provider.
 """
+
 from __future__ import annotations
 
 import logging
@@ -55,7 +56,7 @@ except ImportError:
 
         def __init__(
             self,
-            language: str = 'en',
+            language: str = "en",
             num_results: int = 20,
             merge: bool = True,
             engines: list[str] | None = None,
@@ -107,13 +108,13 @@ class AnyWebSearchResult(BaseModel):
 
     title: str
     url: HttpUrl
-    description: str = ''
+    description: str = ""
 
-    @field_validator('title', 'description')
+    @field_validator("title", "description")
     @classmethod
     def validate_non_empty(cls, v: str) -> str:
         """Ensure string fields are not None and convert to empty string if None."""
-        return v or ''
+        return v or ""
 
 
 class AnyWebSearchEngine(SearchEngine):
@@ -129,9 +130,9 @@ class AnyWebSearchEngine(SearchEngine):
         env_api_key_names: API key names for engines that need them
     """
 
-    engine_code = ''  # Must be overridden by subclasses
-    friendly_engine_name = ''  # Must be overridden by subclasses
-    anywebsearch_lib_name = ''  # Must be overridden - the name used by anywebsearch library
+    engine_code = ""  # Must be overridden by subclasses
+    friendly_engine_name = ""  # Must be overridden by subclasses
+    anywebsearch_lib_name = ""  # Must be overridden - the name used by anywebsearch library
     env_api_key_names: ClassVar[list[str]] = []  # Override as needed
 
     def __init__(
@@ -158,35 +159,35 @@ class AnyWebSearchEngine(SearchEngine):
         """
         super().__init__(config, **kwargs)
         self.max_results: int = num_results or self.config.default_params.get(
-            'max_results',
+            "max_results",
             5,
         )
         self.language: str = language or self.config.default_params.get(
-            'language',
-            'en',
+            "language",
+            "en",
         )
 
         # Unused parameters that might be needed for specific engines
         self.unused_params: dict[str, Any] = {}
         if country:
-            self.unused_params['country'] = country
+            self.unused_params["country"] = country
         if safe_search is not None:
-            self.unused_params['safe_search'] = safe_search
+            self.unused_params["safe_search"] = safe_search
         if time_frame:
-            self.unused_params['time_frame'] = time_frame
+            self.unused_params["time_frame"] = time_frame
 
         # Extract any API keys or additional settings
         self.brave_key: str | None = kwargs.get(
-            'brave_key',
-        ) or self.config.default_params.get('brave_key', None)
+            "brave_key",
+        ) or self.config.default_params.get("brave_key", None)
 
         self.ya_key: str | None = kwargs.get(
-            'ya_key',
-        ) or self.config.default_params.get('ya_key', None)
+            "ya_key",
+        ) or self.config.default_params.get("ya_key", None)
 
         self.ya_fldid: str | None = kwargs.get(
-            'ya_fldid',
-        ) or self.config.default_params.get('ya_fldid', None)
+            "ya_fldid",
+        ) or self.config.default_params.get("ya_fldid", None)
 
     def _convert_result(self, result: AnySearchResult) -> SearchResult | None:
         """
@@ -210,7 +211,7 @@ class AnyWebSearchEngine(SearchEngine):
             validated = AnyWebSearchResult(
                 title=result.title,
                 url=HttpUrl(result.url),
-                description=result.description if hasattr(result, 'description') else '',
+                description=result.description if hasattr(result, "description") else "",
             )
 
             # Create and return the SearchResult
@@ -220,9 +221,9 @@ class AnyWebSearchEngine(SearchEngine):
                 snippet=validated.description,
                 source=self.engine_code,
                 raw={
-                    'title': result.title,
-                    'url': str(result.url),
-                    'description': result.description if hasattr(result, 'description') else '',
+                    "title": result.title,
+                    "url": str(result.url),
+                    "description": result.description if hasattr(result, "description") else "",
                 },
             )
         except ValidationError as exc:
@@ -242,12 +243,12 @@ class AnyWebSearchEngine(SearchEngine):
         settings_kwargs = {}
 
         # Add API keys if needed
-        if self.anywebsearch_lib_name == 'brave' and self.brave_key:
-            settings_kwargs['brave_key'] = self.brave_key
+        if self.anywebsearch_lib_name == "brave" and self.brave_key:
+            settings_kwargs["brave_key"] = self.brave_key
 
-        if self.anywebsearch_lib_name == 'yandex' and self.ya_key and self.ya_fldid:
-            settings_kwargs['ya_key'] = self.ya_key
-            settings_kwargs['ya_fldid'] = self.ya_fldid
+        if self.anywebsearch_lib_name == "yandex" and self.ya_key and self.ya_fldid:
+            settings_kwargs["ya_key"] = self.ya_key
+            settings_kwargs["ya_fldid"] = self.ya_fldid
 
         # Create settings
         return Settings(
@@ -271,7 +272,7 @@ class GoogleAnyWebSearchEngine(AnyWebSearchEngine):
 
     engine_code = GOOGLE_ANYWS
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[GOOGLE_ANYWS]
-    anywebsearch_lib_name = 'google'
+    anywebsearch_lib_name = "google"
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -287,7 +288,7 @@ class GoogleAnyWebSearchEngine(AnyWebSearchEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Google (anywebsearch) with query: '{query}'")
         logger.debug(
@@ -302,7 +303,7 @@ class GoogleAnyWebSearchEngine(AnyWebSearchEngine):
             raw_results = multi_search(query=query, settings=settings)
 
             if not raw_results:
-                logger.info('No results returned from Google (anywebsearch)')
+                logger.info("No results returned from Google (anywebsearch)")
                 return []
 
             # If merged, results are returned as a single list
@@ -346,7 +347,7 @@ class BingAnyWebSearchEngine(AnyWebSearchEngine):
 
     engine_code = BING_ANYWS
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[BING_ANYWS]
-    anywebsearch_lib_name = 'duck'  # anywebsearch uses DuckDuckGo API which uses Bing backend
+    anywebsearch_lib_name = "duck"  # anywebsearch uses DuckDuckGo API which uses Bing backend
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -362,7 +363,7 @@ class BingAnyWebSearchEngine(AnyWebSearchEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Bing (anywebsearch) with query: '{query}'")
         logger.debug(
@@ -377,7 +378,7 @@ class BingAnyWebSearchEngine(AnyWebSearchEngine):
             raw_results = multi_search(query=query, settings=settings)
 
             if not raw_results:
-                logger.info('No results returned from Bing (anywebsearch)')
+                logger.info("No results returned from Bing (anywebsearch)")
                 return []
 
             # If merged, results are returned as a single list
@@ -422,8 +423,8 @@ class BraveAnyWebSearchEngine(AnyWebSearchEngine):
 
     engine_code = BRAVE_ANYWS
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[BRAVE_ANYWS]
-    anywebsearch_lib_name = 'brave'
-    env_api_key_names: ClassVar[list[str]] = ['BRAVE_API_KEY']
+    anywebsearch_lib_name = "brave"
+    env_api_key_names: ClassVar[list[str]] = ["BRAVE_API_KEY"]
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -439,12 +440,12 @@ class BraveAnyWebSearchEngine(AnyWebSearchEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         if not self.brave_key:
             raise EngineError(
                 self.engine_code,
-                'Brave API key is required for Brave search',
+                "Brave API key is required for Brave search",
             )
 
         logger.info(f"Searching Brave (anywebsearch) with query: '{query}'")
@@ -460,7 +461,7 @@ class BraveAnyWebSearchEngine(AnyWebSearchEngine):
             raw_results = multi_search(query=query, settings=settings)
 
             if not raw_results:
-                logger.info('No results returned from Brave (anywebsearch)')
+                logger.info("No results returned from Brave (anywebsearch)")
                 return []
 
             # If merged, results are returned as a single list
@@ -504,7 +505,7 @@ class QwantAnyWebSearchEngine(AnyWebSearchEngine):
 
     engine_code = QWANT_ANYWS
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[QWANT_ANYWS]
-    anywebsearch_lib_name = 'qwant'
+    anywebsearch_lib_name = "qwant"
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -520,7 +521,7 @@ class QwantAnyWebSearchEngine(AnyWebSearchEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Qwant (anywebsearch) with query: '{query}'")
         logger.debug(
@@ -535,7 +536,7 @@ class QwantAnyWebSearchEngine(AnyWebSearchEngine):
             raw_results = multi_search(query=query, settings=settings)
 
             if not raw_results:
-                logger.info('No results returned from Qwant (anywebsearch)')
+                logger.info("No results returned from Qwant (anywebsearch)")
                 return []
 
             # If merged, results are returned as a single list
@@ -580,8 +581,8 @@ class YandexAnyWebSearchEngine(AnyWebSearchEngine):
 
     engine_code = YANDEX_ANYWS
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[YANDEX_ANYWS]
-    anywebsearch_lib_name = 'yandex'
-    env_api_key_names: ClassVar[list[str]] = ['YANDEX_API_KEY', 'YA_KEY']
+    anywebsearch_lib_name = "yandex"
+    env_api_key_names: ClassVar[list[str]] = ["YANDEX_API_KEY", "YA_KEY"]
 
     async def search(self, query: str) -> list[SearchResult]:
         """
@@ -597,12 +598,12 @@ class YandexAnyWebSearchEngine(AnyWebSearchEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         if not self.ya_key or not self.ya_fldid:
             raise EngineError(
                 self.engine_code,
-                'Yandex API key and folder ID are required for Yandex search',
+                "Yandex API key and folder ID are required for Yandex search",
             )
 
         logger.info(f"Searching Yandex (anywebsearch) with query: '{query}'")
@@ -618,7 +619,7 @@ class YandexAnyWebSearchEngine(AnyWebSearchEngine):
             raw_results = multi_search(query=query, settings=settings)
 
             if not raw_results:
-                logger.info('No results returned from Yandex (anywebsearch)')
+                logger.info("No results returned from Yandex (anywebsearch)")
                 return []
 
             # If merged, results are returned as a single list
@@ -654,7 +655,7 @@ class YandexAnyWebSearchEngine(AnyWebSearchEngine):
 async def google_anyws(
     query: str,
     num_results: int = 5,
-    language: str = 'en',
+    language: str = "en",
     **kwargs: Any,
 ) -> list[SearchResult]:
     """
@@ -676,7 +677,7 @@ async def google_anyws(
 
     return await search(
         query,
-        engines=['google-anyws'],
+        engines=["google-anyws"],
         num_results=num_results,
         language=language,
         **kwargs,
@@ -686,7 +687,7 @@ async def google_anyws(
 async def bing_anyws(
     query: str,
     num_results: int = 5,
-    language: str = 'en',
+    language: str = "en",
     **kwargs: Any,
 ) -> list[SearchResult]:
     """
@@ -708,7 +709,7 @@ async def bing_anyws(
 
     return await search(
         query,
-        engines=['bing-anyws'],
+        engines=["bing-anyws"],
         num_results=num_results,
         language=language,
         **kwargs,
@@ -718,7 +719,7 @@ async def bing_anyws(
 async def brave_anyws(
     query: str,
     num_results: int = 5,
-    language: str = 'en',
+    language: str = "en",
     brave_key: str | None = None,
     **kwargs: Any,
 ) -> list[SearchResult]:
@@ -742,7 +743,7 @@ async def brave_anyws(
 
     return await search(
         query,
-        engines=['brave-anyws'],
+        engines=["brave-anyws"],
         num_results=num_results,
         language=language,
         brave_anyws_brave_key=brave_key,
@@ -753,7 +754,7 @@ async def brave_anyws(
 async def qwant_anyws(
     query: str,
     num_results: int = 5,
-    language: str = 'en',
+    language: str = "en",
     **kwargs: Any,
 ) -> list[SearchResult]:
     """
@@ -775,7 +776,7 @@ async def qwant_anyws(
 
     return await search(
         query,
-        engines=['qwant-anyws'],
+        engines=["qwant-anyws"],
         num_results=num_results,
         language=language,
         **kwargs,
@@ -785,7 +786,7 @@ async def qwant_anyws(
 async def yandex_anyws(
     query: str,
     num_results: int = 5,
-    language: str = 'en',
+    language: str = "en",
     ya_key: str | None = None,
     ya_fldid: str | None = None,
     **kwargs: Any,
@@ -811,7 +812,7 @@ async def yandex_anyws(
 
     return await search(
         query,
-        engines=['yandex-anyws'],
+        engines=["yandex-anyws"],
         num_results=num_results,
         language=language,
         yandex_anyws_ya_key=ya_key,

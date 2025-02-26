@@ -15,31 +15,31 @@ from twat_search.web.models import SearchResult
 class YouSearchHit(BaseModel):
     title: str
     url: HttpUrl
-    snippet: str = Field(alias='description')
+    snippet: str = Field(alias="description")
 
 
 class YouSearchResponse(BaseModel):
     hits: list[YouSearchHit]
-    search_id: str | None = Field(None, alias='searchId')
+    search_id: str | None = Field(None, alias="searchId")
 
 
 class YouNewsArticle(BaseModel):
     title: str
     url: HttpUrl
-    snippet: str = Field(alias='description')
+    snippet: str = Field(alias="description")
     source: str | None = None
     published_date: str | None = None
 
 
 class YouNewsResponse(BaseModel):
     articles: list[YouNewsArticle]
-    search_id: str | None = Field(None, alias='searchId')
+    search_id: str | None = Field(None, alias="searchId")
 
 
 class YouBaseEngine(SearchEngine):
     """Base class for You.com search engines, handling common API interaction logic."""
 
-    env_api_key_names: ClassVar[list[str]] = ['YOU_API_KEY']
+    env_api_key_names: ClassVar[list[str]] = ["YOU_API_KEY"]
 
     def __init__(
         self,
@@ -61,8 +61,8 @@ class YouBaseEngine(SearchEngine):
             )
 
         self.headers = {
-            'X-API-Key': self.config.api_key,
-            'Accept': 'application/json',
+            "X-API-Key": self.config.api_key,
+            "Accept": "application/json",
         }
 
         self.num_results = num_results or self.config.default_params.get(
@@ -70,25 +70,25 @@ class YouBaseEngine(SearchEngine):
             5,
         )
         self.country_code = country or self.config.default_params.get(
-            'country_code',
+            "country_code",
             None,
         )
         self.safe_search = safe_search or self.config.default_params.get(
-            'safe_search',
+            "safe_search",
             True,
         )
 
     async def _make_api_call(self, query: str) -> dict:
         """Handle the common API call logic."""
         params: dict[str, Any] = {
-            'q': query,
+            "q": query,
             self.__class__.num_results_param: self.num_results,
         }
 
         if self.country_code:
-            params['country_code'] = self.country_code
+            params["country_code"] = self.country_code
         if self.safe_search is not None:
-            params['safe_search'] = str(self.safe_search).lower()
+            params["safe_search"] = str(self.safe_search).lower()
 
         async with httpx.AsyncClient() as client:
             try:
@@ -118,8 +118,8 @@ class YouSearchEngine(YouBaseEngine):
 
     engine_code = YOU
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[YOU]
-    base_url = 'https://api.you.com/api/search'
-    num_results_param = 'num_web_results'
+    base_url = "https://api.you.com/api/search"
+    num_results_param = "num_web_results"
 
     async def search(self, query: str) -> list[SearchResult]:
         """Perform a web search using the You.com Search API."""
@@ -154,8 +154,8 @@ class YouNewsSearchEngine(YouBaseEngine):
 
     engine_code = YOU_NEWS
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[YOU_NEWS]
-    base_url = 'https://api.you.com/api/news'
-    num_results_param = 'num_news_results'
+    base_url = "https://api.you.com/api/news"
+    num_results_param = "num_news_results"
 
     async def search(self, query: str) -> list[SearchResult]:
         """Perform a news search using the You.com News API."""

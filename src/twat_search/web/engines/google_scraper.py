@@ -13,6 +13,7 @@ The GoogleScraperEngine class handles all interactions with the googlesearch-pyt
 library, providing robust error handling, result validation, and conversion to
 the standard SearchResult format used throughout the package.
 """
+
 from __future__ import annotations
 
 import logging
@@ -72,13 +73,13 @@ class GoogleScraperResult(BaseModel):
 
     title: str
     url: HttpUrl
-    description: str = ''
+    description: str = ""
 
-    @field_validator('title', 'description')
+    @field_validator("title", "description")
     @classmethod
     def validate_non_empty(cls, v: str) -> str:
         """Ensure string fields are not None and convert to empty string if None."""
-        return v or ''
+        return v or ""
 
 
 @register_engine
@@ -127,35 +128,35 @@ class GoogleScraperEngine(SearchEngine):
         """
         super().__init__(config, **kwargs)
         self.max_results: int = num_results or self.config.default_params.get(
-            'max_results',
+            "max_results",
             5,
         )
         self.language: str = language or self.config.default_params.get(
-            'language',
-            'en',
+            "language",
+            "en",
         )
         self.region: str | None = country or self.config.default_params.get(
-            'region',
+            "region",
             None,
         )
         self.safe: str | None = (
-            ('active' if safe_search else None)
+            ("active" if safe_search else None)
             if safe_search is not None
-            else self.config.default_params.get('safe', 'active')
+            else self.config.default_params.get("safe", "active")
         )
 
         self.sleep_interval: float = kwargs.get(
-            'sleep_interval',
-        ) or self.config.default_params.get('sleep_interval', 0.0)
+            "sleep_interval",
+        ) or self.config.default_params.get("sleep_interval", 0.0)
         self.ssl_verify: bool | None = kwargs.get(
-            'ssl_verify',
-        ) or self.config.default_params.get('ssl_verify', None)
-        self.proxy: str | None = kwargs.get('proxy') or self.config.default_params.get(
-            'proxy',
+            "ssl_verify",
+        ) or self.config.default_params.get("ssl_verify", None)
+        self.proxy: str | None = kwargs.get("proxy") or self.config.default_params.get(
+            "proxy",
             None,
         )
-        self.unique: bool = kwargs.get('unique') or self.config.default_params.get(
-            'unique',
+        self.unique: bool = kwargs.get("unique") or self.config.default_params.get(
+            "unique",
             True,
         )
 
@@ -182,7 +183,7 @@ class GoogleScraperEngine(SearchEngine):
             SearchResult object or None if validation fails
         """
         if not result:
-            logger.warning('Empty result received from Google Scraper')
+            logger.warning("Empty result received from Google Scraper")
             return None
 
         try:
@@ -190,7 +191,7 @@ class GoogleScraperEngine(SearchEngine):
             validated = GoogleScraperResult(
                 title=result.title,
                 url=HttpUrl(result.url),
-                description=result.description if hasattr(result, 'description') else '',
+                description=result.description if hasattr(result, "description") else "",
             )
 
             # Create and return the SearchResult
@@ -200,9 +201,9 @@ class GoogleScraperEngine(SearchEngine):
                 snippet=validated.description,
                 source=self.engine_code,
                 raw={
-                    'title': result.title,
-                    'url': str(result.url),
-                    'description': result.description if hasattr(result, 'description') else '',
+                    "title": result.title,
+                    "url": str(result.url),
+                    "description": result.description if hasattr(result, "description") else "",
                 },
             )
         except ValidationError as exc:
@@ -230,7 +231,7 @@ class GoogleScraperEngine(SearchEngine):
                          parsing errors, or other exceptions
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Google with query: '{query}'")
         logger.debug(
@@ -257,7 +258,7 @@ class GoogleScraperEngine(SearchEngine):
             )
 
             if not raw_results:
-                logger.info('No results returned from Google Scraper')
+                logger.info("No results returned from Google Scraper")
                 return []
 
             logger.debug(
@@ -297,7 +298,7 @@ class GoogleScraperEngine(SearchEngine):
 async def google_scraper(
     query: str,
     num_results: int = 5,
-    language: str = 'en',
+    language: str = "en",
     country: str | None = None,
     safe_search: bool = True,
     sleep_interval: float = 0.0,
@@ -334,7 +335,7 @@ async def google_scraper(
 
     return await search(
         query,
-        engines=['google-scraper'],
+        engines=["google-scraper"],
         num_results=num_results,
         language=language,
         country=country,

@@ -8,6 +8,7 @@ DuckDuckGo Search engine implementation.
 
 This module implements the DuckDuckGo search API integration using the duckduckgo_search library.
 """
+
 from __future__ import annotations
 
 import logging
@@ -102,36 +103,36 @@ class DuckDuckGoSearchEngine(SearchEngine):
         Map and normalize initialization parameters.
         """
         max_results = kwargs.get(
-            'max_results',
+            "max_results",
             num_results,
-        ) or config.default_params.get('max_results', 10)
-        region = kwargs.get('region', country) or config.default_params.get(
-            'region',
+        ) or config.default_params.get("max_results", 10)
+        region = kwargs.get("region", country) or config.default_params.get(
+            "region",
             None,
         )
-        lang = language or config.default_params.get('language', None)
-        timelimit = kwargs.get('timelimit', time_frame) or config.default_params.get(
-            'timelimit',
+        lang = language or config.default_params.get("language", None)
+        timelimit = kwargs.get("timelimit", time_frame) or config.default_params.get(
+            "timelimit",
             None,
         )
-        if timelimit and not kwargs.get('timelimit'):
-            time_mapping = {'day': 'd', 'week': 'w', 'month': 'm', 'year': 'y'}
+        if timelimit and not kwargs.get("timelimit"):
+            time_mapping = {"day": "d", "week": "w", "month": "m", "year": "y"}
             timelimit = time_mapping.get(timelimit.lower(), timelimit)
-        safesearch = kwargs.get('safesearch', safe_search)
+        safesearch = kwargs.get("safesearch", safe_search)
         if isinstance(safesearch, str):
             safesearch = (
                 False
                 if safesearch.lower()
                 in [
-                    'off',
-                    'false',
+                    "off",
+                    "false",
                 ]
                 else True
             )
-        proxy = kwargs.get('proxy') or config.default_params.get('proxy', None)
+        proxy = kwargs.get("proxy") or config.default_params.get("proxy", None)
         timeout = kwargs.get(
-            'timeout',
-        ) or config.default_params.get('timeout', 10)
+            "timeout",
+        ) or config.default_params.get("timeout", 10)
         return max_results, region, lang, timelimit, safesearch, proxy, timeout
 
     def _convert_result(self, raw: dict[str, Any]) -> SearchResult | None:
@@ -140,9 +141,9 @@ class DuckDuckGoSearchEngine(SearchEngine):
         """
         try:
             ddg_result = DuckDuckGoResult(
-                title=raw['title'],
-                href=raw['href'],
-                body=raw['body'],
+                title=raw["title"],
+                href=raw["href"],
+                body=raw["body"],
             )
             return SearchResult(
                 title=ddg_result.title,
@@ -170,13 +171,13 @@ class DuckDuckGoSearchEngine(SearchEngine):
         """
         try:
             ddgs = DDGS(proxy=self.proxy, timeout=self.timeout)
-            params = {'keywords': query, 'max_results': self.max_results}
+            params = {"keywords": query, "max_results": self.max_results}
             if self.region:
-                params['region'] = self.region
+                params["region"] = self.region
             if self.timelimit:
-                params['timelimit'] = self.timelimit
+                params["timelimit"] = self.timelimit
             if self.safesearch is not None:
-                params['safesearch'] = self.safesearch
+                params["safesearch"] = self.safesearch
 
             raw_results = ddgs.text(**params)
             results = []
@@ -230,7 +231,7 @@ async def duckduckgo(
 
     return await search(
         query,
-        engines=['duckduckgo'],
+        engines=["duckduckgo"],
         num_results=num_results,
         country=country,
         language=language,

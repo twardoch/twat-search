@@ -13,6 +13,7 @@ The BingScraperSearchEngine class handles all interactions with the scrape-bing
 library, providing robust error handling, result validation, and conversion to
 the standard SearchResult format used throughout the package.
 """
+
 from __future__ import annotations
 
 import logging
@@ -129,15 +130,15 @@ class BingScraperSearchEngine(SearchEngine):
         """
         super().__init__(config, **kwargs)
         self.max_results: int = num_results or self.config.default_params.get(
-            'max_results',
+            "max_results",
             5,
         )
         self.max_retries: int = kwargs.get(
-            'max_retries',
-        ) or self.config.default_params.get('max_retries', 3)
+            "max_retries",
+        ) or self.config.default_params.get("max_retries", 3)
         self.delay_between_requests: float = kwargs.get(
-            'delay_between_requests',
-        ) or self.config.default_params.get('delay_between_requests', 1.0)
+            "delay_between_requests",
+        ) or self.config.default_params.get("delay_between_requests", 1.0)
 
         # Log any unused parameters for clarity
         unused_params: list[str] = []
@@ -168,10 +169,10 @@ class BingScraperSearchEngine(SearchEngine):
             SearchResult object or None if validation fails
         """
         if not result:
-            logger.warning('Empty result received from Bing Scraper')
+            logger.warning("Empty result received from Bing Scraper")
             return None
 
-        if not hasattr(result, 'title') or not hasattr(result, 'url'):
+        if not hasattr(result, "title") or not hasattr(result, "url"):
             logger.warning(f"Invalid result format: {result}")
             return None
 
@@ -180,19 +181,19 @@ class BingScraperSearchEngine(SearchEngine):
             validated = BingScraperResult(
                 title=result.title,
                 url=result.url,
-                description=result.description if hasattr(result, 'description') else None,
+                description=result.description if hasattr(result, "description") else None,
             )
 
             # Create and return the SearchResult
             return SearchResult(
                 title=validated.title,
                 url=validated.url,
-                snippet=validated.description or '',
+                snippet=validated.description or "",
                 source=self.engine_code,
                 raw={
-                    'title': result.title,
-                    'url': str(result.url),
-                    'description': result.description if hasattr(result, 'description') else None,
+                    "title": result.title,
+                    "url": str(result.url),
+                    "description": result.description if hasattr(result, "description") else None,
                 },
             )
         except ValidationError as exc:
@@ -220,7 +221,7 @@ class BingScraperSearchEngine(SearchEngine):
                          parsing errors, or other exceptions
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Bing with query: '{query}'")
         logger.debug(
@@ -238,7 +239,7 @@ class BingScraperSearchEngine(SearchEngine):
             raw_results = scraper.search(query, num_results=self.max_results)
 
             if not raw_results:
-                logger.info('No results returned from Bing Scraper')
+                logger.info("No results returned from Bing Scraper")
                 return []
 
             logger.debug(
@@ -305,7 +306,7 @@ async def bing_scraper(
 
     return await search(
         query,
-        engines=['bing_scraper'],
+        engines=["bing_scraper"],
         num_results=num_results,
         bing_scraper_max_retries=max_retries,
         bing_scraper_delay_between_requests=delay_between_requests,

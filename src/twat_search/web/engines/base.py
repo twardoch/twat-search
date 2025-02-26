@@ -5,6 +5,7 @@ Base class and factory functions for search engines.
 This module defines the abstract base class that all search engines must
 implement, as well as functions to register and instantiate engines.
 """
+
 from __future__ import annotations
 
 import abc
@@ -20,11 +21,11 @@ from twat_search.web.models import SearchResult
 
 # List of user agents to rotate for scrapers to avoid blocking
 USER_AGENTS = [
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0',
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36',
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1',
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1",
 ]
 
 
@@ -36,9 +37,9 @@ class SearchEngine(abc.ABC):
     the search method.
     """
 
-    engine_code: ClassVar[str] = ''  # Class attribute that must be defined by subclasses
+    engine_code: ClassVar[str] = ""  # Class attribute that must be defined by subclasses
     # User-friendly name for display purposes
-    friendly_engine_name: ClassVar[str] = ''
+    friendly_engine_name: ClassVar[str] = ""
 
     # Class attributes for environment variables
     # Override with engine-specific names
@@ -60,17 +61,17 @@ class SearchEngine(abc.ABC):
         self.kwargs = kwargs
 
         # Common parameters with default values
-        self.num_results = kwargs.get('num_results', 5)
-        self.country = kwargs.get('country', None)
-        self.language = kwargs.get('language', None)
-        self.safe_search = kwargs.get('safe_search', True)
-        self.time_frame = kwargs.get('time_frame', None)
+        self.num_results = kwargs.get("num_results", 5)
+        self.country = kwargs.get("country", None)
+        self.language = kwargs.get("language", None)
+        self.safe_search = kwargs.get("safe_search", True)
+        self.time_frame = kwargs.get("time_frame", None)
 
         # Settings for robust HTTP requests - can be overridden in kwargs
-        self.timeout = kwargs.get('timeout', 10)
-        self.retries = kwargs.get('retries', 2)
-        self.retry_delay = kwargs.get('retry_delay', 1.0)
-        self.use_random_user_agent = kwargs.get('use_random_user_agent', True)
+        self.timeout = kwargs.get("timeout", 10)
+        self.retries = kwargs.get("retries", 2)
+        self.retry_delay = kwargs.get("retry_delay", 1.0)
+        self.use_random_user_agent = kwargs.get("use_random_user_agent", True)
 
         if not config.enabled:
             msg = f"Engine '{self.engine_code}' is disabled."
@@ -78,7 +79,7 @@ class SearchEngine(abc.ABC):
 
     def get_num_results(
         self,
-        param_name: str = 'num_results',
+        param_name: str = "num_results",
         min_value: int = 1,
     ) -> int:
         """
@@ -107,7 +108,7 @@ class SearchEngine(abc.ABC):
         # Finally check config default params
         default = self.config.default_params.get(
             param_name,
-        ) or self.config.default_params.get('num_results')
+        ) or self.config.default_params.get("num_results")
         if default is not None:
             return max(min_value, int(default))
 
@@ -117,7 +118,7 @@ class SearchEngine(abc.ABC):
     async def make_http_request(
         self,
         url: str,
-        method: str = 'GET',
+        method: str = "GET",
         headers: dict[str, str] | None = None,
         params: dict[str, Any] | None = None,
         json_data: Any = None,
@@ -156,8 +157,8 @@ class SearchEngine(abc.ABC):
         if headers is None:
             headers = {}
 
-        if self.use_random_user_agent and 'user-agent' not in {k.lower() for k in headers}:
-            headers['User-Agent'] = random.choice(USER_AGENTS)
+        if self.use_random_user_agent and "user-agent" not in {k.lower() for k in headers}:
+            headers["User-Agent"] = random.choice(USER_AGENTS)
 
         attempt = 0
         last_error = None
@@ -218,15 +219,15 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
     _engine_registry[engine_class.engine_code] = engine_class
 
     # Auto-generate environment variable names if not explicitly set
-    if not hasattr(engine_class, 'env_api_key_names'):
+    if not hasattr(engine_class, "env_api_key_names"):
         engine_class.env_api_key_names = [
             f"{engine_class.engine_code.upper()}_API_KEY",
         ]
-    if not hasattr(engine_class, 'env_enabled_names'):
+    if not hasattr(engine_class, "env_enabled_names"):
         engine_class.env_enabled_names = [
             f"{engine_class.engine_code.upper()}_ENABLED",
         ]
-    if not hasattr(engine_class, 'env_params_names'):
+    if not hasattr(engine_class, "env_params_names"):
         engine_class.env_params_names = [
             f"{engine_class.engine_code.upper()}_DEFAULT_PARAMS",
         ]

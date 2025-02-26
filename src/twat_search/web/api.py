@@ -31,14 +31,14 @@ def get_engine_params(
     # Look for parameters with both standardized and original name prefixes
     engine_specific = {}
     for k, v in kwargs.items():
-        if k.startswith(std_engine_name + '_'):
+        if k.startswith(std_engine_name + "_"):
             engine_specific[k[len(std_engine_name) + 1 :]] = v
-        elif k.startswith(engine_name + '_'):  # For backward compatibility
+        elif k.startswith(engine_name + "_"):  # For backward compatibility
             engine_specific[k[len(engine_name) + 1 :]] = v
 
     # Get non-prefixed parameters
     std_engines = [standardize_engine_name(e) for e in engines]
-    non_prefixed = {k: v for k, v in kwargs.items() if not any(k.startswith(e + '_') for e in std_engines + engines)}
+    non_prefixed = {k: v for k, v in kwargs.items() if not any(k.startswith(e + "_") for e in std_engines + engines)}
 
     return {**common_params, **engine_specific, **non_prefixed}
 
@@ -132,7 +132,7 @@ async def search(
         # Get the list of engines to try
         engines_to_try = engines or list(config.engines.keys())
         if not engines_to_try:
-            msg = 'No search engines configured'
+            msg = "No search engines configured"
             raise SearchError(msg)
 
         # Standardize engine names
@@ -141,11 +141,11 @@ async def search(
         common_params = {
             k: v
             for k, v in {
-                'num_results': num_results,
-                'country': country,
-                'language': language,
-                'safe_search': safe_search,
-                'time_frame': time_frame,
+                "num_results": num_results,
+                "country": country,
+                "language": language,
+                "safe_search": safe_search,
+                "time_frame": time_frame,
             }.items()
             if v is not None
         }
@@ -174,7 +174,7 @@ async def search(
         # If strict mode is on, specific engines were requested, and all of them failed,
         # don't try to fall back to other engines
         if strict_mode and explicit_engines_requested and not tasks:
-            failed_engines_str = ', '.join(failed_engines)
+            failed_engines_str = ", ".join(failed_engines)
             msg = f"Requested engines ({failed_engines_str}) could not be initialized. Use strict_mode=False to fall back to other available engines."
             raise SearchError(msg)
 
@@ -182,7 +182,7 @@ async def search(
         if not tasks and explicit_engines_requested and not strict_mode:
             logger.warning(
                 f"None of the requested engines {engines_to_try} could be initialized. "
-                'Falling back to all available engines.',
+                "Falling back to all available engines.",
             )
             # Get all available engines as fallback
             for engine_name in config.engines:
@@ -202,7 +202,7 @@ async def search(
                         tasks.append(task[1])
 
         if not tasks:
-            msg = 'No search engines could be initialized. Make sure at least one engine dependency is installed.'
+            msg = "No search engines could be initialized. Make sure at least one engine dependency is installed."
             raise SearchError(msg)
 
         results = await asyncio.gather(*tasks, return_exceptions=True)

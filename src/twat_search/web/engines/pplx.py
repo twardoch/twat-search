@@ -4,6 +4,7 @@ Perplexity AI search engine implementation.
 
 This module implements the Perplexity AI API integration.
 """
+
 from __future__ import annotations
 
 from typing import Any, ClassVar
@@ -25,10 +26,10 @@ class PerplexityResult(BaseModel):
     """
 
     # Perplexity may sometimes not include all details
-    answer: str = Field(default='')
+    answer: str = Field(default="")
     # Default URL if none provided
-    url: str = Field(default='https://perplexity.ai')
-    title: str = Field(default='Perplexity AI Response')  # Default title
+    url: str = Field(default="https://perplexity.ai")
+    title: str = Field(default="Perplexity AI Response")  # Default title
 
 
 @register_engine
@@ -38,8 +39,8 @@ class PerplexitySearchEngine(SearchEngine):
     engine_code = PPLX
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[PPLX]
     env_api_key_names: ClassVar[list[str]] = [
-        'PERPLEXITYAI_API_KEY',
-        'PERPLEXITY_API_KEY',
+        "PERPLEXITYAI_API_KEY",
+        "PERPLEXITY_API_KEY",
     ]
 
     def __init__(
@@ -57,8 +58,8 @@ class PerplexitySearchEngine(SearchEngine):
         Initialize the Perplexity search engine.
         """
         super().__init__(config)
-        self.base_url = 'https://api.perplexity.ai/chat/completions'
-        self.model = model or kwargs.get('model') or self.config.default_params.get('model', 'pplx-70b-online')
+        self.base_url = "https://api.perplexity.ai/chat/completions"
+        self.model = model or kwargs.get("model") or self.config.default_params.get("model", "pplx-70b-online")
         self.num_results = num_results
         self.country = country
         self.language = language
@@ -72,9 +73,9 @@ class PerplexitySearchEngine(SearchEngine):
             )
 
         self.headers = {
-            'accept': 'application/json',
-            'content-type': 'application/json',
-            'authorization': f"Bearer {self.config.api_key}",
+            "accept": "application/json",
+            "content-type": "application/json",
+            "authorization": f"Bearer {self.config.api_key}",
         }
 
     async def search(self, query: str) -> list[SearchResult]:
@@ -82,13 +83,13 @@ class PerplexitySearchEngine(SearchEngine):
         Perform a search using the Perplexity AI API.
         """
         payload = {
-            'model': self.model,
-            'messages': [
+            "model": self.model,
+            "messages": [
                 {
-                    'role': 'system',
-                    'content': 'Be precise and concise. I am an expert and do not need explanation',
+                    "role": "system",
+                    "content": "Be precise and concise. I am an expert and do not need explanation",
                 },
-                {'role': 'user', 'content': query},
+                {"role": "user", "content": query},
             ],
         }
 
@@ -114,9 +115,9 @@ class PerplexitySearchEngine(SearchEngine):
             ) from exc
 
         results = []
-        for choice in data.get('choices', []):
-            answer = choice.get('message', {}).get('content', '')
-            url = 'https://perplexity.ai'
+        for choice in data.get("choices", []):
+            answer = choice.get("message", {}).get("content", "")
+            url = "https://perplexity.ai"
             title = f"Perplexity AI Response: {query[:30]}..."
             try:
                 # Validate and build the result using the PerplexityResult model

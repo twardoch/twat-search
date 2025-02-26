@@ -4,6 +4,7 @@ Utility functions for the web search API.
 
 This module provides various utility functions used by the web search API.
 """
+
 from __future__ import annotations
 
 import logging
@@ -28,28 +29,28 @@ def load_environment(force_reload: bool = False) -> None:
     Args:
         force_reload: Whether to reload the environment variables even if they're already loaded
     """
-    loaded_flag = '_TWAT_SEARCH_ENV_LOADED'
+    loaded_flag = "_TWAT_SEARCH_ENV_LOADED"
     # Check if we've already loaded the environment variables
-    if not force_reload and os.environ.get(loaded_flag) == '1':
-        logger.debug('Environment variables already loaded')
+    if not force_reload and os.environ.get(loaded_flag) == "1":
+        logger.debug("Environment variables already loaded")
         return
 
     # Load environment variables from .env file
     load_dotenv()
 
     # Set a flag to indicate that we've loaded the variables
-    os.environ[loaded_flag] = '1'
+    os.environ[loaded_flag] = "1"
 
     # Log which API keys are found
     if logger.isEnabledFor(logging.DEBUG):  # Only in debug mode
         for key, value in os.environ.items():
-            if ('API_KEY' in key or '_KEY' in key) and key != loaded_flag:
-                masked_value = value[:4] + '****' if value else None
+            if ("API_KEY" in key or "_KEY" in key) and key != loaded_flag:
+                masked_value = value[:4] + "****" if value else None
                 logger.debug(
                     f"Found environment variable: {key}={masked_value}",
                 )
     else:
-        logger.info('Environment variables loaded')
+        logger.info("Environment variables loaded")
 
 
 class RateLimiter:

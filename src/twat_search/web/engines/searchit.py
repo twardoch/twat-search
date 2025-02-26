@@ -12,6 +12,7 @@ It provides asynchronous search functionality for Google, Yandex, Qwant, and Bin
 The SearchitEngine class is the base class for all searchit-based engines, with
 specific implementations for each search provider.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -211,13 +212,13 @@ class SearchitScraperResult(BaseModel):
     rank: int
     title: str
     url: HttpUrl
-    description: str = ''
+    description: str = ""
 
-    @field_validator('title', 'description')
+    @field_validator("title", "description")
     @classmethod
     def validate_non_empty(cls, v: str) -> str:
         """Ensure string fields are not None and convert to empty string if None."""
-        return v or ''
+        return v or ""
 
 
 class SearchitEngine(SearchEngine):
@@ -232,7 +233,7 @@ class SearchitEngine(SearchEngine):
         env_api_key_names: Empty list for scrapers as they don't need API keys
     """
 
-    engine_code = ''  # Must be overridden by subclasses
+    engine_code = ""  # Must be overridden by subclasses
     # No API key needed for scrapers
     env_api_key_names: ClassVar[list[str]] = []
 
@@ -262,28 +263,28 @@ class SearchitEngine(SearchEngine):
         """
         super().__init__(config, **kwargs)
         self.max_results: int = num_results or self.config.default_params.get(
-            'max_results',
+            "max_results",
             5,
         )
         self.language: str = language or self.config.default_params.get(
-            'language',
-            'en',
+            "language",
+            "en",
         )
         # Some searchit engines use domain, others use geo
         self.domain: str | None = country or self.config.default_params.get(
-            'domain',
+            "domain",
             None,
         )
         self.geo: str | None = country or self.config.default_params.get(
-            'geo',
+            "geo",
             None,
         )
 
         self.sleep_interval: int = kwargs.get(
-            'sleep_interval',
-        ) or self.config.default_params.get('sleep_interval', 0)
-        self.proxy: str | None = kwargs.get('proxy') or self.config.default_params.get(
-            'proxy',
+            "sleep_interval",
+        ) or self.config.default_params.get("sleep_interval", 0)
+        self.proxy: str | None = kwargs.get("proxy") or self.config.default_params.get(
+            "proxy",
             None,
         )
 
@@ -321,7 +322,7 @@ class SearchitEngine(SearchEngine):
                 rank=result.rank,
                 title=result.title,
                 url=HttpUrl(result.url),
-                description=result.description if hasattr(result, 'description') else '',
+                description=result.description if hasattr(result, "description") else "",
             )
 
             # Create and return the SearchResult
@@ -332,10 +333,10 @@ class SearchitEngine(SearchEngine):
                 source=self.engine_code,
                 rank=validated.rank,
                 raw={
-                    'rank': result.rank,
-                    'title': result.title,
-                    'url': str(result.url),
-                    'description': result.description if hasattr(result, 'description') else '',
+                    "rank": result.rank,
+                    "title": result.title,
+                    "url": str(result.url),
+                    "description": result.description if hasattr(result, "description") else "",
                 },
             )
         except ValidationError as exc:
@@ -400,7 +401,7 @@ class GoogleSearchitEngine(SearchitEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Google (searchit) with query: '{query}'")
         logger.debug(
@@ -428,7 +429,7 @@ class GoogleSearchitEngine(SearchitEngine):
             raw_results = await self._run_scraper(scraper, request)
 
             if not raw_results:
-                logger.info('No results returned from Google (searchit)')
+                logger.info("No results returned from Google (searchit)")
                 return []
 
             logger.debug(
@@ -479,7 +480,7 @@ class YandexSearchitEngine(SearchitEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Yandex (searchit) with query: '{query}'")
         logger.debug(
@@ -507,7 +508,7 @@ class YandexSearchitEngine(SearchitEngine):
             raw_results = await self._run_scraper(scraper, request)
 
             if not raw_results:
-                logger.info('No results returned from Yandex (searchit)')
+                logger.info("No results returned from Yandex (searchit)")
                 return []
 
             logger.debug(
@@ -558,7 +559,7 @@ class QwantSearchitEngine(SearchitEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Qwant (searchit) with query: '{query}'")
         logger.debug(
@@ -585,7 +586,7 @@ class QwantSearchitEngine(SearchitEngine):
             raw_results = await self._run_scraper(scraper, request)
 
             if not raw_results:
-                logger.info('No results returned from Qwant (searchit)')
+                logger.info("No results returned from Qwant (searchit)")
                 return []
 
             logger.debug(
@@ -636,7 +637,7 @@ class BingSearchitEngine(SearchitEngine):
             EngineError: If the search fails
         """
         if not query:
-            raise EngineError(self.engine_code, 'Search query cannot be empty')
+            raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Bing (searchit) with query: '{query}'")
         logger.debug(
@@ -664,7 +665,7 @@ class BingSearchitEngine(SearchitEngine):
             raw_results = await self._run_scraper(scraper, request)
 
             if not raw_results:
-                logger.info('No results returned from Bing (searchit)')
+                logger.info("No results returned from Bing (searchit)")
                 return []
 
             logger.debug(
@@ -693,7 +694,7 @@ class BingSearchitEngine(SearchitEngine):
 async def google_searchit(
     query: str,
     num_results: int = 5,
-    language: str = 'en',
+    language: str = "en",
     country: str | None = None,
     sleep_interval: int = 0,
     proxy: str | None = None,
@@ -721,7 +722,7 @@ async def google_searchit(
 
     return await search(
         query,
-        engines=['google-searchit'],
+        engines=["google-searchit"],
         num_results=num_results,
         language=language,
         country=country,
@@ -734,7 +735,7 @@ async def google_searchit(
 async def yandex_searchit(
     query: str,
     num_results: int = 5,
-    language: str = 'en',
+    language: str = "en",
     country: str | None = None,
     sleep_interval: int = 0,
     proxy: str | None = None,
@@ -762,7 +763,7 @@ async def yandex_searchit(
 
     return await search(
         query,
-        engines=['yandex-searchit'],
+        engines=["yandex-searchit"],
         num_results=num_results,
         language=language,
         country=country,
@@ -775,7 +776,7 @@ async def yandex_searchit(
 async def qwant_searchit(
     query: str,
     num_results: int = 5,
-    language: str = 'en',
+    language: str = "en",
     country: str | None = None,
     sleep_interval: int = 0,
     proxy: str | None = None,
@@ -803,7 +804,7 @@ async def qwant_searchit(
 
     return await search(
         query,
-        engines=['qwant-searchit'],
+        engines=["qwant-searchit"],
         num_results=num_results,
         language=language,
         country=country,
@@ -816,7 +817,7 @@ async def qwant_searchit(
 async def bing_searchit(
     query: str,
     num_results: int = 5,
-    language: str = 'en',
+    language: str = "en",
     country: str | None = None,
     sleep_interval: int = 0,
     proxy: str | None = None,
@@ -844,7 +845,7 @@ async def bing_searchit(
 
     return await search(
         query,
-        engines=['bing-searchit'],
+        engines=["bing-searchit"],
         num_results=num_results,
         language=language,
         country=country,

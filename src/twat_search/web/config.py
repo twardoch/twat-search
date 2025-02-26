@@ -5,6 +5,7 @@ Configuration management for the twat_search.web module.
 This module provides classes for loading and accessing configuration
 settings for the web search functionality.
 """
+
 from __future__ import annotations
 
 import json
@@ -52,212 +53,212 @@ logger = logging.getLogger(__name__)
 
 # Default configuration dictionary
 DEFAULT_CONFIG: dict[str, Any] = {
-    'engines': {
+    "engines": {
         # Brave Search
         BRAVE: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {
-                'country': 'US',
-                'language': 'en-US',
-                'safe_search': True,
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "country": "US",
+                "language": "en-US",
+                "safe_search": True,
             },
         },
         BRAVE_NEWS: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {
-                'country': 'US',
-                'language': 'en-US',
-                'safe_search': True,
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "country": "US",
+                "language": "en-US",
+                "safe_search": True,
             },
         },
         # Brave AnyWebSearch
         BRAVE_ANYWS: {
-            'enabled': True,
-            'api_key': None,  # BRAVE_API_KEY
-            'default_params': {
-                'language': 'en',
-                'num_results': 10,
-                'merge': True,
+            "enabled": True,
+            "api_key": None,  # BRAVE_API_KEY
+            "default_params": {
+                "language": "en",
+                "num_results": 10,
+                "merge": True,
             },
         },
         # SerpAPI (Google)
         GOOGLE_SERPAPI: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {
-                'country': 'us',
-                'language': 'en',
-                'safe_search': True,
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "country": "us",
+                "language": "en",
+                "safe_search": True,
             },
         },
         # Google AnyWebSearch
         GOOGLE_ANYWS: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {
-                'language': 'en',
-                'num_results': 10,
-                'merge': True,
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "language": "en",
+                "num_results": 10,
+                "merge": True,
             },
         },
         # Google Scraper
         GOOGLE_SCRAPER: {
-            'enabled': True,
-            'api_key': None,  # No API key required
-            'default_params': {
-                'language': 'en',
-                'region': 'us',
-                'safe': 'active',
-                'sleep_interval': 0.0,
-                'ssl_verify': True,
-                'proxy': None,
-                'unique': True,
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "language": "en",
+                "region": "us",
+                "safe": "active",
+                "sleep_interval": 0.0,
+                "ssl_verify": True,
+                "proxy": None,
+                "unique": True,
             },
         },
         # Google SearchIT
         GOOGLE_SEARCHIT: {
-            'enabled': True,
-            'api_key': None,  # No API key required
-            'default_params': {
-                'language': 'en',
-                'domain': 'com',
-                'sleep_interval': 0,
-                'proxy': None,
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "language": "en",
+                "domain": "com",
+                "sleep_interval": 0,
+                "proxy": None,
             },
         },
         # Tavily Search
         TAVILY: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {
-                'search_depth': 'basic',
-                'include_domains': None,
-                'exclude_domains': None,
-                'return_rank': True,
-                'max_tokens': None,
-                'api_version': '2023-11-08',
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "search_depth": "basic",
+                "include_domains": None,
+                "exclude_domains": None,
+                "return_rank": True,
+                "max_tokens": None,
+                "api_version": "2023-11-08",
             },
         },
         # Perplexity AI
         PPLX: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {
-                'model': 'search',
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "model": "search",
             },
         },
         # You.com Search
         YOU: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {},
+            "enabled": True,
+            "api_key": None,
+            "default_params": {},
         },
         YOU_NEWS: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {},
+            "enabled": True,
+            "api_key": None,
+            "default_params": {},
         },
         # Critique Labs
         CRITIQUE: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {
-                'source_whitelist': None,
-                'source_blacklist': None,
-                'additional_params': None,
-                'image_url': None,
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "source_whitelist": None,
+                "source_blacklist": None,
+                "additional_params": None,
+                "image_url": None,
             },
         },
         # DuckDuckGo
         DUCKDUCKGO: {
-            'enabled': True,
-            'api_key': None,  # DuckDuckGo doesn't require an API key
-            'default_params': {'timeout': 10},
+            "enabled": True,
+            "api_key": None,  # DuckDuckGo doesn't require an API key
+            "default_params": {"timeout": 10},
         },
         # Bing Scraper
         BING_SCRAPER: {
-            'enabled': True,
-            'api_key': None,  # No API key required, it's a scraper
-            'default_params': {'num_pages': 1, 'delay': 0.5},
+            "enabled": True,
+            "api_key": None,  # No API key required, it's a scraper
+            "default_params": {"num_pages": 1, "delay": 0.5},
         },
         # Bing AnyWebSearch
         BING_ANYWS: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {
-                'language': 'en',
-                'num_results': 10,
-                'merge': True,
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "language": "en",
+                "num_results": 10,
+                "merge": True,
             },
         },
         # Bing SearchIT
         BING_SEARCHIT: {
-            'enabled': True,
-            'api_key': None,  # No API key required
-            'default_params': {
-                'language': 'en',
-                'domain': 'com',
-                'sleep_interval': 0,
-                'proxy': None,
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "language": "en",
+                "domain": "com",
+                "sleep_interval": 0,
+                "proxy": None,
             },
         },
         # Qwant AnyWebSearch
         QWANT_ANYWS: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {
-                'language': 'en',
-                'num_results': 10,
-                'merge': True,
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "language": "en",
+                "num_results": 10,
+                "merge": True,
             },
         },
         # Qwant SearchIT
         QWANT_SEARCHIT: {
-            'enabled': True,
-            'api_key': None,  # No API key required
-            'default_params': {
-                'language': 'en',
-                'geo': 'us',
-                'sleep_interval': 0,
-                'proxy': None,
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "language": "en",
+                "geo": "us",
+                "sleep_interval": 0,
+                "proxy": None,
             },
         },
         # Yandex AnyWebSearch
         YANDEX_ANYWS: {
-            'enabled': True,
-            'api_key': None,  # YA_KEY and YA_FLDID environment variables
-            'default_params': {
-                'language': 'en',
-                'num_results': 10,
-                'merge': True,
+            "enabled": True,
+            "api_key": None,  # YA_KEY and YA_FLDID environment variables
+            "default_params": {
+                "language": "en",
+                "num_results": 10,
+                "merge": True,
             },
         },
         # Yandex SearchIT
         YANDEX_SEARCHIT: {
-            'enabled': True,
-            'api_key': None,  # No API key required
-            'default_params': {
-                'language': 'en',
-                'country': 'us',
-                'sleep_interval': 0,
-                'proxy': None,
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "language": "en",
+                "country": "us",
+                "sleep_interval": 0,
+                "proxy": None,
             },
         },
         # HasData Google (Full version)
         GOOGLE_HASDATA_FULL: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {
-                'device_type': 'desktop',
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "device_type": "desktop",
             },
         },
         # HasData Google (Light version)
         GOOGLE_HASDATA: {
-            'enabled': True,
-            'api_key': None,
-            'default_params': {},
+            "enabled": True,
+            "api_key": None,
+            "default_params": {},
         },
     },
 }
@@ -292,11 +293,11 @@ class Config(BaseModel):
         # Find the configuration directory
         config_dir = Path(
             os.environ.get(
-                'XDG_CONFIG_HOME',
-                Path.home() / '.config',
+                "XDG_CONFIG_HOME",
+                Path.home() / ".config",
             ),
         )
-        config_file = config_dir / 'twat_search' / 'config.json'
+        config_file = config_dir / "twat_search" / "config.json"
         return config_file
 
     def __init__(self, **data: Any) -> None:
@@ -312,7 +313,7 @@ class Config(BaseModel):
         config_file = self.get_config_path()
         if config_file.exists():
             try:
-                with open(config_file, encoding='utf-8') as f:
+                with open(config_file, encoding="utf-8") as f:
                     user_config = json.load(f)
                     # Deep merge user configuration with defaults
                     self._merge_config(config_data, user_config)
@@ -328,12 +329,12 @@ class Config(BaseModel):
         self._merge_config(config_data, data)
 
         # Standardize engine names
-        engines_data = config_data.get('engines', {})
+        engines_data = config_data.get("engines", {})
         standardized_engines = {}
         for engine_name, engine_config in engines_data.items():
             std_name = standardize_engine_name(engine_name)
             standardized_engines[std_name] = engine_config
-        config_data['engines'] = standardized_engines
+        config_data["engines"] = standardized_engines
 
         # Initialize the model
         super().__init__(**config_data)
@@ -380,7 +381,7 @@ def _apply_env_overrides(self, config_data: dict[str, Any]) -> None:
     Args:
         config_data: Configuration data to update
     """
-    engine_settings = config_data.get('engines', {})
+    engine_settings = config_data.get("engines", {})
 
     # Get list of available engine implementations
     try:
@@ -399,7 +400,7 @@ def _apply_env_overrides(self, config_data: dict[str, Any]) -> None:
         api_key_vars = []
 
         # Append engine-specific env variable names if available
-        if engine_class and hasattr(engine_class, 'env_api_key_names'):
+        if engine_class and hasattr(engine_class, "env_api_key_names"):
             api_key_vars.extend(engine_class.env_api_key_names)
 
         # Add standard patterns for API key environment variables
@@ -436,8 +437,8 @@ def _apply_env_overrides(self, config_data: dict[str, Any]) -> None:
             if env_var in os.environ:
                 if std_engine_name not in engine_settings:
                     engine_settings[std_engine_name] = {}
-                engine_settings[std_engine_name]['api_key'] = os.environ[env_var]
-                engine_settings[std_engine_name]['enabled'] = True
+                engine_settings[std_engine_name]["api_key"] = os.environ[env_var]
+                engine_settings[std_engine_name]["enabled"] = True
                 logger.debug(
                     f"Found API key for {std_engine_name} in {env_var}",
                 )
@@ -447,7 +448,7 @@ def _apply_env_overrides(self, config_data: dict[str, Any]) -> None:
         enabled_vars = []
 
         # Append engine-specific env variable names if available
-        if engine_class and hasattr(engine_class, 'env_enabled_names'):
+        if engine_class and hasattr(engine_class, "env_enabled_names"):
             enabled_vars.extend(engine_class.env_enabled_names)
 
         # Add standard patterns
@@ -467,14 +468,14 @@ def _apply_env_overrides(self, config_data: dict[str, Any]) -> None:
             if env_var in os.environ:
                 if std_engine_name not in engine_settings:
                     engine_settings[std_engine_name] = {}
-                engine_settings[std_engine_name]['enabled'] = os.environ[env_var].lower() in ('true', '1', 'yes', 'y')
+                engine_settings[std_engine_name]["enabled"] = os.environ[env_var].lower() in ("true", "1", "yes", "y")
                 break
 
         # Default parameters from environment variables
         params_vars = []
 
         # Append engine-specific env variable names if available
-        if engine_class and hasattr(engine_class, 'env_params_names'):
+        if engine_class and hasattr(engine_class, "env_params_names"):
             params_vars.extend(engine_class.env_params_names)
 
         # Add standard patterns
@@ -495,11 +496,11 @@ def _apply_env_overrides(self, config_data: dict[str, Any]) -> None:
                 try:
                     if std_engine_name not in engine_settings:
                         engine_settings[std_engine_name] = {}
-                    if 'default_params' not in engine_settings[std_engine_name]:
-                        engine_settings[std_engine_name]['default_params'] = {}
+                    if "default_params" not in engine_settings[std_engine_name]:
+                        engine_settings[std_engine_name]["default_params"] = {}
                     params = json.loads(os.environ[env_var])
                     if isinstance(params, dict):
-                        engine_settings[std_engine_name]['default_params'].update(
+                        engine_settings[std_engine_name]["default_params"].update(
                             params,
                         )
                 except json.JSONDecodeError:

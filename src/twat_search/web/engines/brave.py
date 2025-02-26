@@ -29,7 +29,7 @@ class BraveNewsResult(BaseModel):
 
 # Base class that encapsulates common functionality for both search and news engines.
 class BaseBraveEngine(SearchEngine):
-    env_api_key_names: ClassVar[list[str]] = ['BRAVE_API_KEY']
+    env_api_key_names: ClassVar[list[str]] = ["BRAVE_API_KEY"]
     base_url: str  # Must be defined by subclass.
     response_key: str  # "web" for normal search, "news" for news search.
     result_model: type[BaseModel]  # Either BraveResult or BraveNewsResult.
@@ -48,29 +48,29 @@ class BaseBraveEngine(SearchEngine):
 
         # Use the standardized get_num_results method to ensure the user's
         # preference for num_results is respected
-        self.count = self.get_num_results(param_name='count', min_value=1)
+        self.count = self.get_num_results(param_name="count", min_value=1)
 
-        self.country = country or kwargs.get('country') or self.config.default_params.get('country', None)
-        search_lang = kwargs.get('search_lang', language)
+        self.country = country or kwargs.get("country") or self.config.default_params.get("country", None)
+        search_lang = kwargs.get("search_lang", language)
         self.search_lang = search_lang or self.config.default_params.get(
-            'search_lang',
+            "search_lang",
             None,
         )
-        ui_lang = kwargs.get('ui_lang', language)
+        ui_lang = kwargs.get("ui_lang", language)
         self.ui_lang = ui_lang or self.config.default_params.get(
-            'ui_lang',
+            "ui_lang",
             None,
         )
-        safe = kwargs.get('safe_search', safe_search)
+        safe = kwargs.get("safe_search", safe_search)
         if isinstance(safe, bool):
-            safe = 'strict' if safe else 'off'
+            safe = "strict" if safe else "off"
         self.safe_search = safe or self.config.default_params.get(
-            'safe_search',
+            "safe_search",
             None,
         )
-        freshness = kwargs.get('freshness', time_frame)
+        freshness = kwargs.get("freshness", time_frame)
         self.freshness = freshness or self.config.default_params.get(
-            'freshness',
+            "freshness",
             None,
         )
 
@@ -80,22 +80,22 @@ class BaseBraveEngine(SearchEngine):
                 f"Brave API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
         self.headers = {
-            'Accept': 'application/json',
-            'X-Subscription-Token': self.config.api_key,
+            "Accept": "application/json",
+            "X-Subscription-Token": self.config.api_key,
         }
 
     async def search(self, query: str) -> list[SearchResult]:
-        params: dict[str, Any] = {'q': query, 'count': self.count}
+        params: dict[str, Any] = {"q": query, "count": self.count}
         if self.country:
-            params['country'] = self.country
+            params["country"] = self.country
         if self.search_lang:
-            params['search_lang'] = self.search_lang
+            params["search_lang"] = self.search_lang
         if self.ui_lang:
-            params['ui_lang'] = self.ui_lang
+            params["ui_lang"] = self.ui_lang
         if self.safe_search:
-            params['safe_search'] = self.safe_search
+            params["safe_search"] = self.safe_search
         if self.freshness:
-            params['freshness'] = self.freshness
+            params["freshness"] = self.freshness
 
         async with httpx.AsyncClient() as client:
             try:
@@ -109,8 +109,8 @@ class BaseBraveEngine(SearchEngine):
                 data = response.json()
                 results = []
                 section = data.get(self.response_key, {})
-                if section.get('results'):
-                    for result in section['results']:
+                if section.get("results"):
+                    for result in section["results"]:
                         try:
                             parsed = self.result_model(**result)
                             results.append(self.convert_result(parsed, result))
@@ -137,9 +137,9 @@ class BaseBraveEngine(SearchEngine):
     def convert_result(self, parsed: BaseModel, raw: dict[str, Any]) -> SearchResult:
         snippet = parsed.description
         # For news results, append publisher and published_time information if available.
-        if self.response_key == 'news':
-            publisher = getattr(parsed, 'publisher', None)
-            published_time = getattr(parsed, 'published_time', None)
+        if self.response_key == "news":
+            publisher = getattr(parsed, "publisher", None)
+            published_time = getattr(parsed, "published_time", None)
             if publisher and published_time:
                 snippet = f"{snippet} - {publisher} ({published_time})"
             elif publisher:
@@ -157,8 +157,8 @@ class BaseBraveEngine(SearchEngine):
 class BraveSearchEngine(BaseBraveEngine):
     engine_code = BRAVE
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[BRAVE]
-    base_url = 'https://api.search.brave.com/res/v1/web/search'
-    response_key = 'web'
+    base_url = "https://api.search.brave.com/res/v1/web/search"
+    response_key = "web"
     result_model = BraveResult
 
 
@@ -166,8 +166,8 @@ class BraveSearchEngine(BaseBraveEngine):
 class BraveNewsSearchEngine(BaseBraveEngine):
     engine_code = BRAVE_NEWS
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[BRAVE_NEWS]
-    base_url = 'https://api.search.brave.com/res/v1/news/search'
-    response_key = 'news'
+    base_url = "https://api.search.brave.com/res/v1/news/search"
+    response_key = "news"
     result_model = BraveNewsResult
 
 

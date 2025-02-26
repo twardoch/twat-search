@@ -5,6 +5,7 @@ Pytest configuration for twat_search tests.
 
 This module provides fixtures and configuration for pytest.
 """
+
 from __future__ import annotations
 
 import os
@@ -25,11 +26,11 @@ def isolate_env_vars(monkeypatch: MonkeyPatch) -> None:
     """
     # Clear all environment variables that might affect tests
     for env_var in list(os.environ.keys()):
-        if any(env_var.endswith(suffix) for suffix in ['_API_KEY', '_ENABLED', '_DEFAULT_PARAMS']):
+        if any(env_var.endswith(suffix) for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]):
             monkeypatch.delenv(env_var, raising=False)
 
     # Add special marker for test environment to bypass auto-loading in Config
-    monkeypatch.setenv('_TEST_ENGINE', 'true')
+    monkeypatch.setenv("_TEST_ENGINE", "true")
 
 
 @pytest.fixture
@@ -46,7 +47,7 @@ def env_vars_for_brave(monkeypatch: MonkeyPatch) -> None:
         from twat_search.web.engines.base import SearchEngine, register_engine
 
         class MockBraveEngine(SearchEngine):
-            name = 'brave'
+            name = "brave"
 
         register_engine(MockBraveEngine)
     except ImportError:
@@ -54,9 +55,9 @@ def env_vars_for_brave(monkeypatch: MonkeyPatch) -> None:
         pass
 
     # Set environment variables
-    monkeypatch.setenv('BRAVE_API_KEY', 'test_brave_key')
-    monkeypatch.setenv('BRAVE_ENABLED', 'true')
-    monkeypatch.setenv('BRAVE_DEFAULT_PARAMS', '{"count": 10}')
+    monkeypatch.setenv("BRAVE_API_KEY", "test_brave_key")
+    monkeypatch.setenv("BRAVE_ENABLED", "true")
+    monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')
 
     # Unset the test marker to allow loading env variables
-    monkeypatch.delenv('_TEST_ENGINE', raising=False)
+    monkeypatch.delenv("_TEST_ENGINE", raising=False)

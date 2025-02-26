@@ -4,6 +4,7 @@ Tavily Search engine implementation.
 
 This module implements the Tavily Search API integration.
 """
+
 from __future__ import annotations
 
 import textwrap
@@ -51,7 +52,7 @@ class TavilySearchEngine(SearchEngine):
 
     engine_code = TAVILY
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[TAVILY]
-    env_api_key_names: ClassVar[list[str]] = ['TAVILY_API_KEY']
+    env_api_key_names: ClassVar[list[str]] = ["TAVILY_API_KEY"]
 
     def __init__(
         self,
@@ -61,12 +62,12 @@ class TavilySearchEngine(SearchEngine):
         language: str | None = None,
         safe_search: bool | None = True,
         time_frame: str | None = None,
-        search_depth: str = 'basic',
+        search_depth: str = "basic",
         include_domains: list[str] | None = None,
         exclude_domains: list[str] | None = None,
         include_answer: bool = False,
         max_tokens: int | None = None,
-        search_type: str = 'search',
+        search_type: str = "search",
         **kwargs: Any,
     ) -> None:
         """
@@ -75,7 +76,7 @@ class TavilySearchEngine(SearchEngine):
         All external parameters and API signatures remain unchanged.
         """
         super().__init__(config)
-        self.base_url = 'https://api.tavily.com/search'
+        self.base_url = "https://api.tavily.com/search"
 
         # Helper to apply default values from config if no value was provided.
         def get_default(value, key, fallback):
@@ -83,28 +84,28 @@ class TavilySearchEngine(SearchEngine):
 
         # Map common parameters to Tavily-specific ones
         self.max_results = get_default(
-            kwargs.get('max_results', num_results),
-            'max_results',
+            kwargs.get("max_results", num_results),
+            "max_results",
             5,
         )
-        self.search_depth = get_default(search_depth, 'search_depth', 'basic')
+        self.search_depth = get_default(search_depth, "search_depth", "basic")
         self.include_domains = get_default(
             include_domains,
-            'include_domains',
+            "include_domains",
             None,
         )
         self.exclude_domains = get_default(
             exclude_domains,
-            'exclude_domains',
+            "exclude_domains",
             None,
         )
         self.include_answer = get_default(
             include_answer,
-            'include_answer',
+            "include_answer",
             False,
         )
-        self.max_tokens = get_default(max_tokens, 'max_tokens', None)
-        self.search_type = get_default(search_type, 'search_type', 'search')
+        self.max_tokens = get_default(max_tokens, "max_tokens", None)
+        self.search_type = get_default(search_type, "search_type", "search")
 
         # Store unused unified parameters for future compatibility.
         self.country = country
@@ -114,8 +115,8 @@ class TavilySearchEngine(SearchEngine):
 
         # Prepare headers.
         self.headers = {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
         }
 
         if not self.config.api_key:
@@ -129,20 +130,20 @@ class TavilySearchEngine(SearchEngine):
         Build the payload for the Tavily API request.
         """
         payload = {
-            'api_key': self.config.api_key,
-            'query': query,
-            'max_results': self.max_results,
-            'search_depth': self.search_depth,
-            'type': self.search_type,
+            "api_key": self.config.api_key,
+            "query": query,
+            "max_results": self.max_results,
+            "search_depth": self.search_depth,
+            "type": self.search_type,
         }
         if self.include_domains is not None:
-            payload['include_domains'] = self.include_domains
+            payload["include_domains"] = self.include_domains
         if self.exclude_domains is not None:
-            payload['exclude_domains'] = self.exclude_domains
+            payload["exclude_domains"] = self.exclude_domains
         if self.include_answer is not None:
-            payload['include_answer'] = self.include_answer
+            payload["include_answer"] = self.include_answer
         if self.max_tokens is not None:
-            payload['max_tokens'] = self.max_tokens
+            payload["max_tokens"] = self.max_tokens
         return payload
 
     def _convert_result(self, item: dict, rank: int) -> SearchResult | None:
@@ -150,14 +151,14 @@ class TavilySearchEngine(SearchEngine):
         Convert a single Tavily result dict to a SearchResult object.
         """
         try:
-            validated_url = HttpUrl(item.get('url', ''))
+            validated_url = HttpUrl(item.get("url", ""))
             return SearchResult(
-                title=item.get('title', ''),
+                title=item.get("title", ""),
                 url=validated_url,
                 snippet=textwrap.shorten(
-                    item.get('content', '').strip(),
+                    item.get("content", "").strip(),
                     width=500,
-                    placeholder='...',
+                    placeholder="...",
                 ),
                 source=self.engine_code,
                 rank=rank,
@@ -198,7 +199,7 @@ class TavilySearchEngine(SearchEngine):
             parsed_response = TavilySearchResponse.model_validate(data)
             items = [item.model_dump() for item in parsed_response.results]
         except ValidationError:
-            items = data.get('results', [])
+            items = data.get("results", [])
 
         for idx, item in enumerate(items, start=1):
             converted = self._convert_result(item, idx)
@@ -215,12 +216,12 @@ async def tavily(
     language: str | None = None,
     safe_search: bool | None = True,
     time_frame: str | None = None,
-    search_depth: str = 'basic',
+    search_depth: str = "basic",
     include_domains: list[str] | None = None,
     exclude_domains: list[str] | None = None,
     include_answer: bool = False,
     max_tokens: int | None = None,
-    search_type: str = 'search',
+    search_type: str = "search",
     api_key: str | None = None,
 ) -> list[SearchResult]:
     """

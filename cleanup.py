@@ -49,6 +49,7 @@ Required Files:
 - README.md: Project documentation
 - TODO.md: Pending tasks and future plans
 """
+
 from __future__ import annotations
 
 import os
@@ -59,16 +60,16 @@ from pathlib import Path
 
 # Configuration
 IGNORE_PATTERNS = [
-    '.git',
-    '.venv',
-    '__pycache__',
-    '*.pyc',
-    'dist',
-    'build',
-    '*.egg-info',
+    ".git",
+    ".venv",
+    "__pycache__",
+    "*.pyc",
+    "dist",
+    "build",
+    "*.egg-info",
 ]
-REQUIRED_FILES = ['LOG.md', '.cursor/rules/0project.mdc', 'TODO.md']
-LOG_FILE = Path('CLEANUP.txt')
+REQUIRED_FILES = ["LOG.md", ".cursor/rules/0project.mdc", "TODO.md"]
+LOG_FILE = Path("CLEANUP.txt")
 
 # Ensure we're working from the script's directory
 os.chdir(Path(__file__).parent)
@@ -82,27 +83,27 @@ def new() -> None:
 
 def prefix() -> None:
     """Write README.md content to log file."""
-    readme = Path('.cursor/rules/0project.mdc')
+    readme = Path(".cursor/rules/0project.mdc")
     if readme.exists():
-        log_message('\n=== PROJECT STATEMENT ===')
+        log_message("\n=== PROJECT STATEMENT ===")
         content = readme.read_text()
         log_message(content)
 
 
 def suffix() -> None:
     """Write TODO.md content to log file."""
-    todo = Path('TODO.md')
+    todo = Path("TODO.md")
     if todo.exists():
-        log_message('\n=== TODO.md ===')
+        log_message("\n=== TODO.md ===")
         content = todo.read_text()
         log_message(content)
 
 
 def log_message(message: str) -> None:
     """Log a message to file and console with timestamp."""
-    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     log_line = f"{timestamp} - {message}\n"
-    with LOG_FILE.open('a') as f:
+    with LOG_FILE.open("a") as f:
         f.write(log_line)
 
 
@@ -123,13 +124,13 @@ def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProce
         log_message(f"Error: {e.stderr}")
         if check:
             raise
-        return subprocess.CompletedProcess(cmd, 1, '', str(e))
+        return subprocess.CompletedProcess(cmd, 1, "", str(e))
 
 
 def check_command_exists(cmd: str) -> bool:
     """Check if a command exists in the system."""
     try:
-        subprocess.run(['which', cmd], check=True, capture_output=True)
+        subprocess.run(["which", cmd], check=True, capture_output=True)
         return True
     except subprocess.CalledProcessError:
         return False
@@ -152,36 +153,36 @@ class Cleanup:
 
     def _venv(self) -> None:
         """Create and activate virtual environment using uv."""
-        log_message('Setting up virtual environment')
+        log_message("Setting up virtual environment")
         try:
-            run_command(['uv', 'venv'])
+            run_command(["uv", "venv"])
             # Activate the virtual environment
-            venv_path = self.workspace / '.venv' / 'bin' / 'activate'
+            venv_path = self.workspace / ".venv" / "bin" / "activate"
             if venv_path.exists():
-                os.environ['VIRTUAL_ENV'] = str(self.workspace / '.venv')
-                os.environ['PATH'] = f"{self.workspace / '.venv' / 'bin'}{os.pathsep}{os.environ['PATH']}"
-                log_message('Virtual environment created and activated')
+                os.environ["VIRTUAL_ENV"] = str(self.workspace / ".venv")
+                os.environ["PATH"] = f"{self.workspace / '.venv' / 'bin'}{os.pathsep}{os.environ['PATH']}"
+                log_message("Virtual environment created and activated")
             else:
                 log_message(
-                    'Virtual environment created but activation failed',
+                    "Virtual environment created but activation failed",
                 )
         except Exception as e:
             log_message(f"Failed to create virtual environment: {e}")
 
     def _install(self) -> None:
         """Install package in development mode with all extras."""
-        log_message('Installing package with all extras')
+        log_message("Installing package with all extras")
         try:
             self._venv()
-            run_command(['uv', 'pip', 'install', '-e', '.[test,dev]'])
-            log_message('Package installed successfully')
+            run_command(["uv", "pip", "install", "-e", ".[test,dev]"])
+            log_message("Package installed successfully")
         except Exception as e:
             log_message(f"Failed to install package: {e}")
 
     def status(self) -> None:
         """Show current repository status: tree structure, git status, and run checks."""
         prefix()  # Add README.md content at start
-        _print_header('Current Status')
+        _print_header("Current Status")
 
         # Check required files
         self._check_required_files()
@@ -190,11 +191,11 @@ class Cleanup:
         _generate_tree()
 
         # Show git status
-        result = run_command(['git', 'status'], check=False)
+        result = run_command(["git", "status"], check=False)
         log_message(result.stdout)
 
         # Run additional checks
-        _print_header('Environment Status')
+        _print_header("Environment Status")
         self._venv()
         self._install()
         _run_checks()
@@ -203,12 +204,12 @@ class Cleanup:
 
     def venv(self) -> None:
         """Create and activate virtual environment."""
-        _print_header('Virtual Environment Setup')
+        _print_header("Virtual Environment Setup")
         self._venv()
 
     def install(self) -> None:
         """Install package with all extras."""
-        _print_header('Package Installation')
+        _print_header("Package Installation")
         self._install()
 
     def update(self) -> None:
@@ -218,32 +219,32 @@ class Cleanup:
 
         # Then handle git changes if any
         if _git_status():
-            log_message('Changes detected in repository')
+            log_message("Changes detected in repository")
             try:
                 # Add all changes
-                run_command(['git', 'add', '.'])
+                run_command(["git", "add", "."])
                 # Commit changes
-                commit_msg = 'Update repository files'
-                run_command(['git', 'commit', '-m', commit_msg])
-                log_message('Changes committed successfully')
+                commit_msg = "Update repository files"
+                run_command(["git", "commit", "-m", commit_msg])
+                log_message("Changes committed successfully")
             except Exception as e:
                 log_message(f"Failed to commit changes: {e}")
         else:
-            log_message('No changes to commit')
+            log_message("No changes to commit")
 
     def push(self) -> None:
         """Push changes to remote repository."""
-        _print_header('Pushing Changes')
+        _print_header("Pushing Changes")
         try:
-            run_command(['git', 'push'])
-            log_message('Changes pushed successfully')
+            run_command(["git", "push"])
+            log_message("Changes pushed successfully")
         except Exception as e:
             log_message(f"Failed to push changes: {e}")
 
 
 def _generate_tree(self) -> None:
     """Generate and display tree structure of the project."""
-    if not check_command_exists('tree'):
+    if not check_command_exists("tree"):
         log_message(
             "Warning: 'tree' command not found. Skipping tree generation.",
         )
@@ -251,20 +252,20 @@ def _generate_tree(self) -> None:
 
     try:
         # Create/overwrite the file with YAML frontmatter
-        rules_dir = Path('.cursor/rules')
+        rules_dir = Path(".cursor/rules")
         rules_dir.mkdir(parents=True, exist_ok=True)
         # Get tree output
         tree_result = run_command(
-            ['tree', '-a', '-I', '.git', '--gitignore', '-n', '-h', '-I', '*_cache'],
+            ["tree", "-a", "-I", ".git", "--gitignore", "-n", "-h", "-I", "*_cache"],
         )
         tree_text = tree_result.stdout
         # Write frontmatter and tree output to file
-        with open(rules_dir / 'filetree.mdc', 'w') as f:
-            f.write('---\ndescription: File tree of the project\nglobs: \n---\n')
+        with open(rules_dir / "filetree.mdc", "w") as f:
+            f.write("---\ndescription: File tree of the project\nglobs: \n---\n")
             f.write(tree_text)
 
         # Log the contents
-        log_message('\nProject structure:')
+        log_message("\nProject structure:")
         log_message(tree_text)
 
     except Exception as e:
@@ -274,52 +275,52 @@ def _generate_tree(self) -> None:
 
 def _git_status(self) -> bool:
     """Check git status and return True if there are changes."""
-    result = run_command(['git', 'status', '--porcelain'], check=False)
+    result = run_command(["git", "status", "--porcelain"], check=False)
     return bool(result.stdout.strip())
 
 
 def _run_checks(self) -> None:
     """Run code quality checks using ruff and pytest."""
-    log_message('Running code quality checks')
+    log_message("Running code quality checks")
 
     try:
         # Run ruff checks
-        log_message('>>> Running code fixes...')
+        log_message(">>> Running code fixes...")
         run_command(
             [
-                'python',
-                '-m',
-                'ruff',
-                'check',
-                '--fix',
-                '--unsafe-fixes',
-                'src',
-                'tests',
+                "python",
+                "-m",
+                "ruff",
+                "check",
+                "--fix",
+                "--unsafe-fixes",
+                "src",
+                "tests",
             ],
             check=False,
         )
         run_command(
             [
-                'python',
-                '-m',
-                'ruff',
-                'format',
-                '--respect-gitignore',
-                'src',
-                'tests',
+                "python",
+                "-m",
+                "ruff",
+                "format",
+                "--respect-gitignore",
+                "src",
+                "tests",
             ],
             check=False,
         )
 
         # Run type checks
-        log_message('>>>Running type checks...')
-        run_command(['python', '-m', 'mypy', 'src', 'tests'], check=False)
+        log_message(">>>Running type checks...")
+        run_command(["python", "-m", "mypy", "src", "tests"], check=False)
 
         # Run tests
-        log_message('>>> Running tests...')
-        run_command(['python', '-m', 'pytest', 'tests'], check=False)
+        log_message(">>> Running tests...")
+        run_command(["python", "-m", "pytest", "tests"], check=False)
 
-        log_message('All checks completed')
+        log_message("All checks completed")
     except Exception as e:
         log_message(f"Failed during checks: {e}")
 
@@ -332,8 +333,8 @@ def _print_header(self, message: str) -> None:
 def repomix(
     compress: bool = True,
     remove_empty_lines: bool = True,
-    ignore_patterns: str = '.specstory/**/*.md,.venv/**,_private/**,CLEANUP.txt,**/*.json,*.lock',
-    output_file: str = 'twat_search.txt',
+    ignore_patterns: str = ".specstory/**/*.md,.venv/**,_private/**,CLEANUP.txt,**/*.json,*.lock",
+    output_file: str = "twat_search.txt",
 ) -> None:
     """Combine repository files into a single text file.
 
@@ -345,15 +346,15 @@ def repomix(
     """
     try:
         # Build command
-        cmd = ['repomix']
+        cmd = ["repomix"]
         if compress:
-            cmd.append('--compress')
+            cmd.append("--compress")
         if remove_empty_lines:
-            cmd.append('--remove-empty-lines')
+            cmd.append("--remove-empty-lines")
         if ignore_patterns:
-            cmd.append('-i')
+            cmd.append("-i")
             cmd.append(ignore_patterns)
-        cmd.extend(['-o', output_file])
+        cmd.extend(["-o", output_file])
 
         # Run repomix
         run_command(cmd)
@@ -365,12 +366,12 @@ def repomix(
 
 def print_usage() -> None:
     """Print usage information."""
-    log_message('Usage:')
-    log_message('  cleanup.py status   # Show current status and run all checks')
-    log_message('  cleanup.py venv     # Create virtual environment')
-    log_message('  cleanup.py install  # Install package with all extras')
-    log_message('  cleanup.py update   # Update and commit changes')
-    log_message('  cleanup.py push     # Push changes to remote')
+    log_message("Usage:")
+    log_message("  cleanup.py status   # Show current status and run all checks")
+    log_message("  cleanup.py venv     # Create virtual environment")
+    log_message("  cleanup.py install  # Install package with all extras")
+    log_message("  cleanup.py update   # Update and commit changes")
+    log_message("  cleanup.py push     # Push changes to remote")
 
 
 def main() -> str:
@@ -385,23 +386,23 @@ def main() -> str:
     cleanup = Cleanup()
 
     try:
-        if command == 'status':
+        if command == "status":
             cleanup.status()
-        elif command == 'venv':
+        elif command == "venv":
             cleanup.venv()
-        elif command == 'install':
+        elif command == "install":
             cleanup.install()
-        elif command == 'update':
+        elif command == "update":
             cleanup.update()
-        elif command == 'push':
+        elif command == "push":
             cleanup.push()
         else:
             print_usage()
     except Exception as e:
         log_message(f"Error: {e}")
     repomix()
-    return LOG_FILE.read_text(encoding='utf-8')
+    return LOG_FILE.read_text(encoding="utf-8")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

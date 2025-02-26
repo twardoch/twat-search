@@ -6,6 +6,7 @@ Mock search engine implementation for testing.
 This module provides a mock search engine implementation that can be used
 in tests without making actual API calls.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -20,23 +21,23 @@ from twat_search.web.models import SearchResult
 class MockSearchEngine(SearchEngine):
     """Mock search engine for testing."""
 
-    engine_code = 'mock'
+    engine_code = "mock"
 
     def __init__(self, config: EngineConfig, **kwargs: Any) -> None:
         """Initialize mock engine."""
         super().__init__(config, **kwargs)
         self.query_count = 0
-        self.should_fail = kwargs.get('should_fail', False)
+        self.should_fail = kwargs.get("should_fail", False)
 
     async def search(self, query: str) -> list[SearchResult]:
         """Mock search implementation."""
         self.query_count += 1
         if self.should_fail:
-            msg = 'Mock search failure'
+            msg = "Mock search failure"
             raise Exception(msg)
 
         # Use kwargs to control the number of results
-        result_count = self.kwargs.get('result_count', 1)
+        result_count = self.kwargs.get("result_count", 1)
         return [
             SearchResult(
                 title=f"Mock Result {i + 1} for {query}",

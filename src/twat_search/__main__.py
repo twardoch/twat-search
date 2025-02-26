@@ -6,6 +6,7 @@
 """
 Main entry point for the Twat Search CLI.
 """
+
 from __future__ import annotations
 
 import logging
@@ -18,14 +19,14 @@ from rich.logging import RichHandler
 # Set up logging with rich
 logging.basicConfig(
     level=logging.INFO,
-    format='%(message)s',
+    format="%(message)s",
     handlers=[RichHandler(rich_tracebacks=True)],
 )
 logger = logging.getLogger(__name__)
 console = Console()
 
 # Define types for the CLI components
-SearchCLIType = TypeVar('SearchCLIType')
+SearchCLIType = TypeVar("SearchCLIType")
 
 
 class TwatSearchCLI:
@@ -42,7 +43,7 @@ class TwatSearchCLI:
             # Create a placeholder if the web CLI is not available
             logger.error(f"Web CLI not available: {e!s}")
             logger.error(
-                'Make sure twat_search.web.cli is properly installed.',
+                "Make sure twat_search.web.cli is properly installed.",
             )
             self.web = self._cli_error
 
@@ -53,7 +54,7 @@ class TwatSearchCLI:
         Args are ignored but necessary to match any possible call signature.
         """
         console.print(
-            '[bold red]Web CLI not available. Make sure twat_search.web.cli is properly installed.[/bold red]',
+            "[bold red]Web CLI not available. Make sure twat_search.web.cli is properly installed.[/bold red]",
         )
         return 1
 
@@ -65,7 +66,7 @@ class TwatSearchCLI:
 
             return f"Twat Search version {version}"
         except ImportError:
-            return 'Twat Search (version not available)'
+            return "Twat Search (version not available)"
 
 
 def main() -> None:
@@ -76,15 +77,15 @@ def main() -> None:
 
     install(show_locals=True)
     ansi_decoder = AnsiDecoder()
-    console = Console(theme=Theme({'prompt': 'cyan', 'question': 'bold cyan'}))
+    console = Console(theme=Theme({"prompt": "cyan", "question": "bold cyan"}))
 
     def display(lines, out):
         console.print(Group(*map(ansi_decoder.decode_line, lines)))
 
     fire.core.Display = display
 
-    fire.Fire(TwatSearchCLI, name='twat-search')
+    fire.Fire(TwatSearchCLI, name="twat-search")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
