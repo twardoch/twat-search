@@ -12,13 +12,14 @@ displays the results in a formatted table.
 """
 
 import asyncio
-import os
-import logging
+import importlib
 import json as json_lib
+import logging
+import os
 from typing import Any, TYPE_CHECKING
 
-# We need to ignore the missing stubs for fire
-import fire  # type: ignore
+import fire
+import fire.core
 from rich.console import Console
 from rich.table import Table
 from rich.logging import RichHandler
@@ -26,9 +27,11 @@ from rich.logging import RichHandler
 from twat_search.web.api import search
 from twat_search.web.config import Config
 from twat_search.web.engines import (
-    is_engine_available,
-    get_engine_function,
+    ALL_POSSIBLE_ENGINES,
+    ENGINE_FRIENDLY_NAMES,
     get_available_engines,
+    get_engine_function,
+    is_engine_available,
 )
 
 if TYPE_CHECKING:
@@ -64,23 +67,9 @@ class SearchCLI:
         self._configure_logging()
         self.console = Console()
 
-        all_possible_engines = [
-            "brave",
-            "brave_news",
-            "serpapi",
-            "tavily",
-            "pplx",
-            "you",
-            "you_news",
-            "critique",
-            "duckduckgo",
-            "bing_scraper",
-            "hasdata-google",
-            "hasdata-google-light",
-        ]
         available_engines = get_available_engines()
         missing_engines = [
-            engine for engine in all_possible_engines if engine not in available_engines
+            engine for engine in ALL_POSSIBLE_ENGINES if engine not in available_engines
         ]
         if missing_engines:
             self.logger.warning(
@@ -111,12 +100,46 @@ class SearchCLI:
         logging.getLogger("httpx").setLevel(level)
 
     def _parse_engines(self, engines_arg: Any) -> list[str] | None:
+        """Parse the engines argument into a list of engine names.
+
+        Special strings:
+        - "free": Only include engines that don't require an API key
+        - "best": Include 3 recommended engines
+        - "all": Include all available engines
+
+        Args:
+            engines_arg: String, list, or tuple of engine names
+
+        Returns:
+            List of engine names, or None to use all available engines
+        """
         if engines_arg is None:
             return None
+
+        # Handle special strings
         if isinstance(engines_arg, str):
+            if engines_arg.strip().lower() == "free":
+                # Engines that don't require an API key
+                engines = ["duckduckgo", "hasdata-google-light"]
+                self.logger.info(f"Using 'free' engines: {', '.join(engines)}")
+                return engines
+            elif engines_arg.strip().lower() == "best":
+                # 3 recommended engines (placeholder for user to edit)
+                engines = ["brave", "duckduckgo", "serpapi"]
+                self.logger.info(f"Using 'best' engines: {', '.join(engines)}")
+                return engines
+            elif engines_arg.strip().lower() == "all":
+                # Get all available engines programmatically
+                engines = get_available_engines()
+                self.logger.info(f"Using 'all' available engines: {', '.join(engines)}")
+                return engines
+
+            # Normal case: comma-separated string
             return [e.strip() for e in engines_arg.split(",") if e.strip()]
+
         if isinstance(engines_arg, list | tuple):
             return [str(e).strip() for e in engines_arg if str(e).strip()]
+
         self.logger.warning(
             f"Unexpected engines type: {type(engines_arg)}. Using all available engines."
         )
@@ -322,20 +345,20 @@ class SearchCLI:
             self._display_errors([error_msg])
             return []
 
-        friendly_names = {
-            "brave": "Brave",
-            "brave_news": "Brave News",
-            "serpapi": "SerpAPI (Google)",
-            "tavily": "Tavily AI",
-            "pplx": "Perplexity AI",
-            "you": "You.com",
-            "you_news": "You.com News",
-            "critique": "Critique",
-            "duckduckgo": "DuckDuckGo",
-            "hasdata-google": "HasData Google",
-            "hasdata-google-light": "HasData Google Light",
-        }
-        friendly = friendly_names.get(engine, engine)
+        # Try to get friendly name from the engine class first, then fall back to the dictionary
+        try:
+            from twat_search.web.engines.base import get_registered_engines
+
+            registered_engines = get_registered_engines()
+            engine_class = registered_engines.get(engine)
+            friendly = (
+                engine_class.friendly_name
+                if engine_class
+                else ENGINE_FRIENDLY_NAMES.get(engine, engine)
+            )
+        except (ImportError, AttributeError):
+            friendly = ENGINE_FRIENDLY_NAMES.get(engine, engine)
+
         if not json and not plain:
             self.console.print(f"[bold]Searching {friendly}[/bold]: {query}")
         try:
@@ -374,7 +397,11 @@ class SearchCLI:
 
         Args:
             query: The search query
-            engines: List of engines to use (comma-separated string or list)
+            engines: List of engines to use (comma-separated string or list).
+                     Special values:
+                     - "free": Only engines that don't require API keys
+                     - "best": Three recommended engines (default if no engines specified)
+                     - "all": All available engines
             engine: Alias for engines (--engine flag)
             e: Alias for engines (-e flag)
             num_results: Number of results to return per engine
@@ -397,6 +424,11 @@ class SearchCLI:
             engines = e
         if engine is not None:
             engines = engine
+
+        # Use 'best' preset if no engines are specified
+        if engines is None:
+            engines = "best"
+            self.logger.debug("No engines specified, using 'best' engines preset")
 
         engine_list = self._parse_engines(engines)
 
@@ -532,7 +564,15 @@ class SearchCLI:
                 and hasattr(engine_class, "env_api_key_names")
             ):
                 api_key_required = bool(engine_class.env_api_key_names)
-            self.console.print(f"\n[bold cyan]🔍 Engine: {engine_name}[/bold cyan]")
+
+            # Get friendly name from the engine class first, fall back to the dictionary
+            friendly_name = (
+                engine_class.friendly_name
+                if engine_class and hasattr(engine_class, "friendly_name")
+                else ENGINE_FRIENDLY_NAMES.get(engine_name, engine_name)
+            )
+
+            self.console.print(f"\n[bold cyan]🔍 Engine: {friendly_name}[/bold cyan]")
             self.console.print(
                 f"[bold]Enabled:[/bold] {'✅' if engine_config.enabled else '❌'}"
             )
@@ -1206,7 +1246,7 @@ class SearchCLI:
 
 def main() -> None:
     fire.core.Display = lambda lines, out: console.print(*lines)
-    fire.Fire(SearchCLI())
+    fire.Fire(SearchCLI)
 
 
 if __name__ == "__main__":

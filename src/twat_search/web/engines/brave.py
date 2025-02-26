@@ -134,6 +134,7 @@ class BaseBraveEngine(SearchEngine):
 @register_engine
 class BraveSearchEngine(BaseBraveEngine):
     name = "brave"
+    friendly_name = "Brave"
     base_url = "https://api.search.brave.com/res/v1/web/search"
     response_key = "web"
     result_model = BraveResult
@@ -142,6 +143,7 @@ class BraveSearchEngine(BaseBraveEngine):
 @register_engine
 class BraveNewsSearchEngine(BaseBraveEngine):
     name = "brave-news"
+    friendly_name = "Brave News"
     base_url = "https://api.search.brave.com/res/v1/news/search"
     response_key = "news"
     result_model = BraveNewsResult

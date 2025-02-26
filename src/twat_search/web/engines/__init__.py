@@ -16,8 +16,74 @@ from collections.abc import Callable, Coroutine
 
 from twat_search.web.models import SearchResult
 
+# Engine name constants for use throughout the codebase
+# These constants should be used instead of string literals
+BRAVE = "brave"
+BRAVE_NEWS = "brave_news"
+SERPAPI = "serpapi"
+TAVILY = "tavily"
+PERPLEXITY = "pplx"
+YOU = "you"
+YOU_NEWS = "you_news"
+CRITIQUE = "critique"
+DUCKDUCKGO = "duckduckgo"
+BING_SCRAPER = "bing_scraper"
+HASDATA_GOOGLE = "hasdata-google"
+HASDATA_GOOGLE_LIGHT = "hasdata-google-light"
+
+# Complete list of all possible engines
+ALL_POSSIBLE_ENGINES = [
+    BRAVE,
+    BRAVE_NEWS,
+    SERPAPI,
+    TAVILY,
+    PERPLEXITY,
+    YOU,
+    YOU_NEWS,
+    CRITIQUE,
+    DUCKDUCKGO,
+    BING_SCRAPER,
+    HASDATA_GOOGLE,
+    HASDATA_GOOGLE_LIGHT,
+]
+
+# Dictionary of friendly names for engines
+ENGINE_FRIENDLY_NAMES = {
+    BRAVE: "Brave",
+    BRAVE_NEWS: "Brave News",
+    SERPAPI: "SerpAPI (Google)",
+    TAVILY: "Tavily AI",
+    PERPLEXITY: "Perplexity AI",
+    YOU: "You.com",
+    YOU_NEWS: "You.com News",
+    CRITIQUE: "Critique",
+    DUCKDUCKGO: "DuckDuckGo",
+    HASDATA_GOOGLE: "HasData Google",
+    HASDATA_GOOGLE_LIGHT: "HasData Google Light",
+}
+
 # Initialize empty __all__ list
 __all__ = []
+
+# Add constants to exports
+__all__.extend(
+    [
+        "BRAVE",
+        "BRAVE_NEWS",
+        "SERPAPI",
+        "TAVILY",
+        "PERPLEXITY",
+        "YOU",
+        "YOU_NEWS",
+        "CRITIQUE",
+        "DUCKDUCKGO",
+        "BING_SCRAPER",
+        "HASDATA_GOOGLE",
+        "HASDATA_GOOGLE_LIGHT",
+        "ALL_POSSIBLE_ENGINES",
+        "ENGINE_FRIENDLY_NAMES",
+    ]
+)
 
 # Dict to track available engine functions
 available_engine_functions = {}

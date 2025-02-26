@@ -5,7 +5,7 @@
 # this_file: src/twat_search/__main__.py
 
 """
-Main entry point for the TWAT Search CLI.
+Main entry point for the Twat Search CLI.
 """
 
 import logging
@@ -29,10 +29,10 @@ SearchCLIType = TypeVar("SearchCLIType")
 
 
 class TwatSearchCLI:
-    """TWAT Search Command Line Interface."""
+    """Twat Search Command Line Interface."""
 
     def __init__(self) -> None:
-        """Initialize the TWAT Search CLI."""
+        """Initialize the Twat Search CLI."""
         # Try to import the web CLI module
         try:
             from twat_search.web import cli as web_cli
@@ -55,18 +55,31 @@ class TwatSearchCLI:
         return 1
 
     def version(self) -> str:
-        """Display the version of the TWAT Search tool."""
+        """Display the version of the Twat Search tool."""
         try:
             from twat_search.__version__ import version
 
-            return f"TWAT Search version {version}"
+            return f"Twat Search version {version}"
         except ImportError:
-            return "TWAT Search (version not available)"
+            return "Twat Search (version not available)"
 
 
 def main() -> None:
-    """Main entry point for the TWAT Search CLI."""
-    fire.Fire(TwatSearchCLI(), name="twat-search")
+    from rich.ansi import AnsiDecoder
+    from rich.console import Console, Group
+    from rich.theme import Theme
+    from rich.traceback import install
+
+    install(show_locals=True)
+    ansi_decoder = AnsiDecoder()
+    console = Console(theme=Theme({"prompt": "cyan", "question": "bold cyan"}))
+
+    def display(lines, out):
+        console.print(Group(*map(ansi_decoder.decode_line, lines)))
+
+    fire.core.Display = display
+
+    fire.Fire(TwatSearchCLI, name="twat-search")
 
 
 if __name__ == "__main__":

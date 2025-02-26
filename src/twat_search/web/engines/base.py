@@ -24,6 +24,7 @@ class SearchEngine(abc.ABC):
     """
 
     name: ClassVar[str] = ""  # Class attribute that must be defined by subclasses
+    friendly_name: ClassVar[str] = ""  # User-friendly name for display purposes
 
     # Class attributes for environment variables
     env_api_key_names: ClassVar[list[str]] = []  # Override with engine-specific names
@@ -89,6 +90,17 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
         engine_class.env_enabled_names = [f"{engine_class.name.upper()}_ENABLED"]
     if not hasattr(engine_class, "env_params_names"):
         engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]
+
+    # Set friendly_name if not defined but it exists in ENGINE_FRIENDLY_NAMES
+    if not engine_class.friendly_name:
+        try:
+            from twat_search.web.engines import ENGINE_FRIENDLY_NAMES
+
+            engine_class.friendly_name = ENGINE_FRIENDLY_NAMES.get(
+                engine_class.name, engine_class.name
+            )
+        except ImportError:
+            engine_class.friendly_name = engine_class.name
 
     return engine_class
 
