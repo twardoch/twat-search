@@ -221,8 +221,8 @@ class Cleanup:
         if _git_status():
             log_message("Changes detected in repository")
             try:
-                # Add all changes
-                run_command(["git", "add", "."])
+                run_command(["pre-commit", "run", "--all-files"])
+                run_command(["git", "add", "-A", "."])
                 # Commit changes
                 commit_msg = "Update repository files"
                 run_command(["git", "commit", "-m", commit_msg])
