@@ -229,6 +229,10 @@ class BraveSearchEngine(BaseBraveEngine):
                     ),
                 )
 
+                # Break early if we've hit the max_results
+                if len(results) >= self.max_results:
+                    break
+
             # Use the limit_results method to enforce num_results
             return self.limit_results(results)
         except Exception as e:
@@ -285,6 +289,10 @@ class BraveNewsSearchEngine(BaseBraveEngine):
                         is_first=(idx == 1),
                     ),
                 )
+
+                # Break early if we've hit the max_results
+                if len(results) >= self.max_results:
+                    break
 
             # Use the limit_results method to enforce num_results
             return self.limit_results(results)

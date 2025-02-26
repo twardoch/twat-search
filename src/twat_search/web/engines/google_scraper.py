@@ -292,7 +292,7 @@ class GoogleScraperEngine(SearchEngine):
         logger.info(
             f"Returning {len(results)} validated results from Google Scraper",
         )
-        return results
+        return self.limit_results(results)
 
 
 async def google_scraper(

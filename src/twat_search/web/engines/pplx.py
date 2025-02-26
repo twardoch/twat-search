@@ -58,7 +58,6 @@ class PerplexitySearchEngine(SearchEngine):
         super().__init__(config, **kwargs)
         self.base_url = "https://api.perplexity.ai/chat/completions"
         self.model = kwargs.get("model") or self.config.default_params.get("model", "pplx-70b-online")
-        self.max_results = self._get_num_results()
 
         # Set up the authentication headers using the api_key from base class
         self.headers = {
@@ -130,7 +129,7 @@ class PerplexitySearchEngine(SearchEngine):
                 logger.warning(f"Invalid result from Perplexity: {e}")
                 continue
 
-        return results
+        return self.limit_results(results)
 
 
 async def pplx(

@@ -130,7 +130,7 @@ class BingScraperSearchEngine(SearchEngine):
         """
         super().__init__(config, **kwargs)
         # Set max_results from num_results or fall back to config default
-        self.max_results = num_results if num_results is not None else self.config.default_params.get("max_results", 5)
+        self.max_results_value = self._get_num_results(param_name="num_results", min_value=1)
 
         self.max_retries: int = kwargs.get(
             "max_retries",
@@ -232,7 +232,7 @@ class BingScraperSearchEngine(SearchEngine):
             )
 
             # Perform the search
-            raw_results = scraper.search(query, num_results=self.max_results)
+            raw_results = scraper.search(query, num_results=self.max_results_value)
 
             # Return an empty list if no results
             if not raw_results:
@@ -245,18 +245,18 @@ class BingScraperSearchEngine(SearchEngine):
 
             # Convert the results - respecting max_results
             results = []
-            for result in raw_results[: self.max_results]:
+            for result in raw_results[: self.max_results_value]:
                 search_result = self._convert_result(result)
                 if search_result:
                     results.append(search_result)
                     # Stop if we've reached the desired number of results
-                    if len(results) >= self.max_results:
+                    if len(results) >= self.max_results_value:
                         break
 
             logger.info(
                 f"Returning {len(results)} validated results from Bing Scraper",
             )
-            return results
+            return self.limit_results(results)
 
         except ConnectionError as exc:
             error_msg = f"Network error connecting to Bing: {exc}"

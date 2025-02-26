@@ -73,7 +73,7 @@ class CritiqueSearchEngine(SearchEngine):
         super().__init__(config)
 
         self.base_url = "https://api.critique-labs.ai/v1/search"
-        self.num_results = num_results
+        self.num_results = self._get_num_results(param_name="num_results", min_value=1)
         self.country = country
         self.language = language
         self.safe_search = safe_search
@@ -210,7 +210,8 @@ class CritiqueSearchEngine(SearchEngine):
                 )
                 response.raise_for_status()
                 data = response.json()
-                return self._parse_results(data)
+                results = self._parse_results(data)
+                return self.limit_results(results)
             except httpx.RequestError as exc:
                 raise EngineError(
                     self.engine_code,

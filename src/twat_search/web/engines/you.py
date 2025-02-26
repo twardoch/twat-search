@@ -61,9 +61,6 @@ class YouBaseEngine(SearchEngine):
             "Accept": "application/json",
         }
 
-        # Get the num_results using the improved method from the base class
-        self.max_results = self._get_num_results(self.num_results_param)
-
         # Get country code
         self.country_code = kwargs.get("country") or self.config.default_params.get(
             "country_code",
@@ -133,7 +130,7 @@ class YouSearchEngine(YouBaseEngine):
                 except ValidationError as e:
                     logger.warning(f"Invalid result from You.com: {e}")
                     continue
-            return results
+            return self.limit_results(results)
         except ValidationError as exc:
             raise EngineError(
                 self.engine_code,
@@ -181,7 +178,7 @@ class YouNewsSearchEngine(YouBaseEngine):
                 except ValidationError as e:
                     logger.warning(f"Invalid news result from You.com: {e}")
                     continue
-            return results
+            return self.limit_results(results)
         except ValidationError as exc:
             raise EngineError(
                 self.engine_code,
