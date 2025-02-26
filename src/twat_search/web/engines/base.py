@@ -199,7 +199,6 @@ class SearchEngine(abc.ABC):
         Returns:
             List of search results
         """
-        pass
 
 
 # Registry of available search engines

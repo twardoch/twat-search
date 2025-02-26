@@ -221,6 +221,18 @@ class Cleanup:
         if _git_status():
             log_message("Changes detected in repository")
             try:
+                run_command(
+                    [
+                        "autoflake",
+                        "--recursive",
+                        "--in-place",
+                        "--remove-all-unused-imports",
+                        "--expand-star-imports",
+                        "--ignore-init-module-imports",
+                        "--remove-duplicate-keys",
+                        ".",
+                    ],
+                )
                 run_command(["pre-commit", "run", "--all-files"])
                 run_command(["git", "add", "-A", "."])
                 # Commit changes
@@ -374,7 +386,7 @@ def print_usage() -> None:
     log_message("  cleanup.py push     # Push changes to remote")
 
 
-def main() -> str:
+def main() -> None:
     """Main entry point."""
     new()  # Clear log file
 
@@ -401,7 +413,7 @@ def main() -> str:
     except Exception as e:
         log_message(f"Error: {e}")
     repomix()
-    return LOG_FILE.read_text(encoding="utf-8")
+    print(LOG_FILE.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

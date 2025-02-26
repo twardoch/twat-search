@@ -2231,6 +2231,7 @@ class Cleanup:
         self.status()
         if _git_status():
             log_message("Changes detected in repository")
+                run_command(
                 run_command(["pre-commit", "run", "--all-files"])
                 run_command(["git", "add", "-A", "."])
                 run_command(["git", "commit", "-m", commit_msg])
@@ -2259,7 +2260,6 @@ def _git_status(self) -> bool:
 def _run_checks(self) -> None:
     log_message("Running code quality checks")
         log_message(">>> Running code fixes...")
-        run_command(
         log_message(">>>Running type checks...")
         run_command(["python", "-m", "mypy", "src", "tests"], check=False)
         log_message(">>> Running tests...")
@@ -2284,7 +2284,7 @@ def print_usage() -> None:
     log_message("  cleanup.py install  # Install package with all extras")
     log_message("  cleanup.py update   # Update and commit changes")
     log_message("  cleanup.py push     # Push changes to remote")
-def main() -> str:
+def main() -> None:
     new()  # Clear log file
     if len(sys.argv) < 2:
         print_usage()
@@ -2297,7 +2297,7 @@ def main() -> str:
             cleanup.push()
         log_message(f"Error: {e}")
     repomix()
-    return LOG_FILE.read_text(encoding="utf-8")
+    print(LOG_FILE.read_text(encoding="utf-8"))
     main()
 
 ================
@@ -3515,6 +3515,12 @@ File: PROGRESS.md
 this_file: PROGRESS.md
 ---
 
+# twat-search Progress Report
+
+## Project Status
+
+The basic implementation of the `twat-search` web package is complete. This multi-provider search tool now supports multiple search engines and has a functional CLI interface.
+
 ## Completed
 - [x] Defined common parameters in base `SearchEngine` class
 - [x] Updated search engines to use unified parameters
@@ -3524,23 +3530,58 @@ this_file: PROGRESS.md
 
 ## In Progress
 - [ ] Fixing type checking and linting issues identified in cleanup report
-- [ ] Completing Bing Scraper implementation and tests
+  - Currently 263 linting errors reported by ruff
+  - 30 errors found by mypy
+- [ ] Resolving critical issues with engines and parameter handling
+  - `num_results` parameter not being respected across engines
+  - API key detection issues in multiple engines
+  - Failing scrapers returning no results
+  - Unexpected engine fallback behavior
+  - SearchEngine attribute inconsistencies
+  - Config implementation test failures
 - [ ] Addressing failing test in config environment variable loading
 
 ## Upcoming
-- [ ] Enhancing test framework with mocks and fixtures
-- [ ] Standardizing error handling across all engines
-- [ ] Improving documentation and adding comprehensive examples
-- [ ] Implementing performance optimizations
-- [ ] Adding advanced features (caching, rate limiting, result normalization)
+- [ ] Adding comprehensive error handling
+- [ ] Improving engine initialization process
+- [ ] Standardizing parameter handling across all engines
+- [ ] Enhancing testing and reliability
+- [ ] Improving CLI usability and output formats
+- [ ] Implementing configuration workflow for better user experience
+- [ ] Addressing engine-specific fixes
 
-## Known Issues
-- Environment variable loading not working correctly in tests
-- Missing type annotations in several modules
-- Excessive parameter counts in engine initialization methods
-- Skipped tests for asynchronous components
+## Critical Issues (From TODO.md)
+1. **Fix `num_results` parameter not being respected**
+   - Currently, specifying `-n 1` or `--num_results=1` is ignored and engines fetch more results
+   - Root cause: Inconsistent parameter handling across engines
+
+2. **Fix API key detection issues**
+   - Multiple engines fail despite environment variables being set
+   - Affected engines: `brave_anyws`, `brave_news`, `critique`, `google_serpapi`, `pplx`, `you`, `you_news`
+
+3. **Fix failing scrapers with no results**
+   - Several engines return no results: `bing_anyws`, `bing_searchit`, `google_anyws`, `google_searchit`, `qwant_anyws`, `qwant_searchit`
+
+4. **Eliminate unexpected engine fallback behavior**
+   - When a specified engine fails, the code sometimes falls back to other engines
+   - Creates confusing output for users who expect specific engines
+
+5. **Fix SearchEngine attribute inconsistencies**
+   - Tests failing due to `name` attribute being expected but `engine_code` is used instead
+
+6. **Resolve test failures in Config implementation**
+   - Tests failing around default config values and environment variable loading
+
+## Development Notes
+- Uses `uv` for Python package management
+- Quality tools: ruff, mypy, pytest
+- Clear provider protocol for adding new search backends
+- Strong typing and runtime checks throughout
 
 See [TODO.md](TODO.md) for the detailed task breakdown and implementation plans.
+
+## Last Updated
+2025-02-26
 
 ================
 File: pyproject.toml

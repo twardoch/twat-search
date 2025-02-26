@@ -64,7 +64,8 @@ class RateLimiter:
     def __init__(self, calls_per_second: float) -> None:
         self.calls_per_second = calls_per_second
         self.min_interval = 1.0 / calls_per_second
-        self.last_call_time = 0
+        self.last_call_time = 0.0
+        self.call_timestamps: list[float] = []
 
     async def wait(self) -> None:
         """
@@ -77,6 +78,29 @@ class RateLimiter:
             logger.debug(f"Rate limiter sleeping for {delay:.4f} seconds")
             time.sleep(delay)
         self.last_call_time = time.time()
+
+    def wait_if_needed(self) -> None:
+        """
+        Wait if needed to respect the rate limit.
+
+        This method is used by the tests to check rate limiting functionality.
+        """
+        current_time = time.time()
+
+        # Clean up old timestamps (older than 1 second)
+        self.call_timestamps = [ts for ts in self.call_timestamps if current_time - ts <= 1.0]
+
+        # Check if we need to wait
+        if len(self.call_timestamps) >= self.calls_per_second:
+            oldest_timestamp = min(self.call_timestamps)
+            elapsed = current_time - oldest_timestamp
+            if elapsed < 1.0:  # If less than 1 second has passed since oldest call
+                delay = 1.0 - elapsed
+                logger.debug(f"Rate limiter sleeping for {delay:.4f} seconds")
+                time.sleep(delay)
+
+        # Record this call
+        self.call_timestamps.append(time.time())
 
 
 def extract_domain(url: str) -> str:

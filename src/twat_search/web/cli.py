@@ -538,6 +538,9 @@ class SearchCLI:
                     registered_engines,
                 )
         # Print JSON output
+        import json
+
+        print(json.dumps(result, indent=2))
 
     async def critique(
         self,
@@ -1124,12 +1127,11 @@ class SearchCLI:
         )
 
 
-def _check_engine_availability(self, engine_name: str) -> bool:
+def _check_engine_availability(engine_name: str) -> bool:
     return is_engine_available(engine_name)
 
 
 def _get_engine_info(
-    self,
     engine_name: str,
     engine_config: Any,
     registered_engines: dict,
@@ -1164,7 +1166,7 @@ def _get_engine_info(
     }
 
 
-def _process_results(self, results: list) -> list[dict[str, Any]]:
+def _process_results(results: list) -> list[dict[str, Any]]:
     processed = []
     engine_results: dict[str, list] = {}
 
@@ -1207,7 +1209,6 @@ def _process_results(self, results: list) -> list[dict[str, Any]]:
 
 
 def _display_results(
-    self,
     processed_results: list[dict[str, Any]],
     verbose: bool = False,
     plain: bool = False,
@@ -1262,7 +1263,7 @@ def _display_results(
                 console.print(result)
 
 
-def _display_errors(self, error_messages: list[str]) -> None:
+def _display_errors(error_messages: list[str]) -> None:
     if not error_messages:
         return
     table = Table(title="❌ Search Errors")
@@ -1272,7 +1273,7 @@ def _display_errors(self, error_messages: list[str]) -> None:
     console.print(table)
 
 
-def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:
+def _display_json_results(processed_results: list[dict[str, Any]]) -> None:
     """Format and print results as JSON."""
     results_by_engine: dict[str, dict[str, list[dict[str, Any]]]] = {}
 
@@ -1299,6 +1300,9 @@ def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None
         )
 
     # Print the JSON output
+    import json
+
+    print(json.dumps(results_by_engine, indent=2))
 
 
 def main() -> None:

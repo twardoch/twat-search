@@ -1,28 +1,16 @@
-2025-02-26 17:47:41 - 
-=== PROJECT STATEMENT ===
-2025-02-26 17:47:41 - ---
-description: About this project
-globs: 
-alwaysApply: false
----
-# About this project
-
-`twat-search` is a multi-provider search 
-
-## Development Notes
-- Uses `uv` for Python package management
-- Quality tools: ruff, mypy, pytest
-- Clear provider protocol for adding new search backends
-- Strong typing and runtime checks throughout
-
-2025-02-26 17:47:41 - Error: _print_header() missing 1 required positional argument: 'message'
-2025-02-26 17:47:43 - 
+2025-02-26 17:59:11 - Usage:
+2025-02-26 17:59:11 -   cleanup.py status   # Show current status and run all checks
+2025-02-26 17:59:11 -   cleanup.py venv     # Create virtual environment
+2025-02-26 17:59:11 -   cleanup.py install  # Install package with all extras
+2025-02-26 17:59:11 -   cleanup.py update   # Update and commit changes
+2025-02-26 17:59:11 -   cleanup.py push     # Push changes to remote
+2025-02-26 17:59:14 - 
 📦 Repomix v0.2.29
 
 No custom config found at repomix.config.json or global config at /Users/adam/.config/repomix/repomix.config.json.
 You can add a config file for additional settings. Please check https://github.com/yamadashy/repomix for more information.
 ⠙ Collecting files...
-[2K[1A[2K[G⠹ Collecting files...
+[2K[1A[2K[G⠹ Collect file... (2/54) .cursor/rules/cleanup.mdc
 [2K[1A[2K[G⠸ Collect file... (5/54) .github/workflows/release.yml
 [2K[1A[2K[G⠼ Collect file... (5/54) .github/workflows/release.yml
 [2K[1A[2K[G⠴ Collect file... (5/54) .github/workflows/release.yml
@@ -35,17 +23,22 @@ You can add a config file for additional settings. Please check https://github.c
 [2K[1A[2K[G⠹ Collect file... (5/54) .github/workflows/release.yml
 [2K[1A[2K[G⠸ Collect file... (5/54) .github/workflows/release.yml
 [2K[1A[2K[G⠼ Collect file... (5/54) .github/workflows/release.yml
-[2K[1A[2K[G⠴ Running security check...
-[2K[1A[2K[G⠦ Running security check... (5/54) .github/workflows/release.yml
+[2K[1A[2K[G⠴ Collect file... (6/54) .specstory/history.txt
+[2K[1A[2K[G⠦ Running security check...
 [2K[1A[2K[G⠧ Running security check... (5/54) .github/workflows/release.yml
-[2K[1A[2K[G⠇ Processing files...
+[2K[1A[2K[G⠇ Running security check... (5/54) .github/workflows/release.yml
 [2K[1A[2K[G⠏ Processing files...
-[2K[1A[2K[G⠋ Processing file... (11/53) src/twat_search/web/engines/critique.py
-[2K[1A[2K[G⠙ Processing file... (45/53) CHANGELOG.md
-[2K[1A[2K[G⠹ Calculating metrics...
-[2K[1A[2K[G⠸ Calculating metrics...
-[2K[1A[2K[G⠼ Calculating metrics...
-[2K[1A[2K[G⠴ Calculating metrics... (2/53) .cursor/rules/cleanup.mdc
+[2K[1A[2K[G⠋ Processing files...
+[2K[1A[2K[G⠙ Processing files...
+[2K[1A[2K[G⠹ Processing file... (5/53) .github/workflows/release.yml
+[2K[1A[2K[G⠸ Processing file... (7/53) src/twat_search/web/engines/anywebsearch.py
+[2K[1A[2K[G⠼ Processing file... (34/53) tests/unit/web/test_config.py
+[2K[1A[2K[G⠴ Calculating metrics...
+[2K[1A[2K[G⠦ Calculating metrics...
+[2K[1A[2K[G⠧ Calculating metrics...
+[2K[1A[2K[G⠇ Calculating metrics...
+[2K[1A[2K[G⠏ Calculating metrics... (3/53) .cursor/rules/filetree.mdc
+[2K[1A[2K[G⠋ Calculating metrics... (50/53) pyproject.toml
 [2K[1A[2K[G✔ Packing completed successfully!
 
 📈 Top 5 Files by Character Count and Token Count:
@@ -68,8 +61,8 @@ Please review these files for potential sensitive information.
 📊 Pack Summary:
 ────────────────
   Total Files: 53 files
-  Total Chars: 160,346 chars
- Total Tokens: 39,383 tokens
+  Total Chars: 162,127 chars
+ Total Tokens: 39,794 tokens
        Output: twat_search.txt
      Security: 1 suspicious file(s) detected and excluded
 
@@ -78,4 +71,4 @@ Your repository has been successfully packed.
 
 💡 Repomix is now available in your browser! Try it at https://repomix.com
 
-2025-02-26 17:47:43 - Repository content mixed into twat_search.txt
+2025-02-26 17:59:14 - Repository content mixed into twat_search.txt

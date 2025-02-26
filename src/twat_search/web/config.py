@@ -375,7 +375,7 @@ class Config(BaseModel):
         )
 
 
-def _apply_env_overrides(self, config_data: dict[str, Any]) -> None:
+def _apply_env_overrides(config_data: dict[str, Any]) -> None:
     """Apply configuration overrides from environment variables.
 
     Args:
