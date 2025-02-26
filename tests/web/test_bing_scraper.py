@@ -69,7 +69,7 @@ class TestBingScraperEngine:
     def test_init(self, mock_BingScraper: MagicMock, engine: Any) -> None:
         """Test BingScraperSearchEngine initialization."""
         assert engine.engine_code == "bing_scraper"
-        assert engine.max_results == 5
+        assert engine.num_results == 5
         assert engine.max_retries == 3
         assert engine.delay_between_requests == 1.0
         # Lazy initialization - BingScraper shouldn't be called yet

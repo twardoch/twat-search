@@ -61,7 +61,6 @@ src/
     web/
       engines/
         __init__.py
-        anywebsearch.py
         base.py
         bing_scraper.py
         brave.py
@@ -429,90 +428,12 @@ File: src/twat_search/web/engines/__init__.py
     __all__.extend(["GoogleScraperEngine", "google_scraper"])
     logger.warning(f"Failed to import google_scraper module: {e}")
     logger.warning(f"Failed to import searchit module: {e}")
-    logger.warning(f"Failed to import anywebsearch module: {e}")
 def is_engine_available(engine_name: str) -> bool:
     standardized_name = standardize_engine_name(engine_name)
 def get_engine_function(
     return available_engine_functions.get(standardized_name)
 def get_available_engines() -> list[str]:
     return list(available_engine_functions.keys())
-
-================
-File: src/twat_search/web/engines/anywebsearch.py
-================
-    class AnySearchResult:  # type: ignore
-        def __init__(self, title: str, description: str, url: str):
-    class Settings:  # type: ignore
-        def __init__(
-    def multi_search(query: str, settings: Settings) -> list[AnySearchResult]:
-logger = logging.getLogger(__name__)
-class AnyWebSearchResult(BaseModel):
-    @field_validator("title", "description")
-    def validate_non_empty(cls, v: str) -> str:
-class AnyWebSearchEngine(SearchEngine):
-        super().__init__(config, **kwargs)
-        self.max_results: int = num_results or self.config.default_params.get(
-        self.language: str = language or self.config.default_params.get(
-        self.brave_key: str | None = kwargs.get(
-        ) or self.config.default_params.get("brave_key", None)
-        self.ya_key: str | None = kwargs.get(
-        ) or self.config.default_params.get("ya_key", None)
-        self.ya_fldid: str | None = kwargs.get(
-        ) or self.config.default_params.get("ya_fldid", None)
-    def _convert_result(self, result: AnySearchResult) -> SearchResult | None:
-            logger.warning(f"Empty result received from {self.engine_code}")
-            validated = AnyWebSearchResult(
-                url=HttpUrl(result.url),
-                description=result.description if hasattr(result, "description") else "",
-            return SearchResult(
-                    "url": str(result.url),
-                    "description": result.description if hasattr(result, "description") else "",
-            logger.warning(f"Validation error for result: {exc}")
-            logger.warning(f"Unexpected error converting result: {exc}")
-    def _create_settings(self) -> Settings:
-        return Settings(
-class GoogleAnyWebSearchEngine(AnyWebSearchEngine):
-    async def search(self, query: str) -> list[SearchResult]:
-            raise EngineError(self.engine_code, "Search query cannot be empty")
-        logger.info(f"Searching Google (anywebsearch) with query: '{query}'")
-        logger.debug(
-            settings = self._create_settings()
-            raw_results = multi_search(query=query, settings=settings)
-                logger.info("No results returned from Google (anywebsearch)")
-            if isinstance(raw_results[0], AnySearchResult):
-                f"Received {len(raw_results_list)} raw results from Google (anywebsearch)",
-                for search_result in (self._convert_result(result) for result in raw_results_list)
-            logger.info(
-                f"Returning {len(results)} validated results from Google (anywebsearch)",
-            logger.error(error_msg)
-            raise EngineError(self.engine_code, error_msg) from exc
-class BingAnyWebSearchEngine(AnyWebSearchEngine):
-        logger.info(f"Searching Bing (anywebsearch) with query: '{query}'")
-                logger.info("No results returned from Bing (anywebsearch)")
-                f"Received {len(raw_results_list)} raw results from Bing (anywebsearch)",
-                f"Returning {len(results)} validated results from Bing (anywebsearch)",
-class BraveAnyWebSearchEngine(AnyWebSearchEngine):
-            raise EngineError(
-        logger.info(f"Searching Brave (anywebsearch) with query: '{query}'")
-                logger.info("No results returned from Brave (anywebsearch)")
-                f"Received {len(raw_results_list)} raw results from Brave (anywebsearch)",
-                f"Returning {len(results)} validated results from Brave (anywebsearch)",
-class QwantAnyWebSearchEngine(AnyWebSearchEngine):
-        logger.info(f"Searching Qwant (anywebsearch) with query: '{query}'")
-                logger.info("No results returned from Qwant (anywebsearch)")
-                f"Received {len(raw_results_list)} raw results from Qwant (anywebsearch)",
-                f"Returning {len(results)} validated results from Qwant (anywebsearch)",
-class YandexAnyWebSearchEngine(AnyWebSearchEngine):
-        logger.info(f"Searching Yandex (anywebsearch) with query: '{query}'")
-                logger.info("No results returned from Yandex (anywebsearch)")
-                f"Received {len(raw_results_list)} raw results from Yandex (anywebsearch)",
-                f"Returning {len(results)} validated results from Yandex (anywebsearch)",
-async def google_anyws(
-    return await search(
-async def bing_anyws(
-async def brave_anyws(
-async def qwant_anyws(
-async def yandex_anyws(
 
 ================
 File: src/twat_search/web/engines/base.py
@@ -531,8 +452,8 @@ class SearchEngine(abc.ABC):
             raise SearchError(msg)
     def get_num_results(
         value = self.kwargs.get(param_name)
-            return max(min_value, int(value))
-            return max(min_value, self.num_results)
+            return int(value)
+            return int(self.num_results)
         default = self.config.default_params.get(
         ) or self.config.default_params.get("num_results")
             return max(min_value, int(default))
@@ -569,7 +490,7 @@ logger = logging.getLogger(__name__)
 class BingScraperResult(BaseModel):
 class BingScraperSearchEngine(SearchEngine):
         super().__init__(config, **kwargs)
-        self.max_results: int = num_results or self.config.default_params.get(
+        self.max_results = num_results if num_results is not None else self.config.default_params.get("max_results", 5)
         self.max_retries: int = kwargs.get(
         ) or self.config.default_params.get("max_retries", 3)
         self.delay_between_requests: float = kwargs.get(
@@ -598,13 +519,17 @@ class BingScraperSearchEngine(SearchEngine):
             raw_results = scraper.search(query, num_results=self.max_results)
                 logger.info("No results returned from Bing Scraper")
                 f"Received {len(raw_results)} raw results from Bing Scraper",
+                search_result = self._convert_result(result)
+                    results.append(search_result)
+                    if len(results) >= self.max_results:
+            logger.info(
+                f"Returning {len(results)} validated results from Bing Scraper",
             logger.error(error_msg)
             raise EngineError(self.engine_code, error_msg) from exc
-            for search_result in (self._convert_result(result) for result in raw_results)
-        logger.info(
-            f"Returning {len(results)} validated results from Bing Scraper",
 async def bing_scraper(
-    return await search(
+    config = EngineConfig(enabled=True)
+    engine = BingScraperSearchEngine(
+    return await engine.search(query)
 
 ================
 File: src/twat_search/web/engines/brave.py
@@ -614,7 +539,7 @@ class BraveNewsResult(BaseModel):
 class BaseBraveEngine(SearchEngine):
     def __init__(
         super().__init__(config, **kwargs)
-        self.count = self.get_num_results(param_name="count", min_value=1)
+        self.num_results = self.get_num_results(param_name="num_results", min_value=1)
         self.country = country or kwargs.get("country") or self.config.default_params.get("country", None)
         search_lang = kwargs.get("search_lang", language)
         self.search_lang = search_lang or self.config.default_params.get(
@@ -733,12 +658,15 @@ class DuckDuckGoSearchEngine(SearchEngine):
             logger.warning(f"Validation error for result: {exc}")
     async def search(self, query: str) -> list[SearchResult]:
             ddgs = DDGS(proxy=self.proxy, timeout=self.timeout)
-            raw_results = ddgs.text(**params)
+            raw_results = ddgs.text(
                 converted = self._convert_result(raw)
                     results.append(converted)
+                    if len(results) >= self.max_results:
             raise EngineError(
 async def duckduckgo(
-    return await search(
+    config = EngineConfig(enabled=True)
+    engine = DuckDuckGoSearchEngine(
+    return await engine.search(query)
 
 ================
 File: src/twat_search/web/engines/google_scraper.py
@@ -970,7 +898,7 @@ class SerpApiSearchEngine(SearchEngine):
                         results.append(
                             SearchResult(
                                 raw=result.model_dump(),  # Include raw result for debugging
-def _convert_safe(self, safe: bool | str | None) -> str | None:
+def _convert_safe(safe: bool | str | None) -> str | None:
     if isinstance(safe, bool):
 async def google_serpapi(
     config = EngineConfig(
@@ -984,17 +912,14 @@ class TavilySearchResult(BaseModel):
 class TavilySearchResponse(BaseModel):
 class TavilySearchEngine(SearchEngine):
     def __init__(
-        super().__init__(config)
-        def get_default(value, key, fallback):
-            return value if value is not None else self.config.default_params.get(key, fallback)
-        self.max_results = get_default(
-            kwargs.get("max_results", num_results),
-        self.search_depth = get_default(search_depth, "search_depth", "basic")
-        self.include_domains = get_default(
-        self.exclude_domains = get_default(
-        self.include_answer = get_default(
-        self.max_tokens = get_default(max_tokens, "max_tokens", None)
-        self.search_type = get_default(search_type, "search_type", "search")
+        super().__init__(config, **kwargs)
+            self.max_results = kwargs.get("max_results") or self.config.default_params.get("max_results", 5)
+        self.search_depth = search_depth or self.config.default_params.get("search_depth", "basic")
+        self.include_domains = include_domains or self.config.default_params.get("include_domains", None)
+        self.exclude_domains = exclude_domains or self.config.default_params.get("exclude_domains", None)
+        self.include_answer = include_answer or self.config.default_params.get("include_answer", False)
+        self.max_tokens = max_tokens or self.config.default_params.get("max_tokens", None)
+        self.search_type = search_type or self.config.default_params.get("search_type", "search")
             raise EngineError(
                 f"Tavily API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
     def _build_payload(self, query: str) -> dict:
@@ -1041,7 +966,7 @@ class YouBaseEngine(SearchEngine):
         self.num_results = num_results or self.config.default_params.get(
         self.country_code = country or self.config.default_params.get(
         self.safe_search = safe_search or self.config.default_params.get(
-    async def _make_api_call(self, query: str) -> dict:
+    async def _make_api_call(self, query: str) -> Any:
             params["safe_search"] = str(self.safe_search).lower()
         async with httpx.AsyncClient() as client:
                 response = await client.get(
@@ -1094,24 +1019,37 @@ def init_engine_task(
     engine_config = config.engines.get(std_engine_name)
         engine_config = config.engines.get(engine_name)
             logger.warning(f"Engine '{engine_name}' not configured.")
+            engine_config = EngineConfig(enabled=True)
+    num_results = kwargs.get("num_results")
+        logger.debug(f"Initializing engine '{engine_name}' with num_results={num_results}")
         engine_params = get_engine_params(
+            engines=kwargs.get("engines", []),
+            common_params=kwargs.get("common_params", {}),
         engine_instance: SearchEngine = get_engine(
         logger.info(f"🔍 Querying engine: {engine_name}")
         return engine_name, engine_instance.search(query)
         logger.warning(
+            f"Failed to initialize engine '{engine_name}': {type(e).__name__}",
         logger.error(f"Error initializing engine '{engine_name}': {e}")
 async def search(
         config = config or Config()
         explicit_engines_requested = engines is not None and len(engines) > 0
         engines_to_try = engines or list(config.engines.keys())
+            logger.error(msg)
             raise SearchError(msg)
+        logger.debug(f"Search requested with num_results={num_results}")
         engines_to_try = [standardize_engine_name(e) for e in engines_to_try]
-            }.items()
-            task = init_engine_task(
-                engine_names.append(task[0])
-                tasks.append(task[1])
+                task = init_engine_task(
+                    engine_names.append(task[0])
+                    tasks.append(task[1])
+                logger.warning(f"Failed to initialize engine '{engine_name}': {e}")
                 failed_engines.append(engine_name)
             failed_engines_str = ", ".join(failed_engines)
+            logger.warning(f"Failed to initialize engines: {failed_engines_str}")
+                msg = f"No search engines could be initialized from requested engines: {', '.join(engines_to_try)}"
+            logger.warning("Falling back to any available search engine...")
+            for engine_name in get_registered_engines():
+                    logger.debug(f"Failed to initialize engine {engine_name}: {e}")
         results = await asyncio.gather(*tasks, return_exceptions=True)
         for engine_name, result in zip(engine_names, results, strict=False):
             if isinstance(result, Exception):
@@ -1185,6 +1123,7 @@ class SearchCLI:
             self.logger.error(f"{friendly} search failed: {e}")
     def q(
         self._configure_logging(verbose)
+        self.logger.debug(f"Using num_results={num_results}")
             self.logger.debug(
         engine_list = self._parse_engines(engines)
         common_params = {k: v for k, v in common_params.items() if v is not None}
@@ -1243,6 +1182,7 @@ class SearchCLI:
             result[engine] = _get_engine_info(
             for engine_name, engine_config in sorted(config.engines.items()):
                 result[engine_name] = _get_engine_info(
+        print(json.dumps(result, indent=2))
     async def critique(
             params["source_whitelist"] = [domain.strip() for domain in source_whitelist.split(",")]
             params["source_blacklist"] = [domain.strip() for domain in source_blacklist.split(",")]
@@ -1266,14 +1206,14 @@ class SearchCLI:
     async def duckduckgo(
     async def hasdata_google(
     async def hasdata_google_light(
-def _check_engine_availability(self, engine_name: str) -> bool:
+def _check_engine_availability(engine_name: str) -> bool:
     return is_engine_available(engine_name)
 def _get_engine_info(
     if hasattr(engine_config, "api_key") and engine_config.api_key is not None:
                 {"name": env_name, "set": bool(os.environ.get(env_name))} for env_name in engine_class.env_api_key_names
         if hasattr(
         "enabled": engine_config.enabled if hasattr(engine_config, "enabled") else False,
-def _process_results(self, results: list) -> list[dict[str, Any]]:
+def _process_results(results: list) -> list[dict[str, Any]]:
         engine_name = getattr(result, "source", None) or "unknown"
         engine_results.setdefault(engine_name, []).append(result)
     for engine, engine_results_list in engine_results.items():
@@ -1296,14 +1236,15 @@ def _display_results(
             table.add_row(result["engine"], result["url"])
     console.print(table)
                 console.print(result)
-def _display_errors(self, error_messages: list[str]) -> None:
+def _display_errors(error_messages: list[str]) -> None:
     table = Table(title="❌ Search Errors")
     table.add_column("Error", style="red")
         table.add_row(error)
-def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:
+def _display_json_results(processed_results: list[dict[str, Any]]) -> None:
         results_by_engine[engine]["results"].append(
                 "snippet": result.get("snippet") if result.get("snippet") != "N/A" else None,
                 "raw": result.get("raw_result"),
+    print(json.dumps(results_by_engine, indent=2))
 def main() -> None:
     fire.core.Display = lambda lines, out: console.print(*lines)
     fire.Fire(SearchCLI)
@@ -1312,7 +1253,7 @@ def main() -> None:
 ================
 File: src/twat_search/web/config.py
 ================
-load_environment()
+load_dotenv()
 logger = logging.getLogger(__name__)
 class EngineConfig(BaseModel):
     default_params: dict[str, Any] = Field(default_factory=dict)
@@ -1320,62 +1261,49 @@ class Config(BaseModel):
     engines: dict[str, EngineConfig] = Field(default_factory=dict)
     def get_config_path(cls) -> Path:
             return Path(cls.config_path)
-        config_dir = Path(
-            os.environ.get(
-                Path.home() / ".config",
+        env_path = os.environ.get("TWAT_SEARCH_CONFIG_PATH")
+            return Path(env_path)
+        home_config = Path.home() / ".twat" / "search_config.json"
+        if home_config.exists():
+        xdg_config = Path.home() / ".config" / "twat" / "search_config.json"
+        if xdg_config.exists():
     def __init__(self, **data: Any) -> None:
-        config_data = DEFAULT_CONFIG.copy()
-        config_file = self.get_config_path()
-        if config_file.exists():
-                with open(config_file, encoding="utf-8") as f:
-                    user_config = json.load(f)
-                    self._merge_config(config_data, user_config)
-                logger.warning(
+        config_data = json.loads(json.dumps(DEFAULT_CONFIG))  # Deep copy
+        config_path = self.get_config_path()
+        if config_path.exists():
+                with open(config_path, encoding="utf-8") as f:
+                    file_config = json.load(f)
+                self._merge_config(config_data, file_config)
+                logger.info(f"Loaded configuration from {config_path}")
+                logger.error(f"Error loading configuration from {config_path}: {e}")
         _apply_env_overrides(config_data)
-        self._merge_config(config_data, data)
-        engines_data = config_data.get("engines", {})
-        for engine_name, engine_config in engines_data.items():
-            std_name = standardize_engine_name(engine_name)
+            self._merge_config(config_data, data)
         super().__init__(**config_data)
     def _merge_config(self, target: dict[str, Any], source: dict[str, Any]) -> None:
         for key, value in source.items():
             if key in target and isinstance(target[key], dict) and isinstance(value, dict):
                 self._merge_config(target[key], value)
     def add_engine(
-        std_engine_name = standardize_engine_name(engine_name)
-        self.engines[std_engine_name] = EngineConfig(
-def _apply_env_overrides(self, config_data: dict[str, Any]) -> None:
-    engine_settings = config_data.get("engines", {})
-        registered_engines = get_registered_engines()
-        engine_class = registered_engines.get(std_engine_name)
-        if engine_class and hasattr(engine_class, "env_api_key_names"):
-            api_key_vars.extend(engine_class.env_api_key_names)
-        api_key_vars.extend(
-                f"{std_engine_name.upper()}_API_KEY",
-                f"{engine_name.upper()}_API_KEY",
-                f"TWAT_SEARCH_{std_engine_name.upper()}_API_KEY",
-                f"{std_engine_name.upper()}_KEY",
-        api_key_vars = list(dict.fromkeys(api_key_vars))
-        logger.debug(
-            f"Available environment variables: {[k for k in os.environ.keys() if 'KEY' in k or 'API' in k]}",
-        if engine_class and hasattr(engine_class, "env_enabled_names"):
-            enabled_vars.extend(engine_class.env_enabled_names)
-        enabled_vars.extend(
-                f"{std_engine_name.upper()}_ENABLED",
-                f"{engine_name.upper()}_ENABLED",
-                f"TWAT_SEARCH_{std_engine_name.upper()}_ENABLED",
-        enabled_vars = list(dict.fromkeys(enabled_vars))
-                engine_settings[std_engine_name]["enabled"] = os.environ[env_var].lower() in ("true", "1", "yes", "y")
-        if engine_class and hasattr(engine_class, "env_params_names"):
-            params_vars.extend(engine_class.env_params_names)
-        params_vars.extend(
-                f"{std_engine_name.upper()}_DEFAULT_PARAMS",
-                f"{engine_name.upper()}_DEFAULT_PARAMS",
-                f"TWAT_SEARCH_{std_engine_name.upper()}_DEFAULT_PARAMS",
-        params_vars = list(dict.fromkeys(params_vars))
-                    params = json.loads(os.environ[env_var])
-                    if isinstance(params, dict):
-                        engine_settings[std_engine_name]["default_params"].update(
+            engine_config.default_params.update(default_params)
+            self.engines[engine_name] = EngineConfig(
+def _apply_env_overrides(config_data: dict[str, Any]) -> None:
+    for env_var, config_path in ENV_VAR_MAP.items():
+        env_value = os.environ.get(env_var)
+            value = _parse_env_value(env_value)
+            if isinstance(config_path, str):
+                _set_nested_value(config_data, config_path, value)
+                _set_nested_value(config_data, path, value)
+def _parse_env_value(env_value: str) -> Any:
+    if env_value.lower() in ("true", "yes", "1"):
+    elif env_value.lower() in ("false", "no", "0"):
+    elif env_value.isdigit():
+        return int(env_value)
+    elif env_value.replace(".", "", 1).isdigit():
+        return float(env_value)
+def _set_nested_value(config_data: dict[str, Any], path: list[str], value: Any) -> None:
+    for i, path_part in enumerate(path):
+        if i == len(path) - 1:
+            if path_part not in current or not isinstance(current[path_part], dict):
 
 ================
 File: src/twat_search/web/engine_constants.py
@@ -1422,6 +1350,10 @@ class RateLimiter:
             logger.debug(f"Rate limiter sleeping for {delay:.4f} seconds")
             time.sleep(delay)
         self.last_call_time = time.time()
+    def wait_if_needed(self) -> None:
+        if len(self.call_timestamps) >= self.calls_per_second:
+            oldest_timestamp = min(self.call_timestamps)
+        self.call_timestamps.append(time.time())
 def extract_domain(url: str) -> str:
     parsed = urlparse(url)
         parsed = urlparse(f"https://{url}")
@@ -3515,73 +3447,69 @@ File: PROGRESS.md
 this_file: PROGRESS.md
 ---
 
-# twat-search Progress Report
+Consult @TODO.md for the detailed plan. Work through these items, checking them off as you complete them. Once a large part has been completed, update @TODO.md to reflect the progress.
 
-## Project Status
+# Task List
 
-The basic implementation of the `twat-search` web package is complete. This multi-provider search tool now supports multiple search engines and has a functional CLI interface.
+## 1. Fix non-functioning engines
 
-## Completed
-- [x] Defined common parameters in base `SearchEngine` class
-- [x] Updated search engines to use unified parameters
-- [x] Added support for multiple search engines (Brave, Tavily, Perplexity, You.com, SerpAPI, Critique, DuckDuckGo)
-- [x] Implemented initial version of Bing Scraper engine
-- [x] Created basic testing infrastructure
+- [ ] Fix API key and authentication issues
+  - [ ] Review environment variable handling in `config.py`
+  - [ ] Improve error messages for missing API keys
+  - [ ] Add debug logging for API key loading process
 
-## In Progress
-- [ ] Fixing type checking and linting issues identified in cleanup report
-  - Currently 263 linting errors reported by ruff
-  - 30 errors found by mypy
-- [ ] Resolving critical issues with engines and parameter handling
-  - `num_results` parameter not being respected across engines
-  - API key detection issues in multiple engines
-  - Failing scrapers returning no results
-  - Unexpected engine fallback behavior
-  - SearchEngine attribute inconsistencies
-  - Config implementation test failures
-- [ ] Addressing failing test in config environment variable loading
+- [ ] Address anywebsearch engines
+  - [ ] Remove all anywebsearch-based engines from the codebase (bing_anyws, brave_anyws, google_anyws, qwant_anyws, yandex_anyws)
+  - [ ] Update all relevant files to remove imports and references
+  - [ ] Remove from engine constants and registration
 
-## Upcoming
-- [ ] Adding comprehensive error handling
-- [ ] Improving engine initialization process
-- [ ] Standardizing parameter handling across all engines
-- [ ] Enhancing testing and reliability
-- [ ] Improving CLI usability and output formats
-- [ ] Implementing configuration workflow for better user experience
-- [ ] Addressing engine-specific fixes
+- [ ] Fix searchit engines
+  - [ ] Diagnose bing_searchit implementation issues
+  - [ ] Diagnose google_searchit implementation issues
+  - [ ] Diagnose qwant_searchit implementation issues
+  - [ ] Diagnose yandex_searchit implementation issues
 
-## Critical Issues (From TODO.md)
-1. **Fix `num_results` parameter not being respected**
-   - Currently, specifying `-n 1` or `--num_results=1` is ignored and engines fetch more results
-   - Root cause: Inconsistent parameter handling across engines
+- [ ] Fix SerpAPI integration
+  - [ ] Ensure proper initialization and API key handling
+  - [ ] Test with valid API key
 
-2. **Fix API key detection issues**
-   - Multiple engines fail despite environment variables being set
-   - Affected engines: `brave_anyws`, `brave_news`, `critique`, `google_serpapi`, `pplx`, `you`, `you_news`
+- [ ] Fix You.com engines
+  - [ ] Debug you engine initialization issues
+  - [ ] Debug you_news engine initialization issues
+  - [ ] Verify API key handling
 
-3. **Fix failing scrapers with no results**
-   - Several engines return no results: `bing_anyws`, `bing_searchit`, `google_anyws`, `google_searchit`, `qwant_anyws`, `qwant_searchit`
+- [ ] Fix Perplexity (pplx) implementation
+  - [ ] Review authentication process
+  - [ ] Debug query handling and response parsing
 
-4. **Eliminate unexpected engine fallback behavior**
-   - When a specified engine fails, the code sometimes falls back to other engines
-   - Creates confusing output for users who expect specific engines
+- [ ] Fix Brave News implementation
+  - [ ] Diagnose why results are not being returned
 
-5. **Fix SearchEngine attribute inconsistencies**
-   - Tests failing due to `name` attribute being expected but `engine_code` is used instead
+## 2. Fix num_results parameter handling
 
-6. **Resolve test failures in Config implementation**
-   - Tests failing around default config values and environment variable loading
+- [ ] Fix parameter handling in individual engines
+  - [ ] Fix Brave engine's num_results handling
 
-## Development Notes
-- Uses `uv` for Python package management
-- Quality tools: ruff, mypy, pytest
-- Clear provider protocol for adding new search backends
-- Strong typing and runtime checks throughout
+## 3. Add comprehensive tests
 
-See [TODO.md](TODO.md) for the detailed task breakdown and implementation plans.
+- [ ] Create test for num_results parameter handling
+- [ ] Create test for proper source attribution in results
+- [ ] Create test for verifying no unintended fallbacks
+- [ ] Add test to verify engine availability detection
 
-## Last Updated
-2025-02-26
+## 4. Documentation and logging improvements
+
+- [ ] Enhance debug logging throughout the codebase
+- [ ] Improve error messages for common failure cases
+- [ ] Update documentation with common issues and solutions
+- [ ] Document engine-specific requirements and limitations
+
+## 5. Cleanup & Final Verification
+
+- [ ] Run tests to ensure all engines are working properly
+- [ ] Verify that each engine respects the num_results parameter
+- [ ] Ensure no unintended fallbacks are occurring
+- [ ] Update documentation to reflect changes
 
 ================
 File: pyproject.toml
@@ -4604,161 +4532,156 @@ Twat Search is released under the MIT License. See the [LICENSE](LICENSE) file f
 ================
 File: TODO.md
 ================
+---
+this_file: TODO.md
+---
+
 # twat-search Web Package - Future Tasks
 
 The basic implementation of the `twat-search` web package is complete.
 
 Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
 
-## TODO
+Edit the detailed plan in this file @TODO.md. Based on the plan, write an itemized list of tasks in @PROGRESS.md and then, as you work, check off your @PROGRESS.md.  
 
-### Critical Issues
+## 1. TODO
 
-1. **Fix `num_results` parameter not being respected**
-   - Currently, specifying `-n 1` or `--num_results=1` is ignored and engines fetch more results
-   - Root cause: In `api.py`, the `num_results` param is passed to engine constructors, but many engines:
-     - Override with their own defaults
-     - Use different parameter names (`max_results`, `count`, etc.)
-     - Have hardcoded minimums that override user preference
-   - Fix:
-     - Standardize parameter handling across all engines
-     - Make sure constructors respect the passed `num_results` value
-     - Update engine implementations to respect the limit even when calling external libraries
+## 2. Project Status
 
-2. **Fix API key detection issues**
-   - Multiple engines fail despite environment variables being set
-   - Affected engines: `brave_anyws`, `brave_news`, `critique`, `google_serpapi`, `pplx`, `you`, `you_news`
-   - Root cause: Likely incorrect environment variable loading or case sensitivity issues (note: we want to use load_dotenv() from python-dotenv)
-   - Fix:
-     - Debug environment variable loading in `config.py`
-     - Add more logging to show which environment variables are detected/loaded
-     - Ensure case sensitivity is handled correctly
-     - Add explicit fallbacks for common API key name variations
+The basic implementation of the `twat-search` web package is complete. This multi-provider search tool now supports multiple search engines and has a functional CLI interface.
 
-3. **Fix failing scrapers with no results**
-   - Several engines return no results: `bing_anyws`, `bing_searchit`, `google_anyws`, `google_searchit`, `qwant_anyws`, `qwant_searchit`
-   - Root cause: Library-specific issues, timeouts, or blocking
-   - Fix:
-     - Add better error handling and diagnostics
-     - Try using different timeouts, headers, or user agents
-     - Improve robustness against temporary blocking
-     - Implement circuit breakers for consistently failing engines
+## 3. Problem case
 
-4. **Eliminate unexpected engine fallback behavior**
-   - When a specified engine fails, the code sometimes falls back to other engines
-   - This creates confusing output for users who expect specific engines
-   - Fix:
-     - Remove automatic fallback when a specific engine is requested
-     - Only use fallbacks when no engine is explicitly specified
-     - Add clear messages when specified engines fail
+Based on the test command:
+```bash
+for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $engine"; twat-search web q -e $engine "Adam Twardoch" -n 1 --json; done;
+```
 
-5. **Fix SearchEngine attribute inconsistencies**
-   - Tests are failing due to `name` attribute being expected but `engine_code` is used instead
-   - Root cause: Inconsistency between test expectations and implementation
-   - Fix:
-     - Either add `name` attribute to SearchEngine or update tests to use `engine_code`
-     - Ensure consistency between base and derived classes
-     - Fix MockSearchEngine implementation for tests
+## 4. JSON test results
 
-6. **Resolve test failures in Config implementation**
-   - Tests failing around default config values and environment variable loading
-   - Root cause: Tests expect empty engines by default, but code provides populated defaults
-   - Fix:
-     - Update tests to match actual implementation behavior
-     - Fix environment variable parameter merging (env vars should replace, not merge with defaults)
-     - Improve test isolation for environment variables
+----
 
-### Implementation Tasks
 
-7. **Add comprehensive error handling**
-   - Improve error messages to clearly indicate why an engine failed
-   - Add more fine-grained error types that distinguish between:
-     - API key issues
-     - Network/connection problems
-     - Rate limiting/blocking
-     - Empty results (which may be legitimate)
-   - Create a standard approach to logging that's consistent across engines
 
-8. **Improve engine initialization process**
-   - Create a more robust engine discovery and initialization process
-   - Add capability tests for engines during initialization
-   - Add a verbose debug mode that shows detailed initialization steps
-   - Consider implementing a cache for engine availability status
+----
 
-9. **Standardize parameter handling**
-   - Create consistent parameter names across all engines
-   - Establish clear precedence rules for parameters:
-     - Command line arguments
-     - Environment variables
-     - Config file defaults
-   - Document each engine's parameter support and quirks
+## 5. Updated Summary Based on Latest Test Results
 
-10. **Enhance testing and reliability**
-    - Add automated tests for each engine
-    - Create mock responses for offline testing
-    - Implement retries with backoff for transient failures
-    - Add circuit breaker patterns to fail fast for consistently failing engines
-    - Fix existing test failures identified in test suite (7 failures)
+After implementing several fixes, the following issues remain:
 
-### Code Quality Improvements
+1. **Remove anywebsearch engines**: All anywebsearch-based engines (bing_anyws, brave_anyws, google_anyws, qwant_anyws, yandex_anyws) need to be completely removed from the codebase as they're not functioning and are returning empty results.
 
-11. **Address linting issues**
-    - Fix 263 errors reported by ruff
-    - Remove unused imports throughout the codebase
-    - Fix boolean parameter declarations (FBT001, FBT002 warnings)
-    - Reduce function complexity and branches
-    - Replace magic values with constants (PLR2004)
-    - Fix parameter naming consistency (ARG002 unused arguments)
+2. **num_results parameter not respected**: Several engines still don't respect the `-n 1` parameter:
+   - ~~bing_scraper~~ FIXED: Now properly respects num_results parameter
+   - brave: still returns multiple results despite our fixes
+   - ~~duckduckgo~~ FIXED: Now properly respects num_results parameter
 
-12. **Resolve type checking errors**
-    - Fix 30 errors found by mypy
-    - Add missing type annotations
-    - Resolve attribute errors (`no attribute 'name'`, etc.)
-    - Fix stubs for external libraries
-    - Add proper typing for library imports
+3. **Failing engines**: Some engines that previously worked are now failing:
+   - google_serpapi: Returns "No search engines could be initialized"
+   - SerpAPI integration needs to be fixed
+   - you and you_news engines are not working
 
-13. **Improve exception handling**
-    - Use `raise ... from error` pattern for better error traceability
-    - Ensure proper exception hierarchy is maintained
-    - Add contextual information to exceptions
-    - Implement consistent error messages across engines
+4. **~~Fallback issues~~**: 
+   - ~~google_hasdata is still showing fallback results~~ FIXED: Now uses direct engine calls to prevent fallbacks
 
-### User Experience Improvements
+5. **searchit engines**: The searchit-based engines (bing_searchit, google_searchit, qwant_searchit, yandex_searchit) are returning empty results and may need review or removal.
 
-14. **Improve CLI usability**
-    - Add clearer error messages for common issues
-    - Improve help text with more examples
-    - Add command to test an engine's configuration
-    - Implement a "dry run" mode that validates settings without performing searches
+## 6. 5.1 Revised Plan
 
-15. **Enhance output formats**
-    - Fix JSON mode to properly handle errors
-    - Add more structured output formats (CSV, YAML, etc.)
-    - Improve the default display format for better readability
-    - Add highlighting options for search terms
+Based on the tests and fixes so far, here is a revised, prioritized plan:
 
-16. **Add configuration workflow**
-    - Create a command to guide users through setting up API keys
-    - Add a validation command to check which engines are properly configured
-    - Implement a configuration wizard for new users
-    - Add configuration profiles for different use cases
+1. **Critical fixes first**
+   - ✅ Fix SerpAPI integration (_convert_safe function fixed)
+   - ✅ Fix Bing Scraper to respect num_results
+   - ✅ Modify main search function to use strict_mode=True by default
+   - ✅ Update convenience functions to use direct engine calls
 
-### Engine-Specific Fixes
+2. **Cleanup unnecessary code**
+   - 🔄 Remove all anywebsearch-based engines
+   - 🔄 Review searchit engines and either fix or remove them
 
-17. **Brave API fix**
-    - Debug why `BRAVE_API_KEY` isn't being recognized
-    - Add clearer error messaging specific to Brave setup
+3. **Fix remaining engine issues**
+   - 🔄 Debug and fix You.com engines
+   - ✅ Fix Google HasData engines to prevent fallbacks
+   - 🔄 Fix Brave engine to respect num_results
+   - 🔄 Debug and fix Perplexity (pplx) implementation
+   - 🔄 Debug and fix Brave News implementation
 
-18. **Fix scrapers**
-    - Troubleshoot each failing scraper individually
-    - Consider alternative libraries or approaches for consistently failing scrapers
-    - Add custom user agents and request headers for problematic engines
+4. **Testing and verification**
+   - 🔄 Add tests for num_results parameter
+   - 🔄 Add tests for proper source attribution
+   - 🔄 Add tests for checking no fallbacks occur
 
-19. **API key management**
-    - Improve how API keys are discovered and validated
-    - Add a command to test API keys without performing a search
-    - Consider secure local storage options for API keys
-    - Add key rotation support for services with usage limits
+5. **Documentation**
+   - 🔄 Update documentation with known issues and solutions
+   - 🔄 Document engine-specific requirements and limitations
+
+Legend:
+- ✅ Completed
+- 🔄 In progress/pending
+
+## 7. Detailed plan
+
+### 7.1. Fix non-functioning engines
+
+1. **Investigate Module Import Issues**
+   - Check engine module import process in `src/twat_search/web/engines/__init__.py`
+   - Verify that all required dependencies are being handled properly
+   - Fix error handling in imports to provide better debug information
+
+2. **Review API Key and Authentication**
+   - Verify environment variable handling for API keys in `config.py`
+   - Improve error messaging when API keys are missing
+   - Add debug logs to show which API keys are being loaded
+
+3. **Fix Engine-Specific Implementation Issues**
+   - Review and fix implementation of anywebsearch engines (bing_anyws, brave_anyws, etc.)
+   - Fix searchit engines implementation (bing_searchit, google_searchit, etc.)
+   - Review and fix Perplexity (pplx) implementation
+
+### 7.2. Fix num_results parameter handling
+
+1. **Fix parameter passing in main API**
+   - Review `search()` function in `api.py` to ensure num_results is correctly passed to engines
+   - Fix parameter extraction in `get_engine_params()` function
+
+2. **Fix parameter handling in individual engines**
+   - ✅ Review and fix DuckDuckGo engine's num_results handling
+   - Fix Google Scraper implementation to properly limit results
+   - ✅ Ensure Tavily engine respects the num_results parameter
+
+### 7.3. Fix unintended fallback behavior
+
+1. **Review search fallback logic**
+   - ✅ Analyze fallback mechanism in `api.py` that might be causing unintended behavior
+   - ✅ Fix google_hasdata and google_hasdata_full implementations to prevent implicit fallbacks
+   - ✅ Add option to explicitly disable fallbacks
+
+### 7.4. Fix source attribution in results
+
+1. **Fix engine source in result objects**
+   - Review result creation in engines to ensure correct source attribution
+   - Fix You.com and SerpAPI engines to return correct source in results
+   - Add verification step to ensure engine_code is properly set
+
+### 7.5. Add comprehensive tests
+
+1. **Develop specific tests for each issue**
+   - Create test for num_results parameter handling across all engines
+   - Develop test for proper source attribution in results
+   - Implement test for verifying no unintended fallbacks occur
+
+### 7.6. Documentation and logging improvements
+
+1. **Enhance logging**
+   - Add more verbose logging to help diagnose engine issues
+   - Improve error messages for common failure cases
+
+2. **Update documentation**
+   - Document common issues and solutions
+   - Update engine-specific documentation with requirements and limitations
+
+This plan addresses all the identified issues while improving the overall robustness and usability of the package.
 
 ================
 File: VERSION.txt

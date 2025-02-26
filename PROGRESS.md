@@ -2,113 +2,66 @@
 this_file: PROGRESS.md
 ---
 
-# twat-search Progress Report
+Consult @TODO.md for the detailed plan. Work through these items, checking them off as you complete them. Once a large part has been completed, update @TODO.md to reflect the progress.
 
-## Project Status
+# Task List
 
-The basic implementation of the `twat-search` web package is complete. This multi-provider search tool now supports multiple search engines and has a functional CLI interface.
+## 1. Fix non-functioning engines
 
-## Completed
-- [x] Defined common parameters in base `SearchEngine` class
-- [x] Updated search engines to use unified parameters
-- [x] Added support for multiple search engines (Brave, Tavily, Perplexity, You.com, SerpAPI, Critique, DuckDuckGo)
-- [x] Implemented initial version of Bing Scraper engine
-- [x] Created basic testing infrastructure
-- [x] Fixed linting issues (`ruff check` now reports "All checks passed!")
+- [ ] Fix API key and authentication issues
+  - [ ] Review environment variable handling in `config.py`
+  - [ ] Improve error messages for missing API keys
+  - [ ] Add debug logging for API key loading process
 
-## In Progress
-- [ ] Fixing type checking issues identified by mypy (84 errors in 19 files)
-  - Main issues include:
-    - Missing positional arguments in function calls
-    - Missing type annotations in function definitions
-    - Attribute errors in RateLimiter class (no attributes 'call_timestamps', 'wait_if_needed')
-    - Function call issues in config module (`_apply_env_overrides()` missing 'config_data' argument)
-- [ ] Resolving critical issues with engines and parameter handling
-  - `num_results` parameter not being respected across engines
-  - API key detection issues in multiple engines
-  - Failing scrapers returning no results
-  - Unexpected engine fallback behavior
-  - SearchEngine attribute inconsistencies
-  - Config implementation test failures
-- [ ] Addressing failing tests in test suite (13 failed, 30 passed, 6 errors)
-- [ ] Fixing CLI functionality issues
-  - `twat-search web info` command doesn't print any engines
-  - Search commands fail with parameter errors
+- [ ] Address anywebsearch engines
+  - [ ] Remove all anywebsearch-based engines from the codebase (bing_anyws, brave_anyws, google_anyws, qwant_anyws, yandex_anyws)
+  - [ ] Update all relevant files to remove imports and references
+  - [ ] Remove from engine constants and registration
 
-## Upcoming
-- [ ] Adding comprehensive error handling
-- [ ] Improving engine initialization process
-- [ ] Standardizing parameter handling across all engines
-- [ ] Enhancing testing and reliability
-- [ ] Improving CLI usability and output formats
-- [ ] Implementing configuration workflow for better user experience
-- [ ] Addressing engine-specific fixes
+- [ ] Fix searchit engines
+  - [ ] Diagnose bing_searchit implementation issues
+  - [ ] Diagnose google_searchit implementation issues
+  - [ ] Diagnose qwant_searchit implementation issues
+  - [ ] Diagnose yandex_searchit implementation issues
 
-## Critical Issues (From TODO.md)
-1. **Fix `num_results` parameter not being respected**
-   - Currently, specifying `-n 1` or `--num_results=1` is ignored and engines fetch more results
-   - Root cause: Inconsistent parameter handling across engines
+- [ ] Fix SerpAPI integration
+  - [ ] Ensure proper initialization and API key handling
+  - [ ] Test with valid API key
 
-2. **Fix API key detection issues**
-   - Multiple engines fail despite environment variables being set
-   - Affected engines: `brave_anyws`, `brave_news`, `critique`, `google_serpapi`, `pplx`, `you`, `you_news`
-   - Root cause: The `_apply_env_overrides()` function in config.py has a signature issue:
-     - It's defined as `def _apply_env_overrides(self, config_data: dict[str, Any])` (with `self` parameter)
-     - But it's called as `_apply_env_overrides(config_data)` (without `self`)
-     - This prevents environment variables from being properly loaded into the config
+- [ ] Fix You.com engines
+  - [ ] Debug you engine initialization issues
+  - [ ] Debug you_news engine initialization issues
+  - [ ] Verify API key handling
 
-3. **Fix failing scrapers with no results**
-   - Several engines return no results: `bing_anyws`, `bing_searchit`, `google_anyws`, `google_searchit`, `qwant_anyws`, `qwant_searchit`
+- [ ] Fix Perplexity (pplx) implementation
+  - [ ] Review authentication process
+  - [ ] Debug query handling and response parsing
 
-4. **Eliminate unexpected engine fallback behavior**
-   - When a specified engine fails, the code sometimes falls back to other engines
-   - Creates confusing output for users who expect specific engines
+- [ ] Fix Brave News implementation
+  - [ ] Diagnose why results are not being returned
 
-5. **Fix SearchEngine attribute inconsistencies**
-   - Tests failing due to `name` attribute being expected but `engine_code` is used instead
+## 2. Fix num_results parameter handling
 
-6. **Resolve test failures in Config implementation**
-   - Tests failing around default config values and environment variable loading
-   - Key error: `_apply_env_overrides()` missing 1 required positional argument: 'config_data'
-   - Same core issue as the API key detection problem - the function has incorrectly defined parameters
+- [ ] Fix parameter handling in individual engines
+  - [ ] Fix Brave engine's num_results handling
 
-## Current Test Status
-- **Total Tests**: 49 tests
-- **Passed**: 30 tests
-- **Failed**: 13 tests 
-- **Errors**: 6 tests
-- **Main Issues**:
-  - Config initialization errors due to parameter issues in `_apply_env_overrides()`
-  - RateLimiter class missing expected attributes/methods
-  - Multiple parameter handling inconsistencies across engines
+## 3. Add comprehensive tests
 
-## CLI Issues
-The following CLI commands are currently broken:
+- [ ] Create test for num_results parameter handling
+- [ ] Create test for proper source attribution in results
+- [ ] Create test for verifying no unintended fallbacks
+- [ ] Add test to verify engine availability detection
 
-1. **Engine information not displayed**:
-   ```
-   twat-search web info 
-   ```
-   - The command doesn't print the engines at all
+## 4. Documentation and logging improvements
 
-2. **Search functionality failing**:
-   ```
-   twat-search web q -e all "Adam Twardoch" -n 1 --json
-   ```
-   - Error trace shows multiple parameter issues:
-     - `_apply_env_overrides() missing 1 required positional argument: 'config_data'`
-     - `_display_errors() missing 1 required positional argument: 'error_messages'`
-     - `_process_results() missing 1 required positional argument: 'results'`
+- [ ] Enhance debug logging throughout the codebase
+- [ ] Improve error messages for common failure cases
+- [ ] Update documentation with common issues and solutions
+- [ ] Document engine-specific requirements and limitations
 
-These errors align with the mypy analysis showing missing parameters in function calls throughout the codebase.
+## 5. Cleanup & Final Verification
 
-## Development Notes
-- Uses `uv` for Python package management
-- Quality tools: ruff, mypy, pytest
-- Clear provider protocol for adding new search backends
-- Strong typing and runtime checks throughout
-
-See [TODO.md](TODO.md) for the detailed task breakdown and implementation plans.
-
-## Last Updated
-2025-02-26
+- [ ] Run tests to ensure all engines are working properly
+- [ ] Verify that each engine respects the num_results parameter
+- [ ] Ensure no unintended fallbacks are occurring
+- [ ] Update documentation to reflect changes

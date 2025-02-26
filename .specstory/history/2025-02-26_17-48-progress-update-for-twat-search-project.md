@@ -2820,6 +2820,954 @@ _****_
 
 
 
+
+
+
+Now let's see where _get_engine_info is called to fix those calls:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/cli.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+Now I'll fix the issues in the CLI file:
+
+---
+
+_****_
+
+```diff
+  
+  
+- def _check_engine_availability(self, engine_name: str) -> bool:
++ def _check_engine_availability(engine_name: str) -> bool:
+      return is_engine_available(engine_name)
+  
+  
+  def _get_engine_info(
+-     self,
+      engine_name: str,
+      engine_config: Any,
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+Now let's fix the rest of the calls to these functions:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/cli.py
+
+---
+
+_****_
+
+
+
+
+
+Let's look for additional places where these functions are called:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "_process_results\(|_display_errors\(|_display_json_results\(" • **10** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/PROGRESS.md` | L99 | `- `_display_errors() missing 1 required positional argument: 'error_messages'`` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/PROGRESS.md` | L100 | `- `_process_results() missing 1 required positional argument: 'results'`` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1168 | `return _process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1170 | `_display_errors([str(e)])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1174 | `_display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1181 | `processed_results = _process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1182 | `_display_json_results(processed_results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1193 | `_display_json_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1275 | `def _process_results(self, results: list) -> list[dict[str, Any]]:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1298 | `def _display_errors(self, error_messages: list[str]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1302 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L636 | `return self._process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L640 | `+             self._display_errors([str(e)])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L709 | `+             self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L764 | `processed_results = self._process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L767 | `self._display_json_results(processed_results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L777 | `+             self._display_errors([str(e)])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2089 | `755-            self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2326 | `+             self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2344 | `+             self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2362 | `+             self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2380 | `+             self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2398 | `+             self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2428 | `-         processed_results = self._process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2431 | `-             self._display_json_results(processed_results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2436 | `+             self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2571 | `+             self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2597 | `processed_results = self._process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2600 | `self._display_json_results(processed_results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2648 | `self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2669 | `+         processed_results = self._process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L2672 | `+             self._display_json_results(processed_results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L365 | `⟪ 98 characters skipped ⟫t_search/twat_search.txt` | L926 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L366 | `⟪ 109 characters skipped ⟫c/twat_search/web/cli.py` | L248 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L367 | `⟪ 159 characters skipped ⟫ata-google-serp-apis.md` | L2131 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L368 | `⟪ 159 characters skipped ⟫ata-google-serp-apis.md` | L3361 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L369 | `⟪ 159 characters skipped ⟫ata-google-serp-apis.md` | L3986 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L370 | `⟪ 159 characters skipped ⟫ata-google-serp-apis.md` | L5249 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L371 | `⟪ 171 characters skipped ⟫eters-in-twat-search.md` | L6511 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L372 | `⟪ 171 characters skipped ⟫eters-in-twat-search.md` | L6545 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L373 | `⟪ 109 characters skipped ⟫c/twat_search/web/cli.py` | L248 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L482 | `def _display_errors(self, error_messages: list[str]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L626 | `self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L638 | `self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L654 | `self._display_errors([str(e)])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L345 | `return _process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L786 | `return self._process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L860 | `self._display_json_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L5135 | `+         processed_results = self._process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L5415 | `_display_json_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L5462 | `+             self._display_json_results(processed_results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L5493 | `def _display_errors(self, error_messages: list[str]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6511 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6545 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6576 | `_display_json_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6587 | `_display_json_results(processed_results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6607 | `def _display_errors(self, error_messages: list[str]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6609 | `self._display_json_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6618 | `self._display_json_results(processed_results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-58-transforming-python-script-into-cli-tool.md` | L245 | `+             return self._process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-58-transforming-python-script-into-cli-tool.md` | L250 | `+     def _process_results(self, results: list[SearchResult]) -> List[Dict[str, Any]]:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-58-transforming-python-script-into-cli-tool.md` | L318 | `+     def _display_errors(self, error_messages: List[str]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_05-36-implementing-duckduckgo-search-engine.md` | L640 | `+             processed_results = self._process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_05-36-implementing-duckduckgo-search-engine.md` | L643 | `+                 self._display_json_results(processed_results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_05-36-implementing-duckduckgo-search-engine.md` | L650 | `+             self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L2086 | `self._display_json_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L2131 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L3259 | `self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L3269 | `self._display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L3361 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L3372 | `def _display_errors(self, error_messages: list[str]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L3986 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L4010 | `def _process_results(self, results: list) -> list[dict[str, Any]]:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L5249 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L1864 | `│    175 │   │   │   return _process_results(results)                                              │` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2275 | `│ │                  exception=TypeError("_display_errors() missing 1 required positional        │ │` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2279 | `│ │                  exception=TypeError("_display_errors() missing 1 required positional        │ │` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2297 | `│ │            exception=TypeError("_display_errors() missing 1 required positional argument:    │ │` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2306 | `│    175 │   │   │   return _process_results(results)                                              │` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2309 | `│ ❱  178 │   │   │   _display_errors([str(e)])                                                     │` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2347 | `TypeError: _display_errors() missing 1 required positional argument: 'error_messages'` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2361 | `- `_display_errors() missing 1 required positional argument: 'error_messages'` (a new issue in the CLI module)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2363 | `These errors confirm our findings about the `_apply_env_overrides()` function but also reveal another missing parameter issue with the `_display_errors()` function in the CLI module.` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2396 | `+      - `_display_errors() missing 1 required positional argument: 'error_messages'`` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2397 | `+      - `_process_results() missing 1 required positional argument: 'results'`` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2417 | `2. The `_display_errors()` function is missing its required `error_messages` parameter when called.` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2419 | `3. The `_process_results()` function is missing its required `results` parameter.` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2541 | `⟪ 99 characters skipped ⟫_search/twat_search.txt` | L1275 | `def _process_results(self, results: list) -> list[dict[str, Any]]:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2542 | `⟪ 99 characters skipped ⟫_search/twat_search.txt` | L1298 | `def _display_errors(self, error_messages: list[str]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2543 | `⟪ 99 characters skipped ⟫_search/twat_search.txt` | L1302 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2544 | `⟪ 168 characters skipped ⟫t-into-cli-tool.md` | L250 | `+     def _process_results(self, results: list[SearchResult]) -> List[Dict[str, Any]]:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2545 | `⟪ 168 characters skipped ⟫t-into-cli-tool.md` | L318 | `+     def _display_errors(self, error_messages: List[str]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2546 | `⟪ 159 characters skipped ⟫ata-google-serp-apis.md` | L2131 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2547 | `⟪ 159 characters skipped ⟫ata-google-serp-apis.md` | L3361 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2548 | `⟪ 159 characters skipped ⟫ata-google-serp-apis.md` | L3372 | `def _display_errors(self, error_messages: list[str]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2549 | `⟪ 159 characters skipped ⟫ata-google-serp-apis.md` | L3986 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2550 | `⟪ 159 characters skipped ⟫ata-google-serp-apis.md` | L4010 | `def _process_results(self, results: list) -> list[dict[str, Any]]:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2551 | `⟪ 159 characters skipped ⟫ata-google-serp-apis.md` | L5249 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2553 | `⟪ 301 characters skipped ⟫t_search/twat_search.txt` | L926 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2554 | `⟪ 233 characters skipped ⟫c/twat_search/web/cli.py` | L248 | `def _display_json_results(self, processed_results: list[dict[str, Any]]) -> None:` |` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L174 | `return _process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L177 | `_display_errors([str(e)])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L209 | `_display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L214 | `_display_errors([error_msg])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L231 | `processed_results = _process_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L233 | `_display_json_results(processed_results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L241 | `_display_errors([str(e)])` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L334 | `_display_json_results(results)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1165 | `def _process_results(results: list) -> list[dict[str, Any]]:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1262 | `def _display_errors(error_messages: list[str]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1272 | `def _display_json_results(processed_results: list[dict[str, Any]]) -> None:` |
+
+</details>
+
+---
+
+_****_
+
+
+
+Now I need to check if we've fixed all the affected functions where the 'self' parameter was incorrectly included. Let's look at the search function in cli.py to see if there are any remaining issues with calls to the helper functions:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/cli.py
+
+---
+
+_****_
+
+
+
+Let's also check the `_display_engines_json` function to make sure it's properly interacting with these helper functions:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "def _display_engines_json" • **5** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1241 | `def _display_engines_json(self, engine: str | None, config: Config) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L5688 | `+     def _display_engines_json(self, engine: str | None, config: "Config") -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L514 | `def _display_engines_json(self, engine: str | None, config: Config) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L25190 | `+     def _display_engines_json(self, engine: str | None, config: "Config") -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L514 | `def _display_engines_json(self, engine: str | None, config: Config) -> None:` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+Let's check the implementation of the `_display_engines_json` function from the CLI file:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/cli.py
+
+---
+
+_****_
+
+
+
+
+
+I notice the `_display_engines_json` function is incomplete - it doesn't actually output the JSON. Let's also check for the implementation of `_display_results`:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "def _display_results" • **9** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1284 | `def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1207 | `def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2748 | `def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-58-transforming-python-script-into-cli-tool.md` | L292 | `+     def _display_results(self, processed_results: List[Dict[str, Any]]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L183 | `def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2750 | `<summary>Grep search for "def _display_results" • **7** files</summary>` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2754 | `| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1138 | `def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2755 | `⟪ 100 characters skipped ⟫search/CLEANUP.txt` | L500 | `197 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2756 | `⟪ 100 characters skipped ⟫search/CLEANUP.txt` | L510 | `197 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2757 | `⟪ 163 characters skipped ⟫ption-for-search-commands.md` | L183 | `def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2758 | `⟪ 105 characters skipped ⟫h/src/twat_search/web/cli.py` | L196 | `def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2759 | `⟪ 165 characters skipped ⟫ogle-serp-apis.md` | L2212 | `174 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2760 | `⟪ 165 characters skipped ⟫ogle-serp-apis.md` | L2222 | `174 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2761 | `⟪ 164 characters skipped ⟫cript-into-cli-tool.md` | L292 | `+     def _display_results(self, processed_results: List[Dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2762 | `⟪ 173 characters skipped ⟫rns-in-modules.md` | L1240 | `302 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2763 | `⟪ 173 characters skipped ⟫rns-in-modules.md` | L1252 | `302 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2764 | `⟪ 173 characters skipped ⟫rns-in-modules.md` | L3010 | `313 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L2765 | `⟪ 173 characters skipped ⟫rns-in-modules.md` | L3022 | `313 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L2212 | `174 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L2222 | `174 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L1240 | `302 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L1252 | `302 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L3010 | `313 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L3022 | `313 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L8666 | `+     def _display_results(self, processed_results: List[Dict[str, Any]]) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L36433 | `302 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L36445 | `302 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L38203 | `313 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L38215 | `313 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L43201 | `174 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L43211 | `174 |     def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L51936 | `def _display_results(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54503 | `<summary>Grep search for "def _display_results" • **7** files</summary>` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54507 | `| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1138 | `def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54508 | `⟪ 100 characters skipped ⟫search/CLEANUP.txt` | L500 | `197 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54509 | `⟪ 100 characters skipped ⟫search/CLEANUP.txt` | L510 | `197 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54510 | `⟪ 163 characters skipped ⟫ption-for-search-commands.md` | L183 | `def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54511 | `⟪ 105 characters skipped ⟫h/src/twat_search/web/cli.py` | L196 | `def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54512 | `⟪ 165 characters skipped ⟫ogle-serp-apis.md` | L2212 | `174 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54513 | `⟪ 165 characters skipped ⟫ogle-serp-apis.md` | L2222 | `174 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54514 | `⟪ 164 characters skipped ⟫cript-into-cli-tool.md` | L292 | `+     def _display_results(self, processed_results: List[Dict[str, Any]]) -> None:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54515 | `⟪ 173 characters skipped ⟫rns-in-modules.md` | L1240 | `302 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54516 | `⟪ 173 characters skipped ⟫rns-in-modules.md` | L1252 | `302 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54517 | `⟪ 173 characters skipped ⟫rns-in-modules.md` | L3010 | `313 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54518 | `⟪ 173 characters skipped ⟫rns-in-modules.md` | L3022 | `313 |     def _display_results(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1207 | `def _display_results(` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+Let's check the `_display_results` function to make sure it doesn't have the 'self' parameter:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/cli.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+I notice that there are two more issues:
+
+1. The `_display_results` function already doesn't have the `self` parameter, which is good.
+2. The `_display_json_results` and `_display_engines_json` functions are incomplete - they don't actually print the JSON results.
+
+Let's fix the JSON display functions:
+
+---
+
+_****_
+
+```diff
+                  )
+          # Print JSON output
++         import json
++         print(json.dumps(result, indent=2))
+  
+      async def critique(
+  
+      # Print the JSON output
++     import json
++     print(json.dumps(results_by_engine, indent=2))
+  
+  
+```
+
+---
+
+_****_
+
+
+
+
+
+Now let's check where the `_get_engine_info` function is called and make sure we update those as well:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "_get_engine_info\(" • **7** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1242 | `result[engine] = _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1244 | `result[engine_name] = _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1270 | `def _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L526 | `result[engine] = _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L534 | `result[engine_name] = _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1133 | `def _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2787 | `⟪ 99 characters skipped ⟫_search/twat_search.txt` | L1270 | `def _get_engine_info(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2788 | `⟪ 110 characters skipped ⟫/twat_search/web/cli.py` | L1130 | `def _get_engine_info(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2789 | `⟪ 167 characters skipped ⟫n-for-search-commands.md` | L570 | `def _get_engine_info(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2790 | `⟪ 113 characters skipped ⟫tory/history.txt` | L25221 | `+     def _get_engine_info(self, engine_name: str, engine_config: Any, registered_engines: dict) -> dict:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2791 | `⟪ 107 characters skipped ⟫.specstory/history.txt` | L26167 | `def _get_engine_info(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2792 | `⟪ 107 characters skipped ⟫.specstory/history.txt` | L52323 | `def _get_engine_info(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2793 | `⟪ 177 characters skipped ⟫in-twat-search.md` | L5719 | `+     def _get_engine_info(self, engine_name: str, engine_config: Any, registered_engines: dict) -> dict:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2794 | `⟪ 171 characters skipped ⟫eters-in-twat-search.md` | L6667 | `def _get_engine_info(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L2795 | `⟪ 110 characters skipped ⟫/twat_search/web/cli.py` | L1130 | `def _get_engine_info(` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L563 | `result[engine_name] = self._get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L570 | `def _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L5711 | `+             result[engine] = self._get_engine_info(engine, engine_config, registered_engines)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L5715 | `+                 result[engine_name] = self._get_engine_info(engine_name, engine_config, registered_engines)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L5719 | `+     def _get_engine_info(self, engine_name: str, engine_config: Any, registered_engines: dict) -> dict:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6653 | `-             result[engine] = self._get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6656 | `+             result[engine] = self._get_engine_info(engine, engine_config, registered_engines)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6660 | `-                 result[engine_name] = self._get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6663 | `+                 result[engine_name] = self._get_engine_info(engine_name, engine_config, registered_engines)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L6667 | `def _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L25213 | `+             result[engine] = self._get_engine_info(engine, engine_config, registered_engines)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L25217 | `+                 result[engine_name] = self._get_engine_info(engine_name, engine_config, registered_engines)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L25221 | `+     def _get_engine_info(self, engine_name: str, engine_config: Any, registered_engines: dict) -> dict:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L26153 | `-             result[engine] = self._get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L26156 | `+             result[engine] = self._get_engine_info(engine, engine_config, registered_engines)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L26160 | `-                 result[engine_name] = self._get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L26163 | `+                 result[engine_name] = self._get_engine_info(engine_name, engine_config, registered_engines)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L26167 | `def _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L52316 | `result[engine_name] = self._get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L52323 | `def _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L526 | `result[engine] = _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L534 | `result[engine_name] = _get_engine_info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1133 | `def _get_engine_info(` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+Let's run the linting to make sure we've fixed all the issues:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && ruff check --output-format=github --fix --unsafe-fixes . && ruff format --respect-gitignore --target-version py312 . && python -m pytest
+```
+
+```
+38 files left unchanged
+/Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/
+twat/plugins/repos/twat_search/.venv/lib/python3.12/site-packages/pytest_asyncio
+/plugin.py:207: PytestDeprecationWarning: The configuration option "asyncio_defa
+ult_fixture_loop_scope" is unset.     The event loop scope for asynchronous fixt
+ures will default to the
+ fixture caching scope. Future versions of pytest-asyncio will default the loop
+scope for asynchronous fixtures to function scope. Set the default fixture loop
+scope explicitly in order to avoid unexpected behavior in the future. Valid fixt
+ure loop scopes are: "function", "class", "module", "package", "session"
+          
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCO
+PE_UNSET))                                                        ==============
+======== test session starts =======================
+platform darwin -- Python 3.12.8, pytest-8.3.4, pluggy-1.5.0 -- /U
+sers/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/rep
+os/twat_search/.venv/bin/python                     cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=Fal
+se min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=F
+alse warmup_iterations=100000)                      rootdir: /Users/adam/Develop
+er/vcs/github.twardoch/pub/twat-packag
+es/_good/twat/plugins/repos/twat_search                           configfile: py
+project.toml
+testpaths: tests
+plugins: cov-6.0.0, asyncio-0.25.3, anyio-4.8.0, benchmark-5.1.0, 
+xdist-3.6.1                                                       asyncio: mode=
+Mode.AUTO, asyncio_default_fixture_loop_scope=None
+collected 49 items                                               
+
+tests/test_twat_search.py::test_version PASSED             [  2%]
+tests/unit/web/engines/test_base.py::test_search_engine_is_abstrac
+t PASSED [  4%]                                                   tests/unit/web
+/engines/test_base.py::test_search_engine_name_class
+_var PASSED [  6%]                                                tests/unit/web
+/engines/test_base.py::test_engine_registration PASS
+ED [  8%]                                                         tests/unit/web
+/engines/test_base.py::test_get_engine_with_invalid_
+name PASSED [ 10%]                                                tests/unit/web
+/engines/test_base.py::test_get_engine_with_disabled
+_engine PASSED [ 12%]                                             tests/unit/web
+/engines/test_base.py::test_get_engine_with_config P
+ASSED [ 14%]                                                      tests/unit/web
+/engines/test_base.py::test_get_engine_with_kwargs P
+ASSED [ 16%]                                                      tests/unit/web
+/test_api.py::test_search_with_mock_engine FAILED [ 
+18%]                                                              tests/unit/web
+/test_api.py::test_search_with_additional_params PAS
+SED [ 20%]                                                        tests/unit/web
+/test_api.py::test_search_with_engine_specific_param
+s PASSED [ 22%]                                                   tests/unit/web
+/test_api.py::test_search_with_no_engines FAILED [ 2
+4%]                                                               tests/unit/web
+/test_api.py::test_search_with_failing_engine PASSED
+ [ 26%]                                                           tests/unit/web
+/test_api.py::test_search_with_nonexistent_engine FA
+ILED [ 28%]                                                       tests/unit/web
+/test_api.py::test_search_with_disabled_engine PASSE
+D [ 30%]                                                          tests/unit/web
+/test_config.py::test_engine_config_defaults PASSED 
+[ 32%]                                                            tests/unit/web
+/test_config.py::test_engine_config_values PASSED [ 
+34%]                                                              tests/unit/web
+/test_config.py::test_config_defaults FAILED [ 36%]
+tests/unit/web/test_config.py::test_config_with_env_vars FAILED [ 
+38%]                                                              tests/unit/web
+/test_config.py::test_config_with_direct_initializat
+ion PASSED [ 40%]                                                 tests/unit/web
+/test_config.py::test_config_env_vars_override_direc
+t_config PASSED [ 42%]                                            tests/unit/web
+/test_exceptions.py::test_search_error PASSED [ 44%]
+tests/unit/web/test_exceptions.py::test_engine_error PASSED [ 46%]
+tests/unit/web/test_exceptions.py::test_engine_error_inheritance P
+ASSED [ 48%]                                                      tests/unit/web
+/test_exceptions.py::test_search_error_as_base_class
+ PASSED [ 51%]                                                    tests/unit/web
+/test_models.py::test_search_result_valid_data PASSE
+D [ 53%]                                                          tests/unit/web
+/test_models.py::test_search_result_with_optional_fi
+elds PASSED [ 55%]                                                tests/unit/web
+/test_models.py::test_search_result_invalid_url PASS
+ED [ 57%]                                                         tests/unit/web
+/test_models.py::test_search_result_empty_fields PAS
+SED [ 59%]                                                        tests/unit/web
+/test_models.py::test_search_result_serialization PA
+SSED [ 61%]                                                       tests/unit/web
+/test_models.py::test_search_result_deserialization 
+PASSED [ 63%]                                                     tests/unit/web
+/test_utils.py::test_rate_limiter_init PASSED [ 65%]
+tests/unit/web/test_utils.py::test_rate_limiter_wait_when_not_need
+ed PASSED [ 67%]                                                  tests/unit/web
+/test_utils.py::test_rate_limiter_wait_when_needed P
+ASSED [ 69%]                                                      tests/unit/web
+/test_utils.py::test_rate_limiter_cleans_old_timesta
+mps PASSED [ 71%]                                                 tests/unit/web
+/test_utils.py::test_rate_limiter_with_different_rat
+es[1] PASSED [ 73%]                                               tests/unit/web
+/test_utils.py::test_rate_limiter_with_different_rat
+es[5] PASSED [ 75%]                                               tests/unit/web
+/test_utils.py::test_rate_limiter_with_different_rat
+es[10] PASSED [ 77%]                                              tests/unit/web
+/test_utils.py::test_rate_limiter_with_different_rat
+es[100] PASSED [ 79%]                                             tests/web/test
+_bing_scraper.py::TestBingScraperEngine::test_init P
+ASSED [ 81%]                                                      tests/web/test
+_bing_scraper.py::TestBingScraperEngine::test_search
+_basic PASSED [ 83%]                                              tests/web/test
+_bing_scraper.py::TestBingScraperEngine::test_custom
+_parameters PASSED [ 85%]                                         tests/web/test
+_bing_scraper.py::TestBingScraperEngine::test_invali
+d_url_handling PASSED [ 87%]                                      tests/web/test
+_bing_scraper.py::TestBingScraperEngine::test_bing_s
+craper_convenience_function PASSED [ 89%]                         tests/web/test
+_bing_scraper.py::TestBingScraperEngine::test_empty_
+query PASSED [ 91%]                                               tests/web/test
+_bing_scraper.py::TestBingScraperEngine::test_no_res
+ults PASSED [ 93%]                                                tests/web/test
+_bing_scraper.py::TestBingScraperEngine::test_networ
+k_error PASSED [ 95%]                                             tests/web/test
+_bing_scraper.py::TestBingScraperEngine::test_parsin
+g_error PASSED [ 97%]                                             tests/web/test
+_bing_scraper.py::TestBingScraperEngine::test_invali
+d_result_format PASSED [100%]                                     
+============================ FAILURES ============================
+__________________ test_search_with_mock_engine __________________
+
+mock_config = Config(engines={'mock': EngineConfig(enabled=True, a
+pi_key='mock_key', default_params={'result_count': 2})})          setup_teardown
+ = None
+
+    @pytest.mark.asyncio
+    async def test_search_with_mock_engine(
+        mock_config: Config,
+        setup_teardown: None,
+    ) -> None:
+        """Test search with a mock engine."""
+        results = await search("test query", engines=["mock"], con
+fig=mock_config)                                                      
+>       assert len(results) == 2
+E       AssertionError: assert 1 == 2
+E        +  where 1 = len([SearchResult(title='Mock Result 1 for t
+est query', url=HttpUrl('https://example.com/1'), snippet='This is mock result 1
+ for query: test query', source='mock', rank=None, raw=None)])
+                                      
+tests/unit/web/test_api.py:105: AssertionError
+__________________ test_search_with_no_engines ___________________
+
+setup_teardown = None
+
+    @pytest.mark.asyncio
+    async def test_search_with_no_engines(setup_teardown: None) ->
+ None:                                                                    """Tes
+t search with no engines specified raises SearchErro
+r."""                                                             >       with p
+ytest.raises(SearchError, match="No search engines c
+onfigured"):                                                      E       Failed
+: DID NOT RAISE <class 'twat_search.web.exceptions.S
+earchError'>                                                      
+tests/unit/web/test_api.py:146: Failed
+----------------------- Captured log call ------------------------
+ERROR    twat_search.web.api:api.py:90 Error initializing engine '
+brave': Engine 'brave': Brave API key is required. Set it via one of these env v
+ars: BRAVE_API_KEY                                  ERROR    twat_search.web.api
+:api.py:90 Error initializing engine '
+brave_news': Engine 'brave_news': Brave API key is required. Set it via one of t
+hese env vars: BRAVE_API_KEY                        ERROR    twat_search.web.api
+:api.py:90 Error initializing engine '
+google_serpapi': _convert_safe() missing 1 required positional argument: 'safe'
+                                                    ERROR    twat_search.web.api
+:api.py:90 Error initializing engine '
+tavily': Engine 'tavily': Tavily API key is required. Set it via one of these en
+v vars: TAVILY_API_KEY                              ERROR    twat_search.web.api
+:api.py:90 Error initializing engine '
+pplx': Engine 'pplx': Perplexity API key is required. Set it via one of these en
+v vars: PERPLEXITYAI_API_KEY, PERPLEXITY_API_KEY.   ERROR    twat_search.web.api
+:api.py:90 Error initializing engine '
+you': Engine 'you': You.com API key is required. Set it via one of these env var
+s: YOU_API_KEY                                      ERROR    twat_search.web.api
+:api.py:90 Error initializing engine '
+you_news': Engine 'you_news': You.com API key is required. Set it via one of the
+se env vars: YOU_API_KEY                            ERROR    twat_search.web.api
+:api.py:90 Error initializing engine '
+critique': Engine 'critique': Critique Labs API key is required. Set it via one
+of these env vars: CRITIQUE_LABS_API_KEY, CRITIQUE_API_KEY
+                                      ERROR    twat_search.web.api:api.py:90 Err
+or initializing engine '
+google_hasdata_full': Engine 'google_hasdata_full': HasData API key is required.
+ Set it via one of these env vars: HASDATA_API_KEY  ERROR    twat_search.web.api
+:api.py:90 Error initializing engine '
+google_hasdata': Engine 'google_hasdata': HasData API key is required. Set it vi
+a one of these env vars: HASDATA_API_KEY            ERROR    twat_search.web.api
+:api.py:212 Search with engine 'brave_
+anyws' failed: Engine 'brave_anyws': Brave API key is required for Brave search
+                                                    ERROR    twat_search.web.api
+:api.py:212 Search with engine 'yandex
+_anyws' failed: Engine 'yandex_anyws': Yandex API key and folder ID are required
+ for Yandex search                                  ______________ test_search_w
+ith_nonexistent_engine _______________
+
+mock_config = Config(engines={'mock': EngineConfig(enabled=True, a
+pi_key='mock_key', default_params={'result_count': 2})})          setup_teardown
+ = None
+
+    @pytest.mark.asyncio
+    async def test_search_with_nonexistent_engine(
+        mock_config: Config,
+        setup_teardown: None,
+    ) -> None:
+        """Test search with a non-existent engine raises SearchErr
+or."""                                                            >       with p
+ytest.raises(SearchError, match="No search engines c
+ould be initialized"):                                            E       Failed
+: DID NOT RAISE <class 'twat_search.web.exceptions.S
+earchError'>                                                      
+tests/unit/web/test_api.py:172: Failed
+----------------------- Captured log call ------------------------
+WARNING  twat_search.web.api:api.py:66 Engine 'nonexistent' not co
+nfigured.                                                         WARNING  twat_
+search.web.api:api.py:183 None of the requested engi
+nes ['nonexistent'] could be initialized. Falling back to all available engines.
+                                                    ______________________ test_
+config_defaults ______________________
+
+isolate_env_vars = None
+
+    def test_config_defaults(isolate_env_vars: None) -> None:
+        """Test Config with default values."""
+        config = Config()
+    
+        assert isinstance(config.engines, dict)
+>       assert len(config.engines) == 0
+E       AssertionError: assert 22 == 0
+E        +  where 22 = len({'bing_anyws': EngineConfig(enabled=Tru
+e, api_key=None, default_params={'language': 'en', 'num_results': 10, 'merge': T
+rue}), 'bing_scraper': EngineConfig(enabled=True, api_key=None, default_params={
+'num_pages': 1, 'delay': 0.5}), 'bing_searchit': EngineConfig(enabled=True, api_
+key=None, default_params={'language': 'en', 'domain': 'com', 'sleep_interval': 0
+, 'proxy': None}), 'brave': EngineConfig(enabled=True, api_key=None, default_par
+ams={'country': 'US', 'language': 'en-US', 'safe_search': True}), ...})
+                                                E        +    where {'bing_anyws
+': EngineConfig(enabled=True, api_
+key=None, default_params={'language': 'en', 'num_results': 10, 'merge': True}),
+'bing_scraper': EngineConfig(enabled=True, api_key=None, default_params={'num_pa
+ges': 1, 'delay': 0.5}), 'bing_searchit': EngineConfig(enabled=True, api_key=Non
+e, default_params={'language': 'en', 'domain': 'com', 'sleep_interval': 0, 'prox
+y': None}), 'brave': EngineConfig(enabled=True, api_key=None, default_params={'c
+ountry': 'US', 'language': 'en-US', 'safe_search': True}), ...} = Config(engines
+={'brave': EngineConfig(enabled=True, api_key=None, default_params={'country': '
+US', 'language': 'en-US', 'safe_search': True}), 'brave_news': EngineConfig(enab
+led=True, api_key=None, default_params={'country': 'US', 'language': 'en-US', 's
+afe_search': True}), 'brave_anyws': EngineConfig(enabled=True, api_key=None, def
+ault_params={'language': 'en', 'num_results': 10, 'merge': True}), 'google_serpa
+pi': EngineConfig(enabled=True, api_key=None, default_params={'country': 'us', '
+language': 'en', 'safe_search': True}), 'google_anyws': EngineConfig(enabled=Tru
+e, api_key=None, default_params={'language': 'en', 'num_results': 10, 'merge': T
+rue}), 'google_scraper': EngineConfig(enabled=True, api_key=None, default_params
+={'language': 'en', 'region': 'us', 'safe': 'active', 'sleep_interval': 0.0, 'ss
+l_verify': True, 'proxy': None, 'unique': True}), 'google_searchit': EngineConfi
+g(enabled=True, api_key=None, default_params={'language': 'en', 'domain': 'com',
+ 'sleep_interval': 0, 'proxy': None}), 'tavily': EngineConfig(enabled=True, api_
+key=None, default_params={'search_depth': 'basic', 'include_domains': None, 'exc
+lude_domains': None, 'return_rank': True, 'max_tokens': None, 'a... 'duckduckgo'
+: EngineConfig(enabled=True, api_key=None, default_params={'timeout': 10}), 'bin
+g_scraper': EngineConfig(enabled=True, api_key=None, default_params={'num_pages'
+: 1, 'delay': 0.5}), 'bing_anyws': EngineConfig(enabled=True, api_key=None, defa
+ult_params={'language': 'en', 'num_results': 10, 'merge': True}), 'bing_searchit
+': EngineConfig(enabled=True, api_key=None, default_params={'language': 'en', 'd
+omain': 'com', 'sleep_interval': 0, 'proxy': None}), 'qwant_anyws': EngineConfig
+(enabled=True, api_key=None, default_params={'language': 'en', 'num_results': 10
+, 'merge': True}), 'qwant_searchit': EngineConfig(enabled=True, api_key=None, de
+fault_params={'language': 'en', 'geo': 'us', 'sleep_interval': 0, 'proxy': None}
+), 'yandex_anyws': EngineConfig(enabled=True, api_key=None, default_params={'lan
+guage': 'en', 'num_results': 10, 'merge': True}), 'yandex_searchit': EngineConfi
+g(enabled=True, api_key=None, default_params={'language': 'en', 'country': 'us',
+ 'sleep_interval': 0, 'proxy': None}), 'google_hasdata_full': EngineConfig(enabl
+ed=True, api_key=None, default_params={'device_type': 'desktop'}), 'google_hasda
+ta': EngineConfig(enabled=True, api_key=None, default_params={})}).engines
+                        
+tests/unit/web/test_config.py:43: AssertionError
+___________________ test_config_with_env_vars ____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x10f7916
+a0>                                                               env_vars_for_b
+rave = None
+
+    def test_config_with_env_vars(monkeypatch: MonkeyPatch, env_va
+rs_for_brave: None) -> None:                                              """Tes
+t Config loads settings from environment variables."
+""                                                                        # Crea
+te config
+        config = Config()
+    
+        # Check the brave engine was configured
+        assert "brave" in config.engines
+        brave_config = config.engines["brave"]
+        assert brave_config.api_key == "test_brave_key"
+        assert brave_config.enabled is True
+>       assert brave_config.default_params == {"count": 10}
+E       AssertionError: assert {'count': 10,...search': True} == {
+'count': 10}                                                      E         
+E         Omitting 1 identical items, use -vv to show
+E         Left contains 3 more items:
+E         {'country': 'US', 'language': 'en-US', 'safe_search': Tr
+ue}                                                               E         
+E         Full diff:
+E           {...
+E         
+E         ...Full output truncated (5 lines hidden), use '-vv' to 
+show                                                              
+tests/unit/web/test_config.py:56: AssertionError
+==================== short test summary info =====================
+FAILED tests/unit/web/test_api.py::test_search_with_mock_engine - 
+AssertionError: assert 1 == 2                                     FAILED tests/u
+nit/web/test_api.py::test_search_with_no_engines - F
+ailed: DID NOT RAISE <class 'twat_search.web.exceptions.Sear...   FAILED tests/u
+nit/web/test_api.py::test_search_with_nonexistent_en
+gine - Failed: DID NOT RAISE <class 'twat_search.web.exceptions.Sear...
+                                                    FAILED tests/unit/web/test_c
+onfig.py::test_config_defaults - Asser
+tionError: assert 22 == 0                                         FAILED tests/u
+nit/web/test_config.py::test_config_with_env_vars - 
+AssertionError: assert {'count': 10,...search': True} == {'co...  ==============
+==== 5 failed, 44 passed in 3.44s ==================
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+Let's check for the remaining issue with the `_show_engine_details` function:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "def _show_engine_details" • **8** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L1218 | `def _show_engine_details(self, engine_name: str, config: Config) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L1367 | `519 |     def _show_engine_details(self, engine_name: str, config` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L3137 | `530 |     def _show_engine_details(self, engine_name: str, config` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2012 | `def _show_engine_details(self, engine_name: str, config: 'Config') -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2145 | `+     def _show_engine_details(self, engine_name: str, config) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2245 | `-     def _show_engine_details(self, engine_name: str, config) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2246 | `+     def _show_engine_details(self, engine_name: str, config: 'Config') -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2283 | `-     def _show_engine_details(self, engine_name: str, config: "Config") -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2284 | `+     def _show_engine_details(self, engine_name: str, config: 'Config') -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2468 | `def _show_engine_details(self, engine_name: str, config: "Config") -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L3417 | `416 |     def _show_engine_details(self, engine_name: str, config: "Config` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L2352 | `375 |     def _show_engine_details(self, engine_name: str, config: "Config") -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L429 | `def _show_engine_details(self, engine_name: str, config: Config) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18313 | `def _show_engine_details(self, engine_name: str, config: 'Config') -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18446 | `+     def _show_engine_details(self, engine_name: str, config) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18546 | `-     def _show_engine_details(self, engine_name: str, config) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18547 | `+     def _show_engine_details(self, engine_name: str, config: 'Config') -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18584 | `-     def _show_engine_details(self, engine_name: str, config: "Config") -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18585 | `+     def _show_engine_details(self, engine_name: str, config: 'Config') -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18769 | `def _show_engine_details(self, engine_name: str, config: "Config") -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L22919 | `416 |     def _show_engine_details(self, engine_name: str, config: "Config` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L36560 | `519 |     def _show_engine_details(self, engine_name: str, config` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L38330 | `530 |     def _show_engine_details(self, engine_name: str, config` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L43341 | `375 |     def _show_engine_details(self, engine_name: str, config: "Config") -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L429 | `def _show_engine_details(self, engine_name: str, config: Config) -> None:` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+Let's look at how the `_show_engine_details` function is implemented to see if it needs updates:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/cli.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+Now, let's check if we need to run the CLI to test our fixes:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -m src.twat_search.web.cli info
+```
+
+```
+(twat_search) adam@Hamlet twat_search % cd /Users/adam/Developer/v
+cs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat
+_search && python -m src.twat_search.webcd /Users/adam/Developer/v
+cs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat
+_search && python -m src.twat_search.web.cli info
+            🔎 Available Search Engines             
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ Engine              ┃ Enabled ┃ API Key Required ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ bing_anyws          │ ✅      │ ❌               │
+│ bing_scraper        │ ✅      │ ❌               │
+│ bing_searchit       │ ✅      │ ❌               │
+│ brave               │ ✅      │ ✅               │
+│ brave_anyws         │ ✅      │ ✅               │
+│ brave_news          │ ✅      │ ✅               │
+│ critique            │ ✅      │ ✅               │
+│ duckduckgo          │ ✅      │ ❌               │
+│ google_anyws        │ ✅      │ ❌               │
+│ google_hasdata      │ ✅      │ ✅               │
+│ google_hasdata_full │ ✅      │ ✅               │
+│ google_scraper      │ ✅      │ ❌               │
+│ google_searchit     │ ✅      │ ❌               │
+│ google_serpapi      │ ✅      │ ✅               │
+│ pplx                │ ✅      │ ✅               │
+│ qwant_anyws         │ ✅      │ ❌               │
+│ qwant_searchit      │ ✅      │ ❌               │
+│ tavily              │ ✅      │ ✅               │
+│ yandex_anyws        │ ✅      │ ✅               │
+│ yandex_searchit     │ ✅      │ ❌               │
+│ you                 │ ✅      │ ✅               │
+│ you_news            │ ✅      │ ✅               │
+└─────────────────────┴─────────┴──────────────────┘
+
+Run 'info ENGINE_NAME' for more details about a specific engine.
+(twat_search) adam@Hamlet twat_search %
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+Great! The `info` command is now working correctly. Let's also test the search command:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -m src.twat_search.web.cli q "Adam Twardoch" -e duckduckgo -n 1
+```
+
+```
+(twat_search) adam@Hamlet twat_search % cd /Users/adam/Developer/v
+cs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat
+_search && python -m src.twat_search.web.cli q "Adam Twardoch" -e 
+duckduckgo -n 1                         cd /Users/adam/Developer/v
+cs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat
+_search && python -m src.twat_search.web.cli q "Adam Twardoch" -e 
+duckduckgo -n 1
+┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Engine     ┃ URL                                 ┃
+┡━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ duckduckgo │ https://www.twardoch.com/           │
+│ duckduckgo │ http://www.twardoch.com/fonts/      │
+│ duckduckgo │ https://pl.linkedin.com/in/twardoch │
+│ duckduckgo │ https://github.com/twardoch         │
+│ duckduckgo │ https://twardoch.github.io/         │
+└────────────┴─────────────────────────────────────┘
+(twat_search) adam@Hamlet twat_search %
+```
+
+---
+
+_****_
+
+
+
+
+
 ---
 
 

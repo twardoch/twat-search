@@ -189,15 +189,14 @@ async def hasdata_google_full(
     device_type: str = "desktop",
     api_key: str | None = None,
 ) -> list[SearchResult]:
-    """
-    Search using HasData Google SERP API.
+    """Search Google using HasData's API with full organic results.
 
     Args:
-        query: Search query string
+        query: The search query
         num_results: Number of results to return
-        location: Location for search (e.g., "Austin,Texas,United States")
-        device_type: Device type (desktop or mobile)
-        api_key: Optional API key (otherwise use environment variable)
+        location: Location for geo-targeted results (e.g., "Austin,Texas,United States")
+        device_type: Device type to emulate (desktop or mobile)
+        api_key: Optional HasData API key (otherwise uses environment variables)
 
     Returns:
         List of search results
@@ -209,6 +208,7 @@ async def hasdata_google_full(
         location=location,
         device_type=device_type,
     )
+
     return await engine.search(query)
 
 
@@ -216,16 +216,17 @@ async def hasdata_google(
     query: str,
     num_results: int = 5,
     location: str | None = None,
+    device_type: str = "desktop",
     api_key: str | None = None,
 ) -> list[SearchResult]:
-    """
-    Search using HasData Google SERP Light API.
+    """Search Google using HasData's API with light organic results.
 
     Args:
-        query: Search query string
+        query: The search query
         num_results: Number of results to return
-        location: Location for search (e.g., "Austin,Texas,United States")
-        api_key: Optional API key (otherwise use environment variable)
+        location: Location for geo-targeted results (e.g., "Austin,Texas,United States")
+        device_type: Device type to emulate (desktop or mobile)
+        api_key: Optional HasData API key (otherwise uses environment variables)
 
     Returns:
         List of search results
@@ -235,5 +236,7 @@ async def hasdata_google(
         config,
         num_results=num_results,
         location=location,
+        device_type=device_type,
     )
+
     return await engine.search(query)

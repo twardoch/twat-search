@@ -171,20 +171,31 @@ class DuckDuckGoSearchEngine(SearchEngine):
         """
         try:
             ddgs = DDGS(proxy=self.proxy, timeout=self.timeout)
-            params = {"keywords": query, "max_results": self.max_results}
-            if self.region:
-                params["region"] = self.region
-            if self.timelimit:
-                params["timelimit"] = self.timelimit
-            if self.safesearch is not None:
-                params["safesearch"] = self.safesearch
 
-            raw_results = ddgs.text(**params)
+            # Convert boolean safesearch to string value expected by the API
+            safesearch_value = "moderate"
+            if self.safesearch is False:
+                safesearch_value = "off"
+            elif self.safesearch is True:
+                safesearch_value = "moderate"
+
+            # Call with positional and named parameters according to the method signature
+            raw_results = ddgs.text(
+                keywords=query,
+                region=self.region or "wt-wt",  # Default to worldwide
+                safesearch=safesearch_value,
+                timelimit=self.timelimit,
+                max_results=self.max_results,
+            )
+
             results = []
             for raw in raw_results:
                 converted = self._convert_result(raw)
                 if converted:
                     results.append(converted)
+                    # Limit results to max_results
+                    if len(results) >= self.max_results:
+                        break
             return results
 
         except Exception as exc:
@@ -208,7 +219,8 @@ async def duckduckgo(
     """
     Search using DuckDuckGo.
 
-    This convenience function uses the DuckDuckGo engine with the given parameters.
+    This convenience function creates and uses a DuckDuckGoSearchEngine instance
+    directly to avoid any potential fallback behavior.
 
     Args:
         query: The search query.
@@ -227,17 +239,21 @@ async def duckduckgo(
     Raises:
         EngineError: If the search fails.
     """
-    from twat_search.web.api import search
+    # Create a simple configuration (no API key required)
+    config = EngineConfig(enabled=True)
 
-    return await search(
-        query,
-        engines=["duckduckgo"],
+    # Create the engine instance with all parameters
+    engine = DuckDuckGoSearchEngine(
+        config,
         num_results=num_results,
         country=country,
         language=language,
         safe_search=safe_search,
         time_frame=time_frame,
-        duckduckgo_proxy=proxy,
-        duckduckgo_timeout=timeout,
+        proxy=proxy,
+        timeout=timeout,
         **kwargs,
     )
+
+    # Perform the search directly using the engine
+    return await engine.search(query)

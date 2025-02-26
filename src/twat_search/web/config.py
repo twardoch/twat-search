@@ -1,9 +1,9 @@
 # this_file: src/twat_search/web/config.py
 """
-Configuration management for the twat_search.web module.
+Configuration management for the web search module.
 
-This module provides classes for loading and accessing configuration
-settings for the web search functionality.
+This module handles loading and managing configuration for the web search API.
+It supports loading from environment variables, a configuration file, or explicit parameters.
 """
 
 from __future__ import annotations
@@ -14,73 +14,59 @@ import os
 from pathlib import Path
 from typing import Any, ClassVar
 
+from dotenv import load_dotenv
+from loguru import logger as loguru_logger
 from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from twat_search.web.engine_constants import (
-    BING_ANYWS,
     BING_SCRAPER,
     BING_SEARCHIT,
     BRAVE,
-    BRAVE_ANYWS,
     BRAVE_NEWS,
     CRITIQUE,
     DUCKDUCKGO,
-    GOOGLE_ANYWS,
     GOOGLE_HASDATA,
     GOOGLE_HASDATA_FULL,
     GOOGLE_SCRAPER,
     GOOGLE_SEARCHIT,
     GOOGLE_SERPAPI,
     PPLX,
-    QWANT_ANYWS,
     QWANT_SEARCHIT,
     TAVILY,
-    YANDEX_ANYWS,
     YANDEX_SEARCHIT,
     YOU,
     YOU_NEWS,
-    standardize_engine_name,
 )
-from twat_search.web.utils import load_environment
 
-# Remove direct dotenv import and add our utils import
-# Import engine name constants from the dedicated constants module
+# Load environment variables from .env file if present
+load_dotenv()
 
-# Load environment variables
-load_environment()
-
+# Initialize logger
 logger = logging.getLogger(__name__)
 
-# Default configuration dictionary
-DEFAULT_CONFIG: dict[str, Any] = {
+# Default configuration data
+DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
     "engines": {
-        # Brave Search
+        # DuckDuckGo
+        DUCKDUCKGO: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "region": "us-en",
+                "safesearch": "moderate",
+                "timelimit": "y",  # past year
+                "max_results": 20,
+            },
+        },
+        # Brave API-based
         BRAVE: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {
-                "country": "US",
-                "language": "en-US",
-                "safe_search": True,
-            },
-        },
-        BRAVE_NEWS: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {
-                "country": "US",
-                "language": "en-US",
-                "safe_search": True,
-            },
-        },
-        # Brave AnyWebSearch
-        BRAVE_ANYWS: {
             "enabled": True,
             "api_key": None,  # BRAVE_API_KEY
             "default_params": {
-                "language": "en",
-                "num_results": 10,
-                "merge": True,
+                "country": "US",
+                "language": "en-US",
+                "safe_search": True,
             },
         },
         # SerpAPI (Google)
@@ -93,105 +79,97 @@ DEFAULT_CONFIG: dict[str, Any] = {
                 "safe_search": True,
             },
         },
-        # Google AnyWebSearch
-        GOOGLE_ANYWS: {
+        # Tavily
+        TAVILY: {
             "enabled": True,
-            "api_key": None,
+            "api_key": None,  # TAVILY_API_KEY
             "default_params": {
-                "language": "en",
+                "max_results": 5,
+                "search_depth": "basic",  # or "advanced"
+                "include_domains": [],
+                "exclude_domains": [],
+                "include_answer": False,
+                "include_raw_content": False,
+                "include_images": False,
+            },
+        },
+        # You.com
+        YOU: {
+            "enabled": True,
+            "api_key": None,  # YOU_API_KEY
+            "default_params": {
+                "n_results": 5,
+                "country_code": "us",
+                "safe_search": True,
+            },
+        },
+        # You.com News
+        YOU_NEWS: {
+            "enabled": True,
+            "api_key": None,  # YOU_API_KEY (same as You.com)
+            "default_params": {
+                "n_results": 5,
+                "country_code": "us",
+                "safe_search": True,
+            },
+        },
+        # Perplexity
+        PPLX: {
+            "enabled": True,
+            "api_key": None,  # PPLX_API_KEY
+            "default_params": {
+                "num_results": 5,
+                "focus": None,  # None, "research", "writing", "coding", "scholar", "wolfram", "youtube"
+            },
+        },
+        # Critique
+        CRITIQUE: {
+            "enabled": True,
+            "api_key": None,  # CRITIQUE_API_KEY
+            "default_params": {
+                "num_results": 5,
+                "relevance_adjustment": 0.5,
+            },
+        },
+        # Brave News
+        BRAVE_NEWS: {
+            "enabled": True,
+            "api_key": None,  # BRAVE_API_KEY (same as Brave Search)
+            "default_params": {
+                "country": "US",
+                "language": "en-US",
+                "freshness": "last7days",
+            },
+        },
+        # Google HasData Light
+        GOOGLE_HASDATA: {
+            "enabled": True,
+            "api_key": None,  # HASDATA_API_KEY
+            "default_params": {
                 "num_results": 10,
-                "merge": True,
+                "language": "en",
+            },
+        },
+        # Google HasData Full
+        GOOGLE_HASDATA_FULL: {
+            "enabled": True,
+            "api_key": None,  # HASDATA_API_KEY (same as Google HasData)
+            "default_params": {
+                "num_results": 10,
+                "language": "en",
             },
         },
         # Google Scraper
         GOOGLE_SCRAPER: {
             "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "language": "en",
-                "region": "us",
-                "safe": "active",
-                "sleep_interval": 0.0,
-                "ssl_verify": True,
-                "proxy": None,
-                "unique": True,
-            },
-        },
-        # Google SearchIT
-        GOOGLE_SEARCHIT: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "language": "en",
-                "domain": "com",
-                "sleep_interval": 0,
-                "proxy": None,
-            },
-        },
-        # Tavily Search
-        TAVILY: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {
-                "search_depth": "basic",
-                "include_domains": None,
-                "exclude_domains": None,
-                "return_rank": True,
-                "max_tokens": None,
-                "api_version": "2023-11-08",
-            },
-        },
-        # Perplexity AI
-        PPLX: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {
-                "model": "search",
-            },
-        },
-        # You.com Search
-        YOU: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {},
-        },
-        YOU_NEWS: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {},
-        },
-        # Critique Labs
-        CRITIQUE: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {
-                "source_whitelist": None,
-                "source_blacklist": None,
-                "additional_params": None,
-                "image_url": None,
-            },
-        },
-        # DuckDuckGo
-        DUCKDUCKGO: {
-            "enabled": True,
-            "api_key": None,  # DuckDuckGo doesn't require an API key
-            "default_params": {"timeout": 10},
+            "api_key": None,  # No API key required, it's a scraper
+            "default_params": {"num_results": 10, "language": "en", "safe": True},
         },
         # Bing Scraper
         BING_SCRAPER: {
             "enabled": True,
             "api_key": None,  # No API key required, it's a scraper
             "default_params": {"num_pages": 1, "delay": 0.5},
-        },
-        # Bing AnyWebSearch
-        BING_ANYWS: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {
-                "language": "en",
-                "num_results": 10,
-                "merge": True,
-            },
         },
         # Bing SearchIT
         BING_SEARCHIT: {
@@ -202,16 +180,6 @@ DEFAULT_CONFIG: dict[str, Any] = {
                 "domain": "com",
                 "sleep_interval": 0,
                 "proxy": None,
-            },
-        },
-        # Qwant AnyWebSearch
-        QWANT_ANYWS: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {
-                "language": "en",
-                "num_results": 10,
-                "merge": True,
             },
         },
         # Qwant SearchIT
@@ -225,46 +193,74 @@ DEFAULT_CONFIG: dict[str, Any] = {
                 "proxy": None,
             },
         },
-        # Yandex AnyWebSearch
-        YANDEX_ANYWS: {
-            "enabled": True,
-            "api_key": None,  # YA_KEY and YA_FLDID environment variables
-            "default_params": {
-                "language": "en",
-                "num_results": 10,
-                "merge": True,
-            },
-        },
         # Yandex SearchIT
         YANDEX_SEARCHIT: {
+            "enabled": True,
+            "api_key": None,  # Yandex API key
+            "default_params": {
+                "language": "en",
+                "sleep_interval": 0,
+                "proxy": None,
+                "domain": "com",
+            },
+        },
+        # Google SearchIT
+        GOOGLE_SEARCHIT: {
             "enabled": True,
             "api_key": None,  # No API key required
             "default_params": {
                 "language": "en",
-                "country": "us",
                 "sleep_interval": 0,
                 "proxy": None,
+                "domain": "com",
             },
-        },
-        # HasData Google (Full version)
-        GOOGLE_HASDATA_FULL: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {
-                "device_type": "desktop",
-            },
-        },
-        # HasData Google (Light version)
-        GOOGLE_HASDATA: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {},
         },
     },
 }
 
 
-# Engine-specific configuration model
+# Environment variable mapping - simple mapping for single path assignments
+ENV_VAR_MAP: dict[str, str | list[str]] = {
+    # General
+    "TWAT_SEARCH_LOG_LEVEL": "log_level",
+    # API keys for unique engines
+    "SERPAPI_API_KEY": ["engines", GOOGLE_SERPAPI, "api_key"],
+    "TAVILY_API_KEY": ["engines", TAVILY, "api_key"],
+    "PPLX_API_KEY": ["engines", PPLX, "api_key"],
+    "CRITIQUE_API_KEY": ["engines", CRITIQUE, "api_key"],
+    "YANDEX_API_KEY": ["engines", YANDEX_SEARCHIT, "api_key"],
+    # Engine-specific config
+    "YANDEX_FOLDER_ID": ["engines", YANDEX_SEARCHIT, "default_params", "folder_id"],
+}
+
+# Additional environment variables that map to multiple paths
+# Each entry is a tuple of (env_var, list of config paths)
+MULTI_PATH_ENV_VARS = [
+    (
+        "BRAVE_API_KEY",
+        [
+            ["engines", BRAVE, "api_key"],
+            ["engines", BRAVE_NEWS, "api_key"],
+        ],
+    ),
+    (
+        "YOU_API_KEY",
+        [
+            ["engines", YOU, "api_key"],
+            ["engines", YOU_NEWS, "api_key"],
+        ],
+    ),
+    (
+        "HASDATA_API_KEY",
+        [
+            ["engines", GOOGLE_HASDATA, "api_key"],
+            ["engines", GOOGLE_HASDATA_FULL, "api_key"],
+        ],
+    ),
+]
+
+
+# Type definitions
 class EngineConfig(BaseModel):
     """Configuration for a single search engine."""
 
@@ -273,7 +269,6 @@ class EngineConfig(BaseModel):
     default_params: dict[str, Any] = Field(default_factory=dict)
 
 
-# Main configuration model
 class Config(BaseModel):
     """Main configuration model for the web search module."""
 
@@ -282,69 +277,73 @@ class Config(BaseModel):
 
     @classmethod
     def get_config_path(cls) -> Path:
-        """Get the path to the configuration file.
-
-        Returns:
-            Path to the configuration file
         """
+        Determine the configuration file path.
+
+        Checks the following locations in order:
+        1. TWAT_SEARCH_CONFIG_PATH environment variable
+        2. ~/.twat/search_config.json
+        3. ~/.config/twat/search_config.json
+        """
+        # Get from environment variable if set
         if cls.config_path:
             return Path(cls.config_path)
 
-        # Find the configuration directory
-        config_dir = Path(
-            os.environ.get(
-                "XDG_CONFIG_HOME",
-                Path.home() / ".config",
-            ),
-        )
-        config_file = config_dir / "twat_search" / "config.json"
-        return config_file
+        env_path = os.environ.get("TWAT_SEARCH_CONFIG_PATH")
+        if env_path:
+            return Path(env_path)
+
+        # Check ~/.twat/search_config.json
+        home_config = Path.home() / ".twat" / "search_config.json"
+        if home_config.exists():
+            return home_config
+
+        # Check ~/.config/twat/search_config.json
+        xdg_config = Path.home() / ".config" / "twat" / "search_config.json"
+        if xdg_config.exists():
+            return xdg_config
+
+        # Default to ~/.twat/search_config.json (may not exist yet)
+        return home_config
 
     def __init__(self, **data: Any) -> None:
-        """Initialize configuration by loading defaults and user settings.
+        """
+        Initialize configuration with default values and overrides.
 
         Args:
-            **data: Additional configuration parameters
+            **data: Configuration override values
         """
         # Start with default configuration
-        config_data = DEFAULT_CONFIG.copy()
+        config_data = json.loads(json.dumps(DEFAULT_CONFIG))  # Deep copy
 
-        # Load configuration from file if it exists
-        config_file = self.get_config_path()
-        if config_file.exists():
+        # Load from config file if it exists
+        config_path = self.get_config_path()
+        if config_path.exists():
             try:
-                with open(config_file, encoding="utf-8") as f:
-                    user_config = json.load(f)
-                    # Deep merge user configuration with defaults
-                    self._merge_config(config_data, user_config)
+                with open(config_path, encoding="utf-8") as f:
+                    file_config = json.load(f)
+                self._merge_config(config_data, file_config)
+                logger.info(f"Loaded configuration from {config_path}")
             except Exception as e:
-                logger.warning(
-                    f"Failed to load configuration from {config_file}: {e}",
-                )
+                logger.error(f"Error loading configuration from {config_path}: {e}")
 
         # Apply environment variable overrides
         _apply_env_overrides(config_data)
 
-        # Apply any directly provided data
-        self._merge_config(config_data, data)
+        # Apply explicit overrides
+        if data:
+            self._merge_config(config_data, data)
 
-        # Standardize engine names
-        engines_data = config_data.get("engines", {})
-        standardized_engines = {}
-        for engine_name, engine_config in engines_data.items():
-            std_name = standardize_engine_name(engine_name)
-            standardized_engines[std_name] = engine_config
-        config_data["engines"] = standardized_engines
-
-        # Initialize the model
+        # Initialize with the final configuration
         super().__init__(**config_data)
 
     def _merge_config(self, target: dict[str, Any], source: dict[str, Any]) -> None:
-        """Recursively merge source configuration into target.
+        """
+        Recursively merge the source configuration into the target.
 
         Args:
-            target: Target configuration to update
-            source: Source configuration to merge from
+            target: Target dictionary to merge into
+            source: Source dictionary to merge from
         """
         for key, value in source.items():
             if key in target and isinstance(target[key], dict) and isinstance(value, dict):
@@ -359,152 +358,93 @@ class Config(BaseModel):
         api_key: str | None = None,
         default_params: dict[str, Any] | None = None,
     ) -> None:
-        """Add or update an engine configuration.
+        """
+        Add or update an engine configuration.
 
         Args:
             engine_name: Name of the engine
             enabled: Whether the engine is enabled
-            api_key: API key for the engine (if required)
+            api_key: API key for the engine
             default_params: Default parameters for the engine
         """
-        std_engine_name = standardize_engine_name(engine_name)
-        self.engines[std_engine_name] = EngineConfig(
-            enabled=enabled,
-            api_key=api_key,
-            default_params=default_params or {},
-        )
+        if default_params is None:
+            default_params = {}
+
+        if engine_name in self.engines:
+            # Update existing engine config
+            engine_config = self.engines[engine_name]
+            engine_config.enabled = enabled
+            if api_key is not None:
+                engine_config.api_key = api_key
+            engine_config.default_params.update(default_params)
+        else:
+            # Create new engine config
+            self.engines[engine_name] = EngineConfig(
+                enabled=enabled,
+                api_key=api_key,
+                default_params=default_params,
+            )
 
 
 def _apply_env_overrides(config_data: dict[str, Any]) -> None:
-    """Apply configuration overrides from environment variables.
+    """
+    Apply overrides from environment variables to the configuration.
 
     Args:
         config_data: Configuration data to update
     """
-    engine_settings = config_data.get("engines", {})
+    # Process simple mappings
+    for env_var, config_path in ENV_VAR_MAP.items():
+        env_value = os.environ.get(env_var)
+        if env_value is not None:
+            # Handle special cases for boolean/numeric values
+            value = _parse_env_value(env_value)
 
-    # Get list of available engine implementations
-    try:
-        from twat_search.web.engines.base import get_registered_engines
+            # Apply the value to the config
+            if isinstance(config_path, str):
+                # Top-level key
+                config_data[config_path] = value
+            else:
+                # Nested path
+                _set_nested_value(config_data, config_path, value)
 
-        registered_engines = get_registered_engines()
-    except ImportError:
-        registered_engines = {}
+    # Process multi-path mappings
+    for env_var, paths in MULTI_PATH_ENV_VARS:
+        env_value = os.environ.get(env_var)
+        if env_value is not None:
+            value = _parse_env_value(env_value)
+            for path in paths:
+                _set_nested_value(config_data, path, value)
 
-    # Look for API keys in environment variables
-    for engine_name in engine_settings:
-        std_engine_name = standardize_engine_name(engine_name)
 
-        # Try to get engine-specific environment variable names if available
-        engine_class = registered_engines.get(std_engine_name)
-        api_key_vars = []
+def _parse_env_value(env_value: str) -> Any:
+    """Parse environment variable value with type conversion."""
+    if env_value.lower() in ("true", "yes", "1"):
+        return True
+    elif env_value.lower() in ("false", "no", "0"):
+        return False
+    elif env_value.isdigit():
+        return int(env_value)
+    elif env_value.replace(".", "", 1).isdigit():
+        return float(env_value)
+    return env_value
 
-        # Append engine-specific env variable names if available
-        if engine_class and hasattr(engine_class, "env_api_key_names"):
-            api_key_vars.extend(engine_class.env_api_key_names)
 
-        # Add standard patterns for API key environment variables
-        api_key_vars.extend(
-            [
-                f"{std_engine_name.upper()}_API_KEY",
-                # Original name for backward compatibility
-                f"{engine_name.upper()}_API_KEY",
-                f"TWAT_SEARCH_{std_engine_name.upper()}_API_KEY",
-            ],
-        )
+def _set_nested_value(config_data: dict[str, Any], path: list[str], value: Any) -> None:
+    """
+    Set a value in a nested dictionary structure.
 
-        # Add name variations (handle case sensitivity issues)
-        api_key_vars.extend(
-            [
-                f"{std_engine_name}_API_KEY",
-                f"{std_engine_name}_KEY",
-                f"{std_engine_name.upper()}_KEY",
-            ],
-        )
-
-        # Remove duplicates while preserving order
-        api_key_vars = list(dict.fromkeys(api_key_vars))
-
-        # Debug logging to help diagnose API key detection issues
-        logger.debug(
-            f"Looking for API keys in environment variables: {api_key_vars}",
-        )
-        logger.debug(
-            f"Available environment variables: {[k for k in os.environ.keys() if 'KEY' in k or 'API' in k]}",
-        )
-
-        for env_var in api_key_vars:
-            if env_var in os.environ:
-                if std_engine_name not in engine_settings:
-                    engine_settings[std_engine_name] = {}
-                engine_settings[std_engine_name]["api_key"] = os.environ[env_var]
-                engine_settings[std_engine_name]["enabled"] = True
-                logger.debug(
-                    f"Found API key for {std_engine_name} in {env_var}",
-                )
-                break
-
-        # Enabled flag environment variables
-        enabled_vars = []
-
-        # Append engine-specific env variable names if available
-        if engine_class and hasattr(engine_class, "env_enabled_names"):
-            enabled_vars.extend(engine_class.env_enabled_names)
-
-        # Add standard patterns
-        enabled_vars.extend(
-            [
-                f"{std_engine_name.upper()}_ENABLED",
-                # Original name for backward compatibility
-                f"{engine_name.upper()}_ENABLED",
-                f"TWAT_SEARCH_{std_engine_name.upper()}_ENABLED",
-            ],
-        )
-
-        # Remove duplicates while preserving order
-        enabled_vars = list(dict.fromkeys(enabled_vars))
-
-        for env_var in enabled_vars:
-            if env_var in os.environ:
-                if std_engine_name not in engine_settings:
-                    engine_settings[std_engine_name] = {}
-                engine_settings[std_engine_name]["enabled"] = os.environ[env_var].lower() in ("true", "1", "yes", "y")
-                break
-
-        # Default parameters from environment variables
-        params_vars = []
-
-        # Append engine-specific env variable names if available
-        if engine_class and hasattr(engine_class, "env_params_names"):
-            params_vars.extend(engine_class.env_params_names)
-
-        # Add standard patterns
-        params_vars.extend(
-            [
-                f"{std_engine_name.upper()}_DEFAULT_PARAMS",
-                # Original name for backward compatibility
-                f"{engine_name.upper()}_DEFAULT_PARAMS",
-                f"TWAT_SEARCH_{std_engine_name.upper()}_DEFAULT_PARAMS",
-            ],
-        )
-
-        # Remove duplicates while preserving order
-        params_vars = list(dict.fromkeys(params_vars))
-
-        for env_var in params_vars:
-            if env_var in os.environ:
-                try:
-                    if std_engine_name not in engine_settings:
-                        engine_settings[std_engine_name] = {}
-                    if "default_params" not in engine_settings[std_engine_name]:
-                        engine_settings[std_engine_name]["default_params"] = {}
-                    params = json.loads(os.environ[env_var])
-                    if isinstance(params, dict):
-                        engine_settings[std_engine_name]["default_params"].update(
-                            params,
-                        )
-                except json.JSONDecodeError:
-                    logger.warning(
-                        f"Failed to parse JSON from environment variable {env_var}",
-                    )
-                break
+    Args:
+        config_data: The dictionary to update
+        path: List of keys forming the path to the target
+        value: The value to set
+    """
+    current = config_data
+    for i, path_part in enumerate(path):
+        if i == len(path) - 1:
+            current[path_part] = value
+        else:
+            # Create path if it doesn't exist
+            if path_part not in current or not isinstance(current[path_part], dict):
+                current[path_part] = {}
+            current = current[path_part]

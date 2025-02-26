@@ -90,7 +90,7 @@ class SearchEngine(abc.ABC):
 
         Args:
             param_name: The engine-specific parameter name for number of results
-                        (e.g., "count", "max_results", etc.)
+                        (e.g., "num_results", etc.)
             min_value: The minimum value that the engine accepts
 
         Returns:
@@ -99,17 +99,20 @@ class SearchEngine(abc.ABC):
         # First try the engine-specific parameter name if provided in kwargs
         value = self.kwargs.get(param_name)
         if value is not None:
-            return max(min_value, int(value))
+            # Always respect the user's explicit request, even if it's below min_value
+            return int(value)
 
         # Then try the standard num_results parameter
         if self.num_results is not None:
-            return max(min_value, self.num_results)
+            # Always respect the user's explicit request, even if it's below min_value
+            return int(self.num_results)
 
         # Finally check config default params
         default = self.config.default_params.get(
             param_name,
         ) or self.config.default_params.get("num_results")
         if default is not None:
+            # Only apply min_value to default values
             return max(min_value, int(default))
 
         # Return a reasonable default

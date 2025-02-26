@@ -40,6 +40,8 @@ class YouBaseEngine(SearchEngine):
     """Base class for You.com search engines, handling common API interaction logic."""
 
     env_api_key_names: ClassVar[list[str]] = ["YOU_API_KEY"]
+    base_url: str = ""  # Will be overridden by subclasses
+    num_results_param: str = ""  # Will be overridden by subclasses
 
     def __init__(
         self,
@@ -56,7 +58,7 @@ class YouBaseEngine(SearchEngine):
 
         if not self.config.api_key:
             raise EngineError(
-                self.__class__.engine_code,
+                self.engine_code,
                 f"You.com API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
             )
 
@@ -66,7 +68,7 @@ class YouBaseEngine(SearchEngine):
         }
 
         self.num_results = num_results or self.config.default_params.get(
-            self.__class__.num_results_param,
+            self.num_results_param,
             5,
         )
         self.country_code = country or self.config.default_params.get(
@@ -78,11 +80,11 @@ class YouBaseEngine(SearchEngine):
             True,
         )
 
-    async def _make_api_call(self, query: str) -> dict:
+    async def _make_api_call(self, query: str) -> Any:
         """Handle the common API call logic."""
         params: dict[str, Any] = {
             "q": query,
-            self.__class__.num_results_param: self.num_results,
+            self.num_results_param: self.num_results,
         }
 
         if self.country_code:
@@ -93,7 +95,7 @@ class YouBaseEngine(SearchEngine):
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.get(
-                    self.__class__.base_url,
+                    self.base_url,
                     headers=self.headers,
                     params=params,
                     timeout=10,
@@ -102,12 +104,12 @@ class YouBaseEngine(SearchEngine):
                 return response.json()
             except httpx.RequestError as exc:
                 raise EngineError(
-                    self.__class__.engine_code,
+                    self.engine_code,
                     f"HTTP Request failed: {exc}",
                 ) from exc
             except httpx.HTTPStatusError as exc:
                 raise EngineError(
-                    self.__class__.engine_code,
+                    self.engine_code,
                     f"HTTP Status error: {exc.response.status_code} - {exc.response.text}",
                 ) from exc
 
@@ -134,7 +136,7 @@ class YouSearchEngine(YouBaseEngine):
                             title=hit.title,
                             url=hit.url,
                             snippet=hit.snippet,
-                            source=self.__class__.engine_code,
+                            source=self.engine_code,
                             raw=hit.model_dump(by_alias=True),
                         ),
                     )
@@ -143,7 +145,7 @@ class YouSearchEngine(YouBaseEngine):
             return results
         except ValidationError as exc:
             raise EngineError(
-                self.__class__.engine_code,
+                self.engine_code,
                 f"Response parsing error: {exc}",
             ) from exc
 
@@ -175,7 +177,7 @@ class YouNewsSearchEngine(YouBaseEngine):
                             title=article.title,
                             url=article.url,
                             snippet=snippet,
-                            source=self.__class__.engine_code,
+                            source=self.engine_code,
                             raw=article.model_dump(by_alias=True),
                         ),
                     )
@@ -184,7 +186,7 @@ class YouNewsSearchEngine(YouBaseEngine):
             return results
         except ValidationError as exc:
             raise EngineError(
-                self.__class__.engine_code,
+                self.engine_code,
                 f"Response parsing error: {exc}",
             ) from exc
 

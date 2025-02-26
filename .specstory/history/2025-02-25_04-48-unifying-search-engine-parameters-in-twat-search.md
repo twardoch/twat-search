@@ -247,36 +247,36 @@ Here's an example for BraveSearchEngine:
 
 ```python
 def __init__(
-    self,
-    config: EngineConfig,
-    num_results: int = 5,
-    country: str | None = None,
-    language: str | None = None,
-    safe_search: bool = True,
-    time_frame: str | None = None,
-    **kwargs: Any,
+        self,
+        config: EngineConfig,
+        num_results: int = 5,
+        country: str | None = None,
+        language: str | None = None,
+        safe_search: bool = True,
+        time_frame: str | None = None,
+        **kwargs: Any,
 ) -> None:
     super().__init__(config)
-    
+
     # Map unified parameters to Brave-specific ones
     count = kwargs.get("count", num_results)
-    self.count = count or self.config.default_params.get("count", 10)
-    
+    self.num_results = count or self.config.default_params.get("count", 10)
+
     country_code = kwargs.get("country_code", country)
     self.country = country_code or self.config.default_params.get("country", None)
-    
+
     search_lang = kwargs.get("search_lang", language)
     self.search_lang = search_lang or self.config.default_params.get("search_lang", None)
-    
+
     ui_lang = kwargs.get("ui_lang", language)
     self.ui_lang = ui_lang or self.config.default_params.get("ui_lang", None)
-    
+
     safe = kwargs.get("safe_search", safe_search)
     self.safe_search = safe or self.config.default_params.get("safe_search", None)
-    
+
     freshness = kwargs.get("freshness", time_frame)
     self.freshness = freshness or self.config.default_params.get("freshness", None)
-    
+
     # ... rest of existing code ...
 ```
 

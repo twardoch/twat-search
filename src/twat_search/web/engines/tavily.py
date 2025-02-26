@@ -75,37 +75,23 @@ class TavilySearchEngine(SearchEngine):
 
         All external parameters and API signatures remain unchanged.
         """
-        super().__init__(config)
+        super().__init__(config, **kwargs)
         self.base_url = "https://api.tavily.com/search"
 
-        # Helper to apply default values from config if no value was provided.
-        def get_default(value, key, fallback):
-            return value if value is not None else self.config.default_params.get(key, fallback)
+        # Use the num_results parameter directly instead of a getter method
+        # This ensures we always respect the user's request
+        self.max_results = num_results
+        if self.max_results is None:
+            # Only fall back to max_results or default if num_results is None
+            self.max_results = kwargs.get("max_results") or self.config.default_params.get("max_results", 5)
 
-        # Map common parameters to Tavily-specific ones
-        self.max_results = get_default(
-            kwargs.get("max_results", num_results),
-            "max_results",
-            5,
-        )
-        self.search_depth = get_default(search_depth, "search_depth", "basic")
-        self.include_domains = get_default(
-            include_domains,
-            "include_domains",
-            None,
-        )
-        self.exclude_domains = get_default(
-            exclude_domains,
-            "exclude_domains",
-            None,
-        )
-        self.include_answer = get_default(
-            include_answer,
-            "include_answer",
-            False,
-        )
-        self.max_tokens = get_default(max_tokens, "max_tokens", None)
-        self.search_type = get_default(search_type, "search_type", "search")
+        # The rest of the initialization remains the same
+        self.search_depth = search_depth or self.config.default_params.get("search_depth", "basic")
+        self.include_domains = include_domains or self.config.default_params.get("include_domains", None)
+        self.exclude_domains = exclude_domains or self.config.default_params.get("exclude_domains", None)
+        self.include_answer = include_answer or self.config.default_params.get("include_answer", False)
+        self.max_tokens = max_tokens or self.config.default_params.get("max_tokens", None)
+        self.search_type = search_type or self.config.default_params.get("search_type", "search")
 
         # Store unused unified parameters for future compatibility.
         self.country = country
@@ -200,6 +186,10 @@ class TavilySearchEngine(SearchEngine):
             items = [item.model_dump() for item in parsed_response.results]
         except ValidationError:
             items = data.get("results", [])
+
+        # The Tavily API sometimes returns more results than requested
+        # Explicitly limit the number of results we process
+        items = items[: self.max_results]
 
         for idx, item in enumerate(items, start=1):
             converted = self._convert_result(item, idx)

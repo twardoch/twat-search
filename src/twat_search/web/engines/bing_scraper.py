@@ -129,10 +129,9 @@ class BingScraperSearchEngine(SearchEngine):
                 delay_between_requests: Delay between requests in seconds
         """
         super().__init__(config, **kwargs)
-        self.max_results: int = num_results or self.config.default_params.get(
-            "max_results",
-            5,
-        )
+        # Set max_results from num_results or fall back to config default
+        self.max_results = num_results if num_results is not None else self.config.default_params.get("max_results", 5)
+
         self.max_retries: int = kwargs.get(
             "max_retries",
         ) or self.config.default_params.get("max_retries", 3)
@@ -207,7 +206,7 @@ class BingScraperSearchEngine(SearchEngine):
         """
         Perform a search using the Bing Scraper.
 
-        This method creates a BingScraper instance, performs the search,
+        This method uses the scrape-bing library, performs the search,
         and converts the results to the standard SearchResult format.
 
         Args:
@@ -224,20 +223,18 @@ class BingScraperSearchEngine(SearchEngine):
             raise EngineError(self.engine_code, "Search query cannot be empty")
 
         logger.info(f"Searching Bing with query: '{query}'")
-        logger.debug(
-            f"Using max_results={self.max_results}, max_retries={self.max_retries}, delay={self.delay_between_requests}",
-        )
 
         try:
-            # Create scraper instance
+            # Create a scraper instance
             scraper = BingScraper(
                 max_retries=self.max_retries,
                 delay_between_requests=self.delay_between_requests,
             )
 
-            # Perform search
+            # Perform the search
             raw_results = scraper.search(query, num_results=self.max_results)
 
+            # Return an empty list if no results
             if not raw_results:
                 logger.info("No results returned from Bing Scraper")
                 return []
@@ -246,34 +243,29 @@ class BingScraperSearchEngine(SearchEngine):
                 f"Received {len(raw_results)} raw results from Bing Scraper",
             )
 
-        except ValueError as exc:
-            error_msg = f"Invalid input for Bing search: {exc}"
-            logger.error(error_msg)
-            raise EngineError(self.engine_code, error_msg) from exc
+            # Convert the results - respecting max_results
+            results = []
+            for result in raw_results[: self.max_results]:
+                search_result = self._convert_result(result)
+                if search_result:
+                    results.append(search_result)
+                    # Stop if we've reached the desired number of results
+                    if len(results) >= self.max_results:
+                        break
+
+            logger.info(
+                f"Returning {len(results)} validated results from Bing Scraper",
+            )
+            return results
+
         except ConnectionError as exc:
             error_msg = f"Network error connecting to Bing: {exc}"
             logger.error(error_msg)
             raise EngineError(self.engine_code, error_msg) from exc
-        except RuntimeError as exc:
+        except Exception as exc:
             error_msg = f"Error parsing Bing search results: {exc}"
             logger.error(error_msg)
             raise EngineError(self.engine_code, error_msg) from exc
-        except Exception as exc:
-            error_msg = f"Unexpected error during Bing search: {exc}"
-            logger.error(error_msg)
-            raise EngineError(self.engine_code, error_msg) from exc
-
-        # Convert and filter results in a single comprehension
-        results: list[SearchResult] = [
-            search_result
-            for search_result in (self._convert_result(result) for result in raw_results)
-            if search_result is not None
-        ]
-
-        logger.info(
-            f"Returning {len(results)} validated results from Bing Scraper",
-        )
-        return results
 
 
 async def bing_scraper(
@@ -286,8 +278,8 @@ async def bing_scraper(
     """
     Search using Bing Scraper.
 
-    This is a convenience function that calls the main search API with
-    the Bing Scraper engine.
+    This convenience function creates and uses the BingScraperSearchEngine
+    directly to avoid any potential fallback behavior.
 
     Args:
         query: The search query
@@ -298,17 +290,18 @@ async def bing_scraper(
 
     Returns:
         List of search results
-
-    Raises:
-        EngineError: If the search fails
     """
-    from twat_search.web.api import search
+    # Create a simple configuration with no API key required
+    config = EngineConfig(enabled=True)
 
-    return await search(
-        query,
-        engines=["bing_scraper"],
+    # Create the engine with the provided parameters
+    engine = BingScraperSearchEngine(
+        config,
         num_results=num_results,
-        bing_scraper_max_retries=max_retries,
-        bing_scraper_delay_between_requests=delay_between_requests,
+        max_retries=max_retries,
+        delay_between_requests=delay_between_requests,
         **kwargs,
     )
+
+    # Perform the search directly using the engine
+    return await engine.search(query)

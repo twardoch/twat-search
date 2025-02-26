@@ -48,7 +48,7 @@ class BaseBraveEngine(SearchEngine):
 
         # Use the standardized get_num_results method to ensure the user's
         # preference for num_results is respected
-        self.count = self.get_num_results(param_name="count", min_value=1)
+        self.num_results = self.get_num_results(param_name="num_results", min_value=1)
 
         self.country = country or kwargs.get("country") or self.config.default_params.get("country", None)
         search_lang = kwargs.get("search_lang", language)
@@ -85,7 +85,7 @@ class BaseBraveEngine(SearchEngine):
         }
 
     async def search(self, query: str) -> list[SearchResult]:
-        params: dict[str, Any] = {"q": query, "count": self.count}
+        params: dict[str, Any] = {"q": query, "count": self.num_results}
         if self.country:
             params["country"] = self.country
         if self.search_lang:

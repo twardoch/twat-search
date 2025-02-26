@@ -291,6 +291,9 @@ class SearchCLI:
         if engine is not None:
             engines = engine
 
+        # Log the num_results parameter to help with debugging
+        self.logger.debug(f"Using num_results={num_results}")
+
         # Use 'best' preset if no engines are specified
         if engines is None:
             engines = "best"

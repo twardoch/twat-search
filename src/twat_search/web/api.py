@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from collections.abc import Coroutine
 from typing import Any
 
-from twat_search.web.config import Config
+from twat_search.web.config import Config, EngineConfig
 from twat_search.web.engines import standardize_engine_name
-from twat_search.web.engines.base import SearchEngine, get_engine
+from twat_search.web.engines.base import SearchEngine, get_engine, get_registered_engines
 from twat_search.web.exceptions import SearchError
 from twat_search.web.models import SearchResult
 
@@ -45,50 +46,54 @@ def get_engine_params(
 
 def init_engine_task(
     engine_name: str,
-    config: Config,
-    engines: list[str],
-    kwargs: dict,
-    common_params: dict,
     query: str,
-) -> tuple[str, Any] | None:
+    config: Config,
+    **kwargs: Any,
+) -> tuple[str, Coroutine[Any, Any, list[SearchResult]]]:
     """
-    Initialize a search engine task. If the engine is not configured or fails
-    to initialize (due to missing dependencies, etc.), return None.
+    Initialize a search engine and create a task for searching.
     """
-    # Standardize engine name
+    # Standardize engine name for lookups
     std_engine_name = standardize_engine_name(engine_name)
 
-    # Try both standardized and original names for backward compatibility
+    # Get engine configuration
     engine_config = config.engines.get(std_engine_name)
     if not engine_config:
+        # Fallback to non-standardized name for backward compatibility
         engine_config = config.engines.get(engine_name)
         if not engine_config:
             logger.warning(f"Engine '{engine_name}' not configured.")
-            return None
+            engine_config = EngineConfig(enabled=True)
+
+    # Extract the num_results from the kwargs if present
+    num_results = kwargs.get("num_results")
+    if num_results is not None:
+        logger.debug(f"Initializing engine '{engine_name}' with num_results={num_results}")
 
     try:
+        # Build engine-specific parameters
         engine_params = get_engine_params(
-            engine_name,
-            engines,
-            kwargs,
-            common_params,
+            engine_name=engine_name,
+            engines=kwargs.get("engines", []),
+            kwargs=kwargs,
+            common_params=kwargs.get("common_params", {}),
         )
-        # Use standardized name to get the engine
+
+        # Create engine instance
         engine_instance: SearchEngine = get_engine(
-            std_engine_name,
+            engine_name,
             engine_config,
             **engine_params,
         )
+
         logger.info(f"🔍 Querying engine: {engine_name}")
         return engine_name, engine_instance.search(query)
-    except (ImportError, KeyError) as e:
-        logger.warning(
-            f"Engine '{engine_name}' is not available: {e}. The dependency may not be installed.",
-        )
-        return None
     except Exception as e:
+        logger.warning(
+            f"Failed to initialize engine '{engine_name}': {type(e).__name__}",
+        )
         logger.error(f"Error initializing engine '{engine_name}': {e}")
-        return None
+        raise
 
 
 async def search(
@@ -100,7 +105,7 @@ async def search(
     safe_search: bool = True,
     time_frame: str | None = None,
     config: Config | None = None,
-    strict_mode: bool = False,
+    strict_mode: bool = True,
     **kwargs: Any,
 ) -> list[SearchResult]:
     """
@@ -115,7 +120,7 @@ async def search(
         safe_search: Whether to enable safe search (default: True)
         time_frame: Time frame for results (e.g., "day", "week", "month")
         config: Optional custom configuration
-        strict_mode: If True and specific engines are requested, don't fall back to other engines
+        strict_mode: If True (default), don't fall back to other engines when specific engines are requested
         **kwargs: Additional engine-specific parameters
 
     Returns:
@@ -125,85 +130,101 @@ async def search(
         SearchError: If no engines can be initialized
     """
     flattened_results: list[SearchResult] = []
-    try:
-        config = config or Config()
-        explicit_engines_requested = engines is not None and len(engines) > 0
 
-        # Get the list of engines to try
+    try:
+        # Initialize configuration if not provided
+        config = config or Config()
+
+        # Determine which engines to use
+        explicit_engines_requested = engines is not None and len(engines) > 0
         engines_to_try = engines or list(config.engines.keys())
+
         if not engines_to_try:
             msg = "No search engines configured"
+            logger.error(msg)
             raise SearchError(msg)
 
-        # Standardize engine names
+        # Log the number of results requested
+        logger.debug(f"Search requested with num_results={num_results}")
+
+        # Normalize engine names
         engines_to_try = [standardize_engine_name(e) for e in engines_to_try]
 
+        # Common parameters for all engines
         common_params = {
-            k: v
-            for k, v in {
-                "num_results": num_results,
-                "country": country,
-                "language": language,
-                "safe_search": safe_search,
-                "time_frame": time_frame,
-            }.items()
-            if v is not None
+            "num_results": num_results,
+            "country": country,
+            "language": language,
+            "safe_search": safe_search,
+            "time_frame": time_frame,
         }
 
-        tasks = []
-        engine_names = []
+        # First attempt with specific engines or all enabled engines
+        engine_names: list[str] = []
+        tasks: list[Coroutine[Any, Any, list[SearchResult]]] = []
+        failed_engines: list[str] = []
 
-        # Track which engines were explicitly requested but failed to initialize
-        failed_engines = []
-
+        # Prepare all engine tasks
         for engine_name in engines_to_try:
-            task = init_engine_task(
-                engine_name,
-                config,
-                engines_to_try,
-                kwargs,
-                common_params,
-                query,
-            )
-            if task is not None:
-                engine_names.append(task[0])
-                tasks.append(task[1])
-            elif explicit_engines_requested:
+            try:
+                # Pass all parameters including kwargs to init_engine_task
+                task = init_engine_task(
+                    engine_name,
+                    query,
+                    config,
+                    engines=engines_to_try,
+                    common_params=common_params,
+                    num_results=num_results,
+                    **kwargs,
+                )
+                if task is not None:
+                    engine_names.append(task[0])
+                    tasks.append(task[1])
+            except Exception as e:
+                logger.warning(f"Failed to initialize engine '{engine_name}': {e}")
                 failed_engines.append(engine_name)
+                continue  # Log the exception and continue
 
-        # If strict mode is on, specific engines were requested, and all of them failed,
-        # don't try to fall back to other engines
-        if strict_mode and explicit_engines_requested and not tasks:
+        # Log any failed engines
+        if failed_engines:
             failed_engines_str = ", ".join(failed_engines)
-            msg = f"Requested engines ({failed_engines_str}) could not be initialized. Use strict_mode=False to fall back to other available engines."
-            raise SearchError(msg)
+            logger.warning(f"Failed to initialize engines: {failed_engines_str}")
 
-        # If no tasks but not in strict mode, try to fall back to default engines
-        if not tasks and explicit_engines_requested and not strict_mode:
-            logger.warning(
-                f"None of the requested engines {engines_to_try} could be initialized. "
-                "Falling back to all available engines.",
-            )
-            # Get all available engines as fallback
-            for engine_name in config.engines:
-                if engine_name not in engines_to_try:  # Skip already tried engines
+        # If no engines could be initialized
+        if not tasks:
+            if strict_mode or explicit_engines_requested:
+                # In strict mode or when engines were explicitly requested, don't fall back
+                # This is important to prevent unintended fallbacks
+                msg = f"No search engines could be initialized from requested engines: {', '.join(engines_to_try)}"
+                logger.error(msg)
+                raise SearchError(msg)
+
+            # Try with any available engine as a fallback
+            logger.warning("Falling back to any available search engine...")
+            for engine_name in get_registered_engines():
+                try:
+                    # Pass all parameters including kwargs to init_engine_task
                     task = init_engine_task(
                         engine_name,
-                        config,
-                        [
-                            engine_name,
-                        ],
-                        kwargs,
-                        common_params,
                         query,
+                        config,
+                        engines=[engine_name],
+                        common_params=common_params,
+                        num_results=num_results,
+                        **kwargs,
                     )
                     if task is not None:
                         engine_names.append(task[0])
                         tasks.append(task[1])
+                        break
+                except Exception as e:
+                    logger.debug(f"Failed to initialize engine {engine_name}: {e}")
+                    continue
 
-        if not tasks:
-            msg = "No search engines could be initialized. Make sure at least one engine dependency is installed."
-            raise SearchError(msg)
+            if not tasks:
+                msg = "No search engines could be initialized"
+                logger.error(msg)
+                raise SearchError(msg)
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
 

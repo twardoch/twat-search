@@ -165,7 +165,7 @@ class SerpApiSearchEngine(SearchEngine):
                 ) from exc
 
 
-def _convert_safe(self, safe: bool | str | None) -> str | None:
+def _convert_safe(safe: bool | str | None) -> str | None:
     """Convert safe_search boolean to SerpApi string parameter if needed."""
     if isinstance(safe, bool):
         return "active" if safe else "off"

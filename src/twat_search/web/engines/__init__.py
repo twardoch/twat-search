@@ -15,26 +15,21 @@ from loguru import logger
 
 from twat_search.web.engine_constants import (
     ALL_POSSIBLE_ENGINES,
-    BING_ANYWS,
     BING_SCRAPER,
     BING_SEARCHIT,
     BRAVE,
-    BRAVE_ANYWS,
     BRAVE_NEWS,
     CRITIQUE,
     DUCKDUCKGO,
     ENGINE_FRIENDLY_NAMES,
-    GOOGLE_ANYWS,
     GOOGLE_HASDATA,
     GOOGLE_HASDATA_FULL,
     GOOGLE_SCRAPER,
     GOOGLE_SEARCHIT,
     GOOGLE_SERPAPI,
     PPLX,
-    QWANT_ANYWS,
     QWANT_SEARCHIT,
     TAVILY,
-    YANDEX_ANYWS,
     YANDEX_SEARCHIT,
     YOU,
     YOU_NEWS,
@@ -49,26 +44,21 @@ __all__ = [
     # Helper functions
     "ALL_POSSIBLE_ENGINES",
     # Engine name constants
-    "BING_ANYWS",
     "BING_SCRAPER",
     "BING_SEARCHIT",
     "BRAVE",
-    "BRAVE_ANYWS",
     "BRAVE_NEWS",
     "CRITIQUE",
     "DUCKDUCKGO",
     "ENGINE_FRIENDLY_NAMES",
-    "GOOGLE_ANYWS",
     "GOOGLE_HASDATA",
     "GOOGLE_HASDATA_FULL",
     "GOOGLE_SCRAPER",
     "GOOGLE_SEARCHIT",
     "GOOGLE_SERPAPI",
     "PPLX",
-    "QWANT_ANYWS",
     "QWANT_SEARCHIT",
     "TAVILY",
-    "YANDEX_ANYWS",
     "YANDEX_SEARCHIT",
     "YOU",
     "YOU_NEWS",
@@ -227,43 +217,6 @@ try:
     )
 except (ImportError, SyntaxError) as e:
     logger.warning(f"Failed to import searchit module: {e}")
-
-# Import AnyWebSearch engines
-try:
-    from twat_search.web.engines.anywebsearch import (
-        BingAnyWebSearchEngine,
-        BraveAnyWebSearchEngine,
-        GoogleAnyWebSearchEngine,
-        QwantAnyWebSearchEngine,
-        YandexAnyWebSearchEngine,
-        bing_anyws,
-        brave_anyws,
-        google_anyws,
-        qwant_anyws,
-        yandex_anyws,
-    )
-
-    available_engine_functions["bing_anyws"] = bing_anyws
-    available_engine_functions["brave_anyws"] = brave_anyws
-    available_engine_functions["google_anyws"] = google_anyws
-    available_engine_functions["qwant_anyws"] = qwant_anyws
-    available_engine_functions["yandex_anyws"] = yandex_anyws
-    __all__.extend(
-        [
-            "BingAnyWebSearchEngine",
-            "BraveAnyWebSearchEngine",
-            "GoogleAnyWebSearchEngine",
-            "QwantAnyWebSearchEngine",
-            "YandexAnyWebSearchEngine",
-            "bing_anyws",
-            "brave_anyws",
-            "google_anyws",
-            "qwant_anyws",
-            "yandex_anyws",
-        ],
-    )
-except (ImportError, SyntaxError) as e:
-    logger.warning(f"Failed to import anywebsearch module: {e}")
 
 
 # Add helper functions
