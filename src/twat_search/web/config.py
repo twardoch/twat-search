@@ -16,7 +16,7 @@ from typing import Any, ClassVar
 
 from dotenv import load_dotenv
 from loguru import logger as loguru_logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from twat_search.web.engine_constants import (
@@ -267,6 +267,48 @@ class EngineConfig(BaseModel):
     enabled: bool = True
     api_key: str | None = None
     default_params: dict[str, Any] = Field(default_factory=dict)
+    engine_code: str | None = None  # Added for reference during validation
+
+    @field_validator("api_key")
+    @classmethod
+    def validate_api_key(cls, v: str | None, info: Any) -> str | None:
+        """
+        Validate the API key for the engine.
+
+        If the engine requires an API key (has env_api_key_names), ensure it's set.
+        This validator runs during config loading, so we don't have the actual
+        engine instance yet - we'll do more thorough validation when creating
+        engine instances.
+        """
+        engine_code = info.data.get("engine_code")
+        if engine_code and v is None:
+            # We have an engine code but no API key - we'll check in the registry
+            # if this engine requires an API key
+            try:
+                from twat_search.web.engines.base import get_registered_engines
+
+                engine_class = get_registered_engines().get(engine_code)
+
+                # If we found the engine class and it requires an API key,
+                # check environment variables
+                if engine_class and hasattr(engine_class, "env_api_key_names") and engine_class.env_api_key_names:
+                    # Try to get API key from environment variables
+                    for env_var in engine_class.env_api_key_names:
+                        env_value = os.environ.get(env_var)
+                        if env_value:
+                            return env_value
+
+                    # If we get here, no environment variables were set
+                    logger.warning(
+                        f"Engine '{engine_code}' may require an API key. "
+                        f"Please set one of these environment variables: {', '.join(engine_class.env_api_key_names)}",
+                    )
+            except (ImportError, AttributeError) as e:
+                # Can't access the engine registry yet - this happens during
+                # initial import. We'll validate again when creating the engine.
+                logger.debug(f"Couldn't check API key requirements for {engine_code}: {e}")
+
+        return v
 
 
 class Config(BaseModel):
@@ -383,6 +425,7 @@ class Config(BaseModel):
                 enabled=enabled,
                 api_key=api_key,
                 default_params=default_params,
+                engine_code=engine_name,
             )
 
 

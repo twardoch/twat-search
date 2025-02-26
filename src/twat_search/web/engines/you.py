@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Any, ClassVar
 
 import httpx
@@ -10,6 +11,9 @@ from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, YOU, YOU_NEWS
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 
 class YouSearchHit(BaseModel):
@@ -46,45 +50,31 @@ class YouBaseEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
-        country: str | None = None,
-        language: str | None = None,
-        safe_search: bool | None = True,
-        time_frame: str | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the base engine with common parameters."""
-        super().__init__(config)
+        super().__init__(config, **kwargs)
 
-        if not self.config.api_key:
-            raise EngineError(
-                self.engine_code,
-                f"You.com API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
-            )
-
+        # Set up API headers using the api_key from base class
         self.headers = {
-            "X-API-Key": self.config.api_key,
+            "X-API-Key": self.api_key,
             "Accept": "application/json",
         }
 
-        self.num_results = num_results or self.config.default_params.get(
-            self.num_results_param,
-            5,
-        )
-        self.country_code = country or self.config.default_params.get(
+        # Get the num_results using the improved method from the base class
+        self.max_results = self._get_num_results(self.num_results_param)
+
+        # Get country code
+        self.country_code = kwargs.get("country") or self.config.default_params.get(
             "country_code",
             None,
-        )
-        self.safe_search = safe_search or self.config.default_params.get(
-            "safe_search",
-            True,
         )
 
     async def _make_api_call(self, query: str) -> Any:
         """Handle the common API call logic."""
         params: dict[str, Any] = {
             "q": query,
-            self.num_results_param: self.num_results,
+            self.num_results_param: self.max_results,
         }
 
         if self.country_code:
@@ -92,26 +82,20 @@ class YouBaseEngine(SearchEngine):
         if self.safe_search is not None:
             params["safe_search"] = str(self.safe_search).lower()
 
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(
-                    self.base_url,
-                    headers=self.headers,
-                    params=params,
-                    timeout=10,
-                )
-                response.raise_for_status()
-                return response.json()
-            except httpx.RequestError as exc:
-                raise EngineError(
-                    self.engine_code,
-                    f"HTTP Request failed: {exc}",
-                ) from exc
-            except httpx.HTTPStatusError as exc:
-                raise EngineError(
-                    self.engine_code,
-                    f"HTTP Status error: {exc.response.status_code} - {exc.response.text}",
-                ) from exc
+        logger.debug(f"Making You.com API request to {self.base_url} with params: {params}")
+
+        try:
+            response = await self.make_http_request(
+                url=self.base_url,
+                method="GET",
+                headers=self.headers,
+                params=params,
+            )
+            return response.json()
+        except EngineError as e:
+            raise EngineError(self.engine_code, f"API request failed: {str(e)!s}")
+        except Exception as e:
+            raise EngineError(self.engine_code, f"Unexpected error: {str(e)!s}")
 
 
 @register_engine
@@ -125,6 +109,9 @@ class YouSearchEngine(YouBaseEngine):
 
     async def search(self, query: str) -> list[SearchResult]:
         """Perform a web search using the You.com Search API."""
+        if not query:
+            raise EngineError(self.engine_code, "Search query cannot be empty")
+
         data = await self._make_api_call(query)
         try:
             you_response = YouSearchResponse(**data)
@@ -140,7 +127,11 @@ class YouSearchEngine(YouBaseEngine):
                             raw=hit.model_dump(by_alias=True),
                         ),
                     )
-                except ValidationError:
+                    # Respect num_results limit
+                    if len(results) >= self.max_results:
+                        break
+                except ValidationError as e:
+                    logger.warning(f"Invalid result from You.com: {e}")
                     continue
             return results
         except ValidationError as exc:
@@ -161,6 +152,9 @@ class YouNewsSearchEngine(YouBaseEngine):
 
     async def search(self, query: str) -> list[SearchResult]:
         """Perform a news search using the You.com News API."""
+        if not query:
+            raise EngineError(self.engine_code, "Search query cannot be empty")
+
         data = await self._make_api_call(query)
         try:
             you_response = YouNewsResponse(**data)
@@ -181,7 +175,11 @@ class YouNewsSearchEngine(YouBaseEngine):
                             raw=article.model_dump(by_alias=True),
                         ),
                     )
-                except ValidationError:
+                    # Respect num_results limit
+                    if len(results) >= self.max_results:
+                        break
+                except ValidationError as e:
+                    logger.warning(f"Invalid news result from You.com: {e}")
                     continue
             return results
         except ValidationError as exc:
@@ -189,10 +187,6 @@ class YouNewsSearchEngine(YouBaseEngine):
                 self.engine_code,
                 f"Response parsing error: {exc}",
             ) from exc
-
-
-# Backward compatibility alias
-YoucomSearchEngine = YouSearchEngine
 
 
 async def you(
@@ -204,8 +198,27 @@ async def you(
     time_frame: str | None = None,
     api_key: str | None = None,
 ) -> list[SearchResult]:
-    """Search You.com web search."""
-    config = EngineConfig(api_key=api_key, enabled=True)
+    """
+    Search the web using You.com.
+
+    Args:
+        query: The search query
+        num_results: Maximum number of results to return
+        country: Country code (e.g., "us", "gb")
+        language: Language code (e.g., "en", "es")
+        safe_search: Whether to filter adult content
+        time_frame: Time frame for results (e.g., "day", "week", "month")
+        api_key: You.com API key (if not set via environment variable)
+
+    Returns:
+        List of search results
+    """
+    config = EngineConfig(
+        api_key=api_key,
+        enabled=True,
+        engine_code=YOU,
+    )
+
     engine = YouSearchEngine(
         config,
         num_results=num_results,
@@ -214,6 +227,7 @@ async def you(
         safe_search=safe_search,
         time_frame=time_frame,
     )
+
     return await engine.search(query)
 
 
@@ -226,8 +240,27 @@ async def you_news(
     time_frame: str | None = None,
     api_key: str | None = None,
 ) -> list[SearchResult]:
-    """Search You.com news."""
-    config = EngineConfig(api_key=api_key, enabled=True)
+    """
+    Search news articles using You.com News.
+
+    Args:
+        query: The search query
+        num_results: Maximum number of results to return
+        country: Country code (e.g., "us", "gb")
+        language: Language code (e.g., "en", "es")
+        safe_search: Whether to filter adult content
+        time_frame: Time frame for news (e.g., "day", "week", "month")
+        api_key: You.com API key (if not set via environment variable)
+
+    Returns:
+        List of search results
+    """
+    config = EngineConfig(
+        api_key=api_key,
+        enabled=True,
+        engine_code=YOU_NEWS,
+    )
+
     engine = YouNewsSearchEngine(
         config,
         num_results=num_results,
@@ -236,8 +269,5 @@ async def you_news(
         safe_search=safe_search,
         time_frame=time_frame,
     )
+
     return await engine.search(query)
-
-
-# Alias for backward compatibility
-youcom = you

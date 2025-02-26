@@ -10,14 +10,18 @@ from __future__ import annotations
 
 import abc
 import asyncio
+import logging
 import random
 from typing import Any, ClassVar
 
 import httpx
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.exceptions import SearchError
+from twat_search.web.exceptions import EngineError, SearchError
 from twat_search.web.models import SearchResult
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 # List of user agents to rotate for scrapers to avoid blocking
 USER_AGENTS = [
@@ -37,12 +41,11 @@ class SearchEngine(abc.ABC):
     the search method.
     """
 
-    engine_code: ClassVar[str] = ""  # Class attribute that must be defined by subclasses
+    # Class variables that must be defined by subclasses
+    engine_code: ClassVar[str] = ""
     # User-friendly name for display purposes
     friendly_engine_name: ClassVar[str] = ""
-
-    # Class attributes for environment variables
-    # Override with engine-specific names
+    # List of environment variable names that can hold the API key
     env_api_key_names: ClassVar[list[str]] = []
     # Override with engine-specific names
     env_enabled_names: ClassVar[list[str]] = []
@@ -75,13 +78,21 @@ class SearchEngine(abc.ABC):
 
         if not config.enabled:
             msg = f"Engine '{self.engine_code}' is disabled."
-            raise SearchError(msg)
+            raise EngineError(self.engine_code, msg)
 
-    def get_num_results(
-        self,
-        param_name: str = "num_results",
-        min_value: int = 1,
-    ) -> int:
+        # Check for API key if required
+        if self.env_api_key_names:
+            if not self.config.api_key:
+                msg = (
+                    f"API key is required for {self.engine_code}. "
+                    f"Please set it via one of these env vars: {', '.join(self.env_api_key_names)}"
+                )
+                raise EngineError(self.engine_code, msg)
+            self.api_key = self.config.api_key
+        else:
+            self.api_key = None
+
+    def _get_num_results(self, param_name: str = "num_results", min_value: int = 1) -> int:
         """
         Get the standardized number of results to return, respecting user preference.
 
@@ -96,27 +107,57 @@ class SearchEngine(abc.ABC):
         Returns:
             The number of results to request
         """
-        # First try the engine-specific parameter name if provided in kwargs
+        # Get value from kwargs
         value = self.kwargs.get(param_name)
         if value is not None:
-            # Always respect the user's explicit request, even if it's below min_value
-            return int(value)
+            try:
+                return max(min_value, int(value))
+            except (TypeError, ValueError):
+                logger.warning(f"Invalid value for '{param_name}' ({value!r}) in {self.engine_code}, using default.")
+                # Fall through to next option if value is invalid
 
-        # Then try the standard num_results parameter
-        if self.num_results is not None:
-            # Always respect the user's explicit request, even if it's below min_value
-            return int(self.num_results)
-
-        # Finally check config default params
-        default = self.config.default_params.get(
-            param_name,
-        ) or self.config.default_params.get("num_results")
+        # If not in kwargs get from config
+        default = self.config.default_params.get(param_name) or self.config.default_params.get("num_results")
         if default is not None:
-            # Only apply min_value to default values
-            return max(min_value, int(default))
+            try:
+                return max(min_value, int(default))
+            except (TypeError, ValueError):
+                logger.warning(
+                    f"Invalid default value for '{param_name}' ({default!r}) in {self.engine_code}, using fallback.",
+                )
+                # Fall through to default if value is invalid
 
         # Return a reasonable default
         return 5
+
+    @property
+    def max_results(self) -> int:
+        """
+        Get the maximum number of results to return based on user input or defaults.
+
+        Returns:
+            The maximum number of results to return.
+        """
+        return self._get_num_results(param_name="num_results", min_value=1)
+
+    def limit_results(self, results: list[SearchResult]) -> list[SearchResult]:
+        """
+        Limit the number of results to respect the user's num_results parameter.
+
+        This method should be called at the end of search implementations to ensure
+        that regardless of how many results are gathered, we respect the user's
+        requested limit.
+
+        Args:
+            results: The full list of results
+
+        Returns:
+            A list limited to max_results items
+        """
+        max_results = self.max_results
+        if max_results > 0 and len(results) > max_results:
+            return results[:max_results]
+        return results
 
     async def make_http_request(
         self,
@@ -149,7 +190,7 @@ class SearchEngine(abc.ABC):
             httpx.Response: The HTTP response
 
         Raises:
-            SearchError: If all request attempts fail
+            EngineError: If all request attempts fail
         """
         # Set defaults if not provided
         actual_timeout = self.timeout if timeout is None else timeout
@@ -163,33 +204,51 @@ class SearchEngine(abc.ABC):
         if self.use_random_user_agent and "user-agent" not in {k.lower() for k in headers}:
             headers["User-Agent"] = random.choice(USER_AGENTS)
 
-        attempt = 0
-        last_error = None
+        delay = actual_retry_delay  # Initial delay
+        # Initialize with None, but will be a RequestError or HTTPStatusError after a failed attempt
+        last_error: httpx.RequestError | httpx.HTTPStatusError | None = None
 
-        while attempt <= actual_retries:
+        # Try the request multiple times
+        for attempt in range(1, actual_retries + 2):  # +2 because we want actual_retries+1 attempts
             try:
-                async with httpx.AsyncClient() as client:
+                async with httpx.AsyncClient(timeout=actual_timeout) as client:
                     response = await client.request(
                         method=method,
                         url=url,
                         headers=headers,
                         params=params,
                         json=json_data,
-                        timeout=actual_timeout,
                     )
                     response.raise_for_status()
                     return response
             except (httpx.RequestError, httpx.HTTPStatusError) as exc:
                 last_error = exc
-                attempt += 1
-                if attempt <= actual_retries:
-                    # Add jitter to retry delay to avoid thundering herd effect
-                    jitter = random.uniform(0.5, 1.5)
-                    await asyncio.sleep(actual_retry_delay * jitter)
+                if attempt > actual_retries:
+                    # Final retry failed
+                    # This will be reached on the last iteration if all attempts fail
+                    break
 
-        # If we got here, all attempts failed
-        msg = f"Engine '{self.engine_code}': HTTP request failed after {actual_retries + 1} attempts: {last_error}"
-        raise SearchError(msg)
+                # Add jitter to retry delay to avoid thundering herd effect
+                jitter = random.uniform(0.5, 1.5)
+                actual_delay = delay * jitter
+
+                # Log the error and retry
+                logger.warning(
+                    f"Request failed (attempt {attempt}/{actual_retries + 1}), retrying in {actual_delay:.2f}s: {exc}",
+                )
+
+                await asyncio.sleep(actual_delay)
+                delay *= 2  # Exponential backoff
+
+        # If we get here, all attempts failed
+        # At this point, last_error should always be set to a RequestError or HTTPStatusError
+        # because we only exit the loop after at least one attempt has failed
+        # But we'll add a fallback just in case (should never happen)
+        if last_error is None:
+            last_error = httpx.RequestError("Unknown error occurred during HTTP request")
+
+        msg = f"HTTP request failed after {actual_retries + 1} attempts: {last_error}"
+        raise EngineError(self.engine_code, msg) from last_error
 
     @abc.abstractmethod
     async def search(self, query: str) -> list[SearchResult]:
@@ -202,6 +261,23 @@ class SearchEngine(abc.ABC):
         Returns:
             List of search results
         """
+
+    def _get_api_key(self) -> str:
+        """
+        Get the API key for the search engine.
+
+        Returns:
+            The API key.
+
+        Raises:
+            EngineError: If the API key is missing.
+        """
+        if not self.config.api_key:
+            raise EngineError(
+                self.engine_code,
+                f"API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}",
+            )
+        return self.config.api_key
 
 
 # Registry of available search engines
@@ -218,55 +294,64 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
     Returns:
         The registered search engine class
     """
-    _engine_registry[engine_class.engine_code] = engine_class
+    try:
+        # Check that the engine class has required attributes
+        if not hasattr(engine_class, "engine_code") or not engine_class.engine_code:
+            error_msg = "Engine must define a non-empty 'engine_code' attribute."
+            raise AttributeError(error_msg)
 
-    # Auto-generate environment variable names if not explicitly set
-    if not hasattr(engine_class, "env_api_key_names"):
-        engine_class.env_api_key_names = [
-            f"{engine_class.engine_code.upper()}_API_KEY",
-        ]
-    if not hasattr(engine_class, "env_enabled_names"):
-        engine_class.env_enabled_names = [
-            f"{engine_class.engine_code.upper()}_ENABLED",
-        ]
-    if not hasattr(engine_class, "env_params_names"):
-        engine_class.env_params_names = [
-            f"{engine_class.engine_code.upper()}_DEFAULT_PARAMS",
-        ]
+        # Now check for env_api_key_names attribute
+        if not hasattr(engine_class, "env_api_key_names"):
+            error_msg = "Engine must define a 'env_api_key_names' attribute."
+            raise AttributeError(error_msg)
 
-    # Set friendly_name if not defined but it exists in ENGINE_FRIENDLY_NAMES
-    if not engine_class.friendly_engine_name:
-        try:
-            from twat_search.web.engines import ENGINE_FRIENDLY_NAMES
+        # Register the engine
+        _engine_registry[engine_class.engine_code] = engine_class
 
-            engine_class.friendly_engine_name = ENGINE_FRIENDLY_NAMES.get(
-                engine_class.engine_code,
-                engine_class.engine_code,
-            )
-        except ImportError:
-            engine_class.friendly_engine_name = engine_class.engine_code
+        # Set friendly_name if not defined
+        if not engine_class.friendly_engine_name:
+            try:
+                from twat_search.web.engine_constants import ENGINE_FRIENDLY_NAMES
 
-    return engine_class
+                engine_class.friendly_engine_name = ENGINE_FRIENDLY_NAMES.get(
+                    engine_class.engine_code,
+                    engine_class.engine_code,
+                )
+            except ImportError:
+                engine_class.friendly_engine_name = engine_class.engine_code
+
+        return engine_class
+    except Exception as e:
+        logger.error(f"Failed to register engine {engine_class.__name__}: {e}")
+        return engine_class  # Return the class even if registration failed
 
 
 def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:
     """
-    Get a search engine instance by name.
+    Get an instance of a search engine by name.
 
     Args:
-        engine_name: The name of the engine to get
-        config: Engine configuration
-        **kwargs: Additional engine-specific parameters
+        engine_name: The name of the engine to get.
+        config: Engine configuration.
+        **kwargs: Additional engine-specific parameters.
 
     Returns:
-        An instance of the requested search engine
+        An instance of the requested search engine.
+
+    Raises:
+        EngineError: If the engine is not found or disabled.
     """
     engine_class = _engine_registry.get(engine_name)
     if engine_class is None:
-        msg = f"Unknown search engine: {engine_name}"
-        raise SearchError(msg)
+        available_engines = ", ".join(sorted(_engine_registry.keys()))
+        msg = f"Unknown search engine: '{engine_name}'. Available engines: {available_engines}"
+        raise EngineError(engine_name, msg)
 
-    return engine_class(config, **kwargs)
+    try:
+        return engine_class(config, **kwargs)
+    except Exception as e:
+        msg = f"Failed to initialize engine '{engine_name}': {e}"
+        raise EngineError(engine_name, msg) from e
 
 
 def get_registered_engines() -> dict[str, type[SearchEngine]]:
@@ -274,6 +359,6 @@ def get_registered_engines() -> dict[str, type[SearchEngine]]:
     Get a dictionary of all registered search engines.
 
     Returns:
-        Dictionary mapping engine names to engine classes
+        A dictionary mapping engine codes to engine classes.
     """
     return _engine_registry.copy()

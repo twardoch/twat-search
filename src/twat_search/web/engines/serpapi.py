@@ -146,7 +146,7 @@ class SerpApiSearchEngine(SearchEngine):
                     except ValidationError:
                         continue
 
-                return results
+                return self.limit_results(results)
 
             except httpx.RequestError as exc:
                 raise EngineError(

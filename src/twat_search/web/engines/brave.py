@@ -48,7 +48,7 @@ class BaseBraveEngine(SearchEngine):
 
         # Use the standardized get_num_results method to ensure the user's
         # preference for num_results is respected
-        self.num_results = self.get_num_results(param_name="num_results", min_value=1)
+        self.num_results = self._get_num_results(param_name="num_results", min_value=1)
 
         self.country = country or kwargs.get("country") or self.config.default_params.get("country", None)
         search_lang = kwargs.get("search_lang", language)
@@ -152,23 +152,147 @@ class BaseBraveEngine(SearchEngine):
             raw=raw,
         )
 
+    async def _make_api_call(self, query: str) -> dict[str, Any]:
+        """Make API call to Brave Search API."""
+        if not query:
+            raise EngineError(self.engine_code, "Search query cannot be empty")
+
+        url = self.base_url
+        params = {
+            "q": query,
+            "count": self.num_results,
+            "country": self.country or "US",
+            "safe_search": "strict" if self.safe_search else "off",
+        }
+
+        if hasattr(self, "freshness") and self.freshness:
+            params["freshness"] = self.freshness
+
+        headers = {
+            "Accept": "application/json",
+            "Accept-Encoding": "gzip",
+            "X-Subscription-Token": self.config.api_key,
+        }
+
+        response = await self.make_http_request(
+            url=url,
+            method="GET",
+            params=params,
+            headers=headers,
+        )
+
+        try:
+            data = response.json()
+            return data
+        except Exception as e:
+            raise EngineError(
+                self.engine_code,
+                f"Failed to parse response from Brave Search API: {e}",
+            ) from e
+
 
 @register_engine
 class BraveSearchEngine(BaseBraveEngine):
+    """Implementation of the Brave Search API for web search."""
+
     engine_code = BRAVE
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[BRAVE]
     base_url = "https://api.search.brave.com/res/v1/web/search"
     response_key = "web"
     result_model = BraveResult
 
+    async def search(self, query: str) -> list[SearchResult]:
+        """Perform a web search using Brave Search API."""
+        data = await self._make_api_call(query)
+
+        results = []
+        try:
+            web_result = data.get("web", {})
+            items = web_result.get("results", [])
+
+            for idx, item in enumerate(items, start=1):
+                title = item.get("title", "")
+                url = item.get("url", "")
+                description = item.get("description", "")
+
+                if not (title and url):
+                    continue
+
+                results.append(
+                    SearchResult(
+                        title=title,
+                        url=url,
+                        snippet=description,
+                        source=self.engine_code,
+                        raw=item,
+                        is_first=(idx == 1),
+                    ),
+                )
+
+            # Use the limit_results method to enforce num_results
+            return self.limit_results(results)
+        except Exception as e:
+            raise EngineError(
+                self.engine_code,
+                f"Failed to process results from Brave Search API: {e}",
+            ) from e
+
 
 @register_engine
 class BraveNewsSearchEngine(BaseBraveEngine):
+    """Implementation of the Brave Search API for news search."""
+
     engine_code = BRAVE_NEWS
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[BRAVE_NEWS]
     base_url = "https://api.search.brave.com/res/v1/news/search"
     response_key = "news"
     result_model = BraveNewsResult
+    freshness = "last7days"  # Default to news from the last 7 days
+
+    async def search(self, query: str) -> list[SearchResult]:
+        """Perform a news search using Brave Search API."""
+        data = await self._make_api_call(query)
+
+        results = []
+        try:
+            news_results = data.get("news", {})
+            items = news_results.get("results", [])
+
+            for idx, item in enumerate(items, start=1):
+                title = item.get("title", "")
+                url = item.get("url", "")
+                description = item.get("description", "")
+
+                if not (title and url):
+                    continue
+
+                # Add source and age to snippet if available
+                if item.get("age") or item.get("source", {}).get("name"):
+                    source_name = item.get("source", {}).get("name", "")
+                    age = item.get("age", "")
+                    if source_name and age:
+                        description = f"{description} - {source_name} ({age})"
+                    elif source_name:
+                        description = f"{description} - {source_name}"
+
+                results.append(
+                    SearchResult(
+                        title=title,
+                        url=url,
+                        snippet=description,
+                        source=self.engine_code,
+                        raw=item,
+                        is_first=(idx == 1),
+                    ),
+                )
+
+            # Use the limit_results method to enforce num_results
+            return self.limit_results(results)
+        except Exception as e:
+            raise EngineError(
+                self.engine_code,
+                f"Failed to process results from Brave News API: {e}",
+            ) from e
 
 
 async def brave(

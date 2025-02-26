@@ -7,6 +7,7 @@ This module implements the Perplexity AI API integration.
 
 from __future__ import annotations
 
+import logging
 from typing import Any, ClassVar
 
 import httpx
@@ -18,6 +19,9 @@ from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, PPLX
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
+
+# Initialize logger
+logger = logging.getLogger(__name__)
 
 
 class PerplexityResult(BaseModel):
@@ -46,42 +50,30 @@ class PerplexitySearchEngine(SearchEngine):
     def __init__(
         self,
         config: EngineConfig,
-        num_results: int = 5,
-        country: str | None = None,
-        language: str | None = None,
-        safe_search: bool | None = True,
-        time_frame: str | None = None,
-        model: str | None = None,
         **kwargs: Any,
     ) -> None:
         """
         Initialize the Perplexity search engine.
         """
-        super().__init__(config)
+        super().__init__(config, **kwargs)
         self.base_url = "https://api.perplexity.ai/chat/completions"
-        self.model = model or kwargs.get("model") or self.config.default_params.get("model", "pplx-70b-online")
-        self.num_results = num_results
-        self.country = country
-        self.language = language
-        self.safe_search = safe_search
-        self.time_frame = time_frame
+        self.model = kwargs.get("model") or self.config.default_params.get("model", "pplx-70b-online")
+        self.max_results = self._get_num_results()
 
-        if not self.config.api_key:
-            raise EngineError(
-                self.engine_code,
-                f"Perplexity API key is required. Set it via one of these env vars: {', '.join(self.env_api_key_names)}.",
-            )
-
+        # Set up the authentication headers using the api_key from base class
         self.headers = {
             "accept": "application/json",
             "content-type": "application/json",
-            "authorization": f"Bearer {self.config.api_key}",
+            "authorization": f"Bearer {self.api_key}",
         }
 
     async def search(self, query: str) -> list[SearchResult]:
         """
         Perform a search using the Perplexity AI API.
         """
+        if not query:
+            raise EngineError(self.engine_code, "Search query cannot be empty")
+
         payload = {
             "model": self.model,
             "messages": [
@@ -94,25 +86,23 @@ class PerplexitySearchEngine(SearchEngine):
         }
 
         try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    self.base_url,
-                    headers=self.headers,
-                    json=payload,
-                    timeout=10,
-                )
-                response.raise_for_status()
-                data = response.json()
-        except httpx.RequestError as exc:
+            response = await self.make_http_request(
+                url=self.base_url,
+                method="POST",
+                headers=self.headers,
+                json_data=payload,
+            )
+            data = response.json()
+        except EngineError as e:
             raise EngineError(
                 self.engine_code,
-                f"HTTP Request failed: {exc}",
-            ) from exc
-        except httpx.HTTPStatusError as exc:
+                f"API request failed: {str(e)!s}",
+            )
+        except Exception as e:
             raise EngineError(
                 self.engine_code,
-                f"HTTP Status error: {exc.response.status_code} - {exc.response.text}",
-            ) from exc
+                f"Unexpected error: {str(e)!s}",
+            )
 
         results = []
         for choice in data.get("choices", []):
@@ -132,7 +122,12 @@ class PerplexitySearchEngine(SearchEngine):
                         raw=data,
                     ),
                 )
-            except ValidationError:
+
+                # Respect the max_results limit
+                if len(results) >= self.max_results:
+                    break
+            except ValidationError as e:
+                logger.warning(f"Invalid result from Perplexity: {e}")
                 continue
 
         return results
@@ -150,10 +145,24 @@ async def pplx(
 ) -> list[SearchResult]:
     """
     Search with Perplexity AI.
+
+    Args:
+        query: The search query
+        num_results: Maximum number of results to return
+        country: Not used by Perplexity
+        language: Not used by Perplexity
+        safe_search: Not used by Perplexity
+        time_frame: Not used by Perplexity
+        model: The model to use (e.g., "pplx-70b-online")
+        api_key: Perplexity API key (if not set via environment variable)
+
+    Returns:
+        List of search results
     """
     config = EngineConfig(
         api_key=api_key,
         enabled=True,
+        engine_code=PPLX,
     )
 
     engine = PerplexitySearchEngine(

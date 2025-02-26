@@ -1,6 +1,6 @@
-2025-02-26 19:59:04 - 
+2025-02-26 21:01:12 - 
 === PROJECT STATEMENT ===
-2025-02-26 19:59:04 - ---
+2025-02-26 21:01:12 - ---
 description: About this project
 globs: 
 alwaysApply: false
@@ -15,14 +15,14 @@ alwaysApply: false
 - Clear provider protocol for adding new search backends
 - Strong typing and runtime checks throughout
 
-2025-02-26 19:59:04 - Error: _print_header() missing 1 required positional argument: 'message'
-2025-02-26 19:59:07 - 
+2025-02-26 21:01:12 - Error: _print_header() missing 1 required positional argument: 'message'
+2025-02-26 21:01:14 - 
 📦 Repomix v0.2.29
 
 No custom config found at repomix.config.json or global config at /Users/adam/.config/repomix/repomix.config.json.
 You can add a config file for additional settings. Please check https://github.com/yamadashy/repomix for more information.
 ⠙ Collecting files...
-[2K[1A[2K[G⠹ Collecting files...
+[2K[1A[2K[G⠹ Collect file... (5/53) .github/workflows/release.yml
 [2K[1A[2K[G⠸ Collect file... (5/53) .github/workflows/release.yml
 [2K[1A[2K[G⠼ Collect file... (5/53) .github/workflows/release.yml
 [2K[1A[2K[G⠴ Collect file... (5/53) .github/workflows/release.yml
@@ -33,28 +33,25 @@ You can add a config file for additional settings. Please check https://github.c
 [2K[1A[2K[G⠋ Collect file... (5/53) .github/workflows/release.yml
 [2K[1A[2K[G⠙ Collect file... (5/53) .github/workflows/release.yml
 [2K[1A[2K[G⠹ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠸ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠼ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠴ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠦ Running security check...
-[2K[1A[2K[G⠧ Running security check... (4/53) .github/workflows/push.yml
-[2K[1A[2K[G⠇ Running security check... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠏ Processing files...
-[2K[1A[2K[G⠋ Processing file... (7/52) src/twat_search/web/engines/base.py
-[2K[1A[2K[G⠙ Processing file... (44/52) CHANGELOG.md
-[2K[1A[2K[G⠹ Calculating metrics...
-[2K[1A[2K[G⠸ Calculating metrics...
-[2K[1A[2K[G⠼ Calculating metrics...
-[2K[1A[2K[G⠴ Calculating metrics... (11/52) src/twat_search/web/engines/duckduckgo.py
+[2K[1A[2K[G⠸ Collect file... (35/53) tests/unit/web/test_exceptions.py
+[2K[1A[2K[G⠼ Running security check...
+[2K[1A[2K[G⠴ Running security check... (5/53) .github/workflows/release.yml
+[2K[1A[2K[G⠦ Processing files...
+[2K[1A[2K[G⠧ Processing file... (5/52) .github/workflows/release.yml
+[2K[1A[2K[G⠇ Processing file... (20/52) src/twat_search/web/api.py
+[2K[1A[2K[G⠏ Calculating metrics...
+[2K[1A[2K[G⠋ Calculating metrics...
+[2K[1A[2K[G⠙ Calculating metrics...
+[2K[1A[2K[G⠹ Calculating metrics... (13/52) src/twat_search/web/engines/hasdata.py
 [2K[1A[2K[G✔ Packing completed successfully!
 
 📈 Top 5 Files by Character Count and Token Count:
 ──────────────────────────────────────────────────
-1.  NEXTENGINES.md (30,860 chars, 7,971 tokens)
-2.  README.md (20,982 chars, 5,079 tokens)
-3.  src/twat_search/web/cli.py (10,244 chars, 2,194 tokens)
-4.  pyproject.toml (6,021 chars, 2,016 tokens)
-5.  TODO.md (5,896 chars, 1,347 tokens)
+1.  TODO.md (45,355 chars, 9,609 tokens)
+2.  NEXTENGINES.md (30,860 chars, 7,971 tokens)
+3.  README.md (20,982 chars, 5,079 tokens)
+4.  src/twat_search/web/cli.py (10,244 chars, 2,194 tokens)
+5.  pyproject.toml (6,021 chars, 2,016 tokens)
 
 🔎 Security Check:
 ──────────────────
@@ -68,8 +65,8 @@ Please review these files for potential sensitive information.
 📊 Pack Summary:
 ────────────────
   Total Files: 52 files
-  Total Chars: 156,837 chars
- Total Tokens: 38,804 tokens
+  Total Chars: 202,703 chars
+ Total Tokens: 48,570 tokens
        Output: twat_search.txt
      Security: 1 suspicious file(s) detected and excluded
 
@@ -78,4 +75,4 @@ Your repository has been successfully packed.
 
 💡 Repomix is now available in your browser! Try it at https://repomix.com
 
-2025-02-26 19:59:07 - Repository content mixed into twat_search.txt
+2025-02-26 21:01:14 - Repository content mixed into twat_search.txt

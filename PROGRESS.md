@@ -6,62 +6,140 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
 
 # Task List
 
-## 1. Fix non-functioning engines
+## 1. Fix Critical Engine Failures
 
-- [ ] Fix API key and authentication issues
-  - [ ] Review environment variable handling in `config.py`
-  - [ ] Improve error messages for missing API keys
-  - [ ] Add debug logging for API key loading process
+- [x] Enhance `base.SearchEngine` class to enforce API key requirements
+  - [x] Modify to require subclasses to define `env_api_key_names` as a class variable
+  - [x] Add proper validation for engine code and API key requirements
+  - [x] Centralize HTTP request handling with retries and error management
 
-- [ ] Address anywebsearch engines
-  - [ ] Remove all anywebsearch-based engines from the codebase (bing_anyws, brave_anyws, google_anyws, qwant_anyws, yandex_anyws)
-  - [ ] Update all relevant files to remove imports and references
-  - [ ] Remove from engine constants and registration
+- [x] Enhance `config.py` for better API key handling
+  - [x] Update `EngineConfig` to validate and require API keys as needed
+  - [x] Improve error messages for missing API keys
+  - [x] Add field validation for API keys
 
-- [ ] Fix searchit engines
-  - [ ] Diagnose bing_searchit implementation issues
-  - [ ] Diagnose google_searchit implementation issues
-  - [ ] Diagnose qwant_searchit implementation issues
-  - [ ] Diagnose yandex_searchit implementation issues
+- [x] Update engine implementations correctly
+  - [x] Fix You.com engines (`you` and `you_news`)
+  - [x] Fix Perplexity (`pplx`) implementation
+  - [ ] Fix SerpAPI integration
+  - [ ] Ensure all engines implement proper API key handling
 
-- [ ] Fix SerpAPI integration
-  - [ ] Ensure proper initialization and API key handling
-  - [ ] Test with valid API key
+- [ ] Improve `get_engine` function and error handling
+  - [ ] Add descriptive error messages when engines are not found or disabled
+  - [ ] Handle engine initialization failures gracefully
 
-- [ ] Fix You.com engines
-  - [ ] Debug you engine initialization issues
-  - [ ] Debug you_news engine initialization issues
-  - [ ] Verify API key handling
+- [ ] Add comprehensive tests for engine initialization
+  - [ ] Test API key requirements
+  - [ ] Test engine availability detection
+  - [ ] Test disabled engine handling
 
-- [ ] Fix Perplexity (pplx) implementation
-  - [ ] Review authentication process
-  - [ ] Debug query handling and response parsing
+## 2. Fix Data Integrity and Consistency Issues
 
-- [ ] Fix Brave News implementation
-  - [ ] Diagnose why results are not being returned
+- [!] Fix inconsistent `num_results` parameter handling
+  - [x] Implement `_get_num_results` method in base class
+  - [!] Implement proper result limiting in working engines (currently `-n 1` returns multiple results)
+  - [!] Fix broken engines failing with "`object has no attribute 'get_num_results'`" error
+    - [!] Fix `brave` engine implementation
+    - [!] Fix `brave_news` engine implementation
+    - [ ] Fix `critique` engine implementation
+  - [ ] Ensure all engines properly handle and respect `num_results`
+  - [ ] Add result limiting logic to all engine implementations
 
-## 2. Fix num_results parameter handling
+- [ ] Fix source attribution in search results
+  - [ ] Ensure all engines use `self.engine_code` when creating `SearchResult` objects
+  - [ ] Fix typos in result keys (e.g., `"snippetHighlitedWords"`)
 
-- [ ] Fix parameter handling in individual engines
-  - [ ] Fix Brave engine's num_results handling
+- [!] Fix unwanted result combination in Google engines
+  - [!] Fix `google_hasdata` engine returning results from other engines
+  - [!] Fix `google_hasdata_full` engine returning results from other engines
 
-## 3. Add comprehensive tests
+## 3. Address Engine Reliability Issues (Empty Results)
 
-- [ ] Create test for num_results parameter handling
-- [ ] Create test for proper source attribution in results
-- [ ] Create test for verifying no unintended fallbacks
-- [ ] Add test to verify engine availability detection
+- [!] Fix `searchit`-based engines
+  - [!] Fix `bing_searchit` returning empty results
+  - [!] Fix `google_searchit` returning empty results
+  - [!] Fix `qwant_searchit` returning empty results
+  - [!] Fix `yandex_searchit` returning empty results
+  - [ ] Verify proper installation and dependencies
+  - [ ] Create test script to isolate issues
+  - [ ] Add detailed logging for debugging
+  - [ ] Fix implementation issues or remove if necessary
 
-## 4. Documentation and logging improvements
+- [!] Fix API key-based engines with initialization failures
+  - [!] Fix `pplx` engine initialization
+  - [!] Fix `you` engine initialization 
+  - [!] Fix `you_news` engine initialization
+  - [ ] Debug initialization failures and API key handling
+
+- [ ] Test and fix other engines with empty results
+  - [ ] Identify and address common failure patterns
+
+## 4. Codebase Cleanup
+
+- [ ] Remove all `anywebsearch` engines
+  - [ ] Delete `src/twat_search/web/engines/anywebsearch.py`
+  - [ ] Remove related imports from all files
+  - [ ] Update engine constants and registration
+
+- [x] Fix code duplication in `base.SearchEngine`
+  - [x] Centralize common functionality
+  - [x] Improve error handling consistency
+
+## 5. Improve CLI Interface
+
+- [ ] Update the `q` command in the CLI
+  - [ ] Remove engine-specific parameters
+  - [ ] Only use common parameters
+  - [ ] Test CLI with various parameter combinations
+
+## 6. Enforce Consistent JSON Output Format
+
+- [ ] Standardize JSON output across all engines
+  - [ ] Utilize the existing `SearchResult` model consistently
+  - [ ] Remove utility functions like `_process_results` and `_display_json_results`
+  - [ ] Remove `CustomJSONEncoder` class
+  - [ ] Update engine `search` methods to return list of `SearchResult` objects
+
+- [ ] Update API function return types
+  - [ ] Change return type to `list[SearchResult]`
+  - [ ] Ensure proper handling of results from engines
+
+- [ ] Update CLI display functions
+  - [ ] Use `model_dump` for JSON serialization
+  - [ ] Implement simplified result display
+
+## 7. Testing and Documentation
+
+- [!] Fix failing tests
+  - [ ] Address test failures in `test_api.py`
+  - [ ] Address test failures in `test_config.py`
+  - [ ] Address test failures in `test_bing_scraper.py`
+
+- [ ] Create comprehensive test suite
+  - [ ] Test each engine individually
+  - [ ] Test parameter handling
+  - [ ] Test error conditions and recovery
 
 - [ ] Enhance debug logging throughout the codebase
-- [ ] Improve error messages for common failure cases
-- [ ] Update documentation with common issues and solutions
-- [ ] Document engine-specific requirements and limitations
+  - [ ] Add consistent logging in all engines
+  - [ ] Improve error messages for common failure cases
 
-## 5. Cleanup & Final Verification
+- [ ] Update documentation
+  - [ ] Document engine-specific requirements
+  - [ ] Add troubleshooting guidelines
+  - [ ] Document parameter handling
 
-- [ ] Run tests to ensure all engines are working properly
-- [ ] Verify that each engine respects the num_results parameter
-- [ ] Ensure no unintended fallbacks are occurring
-- [ ] Update documentation to reflect changes
+## 8. Final Verification
+
+- [ ] Run test command on all engines
+  - [ ] Verify correct output format
+  - [ ] Verify proper parameter handling
+  - [ ] Check for consistent error handling
+
+- [x] Run linters and code quality tools
+  - [x] Address all Ruff and Mypy issues
+  - [ ] Run `cleanup.py status` regularly during development
+
+- [ ] Verify full system functionality
+  - [ ] Test with the problem case command
+  - [ ] Ensure all engines return proper results
