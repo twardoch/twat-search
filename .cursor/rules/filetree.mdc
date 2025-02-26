@@ -2,13 +2,13 @@
 description: File tree of the project
 globs: 
 ---
-[ 896]  .
+[ 928]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 558]  cleanup.mdc
-│       └── [4.4K]  filetree.mdc
+│       └── [4.6K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
@@ -16,7 +16,7 @@ globs:
 ├── [3.5K]  .gitignore
 ├── [ 532]  .pre-commit-config.yaml
 ├── [  96]  .specstory
-│   └── [ 736]  history
+│   └── [ 800]  history
 │       ├── [2.0K]  .what-is-this.md
 │       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -37,16 +37,19 @@ globs:
 │       ├── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
 │       ├── [9.9K]  2025-02-25_07-09-refactoring-plan-and-progress-update.md
 │       ├── [ 40K]  2025-02-25_07-17-implementing-phase-1-from-todo-md.md
-│       └── [292K]  2025-02-25_07-34-integrating-hasdata-google-serp-apis.md
+│       ├── [292K]  2025-02-25_07-34-integrating-hasdata-google-serp-apis.md
+│       ├── [142K]  2025-02-25_08-19-implementing-search-engines-from-nextengines-md.md
+│       └── [ 34K]  2025-02-26_09-54-implementing-plain-option-for-search-commands.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
+├── [ 64K]  NEXTENGINES.md
 ├── [1.2K]  PROGRESS.md
-├── [3.2K]  README.md
+├── [ 21K]  README.md
 ├── [4.1K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
-├── [ 128]  dist
-├── [9.6K]  pyproject.toml
+├── [ 192]  dist
+├── [9.8K]  pyproject.toml
 ├── [ 128]  src
 │   └── [ 256]  twat_search
 │       ├── [ 556]  __init__.py
@@ -54,17 +57,20 @@ globs:
 │       └── [ 384]  web
 │           ├── [1.6K]  __init__.py
 │           ├── [4.8K]  api.py
-│           ├── [ 33K]  cli.py
+│           ├── [ 43K]  cli.py
 │           ├── [4.3K]  config.py
-│           ├── [ 480]  engines
-│           │   ├── [4.2K]  __init__.py
+│           ├── [ 576]  engines
+│           │   ├── [4.9K]  __init__.py
+│           │   ├── [ 24K]  anywebsearch.py
 │           │   ├── [3.7K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [7.6K]  brave.py
 │           │   ├── [8.2K]  critique.py
 │           │   ├── [6.7K]  duckduckgo.py
+│           │   ├── [ 12K]  google_scraper.py
 │           │   ├── [7.1K]  hasdata.py
 │           │   ├── [4.9K]  pplx.py
+│           │   ├── [ 25K]  searchit.py
 │           │   ├── [6.9K]  serpapi.py
 │           │   ├── [7.4K]  tavily.py
 │           │   └── [7.3K]  you.py
@@ -90,6 +96,6 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-└── [ 87K]  twat_search.txt
+└── [ 89K]  twat_search.txt
 
-19 directories, 70 files
+19 directories, 76 files

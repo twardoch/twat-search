@@ -195,10 +195,25 @@ class SearchCLI:
         return processed
 
     def _display_results(
-        self, processed_results: list[dict[str, Any]], verbose: bool = False
+        self,
+        processed_results: list[dict[str, Any]],
+        verbose: bool = False,
+        plain: bool = False,
     ) -> None:
         if not processed_results:
+            if plain:
+                return
             console.print("[bold red]No results found![/bold red]")
+            return
+
+        if plain:
+            # For plain output, just print a sorted and deduped list of URLs
+            urls = set()
+            for result in processed_results:
+                if "❌" not in result["status"] and result["url"] != "N/A":
+                    urls.add(result["url"])
+            for url in sorted(urls):
+                console.print(url)
             return
 
         # Always use the compact table format unless verbose is specifically requested
@@ -271,32 +286,39 @@ class SearchCLI:
         console.print(table)
 
     async def _search_engine(
-        self, engine: str, query: str, params: dict, json: bool, verbose: bool
+        self,
+        engine: str,
+        query: str,
+        params: dict,
+        json: bool,
+        verbose: bool,
+        plain: bool = False,
     ) -> list[dict[str, Any]]:
         """
         Execute a search with a specific engine.
 
         Args:
             engine: Name of the engine to use
-            query: Search query
-            params: Parameters for the engine
-            json: Whether to format output as JSON
-            verbose: Whether to display verbose output
+            query: Search query string
+            params: Engine-specific parameters
+            json: Whether to display results as JSON
+            verbose: Whether to display verbose results
+            plain: Whether to display results in plain text format
+
+        Returns:
+            List of processed search results
         """
-        self._configure_logging(verbose)
 
-        if not is_engine_available(engine):
-            error_msg = f"{engine.capitalize()} search engine is not available. Make sure the required dependency is installed."
-            self.logger.error(error_msg)
-            self._display_errors([error_msg])
-            return []
-
-        engine_func = get_engine_function(engine)
-        if engine_func is None:
-            error_msg = (
-                f"{engine.capitalize()} search engine function could not be loaded."
-            )
-            self.logger.error(error_msg)
+        try:
+            engine_func = get_engine_function(engine)
+            if not engine_func:
+                error_msg = f"Engine '{engine}' is not available."
+                self.logger.warning(error_msg)
+                self._display_errors([error_msg])
+                return []
+        except ImportError as e:
+            error_msg = f"Could not load engine '{engine}': {e}"
+            self.logger.warning(error_msg)
             self._display_errors([error_msg])
             return []
 
@@ -314,7 +336,7 @@ class SearchCLI:
             "hasdata-google-light": "HasData Google Light",
         }
         friendly = friendly_names.get(engine, engine)
-        if not json:
+        if not json and not plain:
             self.console.print(f"[bold]Searching {friendly}[/bold]: {query}")
         try:
             results = await engine_func(query=query, **params)
@@ -323,11 +345,12 @@ class SearchCLI:
                 self._display_json_results(processed_results)
                 return []
             else:
-                self._display_results(processed_results, verbose)
+                self._display_results(processed_results, verbose, plain)
                 return processed_results
         except Exception as e:
             self.logger.error(f"{friendly} search failed: {e}")
-            self._display_errors([str(e)])
+            if not plain:
+                self._display_errors([str(e)])
             return []
 
     def q(
@@ -343,6 +366,7 @@ class SearchCLI:
         time_frame: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
         """
@@ -360,6 +384,7 @@ class SearchCLI:
             time_frame: Time frame for results (e.g., "day", "week", "month")
             verbose: Whether to display verbose output
             json: Whether to return results as JSON
+            plain: Whether to display results in plain text format
             **kwargs: Additional engine-specific parameters
 
         Returns:
@@ -384,7 +409,7 @@ class SearchCLI:
         }
         common_params = {k: v for k, v in common_params.items() if v is not None}
 
-        if json:
+        if json or plain:
             results = asyncio.run(
                 self._run_search(query, engine_list, **common_params, **kwargs)
             )
@@ -400,27 +425,55 @@ class SearchCLI:
             self._display_json_results(results)
             return []
         else:
-            self._display_results(results, verbose)
+            self._display_results(results, verbose, plain)
             # Only return the actual results if verbose mode is enabled
             # This prevents the CLI from printing the raw results
             if verbose:
                 return results
             return []
 
-    def info(self, engine: str | None = None, json: bool = False) -> None:
+    def info(
+        self, engine: str | None = None, json: bool = False, plain: bool = False
+    ) -> None:
+        """
+        Display information about available search engines.
+
+        Args:
+            engine: Specific engine to show details for (or None for all engines)
+            json: Whether to output in JSON format
+            plain: Whether to output in plain text format
+        """
         try:
             from twat_search.web.config import Config
 
             config = Config()
             if json:
                 self._display_engines_json(engine, config)
+            elif plain:
+                self._display_engines_plain(engine, config)
             elif engine is None:
                 self._list_all_engines(config)
             else:
                 self._show_engine_details(engine, config)
         except Exception as e:
-            if not json:
+            if not json and not plain:
                 self.logger.error(f"❌ Failed to display engine information: {e}")
+
+    def _display_engines_plain(self, engine: str | None, config: "Config") -> None:
+        """
+        Display engine information in plain text format.
+
+        Args:
+            engine: Specific engine to show details for (or None for all engines)
+            config: Configuration object
+        """
+        if engine:
+            if engine in config.engines:
+                self.console.print(engine)
+        else:
+            # Sort engines alphabetically
+            for engine_name in sorted(config.engines.keys()):
+                self.console.print(engine_name)
 
     def _list_all_engines(self, config: "Config") -> None:
         table = Table(title="🔎 Available Search Engines")
@@ -433,7 +486,11 @@ class SearchCLI:
             registered_engines = get_registered_engines()
         except ImportError:
             registered_engines = {}
-        for engine, engine_config in config.engines.items():
+
+        # Sort engines alphabetically
+        sorted_engines = sorted(config.engines.items(), key=lambda x: x[0])
+
+        for engine, engine_config in sorted_engines:
             api_key_required = (
                 hasattr(engine_config, "api_key") and engine_config.api_key is not None
             )
@@ -542,11 +599,12 @@ class SearchCLI:
                 engine, engine_config, registered_engines
             )
         else:
-            for engine_name, engine_config in config.engines.items():
+            # Sort engines alphabetically for consistent ordering
+            for engine_name, engine_config in sorted(config.engines.items()):
                 result[engine_name] = self._get_engine_info(
                     engine_name, engine_config, registered_engines
                 )
-        # JSON output (omitted actual printing for brevity)
+        # Print JSON output
 
     def _get_engine_info(
         self, engine_name: str, engine_config: Any, registered_engines: dict
@@ -598,32 +656,64 @@ class SearchCLI:
         api_key: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
+        """
+        Search the web using Critique.
+
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            country: Country code for results (ISO 3166-1 alpha-2)
+            language: Language code for results (ISO 639-1)
+            safe_search: Whether to filter adult content
+            time_frame: Time frame for results (e.g., "day", "week", "month")
+            image_url: URL of an image to search with
+            image_base64: Base64-encoded image to search with
+            source_whitelist: Comma-separated list of domains to include
+            source_blacklist: Comma-separated list of domains to exclude
+            api_key: Critique API key
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
+        """
+        self._configure_logging(verbose)
+
         params: dict[str, Any] = {
             "num_results": num_results,
-            "country": country,
-            "language": language,
-            "safe_search": safe_search,
-            "time_frame": time_frame,
         }
-        if api_key:
-            params["api_key"] = api_key
+        if country:
+            params["country"] = country
+        if language:
+            params["language"] = language
+        if safe_search is not None:
+            params["safe_search"] = safe_search
+        if time_frame:
+            params["time_frame"] = time_frame
         if image_url:
             params["image_url"] = image_url
         if image_base64:
             params["image_base64"] = image_base64
         if source_whitelist:
             params["source_whitelist"] = [
-                s.strip() for s in source_whitelist.split(",") if s.strip()
+                domain.strip() for domain in source_whitelist.split(",")
             ]
         if source_blacklist:
             params["source_blacklist"] = [
-                s.strip() for s in source_blacklist.split(",") if s.strip()
+                domain.strip() for domain in source_blacklist.split(",")
             ]
+        if api_key:
+            params["api_key"] = api_key
         params.update(kwargs)
-        params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("critique", query, params, json, verbose)
+
+        return await self._search_engine(
+            "critique", query, params, json, verbose, plain
+        )
 
     async def brave(
         self,
@@ -636,9 +726,31 @@ class SearchCLI:
         api_key: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
-        params = {
+        """
+        Search the web using Brave.
+
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            country: Country code for results
+            language: Language code for results
+            safe_search: Whether to filter adult content
+            time_frame: Time frame for results
+            api_key: Brave API key
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
+        """
+        self._configure_logging(verbose)
+
+        params: dict[str, Any] = {
             "num_results": num_results,
             "country": country,
             "language": language,
@@ -649,7 +761,7 @@ class SearchCLI:
             params["api_key"] = api_key
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("brave", query, params, json, verbose)
+        return await self._search_engine("brave", query, params, json, verbose, plain)
 
     async def brave_news(
         self,
@@ -662,9 +774,31 @@ class SearchCLI:
         api_key: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
-        params = {
+        """
+        Search news using Brave News.
+
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            country: Country code for results
+            language: Language code for results
+            safe_search: Whether to filter adult content
+            time_frame: Time frame for results
+            api_key: Brave API key
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
+        """
+        self._configure_logging(verbose)
+
+        params: dict[str, Any] = {
             "num_results": num_results,
             "country": country,
             "language": language,
@@ -675,7 +809,9 @@ class SearchCLI:
             params["api_key"] = api_key
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("brave_news", query, params, json, verbose)
+        return await self._search_engine(
+            "brave_news", query, params, json, verbose, plain
+        )
 
     async def serpapi(
         self,
@@ -688,9 +824,31 @@ class SearchCLI:
         api_key: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
-        params = {
+        """
+        Search using SerpAPI (Google).
+
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            country: Country code for results
+            language: Language code for results
+            safe_search: Whether to filter adult content
+            time_frame: Time frame for results
+            api_key: SerpAPI key
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
+        """
+        self._configure_logging(verbose)
+
+        params: dict[str, Any] = {
             "num_results": num_results,
             "country": country,
             "language": language,
@@ -701,7 +859,7 @@ class SearchCLI:
             params["api_key"] = api_key
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("serpapi", query, params, json, verbose)
+        return await self._search_engine("serpapi", query, params, json, verbose, plain)
 
     async def tavily(
         self,
@@ -717,8 +875,33 @@ class SearchCLI:
         exclude_domains: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
+        """
+        Search the web using Tavily AI.
+
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            country: Country code for results
+            language: Language code for results
+            safe_search: Whether to filter adult content
+            time_frame: Time frame for results
+            api_key: Tavily API key
+            search_depth: Search depth (basic or advanced)
+            include_domains: Comma-separated list of domains to include
+            exclude_domains: Comma-separated list of domains to exclude
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
+        """
+        self._configure_logging(verbose)
+
         params: dict[str, Any] = {
             "num_results": num_results,
             "country": country,
@@ -738,7 +921,7 @@ class SearchCLI:
             ]
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("tavily", query, params, json, verbose)
+        return await self._search_engine("tavily", query, params, json, verbose, plain)
 
     async def pplx(
         self,
@@ -752,9 +935,32 @@ class SearchCLI:
         model: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
-        params = {
+        """
+        Search the web using Perplexity AI.
+
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            country: Country code for results
+            language: Language code for results
+            safe_search: Whether to filter adult content
+            time_frame: Time frame for results
+            api_key: Perplexity API key
+            model: Model to use for search
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
+        """
+        self._configure_logging(verbose)
+
+        params: dict[str, Any] = {
             "num_results": num_results,
             "country": country,
             "language": language,
@@ -765,7 +971,7 @@ class SearchCLI:
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("pplx", query, params, json, verbose)
+        return await self._search_engine("pplx", query, params, json, verbose, plain)
 
     async def you(
         self,
@@ -778,9 +984,31 @@ class SearchCLI:
         api_key: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
-        params = {
+        """
+        Search the web using You.com.
+
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            country: Country code for results
+            language: Language code for results
+            safe_search: Whether to filter adult content
+            time_frame: Time frame for results
+            api_key: You.com API key
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
+        """
+        self._configure_logging(verbose)
+
+        params: dict[str, Any] = {
             "num_results": num_results,
             "country": country,
             "language": language,
@@ -790,7 +1018,7 @@ class SearchCLI:
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("you", query, params, json, verbose)
+        return await self._search_engine("you", query, params, json, verbose, plain)
 
     async def you_news(
         self,
@@ -803,9 +1031,31 @@ class SearchCLI:
         api_key: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
-        params = {
+        """
+        Search news using You.com News.
+
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            country: Country code for results
+            language: Language code for results
+            safe_search: Whether to filter adult content
+            time_frame: Time frame for results
+            api_key: You.com API key
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
+        """
+        self._configure_logging(verbose)
+
+        params: dict[str, Any] = {
             "num_results": num_results,
             "country": country,
             "language": language,
@@ -815,7 +1065,9 @@ class SearchCLI:
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("you_news", query, params, json, verbose)
+        return await self._search_engine(
+            "you_news", query, params, json, verbose, plain
+        )
 
     async def duckduckgo(
         self,
@@ -829,9 +1081,32 @@ class SearchCLI:
         timeout: int = 10,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
-        params = {
+        """
+        Search the web using DuckDuckGo.
+
+        Args:
+            query: Search query
+            num_results: Number of results to return
+            country: Country code for results
+            language: Language code for results
+            safe_search: Whether to filter adult content
+            time_frame: Time frame for results
+            proxy: Proxy server to use
+            timeout: Request timeout in seconds
+            verbose: Whether to display verbose output
+            json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
+        """
+        self._configure_logging(verbose)
+
+        params: dict[str, Any] = {
             "num_results": num_results,
             "region": country,  # remap country -> region
             "safesearch": safe_search,  # remap safe_search -> safesearch
@@ -841,7 +1116,9 @@ class SearchCLI:
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("duckduckgo", query, params, json, verbose)
+        return await self._search_engine(
+            "duckduckgo", query, params, json, verbose, plain
+        )
 
     async def hasdata_google(
         self,
@@ -852,6 +1129,7 @@ class SearchCLI:
         api_key: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
         """
@@ -865,8 +1143,15 @@ class SearchCLI:
             api_key: API key to use (overrides environment variable)
             verbose: Whether to display verbose output
             json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
         """
-        params = {
+        self._configure_logging(verbose)
+
+        params: dict[str, Any] = {
             "num_results": num_results,
             "location": location,
             "device_type": device_type,
@@ -874,7 +1159,9 @@ class SearchCLI:
         }
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
-        return await self._search_engine("hasdata-google", query, params, json, verbose)
+        return await self._search_engine(
+            "hasdata-google", query, params, json, verbose, plain
+        )
 
     async def hasdata_google_light(
         self,
@@ -884,6 +1171,7 @@ class SearchCLI:
         api_key: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        plain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
         """
@@ -896,8 +1184,15 @@ class SearchCLI:
             api_key: API key to use (overrides environment variable)
             verbose: Whether to display verbose output
             json: Whether to format output as JSON
+            plain: Whether to display plain text output
+            **kwargs: Additional parameters for the search engine
+
+        Returns:
+            List of search results
         """
-        params = {
+        self._configure_logging(verbose)
+
+        params: dict[str, Any] = {
             "num_results": num_results,
             "location": location,
             "api_key": api_key,
@@ -905,11 +1200,12 @@ class SearchCLI:
         params.update(kwargs)
         params = {k: v for k, v in params.items() if v is not None}
         return await self._search_engine(
-            "hasdata-google-light", query, params, json, verbose
+            "hasdata-google-light", query, params, json, verbose, plain
         )
 
 
 def main() -> None:
+    fire.core.Display = lambda lines, out: console.print(*lines)
     fire.Fire(SearchCLI())
 
 

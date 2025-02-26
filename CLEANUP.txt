@@ -1,6 +1,6 @@
-2025-02-25 08:19:59 - 
+2025-02-26 10:12:22 - 
 === PROJECT STATEMENT ===
-2025-02-25 08:19:59 - ---
+2025-02-26 10:12:22 - ---
 description: About this project
 globs: 
 alwaysApply: false
@@ -15,16 +15,16 @@ alwaysApply: false
 - Clear provider protocol for adding new search backends
 - Strong typing and runtime checks throughout
 
-2025-02-25 08:19:59 - 
+2025-02-26 10:12:22 - 
 === Current Status ===
-2025-02-25 08:19:59 - Error: LOG.md is missing
-2025-02-25 08:20:00 - [ 896]  .
+2025-02-26 10:12:22 - Error: LOG.md is missing
+2025-02-26 10:12:22 - [ 928]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 558]  cleanup.mdc
-│       └── [4.4K]  filetree.mdc
+│       └── [4.6K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
@@ -32,7 +32,7 @@ alwaysApply: false
 ├── [3.5K]  .gitignore
 ├── [ 532]  .pre-commit-config.yaml
 ├── [  96]  .specstory
-│   └── [ 736]  history
+│   └── [ 800]  history
 │       ├── [2.0K]  .what-is-this.md
 │       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -53,16 +53,19 @@ alwaysApply: false
 │       ├── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
 │       ├── [9.9K]  2025-02-25_07-09-refactoring-plan-and-progress-update.md
 │       ├── [ 40K]  2025-02-25_07-17-implementing-phase-1-from-todo-md.md
-│       └── [292K]  2025-02-25_07-34-integrating-hasdata-google-serp-apis.md
+│       ├── [292K]  2025-02-25_07-34-integrating-hasdata-google-serp-apis.md
+│       ├── [142K]  2025-02-25_08-19-implementing-search-engines-from-nextengines-md.md
+│       └── [ 34K]  2025-02-26_09-54-implementing-plain-option-for-search-commands.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
+├── [ 64K]  NEXTENGINES.md
 ├── [1.2K]  PROGRESS.md
-├── [3.2K]  README.md
+├── [ 21K]  README.md
 ├── [4.1K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
-├── [ 128]  dist
-├── [9.6K]  pyproject.toml
+├── [ 192]  dist
+├── [9.8K]  pyproject.toml
 ├── [ 128]  src
 │   └── [ 256]  twat_search
 │       ├── [ 556]  __init__.py
@@ -70,17 +73,20 @@ alwaysApply: false
 │       └── [ 384]  web
 │           ├── [1.6K]  __init__.py
 │           ├── [4.8K]  api.py
-│           ├── [ 33K]  cli.py
+│           ├── [ 43K]  cli.py
 │           ├── [4.3K]  config.py
-│           ├── [ 480]  engines
-│           │   ├── [4.2K]  __init__.py
+│           ├── [ 576]  engines
+│           │   ├── [4.9K]  __init__.py
+│           │   ├── [ 24K]  anywebsearch.py
 │           │   ├── [3.7K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [7.6K]  brave.py
 │           │   ├── [8.2K]  critique.py
 │           │   ├── [6.7K]  duckduckgo.py
+│           │   ├── [ 12K]  google_scraper.py
 │           │   ├── [7.1K]  hasdata.py
 │           │   ├── [4.9K]  pplx.py
+│           │   ├── [ 25K]  searchit.py
 │           │   ├── [6.9K]  serpapi.py
 │           │   ├── [7.4K]  tavily.py
 │           │   └── [7.3K]  you.py
@@ -106,19 +112,19 @@ alwaysApply: false
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-└── [ 87K]  twat_search.txt
+└── [ 89K]  twat_search.txt
 
-19 directories, 70 files
+19 directories, 76 files
 
-2025-02-25 08:20:00 - 
+2025-02-26 10:12:22 - 
 Project structure:
-2025-02-25 08:20:00 - [ 896]  .
+2025-02-26 10:12:22 - [ 928]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 558]  cleanup.mdc
-│       └── [4.4K]  filetree.mdc
+│       └── [4.6K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
@@ -126,7 +132,7 @@ Project structure:
 ├── [3.5K]  .gitignore
 ├── [ 532]  .pre-commit-config.yaml
 ├── [  96]  .specstory
-│   └── [ 736]  history
+│   └── [ 800]  history
 │       ├── [2.0K]  .what-is-this.md
 │       ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │       ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -147,16 +153,19 @@ Project structure:
 │       ├── [121K]  2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md
 │       ├── [9.9K]  2025-02-25_07-09-refactoring-plan-and-progress-update.md
 │       ├── [ 40K]  2025-02-25_07-17-implementing-phase-1-from-todo-md.md
-│       └── [292K]  2025-02-25_07-34-integrating-hasdata-google-serp-apis.md
+│       ├── [292K]  2025-02-25_07-34-integrating-hasdata-google-serp-apis.md
+│       ├── [142K]  2025-02-25_08-19-implementing-search-engines-from-nextengines-md.md
+│       └── [ 34K]  2025-02-26_09-54-implementing-plain-option-for-search-commands.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
+├── [ 64K]  NEXTENGINES.md
 ├── [1.2K]  PROGRESS.md
-├── [3.2K]  README.md
+├── [ 21K]  README.md
 ├── [4.1K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
-├── [ 128]  dist
-├── [9.6K]  pyproject.toml
+├── [ 192]  dist
+├── [9.8K]  pyproject.toml
 ├── [ 128]  src
 │   └── [ 256]  twat_search
 │       ├── [ 556]  __init__.py
@@ -164,17 +173,20 @@ Project structure:
 │       └── [ 384]  web
 │           ├── [1.6K]  __init__.py
 │           ├── [4.8K]  api.py
-│           ├── [ 33K]  cli.py
+│           ├── [ 43K]  cli.py
 │           ├── [4.3K]  config.py
-│           ├── [ 480]  engines
-│           │   ├── [4.2K]  __init__.py
+│           ├── [ 576]  engines
+│           │   ├── [4.9K]  __init__.py
+│           │   ├── [ 24K]  anywebsearch.py
 │           │   ├── [3.7K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [7.6K]  brave.py
 │           │   ├── [8.2K]  critique.py
 │           │   ├── [6.7K]  duckduckgo.py
+│           │   ├── [ 12K]  google_scraper.py
 │           │   ├── [7.1K]  hasdata.py
 │           │   ├── [4.9K]  pplx.py
+│           │   ├── [ 25K]  searchit.py
 │           │   ├── [6.9K]  serpapi.py
 │           │   ├── [7.4K]  tavily.py
 │           │   └── [7.3K]  you.py
@@ -200,11 +212,11 @@ Project structure:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-└── [ 87K]  twat_search.txt
+└── [ 89K]  twat_search.txt
 
-19 directories, 70 files
+19 directories, 76 files
 
-2025-02-25 08:20:00 - On branch main
+2025-02-26 10:12:22 - On branch main
 Your branch is up to date with 'origin/main'.
 
 Changes not staged for commit:
@@ -212,10 +224,22 @@ Changes not staged for commit:
   (use "git restore <file>..." to discard changes in working directory)
 	modified:   .cursor/rules/filetree.mdc
 	modified:   CLEANUP.txt
+	modified:   pyproject.toml
+	modified:   src/twat_search/web/cli.py
+	modified:   src/twat_search/web/engines/__init__.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.specstory/history/2025-02-25_08-19-implementing-search-engines-from-nextengines-md.md
+	.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md
+	NEXTENGINES.md
+	src/twat_search/web/engines/anywebsearch.py
+	src/twat_search/web/engines/google_scraper.py
+	src/twat_search/web/engines/searchit.py
 
 no changes added to commit (use "git add" and/or "git commit -a")
 
-2025-02-25 08:20:00 - On branch main
+2025-02-26 10:12:22 - On branch main
 Your branch is up to date with 'origin/main'.
 
 Changes not staged for commit:
@@ -223,20 +247,32 @@ Changes not staged for commit:
   (use "git restore <file>..." to discard changes in working directory)
 	modified:   .cursor/rules/filetree.mdc
 	modified:   CLEANUP.txt
+	modified:   pyproject.toml
+	modified:   src/twat_search/web/cli.py
+	modified:   src/twat_search/web/engines/__init__.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	.specstory/history/2025-02-25_08-19-implementing-search-engines-from-nextengines-md.md
+	.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md
+	NEXTENGINES.md
+	src/twat_search/web/engines/anywebsearch.py
+	src/twat_search/web/engines/google_scraper.py
+	src/twat_search/web/engines/searchit.py
 
 no changes added to commit (use "git add" and/or "git commit -a")
 
-2025-02-25 08:20:00 - 
+2025-02-26 10:12:22 - 
 === Environment Status ===
-2025-02-25 08:20:00 - Setting up virtual environment
-2025-02-25 08:20:01 - Virtual environment created and activated
-2025-02-25 08:20:01 - Installing package with all extras
-2025-02-25 08:20:01 - Setting up virtual environment
-2025-02-25 08:20:01 - Virtual environment created and activated
-2025-02-25 08:20:01 - Package installed successfully
-2025-02-25 08:20:01 - Running code quality checks
-2025-02-25 08:20:01 - >>> Running code fixes...
-2025-02-25 08:20:02 - src/twat_search/__init__.py:22:19: F401 `.web` imported but unused; consider using `importlib.util.find_spec` to test for availability
+2025-02-26 10:12:22 - Setting up virtual environment
+2025-02-26 10:12:23 - Virtual environment created and activated
+2025-02-26 10:12:23 - Installing package with all extras
+2025-02-26 10:12:23 - Setting up virtual environment
+2025-02-26 10:12:23 - Virtual environment created and activated
+2025-02-26 10:12:26 - Package installed successfully
+2025-02-26 10:12:26 - Running code quality checks
+2025-02-26 10:12:26 - >>> Running code fixes...
+2025-02-26 10:12:26 - src/twat_search/__init__.py:22:19: F401 `.web` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
 20 | # Import submodules if available
 21 | try:
@@ -458,791 +494,1121 @@ src/twat_search/web/cli.py:189:50: PLR2004 Magic value used in comparison, consi
 191 |                         "raw_result": getattr(result, "raw", None),
     |
 
-src/twat_search/web/cli.py:198:56: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:197:9: C901 `_display_results` is too complex (14 > 10)
     |
+195 |         return processed
+196 |
 197 |     def _display_results(
-198 |         self, processed_results: list[dict[str, Any]], verbose: bool = False
-    |                                                        ^^^^^^^ FBT001
-199 |     ) -> None:
-200 |         if not processed_results:
+    |         ^^^^^^^^^^^^^^^^ C901
+198 |         self,
+199 |         processed_results: list[dict[str, Any]],
     |
 
-src/twat_search/web/cli.py:198:56: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:197:9: PLR0912 Too many branches (14 > 12)
     |
+195 |         return processed
+196 |
 197 |     def _display_results(
-198 |         self, processed_results: list[dict[str, Any]], verbose: bool = False
-    |                                                        ^^^^^^^ FBT002
-199 |     ) -> None:
-200 |         if not processed_results:
+    |         ^^^^^^^^^^^^^^^^ PLR0912
+198 |         self,
+199 |         processed_results: list[dict[str, Any]],
     |
 
-src/twat_search/web/cli.py:274:54: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:200:9: FBT001 Boolean-typed positional argument in function definition
     |
-273 |     async def _search_engine(
-274 |         self, engine: str, query: str, params: dict, json: bool, verbose: bool
-    |                                                      ^^^^ FBT001
-275 |     ) -> list[dict[str, Any]]:
-276 |         """
-    |
-
-src/twat_search/web/cli.py:274:66: FBT001 Boolean-typed positional argument in function definition
-    |
-273 |     async def _search_engine(
-274 |         self, engine: str, query: str, params: dict, json: bool, verbose: bool
-    |                                                                  ^^^^^^^ FBT001
-275 |     ) -> list[dict[str, Any]]:
-276 |         """
+198 |         self,
+199 |         processed_results: list[dict[str, Any]],
+200 |         verbose: bool = False,
+    |         ^^^^^^^ FBT001
+201 |         plain: bool = False,
+202 |     ) -> None:
     |
 
-src/twat_search/web/cli.py:333:9: PLR0913 Too many arguments in function definition (11 > 5)
+src/twat_search/web/cli.py:200:9: FBT002 Boolean default positional argument in function definition
     |
-331 |             return []
-332 |
-333 |     def q(
+198 |         self,
+199 |         processed_results: list[dict[str, Any]],
+200 |         verbose: bool = False,
+    |         ^^^^^^^ FBT002
+201 |         plain: bool = False,
+202 |     ) -> None:
+    |
+
+src/twat_search/web/cli.py:201:9: FBT001 Boolean-typed positional argument in function definition
+    |
+199 |         processed_results: list[dict[str, Any]],
+200 |         verbose: bool = False,
+201 |         plain: bool = False,
+    |         ^^^^^ FBT001
+202 |     ) -> None:
+203 |         if not processed_results:
+    |
+
+src/twat_search/web/cli.py:201:9: FBT002 Boolean default positional argument in function definition
+    |
+199 |         processed_results: list[dict[str, Any]],
+200 |         verbose: bool = False,
+201 |         plain: bool = False,
+    |         ^^^^^ FBT002
+202 |     ) -> None:
+203 |         if not processed_results:
+    |
+
+src/twat_search/web/cli.py:288:15: PLR0913 Too many arguments in function definition (6 > 5)
+    |
+286 |         console.print(table)
+287 |
+288 |     async def _search_engine(
+    |               ^^^^^^^^^^^^^^ PLR0913
+289 |         self,
+290 |         engine: str,
+    |
+
+src/twat_search/web/cli.py:293:9: FBT001 Boolean-typed positional argument in function definition
+    |
+291 |         query: str,
+292 |         params: dict,
+293 |         json: bool,
+    |         ^^^^ FBT001
+294 |         verbose: bool,
+295 |         plain: bool = False,
+    |
+
+src/twat_search/web/cli.py:294:9: FBT001 Boolean-typed positional argument in function definition
+    |
+292 |         params: dict,
+293 |         json: bool,
+294 |         verbose: bool,
+    |         ^^^^^^^ FBT001
+295 |         plain: bool = False,
+296 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:295:9: FBT001 Boolean-typed positional argument in function definition
+    |
+293 |         json: bool,
+294 |         verbose: bool,
+295 |         plain: bool = False,
+    |         ^^^^^ FBT001
+296 |     ) -> list[dict[str, Any]]:
+297 |         """
+    |
+
+src/twat_search/web/cli.py:295:9: FBT002 Boolean default positional argument in function definition
+    |
+293 |         json: bool,
+294 |         verbose: bool,
+295 |         plain: bool = False,
+    |         ^^^^^ FBT002
+296 |     ) -> list[dict[str, Any]]:
+297 |         """
+    |
+
+src/twat_search/web/cli.py:356:9: PLR0913 Too many arguments in function definition (12 > 5)
+    |
+354 |             return []
+355 |
+356 |     def q(
     |         ^ PLR0913
-334 |         self,
-335 |         query: str,
+357 |         self,
+358 |         query: str,
     |
 
-src/twat_search/web/cli.py:342:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:365:9: FBT001 Boolean-typed positional argument in function definition
     |
-340 |         country: str | None = None,
-341 |         language: str | None = None,
-342 |         safe_search: bool = True,
+363 |         country: str | None = None,
+364 |         language: str | None = None,
+365 |         safe_search: bool = True,
     |         ^^^^^^^^^^^ FBT001
-343 |         time_frame: str | None = None,
-344 |         verbose: bool = False,
+366 |         time_frame: str | None = None,
+367 |         verbose: bool = False,
     |
 
-src/twat_search/web/cli.py:342:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:365:9: FBT002 Boolean default positional argument in function definition
     |
-340 |         country: str | None = None,
-341 |         language: str | None = None,
-342 |         safe_search: bool = True,
+363 |         country: str | None = None,
+364 |         language: str | None = None,
+365 |         safe_search: bool = True,
     |         ^^^^^^^^^^^ FBT002
-343 |         time_frame: str | None = None,
-344 |         verbose: bool = False,
+366 |         time_frame: str | None = None,
+367 |         verbose: bool = False,
     |
 
-src/twat_search/web/cli.py:344:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:367:9: FBT001 Boolean-typed positional argument in function definition
     |
-342 |         safe_search: bool = True,
-343 |         time_frame: str | None = None,
-344 |         verbose: bool = False,
+365 |         safe_search: bool = True,
+366 |         time_frame: str | None = None,
+367 |         verbose: bool = False,
     |         ^^^^^^^ FBT001
-345 |         json: bool = False,
-346 |         **kwargs: Any,
+368 |         json: bool = False,
+369 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:344:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:367:9: FBT002 Boolean default positional argument in function definition
     |
-342 |         safe_search: bool = True,
-343 |         time_frame: str | None = None,
-344 |         verbose: bool = False,
+365 |         safe_search: bool = True,
+366 |         time_frame: str | None = None,
+367 |         verbose: bool = False,
     |         ^^^^^^^ FBT002
-345 |         json: bool = False,
-346 |         **kwargs: Any,
+368 |         json: bool = False,
+369 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:345:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:368:9: FBT001 Boolean-typed positional argument in function definition
     |
-343 |         time_frame: str | None = None,
-344 |         verbose: bool = False,
-345 |         json: bool = False,
+366 |         time_frame: str | None = None,
+367 |         verbose: bool = False,
+368 |         json: bool = False,
     |         ^^^^ FBT001
-346 |         **kwargs: Any,
-347 |     ) -> list[dict[str, Any]]:
+369 |         plain: bool = False,
+370 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:345:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:368:9: FBT002 Boolean default positional argument in function definition
     |
-343 |         time_frame: str | None = None,
-344 |         verbose: bool = False,
-345 |         json: bool = False,
+366 |         time_frame: str | None = None,
+367 |         verbose: bool = False,
+368 |         json: bool = False,
     |         ^^^^ FBT002
-346 |         **kwargs: Any,
-347 |     ) -> list[dict[str, Any]]:
+369 |         plain: bool = False,
+370 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:410:47: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:369:9: FBT001 Boolean-typed positional argument in function definition
     |
-408 |             return []
-409 |
-410 |     def info(self, engine: str | None = None, json: bool = False) -> None:
-    |                                               ^^^^ FBT001
-411 |         try:
-412 |             from twat_search.web.config import Config
-    |
-
-src/twat_search/web/cli.py:410:47: FBT002 Boolean default positional argument in function definition
-    |
-408 |             return []
-409 |
-410 |     def info(self, engine: str | None = None, json: bool = False) -> None:
-    |                                               ^^^^ FBT002
-411 |         try:
-412 |             from twat_search.web.config import Config
+367 |         verbose: bool = False,
+368 |         json: bool = False,
+369 |         plain: bool = False,
+    |         ^^^^^ FBT001
+370 |         **kwargs: Any,
+371 |     ) -> list[dict[str, Any]]:
     |
 
-src/twat_search/web/cli.py:454:9: C901 `_show_engine_details` is too complex (11 > 10)
+src/twat_search/web/cli.py:369:9: FBT002 Boolean default positional argument in function definition
     |
-452 |         )
-453 |
-454 |     def _show_engine_details(self, engine_name: str, config: "Config") -> None:
+367 |         verbose: bool = False,
+368 |         json: bool = False,
+369 |         plain: bool = False,
+    |         ^^^^^ FBT002
+370 |         **kwargs: Any,
+371 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:436:42: FBT001 Boolean-typed positional argument in function definition
+    |
+435 |     def info(
+436 |         self, engine: str | None = None, json: bool = False, plain: bool = False
+    |                                          ^^^^ FBT001
+437 |     ) -> None:
+438 |         """
+    |
+
+src/twat_search/web/cli.py:436:42: FBT002 Boolean default positional argument in function definition
+    |
+435 |     def info(
+436 |         self, engine: str | None = None, json: bool = False, plain: bool = False
+    |                                          ^^^^ FBT002
+437 |     ) -> None:
+438 |         """
+    |
+
+src/twat_search/web/cli.py:436:62: FBT001 Boolean-typed positional argument in function definition
+    |
+435 |     def info(
+436 |         self, engine: str | None = None, json: bool = False, plain: bool = False
+    |                                                              ^^^^^ FBT001
+437 |     ) -> None:
+438 |         """
+    |
+
+src/twat_search/web/cli.py:436:62: FBT002 Boolean default positional argument in function definition
+    |
+435 |     def info(
+436 |         self, engine: str | None = None, json: bool = False, plain: bool = False
+    |                                                              ^^^^^ FBT002
+437 |     ) -> None:
+438 |         """
+    |
+
+src/twat_search/web/cli.py:511:9: C901 `_show_engine_details` is too complex (11 > 10)
+    |
+509 |         )
+510 |
+511 |     def _show_engine_details(self, engine_name: str, config: "Config") -> None:
     |         ^^^^^^^^^^^^^^^^^^^^ C901
-455 |         if engine_name not in config.engines:
-456 |             self.console.print(
+512 |         if engine_name not in config.engines:
+513 |             self.console.print(
     |
 
-src/twat_search/web/cli.py:586:15: PLR0913 Too many arguments in function definition (13 > 5)
+src/twat_search/web/cli.py:644:15: PLR0913 Too many arguments in function definition (14 > 5)
     |
-584 |         return is_engine_available(engine_name)
-585 |
-586 |     async def critique(
+642 |         return is_engine_available(engine_name)
+643 |
+644 |     async def critique(
     |               ^^^^^^^^ PLR0913
-587 |         self,
-588 |         query: str,
+645 |         self,
+646 |         query: str,
     |
 
-src/twat_search/web/cli.py:592:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:650:9: FBT002 Boolean default positional argument in function definition
     |
-590 |         country: str | None = None,
-591 |         language: str | None = None,
-592 |         safe_search: bool | None = True,
+648 |         country: str | None = None,
+649 |         language: str | None = None,
+650 |         safe_search: bool | None = True,
     |         ^^^^^^^^^^^ FBT002
-593 |         time_frame: str | None = None,
-594 |         image_url: str | None = None,
+651 |         time_frame: str | None = None,
+652 |         image_url: str | None = None,
     |
 
-src/twat_search/web/cli.py:599:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:657:9: FBT001 Boolean-typed positional argument in function definition
     |
-597 |         source_blacklist: str | None = None,
-598 |         api_key: str | None = None,
-599 |         verbose: bool = False,
+655 |         source_blacklist: str | None = None,
+656 |         api_key: str | None = None,
+657 |         verbose: bool = False,
     |         ^^^^^^^ FBT001
-600 |         json: bool = False,
-601 |         **kwargs: Any,
+658 |         json: bool = False,
+659 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:599:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:657:9: FBT002 Boolean default positional argument in function definition
     |
-597 |         source_blacklist: str | None = None,
-598 |         api_key: str | None = None,
-599 |         verbose: bool = False,
+655 |         source_blacklist: str | None = None,
+656 |         api_key: str | None = None,
+657 |         verbose: bool = False,
     |         ^^^^^^^ FBT002
-600 |         json: bool = False,
-601 |         **kwargs: Any,
+658 |         json: bool = False,
+659 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:600:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:658:9: FBT001 Boolean-typed positional argument in function definition
     |
-598 |         api_key: str | None = None,
-599 |         verbose: bool = False,
-600 |         json: bool = False,
+656 |         api_key: str | None = None,
+657 |         verbose: bool = False,
+658 |         json: bool = False,
     |         ^^^^ FBT001
-601 |         **kwargs: Any,
-602 |     ) -> list[dict[str, Any]]:
+659 |         plain: bool = False,
+660 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:600:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:658:9: FBT002 Boolean default positional argument in function definition
     |
-598 |         api_key: str | None = None,
-599 |         verbose: bool = False,
-600 |         json: bool = False,
+656 |         api_key: str | None = None,
+657 |         verbose: bool = False,
+658 |         json: bool = False,
     |         ^^^^ FBT002
-601 |         **kwargs: Any,
-602 |     ) -> list[dict[str, Any]]:
+659 |         plain: bool = False,
+660 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:628:15: PLR0913 Too many arguments in function definition (9 > 5)
+src/twat_search/web/cli.py:659:9: FBT001 Boolean-typed positional argument in function definition
     |
-626 |         return await self._search_engine("critique", query, params, json, verbose)
-627 |
-628 |     async def brave(
+657 |         verbose: bool = False,
+658 |         json: bool = False,
+659 |         plain: bool = False,
+    |         ^^^^^ FBT001
+660 |         **kwargs: Any,
+661 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:659:9: FBT002 Boolean default positional argument in function definition
+    |
+657 |         verbose: bool = False,
+658 |         json: bool = False,
+659 |         plain: bool = False,
+    |         ^^^^^ FBT002
+660 |         **kwargs: Any,
+661 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:718:15: PLR0913 Too many arguments in function definition (10 > 5)
+    |
+716 |         )
+717 |
+718 |     async def brave(
     |               ^^^^^ PLR0913
-629 |         self,
-630 |         query: str,
+719 |         self,
+720 |         query: str,
     |
 
-src/twat_search/web/cli.py:634:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:724:9: FBT002 Boolean default positional argument in function definition
     |
-632 |         country: str | None = None,
-633 |         language: str | None = None,
-634 |         safe_search: bool | None = True,
+722 |         country: str | None = None,
+723 |         language: str | None = None,
+724 |         safe_search: bool | None = True,
     |         ^^^^^^^^^^^ FBT002
-635 |         time_frame: str | None = None,
-636 |         api_key: str | None = None,
+725 |         time_frame: str | None = None,
+726 |         api_key: str | None = None,
     |
 
-src/twat_search/web/cli.py:637:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:727:9: FBT001 Boolean-typed positional argument in function definition
     |
-635 |         time_frame: str | None = None,
-636 |         api_key: str | None = None,
-637 |         verbose: bool = False,
+725 |         time_frame: str | None = None,
+726 |         api_key: str | None = None,
+727 |         verbose: bool = False,
     |         ^^^^^^^ FBT001
-638 |         json: bool = False,
-639 |         **kwargs: Any,
+728 |         json: bool = False,
+729 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:637:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:727:9: FBT002 Boolean default positional argument in function definition
     |
-635 |         time_frame: str | None = None,
-636 |         api_key: str | None = None,
-637 |         verbose: bool = False,
+725 |         time_frame: str | None = None,
+726 |         api_key: str | None = None,
+727 |         verbose: bool = False,
     |         ^^^^^^^ FBT002
-638 |         json: bool = False,
-639 |         **kwargs: Any,
+728 |         json: bool = False,
+729 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:638:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:728:9: FBT001 Boolean-typed positional argument in function definition
     |
-636 |         api_key: str | None = None,
-637 |         verbose: bool = False,
-638 |         json: bool = False,
+726 |         api_key: str | None = None,
+727 |         verbose: bool = False,
+728 |         json: bool = False,
     |         ^^^^ FBT001
-639 |         **kwargs: Any,
-640 |     ) -> list[dict[str, Any]]:
+729 |         plain: bool = False,
+730 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:638:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:728:9: FBT002 Boolean default positional argument in function definition
     |
-636 |         api_key: str | None = None,
-637 |         verbose: bool = False,
-638 |         json: bool = False,
+726 |         api_key: str | None = None,
+727 |         verbose: bool = False,
+728 |         json: bool = False,
     |         ^^^^ FBT002
-639 |         **kwargs: Any,
-640 |     ) -> list[dict[str, Any]]:
+729 |         plain: bool = False,
+730 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:654:15: PLR0913 Too many arguments in function definition (9 > 5)
+src/twat_search/web/cli.py:729:9: FBT001 Boolean-typed positional argument in function definition
     |
-652 |         return await self._search_engine("brave", query, params, json, verbose)
-653 |
-654 |     async def brave_news(
+727 |         verbose: bool = False,
+728 |         json: bool = False,
+729 |         plain: bool = False,
+    |         ^^^^^ FBT001
+730 |         **kwargs: Any,
+731 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:729:9: FBT002 Boolean default positional argument in function definition
+    |
+727 |         verbose: bool = False,
+728 |         json: bool = False,
+729 |         plain: bool = False,
+    |         ^^^^^ FBT002
+730 |         **kwargs: Any,
+731 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:766:15: PLR0913 Too many arguments in function definition (10 > 5)
+    |
+764 |         return await self._search_engine("brave", query, params, json, verbose, plain)
+765 |
+766 |     async def brave_news(
     |               ^^^^^^^^^^ PLR0913
-655 |         self,
-656 |         query: str,
+767 |         self,
+768 |         query: str,
     |
 
-src/twat_search/web/cli.py:660:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:772:9: FBT002 Boolean default positional argument in function definition
     |
-658 |         country: str | None = None,
-659 |         language: str | None = None,
-660 |         safe_search: bool | None = True,
+770 |         country: str | None = None,
+771 |         language: str | None = None,
+772 |         safe_search: bool | None = True,
     |         ^^^^^^^^^^^ FBT002
-661 |         time_frame: str | None = None,
-662 |         api_key: str | None = None,
+773 |         time_frame: str | None = None,
+774 |         api_key: str | None = None,
     |
 
-src/twat_search/web/cli.py:663:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:775:9: FBT001 Boolean-typed positional argument in function definition
     |
-661 |         time_frame: str | None = None,
-662 |         api_key: str | None = None,
-663 |         verbose: bool = False,
+773 |         time_frame: str | None = None,
+774 |         api_key: str | None = None,
+775 |         verbose: bool = False,
     |         ^^^^^^^ FBT001
-664 |         json: bool = False,
-665 |         **kwargs: Any,
+776 |         json: bool = False,
+777 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:663:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:775:9: FBT002 Boolean default positional argument in function definition
     |
-661 |         time_frame: str | None = None,
-662 |         api_key: str | None = None,
-663 |         verbose: bool = False,
+773 |         time_frame: str | None = None,
+774 |         api_key: str | None = None,
+775 |         verbose: bool = False,
     |         ^^^^^^^ FBT002
-664 |         json: bool = False,
-665 |         **kwargs: Any,
+776 |         json: bool = False,
+777 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:664:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:776:9: FBT001 Boolean-typed positional argument in function definition
     |
-662 |         api_key: str | None = None,
-663 |         verbose: bool = False,
-664 |         json: bool = False,
+774 |         api_key: str | None = None,
+775 |         verbose: bool = False,
+776 |         json: bool = False,
     |         ^^^^ FBT001
-665 |         **kwargs: Any,
-666 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:664:9: FBT002 Boolean default positional argument in function definition
-    |
-662 |         api_key: str | None = None,
-663 |         verbose: bool = False,
-664 |         json: bool = False,
-    |         ^^^^ FBT002
-665 |         **kwargs: Any,
-666 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:680:15: PLR0913 Too many arguments in function definition (9 > 5)
-    |
-678 |         return await self._search_engine("brave_news", query, params, json, verbose)
-679 |
-680 |     async def serpapi(
-    |               ^^^^^^^ PLR0913
-681 |         self,
-682 |         query: str,
-    |
-
-src/twat_search/web/cli.py:686:9: FBT002 Boolean default positional argument in function definition
-    |
-684 |         country: str | None = None,
-685 |         language: str | None = None,
-686 |         safe_search: bool | None = True,
-    |         ^^^^^^^^^^^ FBT002
-687 |         time_frame: str | None = None,
-688 |         api_key: str | None = None,
-    |
-
-src/twat_search/web/cli.py:689:9: FBT001 Boolean-typed positional argument in function definition
-    |
-687 |         time_frame: str | None = None,
-688 |         api_key: str | None = None,
-689 |         verbose: bool = False,
-    |         ^^^^^^^ FBT001
-690 |         json: bool = False,
-691 |         **kwargs: Any,
-    |
-
-src/twat_search/web/cli.py:689:9: FBT002 Boolean default positional argument in function definition
-    |
-687 |         time_frame: str | None = None,
-688 |         api_key: str | None = None,
-689 |         verbose: bool = False,
-    |         ^^^^^^^ FBT002
-690 |         json: bool = False,
-691 |         **kwargs: Any,
-    |
-
-src/twat_search/web/cli.py:690:9: FBT001 Boolean-typed positional argument in function definition
-    |
-688 |         api_key: str | None = None,
-689 |         verbose: bool = False,
-690 |         json: bool = False,
-    |         ^^^^ FBT001
-691 |         **kwargs: Any,
-692 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:690:9: FBT002 Boolean default positional argument in function definition
-    |
-688 |         api_key: str | None = None,
-689 |         verbose: bool = False,
-690 |         json: bool = False,
-    |         ^^^^ FBT002
-691 |         **kwargs: Any,
-692 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:706:15: PLR0913 Too many arguments in function definition (12 > 5)
-    |
-704 |         return await self._search_engine("serpapi", query, params, json, verbose)
-705 |
-706 |     async def tavily(
-    |               ^^^^^^ PLR0913
-707 |         self,
-708 |         query: str,
-    |
-
-src/twat_search/web/cli.py:712:9: FBT002 Boolean default positional argument in function definition
-    |
-710 |         country: str | None = None,
-711 |         language: str | None = None,
-712 |         safe_search: bool | None = True,
-    |         ^^^^^^^^^^^ FBT002
-713 |         time_frame: str | None = None,
-714 |         api_key: str | None = None,
-    |
-
-src/twat_search/web/cli.py:718:9: FBT001 Boolean-typed positional argument in function definition
-    |
-716 |         include_domains: str | None = None,
-717 |         exclude_domains: str | None = None,
-718 |         verbose: bool = False,
-    |         ^^^^^^^ FBT001
-719 |         json: bool = False,
-720 |         **kwargs: Any,
-    |
-
-src/twat_search/web/cli.py:718:9: FBT002 Boolean default positional argument in function definition
-    |
-716 |         include_domains: str | None = None,
-717 |         exclude_domains: str | None = None,
-718 |         verbose: bool = False,
-    |         ^^^^^^^ FBT002
-719 |         json: bool = False,
-720 |         **kwargs: Any,
-    |
-
-src/twat_search/web/cli.py:719:9: FBT001 Boolean-typed positional argument in function definition
-    |
-717 |         exclude_domains: str | None = None,
-718 |         verbose: bool = False,
-719 |         json: bool = False,
-    |         ^^^^ FBT001
-720 |         **kwargs: Any,
-721 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:719:9: FBT002 Boolean default positional argument in function definition
-    |
-717 |         exclude_domains: str | None = None,
-718 |         verbose: bool = False,
-719 |         json: bool = False,
-    |         ^^^^ FBT002
-720 |         **kwargs: Any,
-721 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:743:15: PLR0913 Too many arguments in function definition (10 > 5)
-    |
-741 |         return await self._search_engine("tavily", query, params, json, verbose)
-742 |
-743 |     async def pplx(
-    |               ^^^^ PLR0913
-744 |         self,
-745 |         query: str,
-    |
-
-src/twat_search/web/cli.py:749:9: FBT002 Boolean default positional argument in function definition
-    |
-747 |         country: str | None = None,
-748 |         language: str | None = None,
-749 |         safe_search: bool | None = True,
-    |         ^^^^^^^^^^^ FBT002
-750 |         time_frame: str | None = None,
-751 |         api_key: str | None = None,
-    |
-
-src/twat_search/web/cli.py:753:9: FBT001 Boolean-typed positional argument in function definition
-    |
-751 |         api_key: str | None = None,
-752 |         model: str | None = None,
-753 |         verbose: bool = False,
-    |         ^^^^^^^ FBT001
-754 |         json: bool = False,
-755 |         **kwargs: Any,
-    |
-
-src/twat_search/web/cli.py:753:9: FBT002 Boolean default positional argument in function definition
-    |
-751 |         api_key: str | None = None,
-752 |         model: str | None = None,
-753 |         verbose: bool = False,
-    |         ^^^^^^^ FBT002
-754 |         json: bool = False,
-755 |         **kwargs: Any,
-    |
-
-src/twat_search/web/cli.py:754:9: FBT001 Boolean-typed positional argument in function definition
-    |
-752 |         model: str | None = None,
-753 |         verbose: bool = False,
-754 |         json: bool = False,
-    |         ^^^^ FBT001
-755 |         **kwargs: Any,
-756 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:754:9: FBT002 Boolean default positional argument in function definition
-    |
-752 |         model: str | None = None,
-753 |         verbose: bool = False,
-754 |         json: bool = False,
-    |         ^^^^ FBT002
-755 |         **kwargs: Any,
-756 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:770:15: PLR0913 Too many arguments in function definition (9 > 5)
-    |
-768 |         return await self._search_engine("pplx", query, params, json, verbose)
-769 |
-770 |     async def you(
-    |               ^^^ PLR0913
-771 |         self,
-772 |         query: str,
+777 |         plain: bool = False,
+778 |         **kwargs: Any,
     |
 
 src/twat_search/web/cli.py:776:9: FBT002 Boolean default positional argument in function definition
     |
-774 |         country: str | None = None,
-775 |         language: str | None = None,
-776 |         safe_search: bool | None = True,
-    |         ^^^^^^^^^^^ FBT002
-777 |         time_frame: str | None = None,
-778 |         api_key: str | None = None,
-    |
-
-src/twat_search/web/cli.py:779:9: FBT001 Boolean-typed positional argument in function definition
-    |
-777 |         time_frame: str | None = None,
-778 |         api_key: str | None = None,
-779 |         verbose: bool = False,
-    |         ^^^^^^^ FBT001
-780 |         json: bool = False,
-781 |         **kwargs: Any,
-    |
-
-src/twat_search/web/cli.py:779:9: FBT002 Boolean default positional argument in function definition
-    |
-777 |         time_frame: str | None = None,
-778 |         api_key: str | None = None,
-779 |         verbose: bool = False,
-    |         ^^^^^^^ FBT002
-780 |         json: bool = False,
-781 |         **kwargs: Any,
-    |
-
-src/twat_search/web/cli.py:780:9: FBT001 Boolean-typed positional argument in function definition
-    |
-778 |         api_key: str | None = None,
-779 |         verbose: bool = False,
-780 |         json: bool = False,
-    |         ^^^^ FBT001
-781 |         **kwargs: Any,
-782 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:780:9: FBT002 Boolean default positional argument in function definition
-    |
-778 |         api_key: str | None = None,
-779 |         verbose: bool = False,
-780 |         json: bool = False,
+774 |         api_key: str | None = None,
+775 |         verbose: bool = False,
+776 |         json: bool = False,
     |         ^^^^ FBT002
-781 |         **kwargs: Any,
-782 |     ) -> list[dict[str, Any]]:
+777 |         plain: bool = False,
+778 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:795:15: PLR0913 Too many arguments in function definition (9 > 5)
+src/twat_search/web/cli.py:777:9: FBT001 Boolean-typed positional argument in function definition
     |
-793 |         return await self._search_engine("you", query, params, json, verbose)
-794 |
-795 |     async def you_news(
-    |               ^^^^^^^^ PLR0913
-796 |         self,
-797 |         query: str,
+775 |         verbose: bool = False,
+776 |         json: bool = False,
+777 |         plain: bool = False,
+    |         ^^^^^ FBT001
+778 |         **kwargs: Any,
+779 |     ) -> list[dict[str, Any]]:
     |
 
-src/twat_search/web/cli.py:801:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:777:9: FBT002 Boolean default positional argument in function definition
     |
-799 |         country: str | None = None,
-800 |         language: str | None = None,
-801 |         safe_search: bool | None = True,
+775 |         verbose: bool = False,
+776 |         json: bool = False,
+777 |         plain: bool = False,
+    |         ^^^^^ FBT002
+778 |         **kwargs: Any,
+779 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:816:15: PLR0913 Too many arguments in function definition (10 > 5)
+    |
+814 |         )
+815 |
+816 |     async def serpapi(
+    |               ^^^^^^^ PLR0913
+817 |         self,
+818 |         query: str,
+    |
+
+src/twat_search/web/cli.py:822:9: FBT002 Boolean default positional argument in function definition
+    |
+820 |         country: str | None = None,
+821 |         language: str | None = None,
+822 |         safe_search: bool | None = True,
     |         ^^^^^^^^^^^ FBT002
-802 |         time_frame: str | None = None,
-803 |         api_key: str | None = None,
+823 |         time_frame: str | None = None,
+824 |         api_key: str | None = None,
     |
 
-src/twat_search/web/cli.py:804:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:825:9: FBT001 Boolean-typed positional argument in function definition
     |
-802 |         time_frame: str | None = None,
-803 |         api_key: str | None = None,
-804 |         verbose: bool = False,
+823 |         time_frame: str | None = None,
+824 |         api_key: str | None = None,
+825 |         verbose: bool = False,
     |         ^^^^^^^ FBT001
-805 |         json: bool = False,
-806 |         **kwargs: Any,
+826 |         json: bool = False,
+827 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:804:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:825:9: FBT002 Boolean default positional argument in function definition
     |
-802 |         time_frame: str | None = None,
-803 |         api_key: str | None = None,
-804 |         verbose: bool = False,
+823 |         time_frame: str | None = None,
+824 |         api_key: str | None = None,
+825 |         verbose: bool = False,
     |         ^^^^^^^ FBT002
-805 |         json: bool = False,
-806 |         **kwargs: Any,
+826 |         json: bool = False,
+827 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:805:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:826:9: FBT001 Boolean-typed positional argument in function definition
     |
-803 |         api_key: str | None = None,
-804 |         verbose: bool = False,
-805 |         json: bool = False,
+824 |         api_key: str | None = None,
+825 |         verbose: bool = False,
+826 |         json: bool = False,
     |         ^^^^ FBT001
-806 |         **kwargs: Any,
-807 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:805:9: FBT002 Boolean default positional argument in function definition
-    |
-803 |         api_key: str | None = None,
-804 |         verbose: bool = False,
-805 |         json: bool = False,
-    |         ^^^^ FBT002
-806 |         **kwargs: Any,
-807 |     ) -> list[dict[str, Any]]:
-    |
-
-src/twat_search/web/cli.py:820:15: PLR0913 Too many arguments in function definition (10 > 5)
-    |
-818 |         return await self._search_engine("you_news", query, params, json, verbose)
-819 |
-820 |     async def duckduckgo(
-    |               ^^^^^^^^^^ PLR0913
-821 |         self,
-822 |         query: str,
-    |
-
-src/twat_search/web/cli.py:825:9: ARG002 Unused method argument: `language`
-    |
-823 |         num_results: int = 5,
-824 |         country: str | None = None,
-825 |         language: str | None = None,
-    |         ^^^^^^^^ ARG002
-826 |         safe_search: bool | None = True,
-827 |         time_frame: str | None = None,
+827 |         plain: bool = False,
+828 |         **kwargs: Any,
     |
 
 src/twat_search/web/cli.py:826:9: FBT002 Boolean default positional argument in function definition
     |
-824 |         country: str | None = None,
-825 |         language: str | None = None,
-826 |         safe_search: bool | None = True,
+824 |         api_key: str | None = None,
+825 |         verbose: bool = False,
+826 |         json: bool = False,
+    |         ^^^^ FBT002
+827 |         plain: bool = False,
+828 |         **kwargs: Any,
+    |
+
+src/twat_search/web/cli.py:827:9: FBT001 Boolean-typed positional argument in function definition
+    |
+825 |         verbose: bool = False,
+826 |         json: bool = False,
+827 |         plain: bool = False,
+    |         ^^^^^ FBT001
+828 |         **kwargs: Any,
+829 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:827:9: FBT002 Boolean default positional argument in function definition
+    |
+825 |         verbose: bool = False,
+826 |         json: bool = False,
+827 |         plain: bool = False,
+    |         ^^^^^ FBT002
+828 |         **kwargs: Any,
+829 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:864:15: PLR0913 Too many arguments in function definition (13 > 5)
+    |
+862 |         return await self._search_engine("serpapi", query, params, json, verbose, plain)
+863 |
+864 |     async def tavily(
+    |               ^^^^^^ PLR0913
+865 |         self,
+866 |         query: str,
+    |
+
+src/twat_search/web/cli.py:870:9: FBT002 Boolean default positional argument in function definition
+    |
+868 |         country: str | None = None,
+869 |         language: str | None = None,
+870 |         safe_search: bool | None = True,
     |         ^^^^^^^^^^^ FBT002
-827 |         time_frame: str | None = None,
-828 |         proxy: str | None = None,
+871 |         time_frame: str | None = None,
+872 |         api_key: str | None = None,
     |
 
-src/twat_search/web/cli.py:830:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:876:9: FBT001 Boolean-typed positional argument in function definition
     |
-828 |         proxy: str | None = None,
-829 |         timeout: int = 10,
-830 |         verbose: bool = False,
+874 |         include_domains: str | None = None,
+875 |         exclude_domains: str | None = None,
+876 |         verbose: bool = False,
     |         ^^^^^^^ FBT001
-831 |         json: bool = False,
-832 |         **kwargs: Any,
+877 |         json: bool = False,
+878 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:830:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:876:9: FBT002 Boolean default positional argument in function definition
     |
-828 |         proxy: str | None = None,
-829 |         timeout: int = 10,
-830 |         verbose: bool = False,
+874 |         include_domains: str | None = None,
+875 |         exclude_domains: str | None = None,
+876 |         verbose: bool = False,
     |         ^^^^^^^ FBT002
-831 |         json: bool = False,
-832 |         **kwargs: Any,
+877 |         json: bool = False,
+878 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:831:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:877:9: FBT001 Boolean-typed positional argument in function definition
     |
-829 |         timeout: int = 10,
-830 |         verbose: bool = False,
-831 |         json: bool = False,
+875 |         exclude_domains: str | None = None,
+876 |         verbose: bool = False,
+877 |         json: bool = False,
     |         ^^^^ FBT001
-832 |         **kwargs: Any,
-833 |     ) -> list[dict[str, Any]]:
+878 |         plain: bool = False,
+879 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:831:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:877:9: FBT002 Boolean default positional argument in function definition
     |
-829 |         timeout: int = 10,
-830 |         verbose: bool = False,
-831 |         json: bool = False,
+875 |         exclude_domains: str | None = None,
+876 |         verbose: bool = False,
+877 |         json: bool = False,
     |         ^^^^ FBT002
-832 |         **kwargs: Any,
-833 |     ) -> list[dict[str, Any]]:
+878 |         plain: bool = False,
+879 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:846:15: PLR0913 Too many arguments in function definition (7 > 5)
+src/twat_search/web/cli.py:878:9: FBT001 Boolean-typed positional argument in function definition
     |
-844 |         return await self._search_engine("duckduckgo", query, params, json, verbose)
-845 |
-846 |     async def hasdata_google(
-    |               ^^^^^^^^^^^^^^ PLR0913
-847 |         self,
-848 |         query: str,
+876 |         verbose: bool = False,
+877 |         json: bool = False,
+878 |         plain: bool = False,
+    |         ^^^^^ FBT001
+879 |         **kwargs: Any,
+880 |     ) -> list[dict[str, Any]]:
     |
 
-src/twat_search/web/cli.py:853:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:878:9: FBT002 Boolean default positional argument in function definition
     |
-851 |         device_type: str = "desktop",
-852 |         api_key: str | None = None,
-853 |         verbose: bool = False,
+876 |         verbose: bool = False,
+877 |         json: bool = False,
+878 |         plain: bool = False,
+    |         ^^^^^ FBT002
+879 |         **kwargs: Any,
+880 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:926:15: PLR0913 Too many arguments in function definition (11 > 5)
+    |
+924 |         return await self._search_engine("tavily", query, params, json, verbose, plain)
+925 |
+926 |     async def pplx(
+    |               ^^^^ PLR0913
+927 |         self,
+928 |         query: str,
+    |
+
+src/twat_search/web/cli.py:932:9: FBT002 Boolean default positional argument in function definition
+    |
+930 |         country: str | None = None,
+931 |         language: str | None = None,
+932 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+933 |         time_frame: str | None = None,
+934 |         api_key: str | None = None,
+    |
+
+src/twat_search/web/cli.py:936:9: FBT001 Boolean-typed positional argument in function definition
+    |
+934 |         api_key: str | None = None,
+935 |         model: str | None = None,
+936 |         verbose: bool = False,
     |         ^^^^^^^ FBT001
-854 |         json: bool = False,
-855 |         **kwargs: Any,
+937 |         json: bool = False,
+938 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:853:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:936:9: FBT002 Boolean default positional argument in function definition
     |
-851 |         device_type: str = "desktop",
-852 |         api_key: str | None = None,
-853 |         verbose: bool = False,
+934 |         api_key: str | None = None,
+935 |         model: str | None = None,
+936 |         verbose: bool = False,
     |         ^^^^^^^ FBT002
-854 |         json: bool = False,
-855 |         **kwargs: Any,
+937 |         json: bool = False,
+938 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:854:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:937:9: FBT001 Boolean-typed positional argument in function definition
     |
-852 |         api_key: str | None = None,
-853 |         verbose: bool = False,
-854 |         json: bool = False,
+935 |         model: str | None = None,
+936 |         verbose: bool = False,
+937 |         json: bool = False,
     |         ^^^^ FBT001
-855 |         **kwargs: Any,
-856 |     ) -> list[dict[str, Any]]:
+938 |         plain: bool = False,
+939 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:854:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:937:9: FBT002 Boolean default positional argument in function definition
     |
-852 |         api_key: str | None = None,
-853 |         verbose: bool = False,
-854 |         json: bool = False,
+935 |         model: str | None = None,
+936 |         verbose: bool = False,
+937 |         json: bool = False,
     |         ^^^^ FBT002
-855 |         **kwargs: Any,
-856 |     ) -> list[dict[str, Any]]:
+938 |         plain: bool = False,
+939 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:879:15: PLR0913 Too many arguments in function definition (6 > 5)
+src/twat_search/web/cli.py:938:9: FBT001 Boolean-typed positional argument in function definition
     |
-877 |         return await self._search_engine("hasdata-google", query, params, json, verbose)
-878 |
-879 |     async def hasdata_google_light(
-    |               ^^^^^^^^^^^^^^^^^^^^ PLR0913
-880 |         self,
-881 |         query: str,
+936 |         verbose: bool = False,
+937 |         json: bool = False,
+938 |         plain: bool = False,
+    |         ^^^^^ FBT001
+939 |         **kwargs: Any,
+940 |     ) -> list[dict[str, Any]]:
     |
 
-src/twat_search/web/cli.py:885:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:938:9: FBT002 Boolean default positional argument in function definition
     |
-883 |         location: str | None = None,
-884 |         api_key: str | None = None,
-885 |         verbose: bool = False,
+936 |         verbose: bool = False,
+937 |         json: bool = False,
+938 |         plain: bool = False,
+    |         ^^^^^ FBT002
+939 |         **kwargs: Any,
+940 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:976:15: PLR0913 Too many arguments in function definition (10 > 5)
+    |
+974 |         return await self._search_engine("pplx", query, params, json, verbose, plain)
+975 |
+976 |     async def you(
+    |               ^^^ PLR0913
+977 |         self,
+978 |         query: str,
+    |
+
+src/twat_search/web/cli.py:982:9: FBT002 Boolean default positional argument in function definition
+    |
+980 |         country: str | None = None,
+981 |         language: str | None = None,
+982 |         safe_search: bool | None = True,
+    |         ^^^^^^^^^^^ FBT002
+983 |         time_frame: str | None = None,
+984 |         api_key: str | None = None,
+    |
+
+src/twat_search/web/cli.py:985:9: FBT001 Boolean-typed positional argument in function definition
+    |
+983 |         time_frame: str | None = None,
+984 |         api_key: str | None = None,
+985 |         verbose: bool = False,
     |         ^^^^^^^ FBT001
-886 |         json: bool = False,
-887 |         **kwargs: Any,
+986 |         json: bool = False,
+987 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:885:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:985:9: FBT002 Boolean default positional argument in function definition
     |
-883 |         location: str | None = None,
-884 |         api_key: str | None = None,
-885 |         verbose: bool = False,
+983 |         time_frame: str | None = None,
+984 |         api_key: str | None = None,
+985 |         verbose: bool = False,
     |         ^^^^^^^ FBT002
-886 |         json: bool = False,
-887 |         **kwargs: Any,
+986 |         json: bool = False,
+987 |         plain: bool = False,
     |
 
-src/twat_search/web/cli.py:886:9: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/cli.py:986:9: FBT001 Boolean-typed positional argument in function definition
     |
-884 |         api_key: str | None = None,
-885 |         verbose: bool = False,
-886 |         json: bool = False,
+984 |         api_key: str | None = None,
+985 |         verbose: bool = False,
+986 |         json: bool = False,
     |         ^^^^ FBT001
-887 |         **kwargs: Any,
-888 |     ) -> list[dict[str, Any]]:
+987 |         plain: bool = False,
+988 |         **kwargs: Any,
     |
 
-src/twat_search/web/cli.py:886:9: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/cli.py:986:9: FBT002 Boolean default positional argument in function definition
     |
-884 |         api_key: str | None = None,
-885 |         verbose: bool = False,
-886 |         json: bool = False,
+984 |         api_key: str | None = None,
+985 |         verbose: bool = False,
+986 |         json: bool = False,
     |         ^^^^ FBT002
-887 |         **kwargs: Any,
-888 |     ) -> list[dict[str, Any]]:
+987 |         plain: bool = False,
+988 |         **kwargs: Any,
     |
+
+src/twat_search/web/cli.py:987:9: FBT001 Boolean-typed positional argument in function definition
+    |
+985 |         verbose: bool = False,
+986 |         json: bool = False,
+987 |         plain: bool = False,
+    |         ^^^^^ FBT001
+988 |         **kwargs: Any,
+989 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:987:9: FBT002 Boolean default positional argument in function definition
+    |
+985 |         verbose: bool = False,
+986 |         json: bool = False,
+987 |         plain: bool = False,
+    |         ^^^^^ FBT002
+988 |         **kwargs: Any,
+989 |     ) -> list[dict[str, Any]]:
+    |
+
+src/twat_search/web/cli.py:1023:15: PLR0913 Too many arguments in function definition (10 > 5)
+     |
+1021 |         return await self._search_engine("you", query, params, json, verbose, plain)
+1022 |
+1023 |     async def you_news(
+     |               ^^^^^^^^ PLR0913
+1024 |         self,
+1025 |         query: str,
+     |
+
+src/twat_search/web/cli.py:1029:9: FBT002 Boolean default positional argument in function definition
+     |
+1027 |         country: str | None = None,
+1028 |         language: str | None = None,
+1029 |         safe_search: bool | None = True,
+     |         ^^^^^^^^^^^ FBT002
+1030 |         time_frame: str | None = None,
+1031 |         api_key: str | None = None,
+     |
+
+src/twat_search/web/cli.py:1032:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1030 |         time_frame: str | None = None,
+1031 |         api_key: str | None = None,
+1032 |         verbose: bool = False,
+     |         ^^^^^^^ FBT001
+1033 |         json: bool = False,
+1034 |         plain: bool = False,
+     |
+
+src/twat_search/web/cli.py:1032:9: FBT002 Boolean default positional argument in function definition
+     |
+1030 |         time_frame: str | None = None,
+1031 |         api_key: str | None = None,
+1032 |         verbose: bool = False,
+     |         ^^^^^^^ FBT002
+1033 |         json: bool = False,
+1034 |         plain: bool = False,
+     |
+
+src/twat_search/web/cli.py:1033:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1031 |         api_key: str | None = None,
+1032 |         verbose: bool = False,
+1033 |         json: bool = False,
+     |         ^^^^ FBT001
+1034 |         plain: bool = False,
+1035 |         **kwargs: Any,
+     |
+
+src/twat_search/web/cli.py:1033:9: FBT002 Boolean default positional argument in function definition
+     |
+1031 |         api_key: str | None = None,
+1032 |         verbose: bool = False,
+1033 |         json: bool = False,
+     |         ^^^^ FBT002
+1034 |         plain: bool = False,
+1035 |         **kwargs: Any,
+     |
+
+src/twat_search/web/cli.py:1034:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1032 |         verbose: bool = False,
+1033 |         json: bool = False,
+1034 |         plain: bool = False,
+     |         ^^^^^ FBT001
+1035 |         **kwargs: Any,
+1036 |     ) -> list[dict[str, Any]]:
+     |
+
+src/twat_search/web/cli.py:1034:9: FBT002 Boolean default positional argument in function definition
+     |
+1032 |         verbose: bool = False,
+1033 |         json: bool = False,
+1034 |         plain: bool = False,
+     |         ^^^^^ FBT002
+1035 |         **kwargs: Any,
+1036 |     ) -> list[dict[str, Any]]:
+     |
+
+src/twat_search/web/cli.py:1072:15: PLR0913 Too many arguments in function definition (11 > 5)
+     |
+1070 |         )
+1071 |
+1072 |     async def duckduckgo(
+     |               ^^^^^^^^^^ PLR0913
+1073 |         self,
+1074 |         query: str,
+     |
+
+src/twat_search/web/cli.py:1077:9: ARG002 Unused method argument: `language`
+     |
+1075 |         num_results: int = 5,
+1076 |         country: str | None = None,
+1077 |         language: str | None = None,
+     |         ^^^^^^^^ ARG002
+1078 |         safe_search: bool | None = True,
+1079 |         time_frame: str | None = None,
+     |
+
+src/twat_search/web/cli.py:1078:9: FBT002 Boolean default positional argument in function definition
+     |
+1076 |         country: str | None = None,
+1077 |         language: str | None = None,
+1078 |         safe_search: bool | None = True,
+     |         ^^^^^^^^^^^ FBT002
+1079 |         time_frame: str | None = None,
+1080 |         proxy: str | None = None,
+     |
+
+src/twat_search/web/cli.py:1082:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1080 |         proxy: str | None = None,
+1081 |         timeout: int = 10,
+1082 |         verbose: bool = False,
+     |         ^^^^^^^ FBT001
+1083 |         json: bool = False,
+1084 |         plain: bool = False,
+     |
+
+src/twat_search/web/cli.py:1082:9: FBT002 Boolean default positional argument in function definition
+     |
+1080 |         proxy: str | None = None,
+1081 |         timeout: int = 10,
+1082 |         verbose: bool = False,
+     |         ^^^^^^^ FBT002
+1083 |         json: bool = False,
+1084 |         plain: bool = False,
+     |
+
+src/twat_search/web/cli.py:1083:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1081 |         timeout: int = 10,
+1082 |         verbose: bool = False,
+1083 |         json: bool = False,
+     |         ^^^^ FBT001
+1084 |         plain: bool = False,
+1085 |         **kwargs: Any,
+     |
+
+src/twat_search/web/cli.py:1083:9: FBT002 Boolean default positional argument in function definition
+     |
+1081 |         timeout: int = 10,
+1082 |         verbose: bool = False,
+1083 |         json: bool = False,
+     |         ^^^^ FBT002
+1084 |         plain: bool = False,
+1085 |         **kwargs: Any,
+     |
+
+src/twat_search/web/cli.py:1084:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1082 |         verbose: bool = False,
+1083 |         json: bool = False,
+1084 |         plain: bool = False,
+     |         ^^^^^ FBT001
+1085 |         **kwargs: Any,
+1086 |     ) -> list[dict[str, Any]]:
+     |
+
+src/twat_search/web/cli.py:1084:9: FBT002 Boolean default positional argument in function definition
+     |
+1082 |         verbose: bool = False,
+1083 |         json: bool = False,
+1084 |         plain: bool = False,
+     |         ^^^^^ FBT002
+1085 |         **kwargs: Any,
+1086 |     ) -> list[dict[str, Any]]:
+     |
+
+src/twat_search/web/cli.py:1123:15: PLR0913 Too many arguments in function definition (8 > 5)
+     |
+1121 |         )
+1122 |
+1123 |     async def hasdata_google(
+     |               ^^^^^^^^^^^^^^ PLR0913
+1124 |         self,
+1125 |         query: str,
+     |
+
+src/twat_search/web/cli.py:1130:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1128 |         device_type: str = "desktop",
+1129 |         api_key: str | None = None,
+1130 |         verbose: bool = False,
+     |         ^^^^^^^ FBT001
+1131 |         json: bool = False,
+1132 |         plain: bool = False,
+     |
+
+src/twat_search/web/cli.py:1130:9: FBT002 Boolean default positional argument in function definition
+     |
+1128 |         device_type: str = "desktop",
+1129 |         api_key: str | None = None,
+1130 |         verbose: bool = False,
+     |         ^^^^^^^ FBT002
+1131 |         json: bool = False,
+1132 |         plain: bool = False,
+     |
+
+src/twat_search/web/cli.py:1131:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1129 |         api_key: str | None = None,
+1130 |         verbose: bool = False,
+1131 |         json: bool = False,
+     |         ^^^^ FBT001
+1132 |         plain: bool = False,
+1133 |         **kwargs: Any,
+     |
+
+src/twat_search/web/cli.py:1131:9: FBT002 Boolean default positional argument in function definition
+     |
+1129 |         api_key: str | None = None,
+1130 |         verbose: bool = False,
+1131 |         json: bool = False,
+     |         ^^^^ FBT002
+1132 |         plain: bool = False,
+1133 |         **kwargs: Any,
+     |
+
+src/twat_search/web/cli.py:1132:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1130 |         verbose: bool = False,
+1131 |         json: bool = False,
+1132 |         plain: bool = False,
+     |         ^^^^^ FBT001
+1133 |         **kwargs: Any,
+1134 |     ) -> list[dict[str, Any]]:
+     |
+
+src/twat_search/web/cli.py:1132:9: FBT002 Boolean default positional argument in function definition
+     |
+1130 |         verbose: bool = False,
+1131 |         json: bool = False,
+1132 |         plain: bool = False,
+     |         ^^^^^ FBT002
+1133 |         **kwargs: Any,
+1134 |     ) -> list[dict[str, Any]]:
+     |
+
+src/twat_search/web/cli.py:1166:15: PLR0913 Too many arguments in function definition (7 > 5)
+     |
+1164 |         )
+1165 |
+1166 |     async def hasdata_google_light(
+     |               ^^^^^^^^^^^^^^^^^^^^ PLR0913
+1167 |         self,
+1168 |         query: str,
+     |
+
+src/twat_search/web/cli.py:1172:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1170 |         location: str | None = None,
+1171 |         api_key: str | None = None,
+1172 |         verbose: bool = False,
+     |         ^^^^^^^ FBT001
+1173 |         json: bool = False,
+1174 |         plain: bool = False,
+     |
+
+src/twat_search/web/cli.py:1172:9: FBT002 Boolean default positional argument in function definition
+     |
+1170 |         location: str | None = None,
+1171 |         api_key: str | None = None,
+1172 |         verbose: bool = False,
+     |         ^^^^^^^ FBT002
+1173 |         json: bool = False,
+1174 |         plain: bool = False,
+     |
+
+src/twat_search/web/cli.py:1173:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1171 |         api_key: str | None = None,
+1172 |         verbose: bool = False,
+1173 |         json: bool = False,
+     |         ^^^^ FBT001
+1174 |         plain: bool = False,
+1175 |         **kwargs: Any,
+     |
+
+src/twat_search/web/cli.py:1173:9: FBT002 Boolean default positional argument in function definition
+     |
+1171 |         api_key: str | None = None,
+1172 |         verbose: bool = False,
+1173 |         json: bool = False,
+     |         ^^^^ FBT002
+1174 |         plain: bool = False,
+1175 |         **kwargs: Any,
+     |
+
+src/twat_search/web/cli.py:1174:9: FBT001 Boolean-typed positional argument in function definition
+     |
+1172 |         verbose: bool = False,
+1173 |         json: bool = False,
+1174 |         plain: bool = False,
+     |         ^^^^^ FBT001
+1175 |         **kwargs: Any,
+1176 |     ) -> list[dict[str, Any]]:
+     |
+
+src/twat_search/web/cli.py:1174:9: FBT002 Boolean default positional argument in function definition
+     |
+1172 |         verbose: bool = False,
+1173 |         json: bool = False,
+1174 |         plain: bool = False,
+     |         ^^^^^ FBT002
+1175 |         **kwargs: Any,
+1176 |     ) -> list[dict[str, Any]]:
+     |
 
 src/twat_search/web/config.py:51:9: C901 `_load_engine_configs` is too complex (15 > 10)
    |
@@ -1264,173 +1630,241 @@ src/twat_search/web/config.py:51:9: PLR0912 Too many branches (15 > 12)
 53 |         Load engine configurations from environment variables.
    |
 
-src/twat_search/web/engines/__init__.py:23:23: F401 `.base.register_engine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:14:1: E402 Module level import not at top of file
    |
-21 | # Import base functionality first
-22 | try:
-23 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
+12 | logger = logging.getLogger(__name__)
+13 |
+14 | from typing import Any
+   | ^^^^^^^^^^^^^^^^^^^^^^ E402
+15 | from collections.abc import Callable, Coroutine
+   |
+
+src/twat_search/web/engines/__init__.py:15:1: E402 Module level import not at top of file
+   |
+14 | from typing import Any
+15 | from collections.abc import Callable, Coroutine
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ E402
+16 |
+17 | from twat_search.web.models import SearchResult
+   |
+
+src/twat_search/web/engines/__init__.py:17:1: E402 Module level import not at top of file
+   |
+15 | from collections.abc import Callable, Coroutine
+16 |
+17 | from twat_search.web.models import SearchResult
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ E402
+18 |
+19 | # Initialize empty __all__ list
+   |
+
+src/twat_search/web/engines/__init__.py:27:23: F401 `.base.register_engine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   |
+25 | # Import base functionality first
+26 | try:
+27 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
    |                       ^^^^^^^^^^^^^^^ F401
-24 |
-25 |     __all__.extend(
+28 |
+29 |     __all__.extend(
    |
    = help: Remove unused import
 
-src/twat_search/web/engines/__init__.py:23:40: F401 `.base.get_engine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:27:40: F401 `.base.get_engine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-21 | # Import base functionality first
-22 | try:
-23 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
+25 | # Import base functionality first
+26 | try:
+27 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
    |                                        ^^^^^^^^^^ F401
-24 |
-25 |     __all__.extend(
+28 |
+29 |     __all__.extend(
    |
    = help: Remove unused import
 
-src/twat_search/web/engines/__init__.py:23:52: F401 `.base.get_registered_engines` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:27:52: F401 `.base.get_registered_engines` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-21 | # Import base functionality first
-22 | try:
-23 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
+25 | # Import base functionality first
+26 | try:
+27 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
    |                                                    ^^^^^^^^^^^^^^^^^^^^^^ F401
-24 |
-25 |     __all__.extend(
+28 |
+29 |     __all__.extend(
    |
    = help: Remove unused import
 
-src/twat_search/web/engines/__init__.py:23:76: F401 `.base.SearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:27:76: F401 `.base.SearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-21 | # Import base functionality first
-22 | try:
-23 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
+25 | # Import base functionality first
+26 | try:
+27 |     from .base import register_engine, get_engine, get_registered_engines, SearchEngine
    |                                                                            ^^^^^^^^^^^^ F401
-24 |
-25 |     __all__.extend(
+28 |
+29 |     __all__.extend(
    |
    = help: Remove unused import
 
-src/twat_search/web/engines/__init__.py:33:24: F401 `.brave.BraveSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:37:24: F401 `.brave.BraveSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-31 | # Import each engine module and add its components to __all__ if successful
-32 | try:
-33 |     from .brave import BraveSearchEngine, BraveNewsSearchEngine, brave, brave_news
+35 | # Import each engine module and add its components to __all__ if successful
+36 | try:
+37 |     from .brave import BraveSearchEngine, BraveNewsSearchEngine, brave, brave_news
    |                        ^^^^^^^^^^^^^^^^^ F401
-34 |
-35 |     available_engine_functions["brave"] = brave
+38 |
+39 |     available_engine_functions["brave"] = brave
    |
    = help: Remove unused import
 
-src/twat_search/web/engines/__init__.py:33:43: F401 `.brave.BraveNewsSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:37:43: F401 `.brave.BraveNewsSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-31 | # Import each engine module and add its components to __all__ if successful
-32 | try:
-33 |     from .brave import BraveSearchEngine, BraveNewsSearchEngine, brave, brave_news
+35 | # Import each engine module and add its components to __all__ if successful
+36 | try:
+37 |     from .brave import BraveSearchEngine, BraveNewsSearchEngine, brave, brave_news
    |                                           ^^^^^^^^^^^^^^^^^^^^^ F401
-34 |
-35 |     available_engine_functions["brave"] = brave
+38 |
+39 |     available_engine_functions["brave"] = brave
    |
    = help: Remove unused import
 
-src/twat_search/web/engines/__init__.py:44:26: F401 `.serpapi.SerpApiSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:48:26: F401 `.serpapi.SerpApiSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-43 | try:
-44 |     from .serpapi import SerpApiSearchEngine, serpapi
+47 | try:
+48 |     from .serpapi import SerpApiSearchEngine, serpapi
    |                          ^^^^^^^^^^^^^^^^^^^ F401
-45 |
-46 |     available_engine_functions["serpapi"] = serpapi
+49 |
+50 |     available_engine_functions["serpapi"] = serpapi
    |
    = help: Remove unused import: `.serpapi.SerpApiSearchEngine`
 
-src/twat_search/web/engines/__init__.py:52:25: F401 `.tavily.TavilySearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:56:25: F401 `.tavily.TavilySearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-51 | try:
-52 |     from .tavily import TavilySearchEngine, tavily
+55 | try:
+56 |     from .tavily import TavilySearchEngine, tavily
    |                         ^^^^^^^^^^^^^^^^^^ F401
-53 |
-54 |     available_engine_functions["tavily"] = tavily
+57 |
+58 |     available_engine_functions["tavily"] = tavily
    |
    = help: Remove unused import: `.tavily.TavilySearchEngine`
 
-src/twat_search/web/engines/__init__.py:60:23: F401 `.pplx.PerplexitySearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:64:23: F401 `.pplx.PerplexitySearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-59 | try:
-60 |     from .pplx import PerplexitySearchEngine, pplx
+63 | try:
+64 |     from .pplx import PerplexitySearchEngine, pplx
    |                       ^^^^^^^^^^^^^^^^^^^^^^ F401
-61 |
-62 |     available_engine_functions["pplx"] = pplx
+65 |
+66 |     available_engine_functions["pplx"] = pplx
    |
    = help: Remove unused import: `.pplx.PerplexitySearchEngine`
 
-src/twat_search/web/engines/__init__.py:68:22: F401 `.you.YouSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:72:22: F401 `.you.YouSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-67 | try:
-68 |     from .you import YouSearchEngine, YouNewsSearchEngine, you, you_news
+71 | try:
+72 |     from .you import YouSearchEngine, YouNewsSearchEngine, you, you_news
    |                      ^^^^^^^^^^^^^^^ F401
-69 |
-70 |     available_engine_functions["you"] = you
+73 |
+74 |     available_engine_functions["you"] = you
    |
    = help: Remove unused import
 
-src/twat_search/web/engines/__init__.py:68:39: F401 `.you.YouNewsSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:72:39: F401 `.you.YouNewsSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-67 | try:
-68 |     from .you import YouSearchEngine, YouNewsSearchEngine, you, you_news
+71 | try:
+72 |     from .you import YouSearchEngine, YouNewsSearchEngine, you, you_news
    |                                       ^^^^^^^^^^^^^^^^^^^ F401
-69 |
-70 |     available_engine_functions["you"] = you
+73 |
+74 |     available_engine_functions["you"] = you
    |
    = help: Remove unused import
 
-src/twat_search/web/engines/__init__.py:77:27: F401 `.critique.CritiqueSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:81:27: F401 `.critique.CritiqueSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-76 | try:
-77 |     from .critique import CritiqueSearchEngine, critique
+80 | try:
+81 |     from .critique import CritiqueSearchEngine, critique
    |                           ^^^^^^^^^^^^^^^^^^^^ F401
-78 |
-79 |     available_engine_functions["critique"] = critique
+82 |
+83 |     available_engine_functions["critique"] = critique
    |
    = help: Remove unused import: `.critique.CritiqueSearchEngine`
 
-src/twat_search/web/engines/__init__.py:85:29: F401 `.duckduckgo.DuckDuckGoSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:89:29: F401 `.duckduckgo.DuckDuckGoSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-84 | try:
-85 |     from .duckduckgo import DuckDuckGoSearchEngine, duckduckgo
+88 | try:
+89 |     from .duckduckgo import DuckDuckGoSearchEngine, duckduckgo
    |                             ^^^^^^^^^^^^^^^^^^^^^^ F401
-86 |
-87 |     available_engine_functions["duckduckgo"] = duckduckgo
+90 |
+91 |     available_engine_functions["duckduckgo"] = duckduckgo
    |
    = help: Remove unused import: `.duckduckgo.DuckDuckGoSearchEngine`
 
-src/twat_search/web/engines/__init__.py:93:31: F401 `.bing_scraper.BingScraperSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:97:31: F401 `.bing_scraper.BingScraperSearchEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
-92 | try:
-93 |     from .bing_scraper import BingScraperSearchEngine, bing_scraper
+96 | try:
+97 |     from .bing_scraper import BingScraperSearchEngine, bing_scraper
    |                               ^^^^^^^^^^^^^^^^^^^^^^^ F401
-94 |
-95 |     available_engine_functions["bing_scraper"] = bing_scraper
+98 |
+99 |     available_engine_functions["bing_scraper"] = bing_scraper
    |
    = help: Remove unused import: `.bing_scraper.BingScraperSearchEngine`
 
-src/twat_search/web/engines/__init__.py:103:9: F401 `.hasdata.HasDataGoogleEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:107:9: F401 `.hasdata.HasDataGoogleEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
     |
-101 | try:
-102 |     from .hasdata import (
-103 |         HasDataGoogleEngine,
+105 | try:
+106 |     from .hasdata import (
+107 |         HasDataGoogleEngine,
     |         ^^^^^^^^^^^^^^^^^^^ F401
-104 |         HasDataGoogleLightEngine,
-105 |         hasdata_google,
+108 |         HasDataGoogleLightEngine,
+109 |         hasdata_google,
     |
     = help: Remove unused import
 
-src/twat_search/web/engines/__init__.py:104:9: F401 `.hasdata.HasDataGoogleLightEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
+src/twat_search/web/engines/__init__.py:108:9: F401 `.hasdata.HasDataGoogleLightEngine` imported but unused; consider using `importlib.util.find_spec` to test for availability
     |
-102 |     from .hasdata import (
-103 |         HasDataGoogleEngine,
-104 |         HasDataGoogleLightEngine,
+106 |     from .hasdata import (
+107 |         HasDataGoogleEngine,
+108 |         HasDataGoogleLightEngine,
     |         ^^^^^^^^^^^^^^^^^^^^^^^^ F401
-105 |         hasdata_google,
-106 |         hasdata_google_light,
+109 |         hasdata_google,
+110 |         hasdata_google_light,
     |
     = help: Remove unused import
+
+src/twat_search/web/engines/anywebsearch.py:51:13: FBT001 Boolean-typed positional argument in function definition
+   |
+49 |             language: str = "en",
+50 |             num_results: int = 20,
+51 |             merge: bool = True,
+   |             ^^^^^ FBT001
+52 |             engines: list[str] | None = None,
+53 |             **kwargs: Any,
+   |
+
+src/twat_search/web/engines/anywebsearch.py:51:13: FBT002 Boolean default positional argument in function definition
+   |
+49 |             language: str = "en",
+50 |             num_results: int = 20,
+51 |             merge: bool = True,
+   |             ^^^^^ FBT002
+52 |             engines: list[str] | None = None,
+53 |             **kwargs: Any,
+   |
+
+src/twat_search/web/engines/anywebsearch.py:126:9: PLR0913 Too many arguments in function definition (6 > 5)
+    |
+124 |     env_api_key_names: ClassVar[list[str]] = []  # Override as needed
+125 |
+126 |     def __init__(
+    |         ^^^^^^^^ PLR0913
+127 |         self,
+128 |         config: EngineConfig,
+    |
+
+src/twat_search/web/engines/anywebsearch.py:132:9: FBT002 Boolean default positional argument in function definition
+    |
+130 |         country: str | None = None,
+131 |         language: str | None = None,
+132 |         safe_search: bool | str | None = True,
+    |         ^^^^^^^^^^^ FBT002
+133 |         time_frame: str | None = None,
+134 |         **kwargs: Any,
+    |
 
 src/twat_search/web/engines/bing_scraper.py:43:26: ARG002 Unused method argument: `query`
    |
@@ -1653,6 +2087,74 @@ src/twat_search/web/engines/duckduckgo.py:177:5: FBT002 Boolean default position
 179 |     proxy: str | None = None,
     |
 
+src/twat_search/web/engines/google_scraper.py:99:9: PLR0913 Too many arguments in function definition (6 > 5)
+    |
+ 97 |     env_api_key_names: ClassVar[list[str]] = []  # No API key needed
+ 98 |
+ 99 |     def __init__(
+    |         ^^^^^^^^ PLR0913
+100 |         self,
+101 |         config: EngineConfig,
+    |
+
+src/twat_search/web/engines/google_scraper.py:105:9: FBT002 Boolean default positional argument in function definition
+    |
+103 |         country: str | None = None,
+104 |         language: str | None = None,
+105 |         safe_search: bool | str | None = True,
+    |         ^^^^^^^^^^^ FBT002
+106 |         time_frame: str | None = None,
+107 |         **kwargs: Any,
+    |
+
+src/twat_search/web/engines/google_scraper.py:292:11: PLR0913 Too many arguments in function definition (9 > 5)
+    |
+292 | async def google_scraper(
+    |           ^^^^^^^^^^^^^^ PLR0913
+293 |     query: str,
+294 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/google_scraper.py:297:5: FBT001 Boolean-typed positional argument in function definition
+    |
+295 |     language: str = "en",
+296 |     country: str | None = None,
+297 |     safe_search: bool = True,
+    |     ^^^^^^^^^^^ FBT001
+298 |     sleep_interval: float = 0.0,
+299 |     ssl_verify: bool | None = None,
+    |
+
+src/twat_search/web/engines/google_scraper.py:297:5: FBT002 Boolean default positional argument in function definition
+    |
+295 |     language: str = "en",
+296 |     country: str | None = None,
+297 |     safe_search: bool = True,
+    |     ^^^^^^^^^^^ FBT002
+298 |     sleep_interval: float = 0.0,
+299 |     ssl_verify: bool | None = None,
+    |
+
+src/twat_search/web/engines/google_scraper.py:301:5: FBT001 Boolean-typed positional argument in function definition
+    |
+299 |     ssl_verify: bool | None = None,
+300 |     proxy: str | None = None,
+301 |     unique: bool = True,
+    |     ^^^^^^ FBT001
+302 |     **kwargs: Any,
+303 | ) -> list[SearchResult]:
+    |
+
+src/twat_search/web/engines/google_scraper.py:301:5: FBT002 Boolean default positional argument in function definition
+    |
+299 |     ssl_verify: bool | None = None,
+300 |     proxy: str | None = None,
+301 |     unique: bool = True,
+    |     ^^^^^^ FBT002
+302 |     **kwargs: Any,
+303 | ) -> list[SearchResult]:
+    |
+
 src/twat_search/web/engines/pplx.py:40:9: PLR0913 Too many arguments in function definition (7 > 5)
    |
 38 |     ]
@@ -1689,6 +2191,109 @@ src/twat_search/web/engines/pplx.py:138:5: FBT002 Boolean default positional arg
     |     ^^^^^^^^^^^ FBT002
 139 |     time_frame: str | None = None,
 140 |     model: str | None = None,
+    |
+
+src/twat_search/web/engines/searchit.py:55:13: PLR0913 Too many arguments in function definition (7 > 5)
+   |
+53 |         """Dummy class for type checking when searchit is not installed."""
+54 |
+55 |         def __init__(
+   |             ^^^^^^^^ PLR0913
+56 |             self,
+57 |             term: str,
+   |
+
+src/twat_search/web/engines/searchit.py:97:32: ARG002 Unused method argument: `request`
+   |
+95 |             self.max_results = max_results_per_page
+96 |
+97 |         async def scrape(self, request: ScrapeRequest) -> list[SearchitResult]:
+   |                                ^^^^^^^ ARG002
+98 |             """
+99 |             Dummy scrape method for type checking.
+   |
+
+src/twat_search/web/engines/searchit.py:121:32: ARG002 Unused method argument: `request`
+    |
+119 |             self.max_results = max_results_per_page
+120 |
+121 |         async def scrape(self, request: ScrapeRequest) -> list[SearchitResult]:
+    |                                ^^^^^^^ ARG002
+122 |             """
+123 |             Dummy scrape method for type checking.
+    |
+
+src/twat_search/web/engines/searchit.py:145:32: ARG002 Unused method argument: `request`
+    |
+143 |             self.max_results = max_results_per_page
+144 |
+145 |         async def scrape(self, request: ScrapeRequest) -> list[SearchitResult]:
+    |                                ^^^^^^^ ARG002
+146 |             """
+147 |             Dummy scrape method for type checking.
+    |
+
+src/twat_search/web/engines/searchit.py:169:32: ARG002 Unused method argument: `request`
+    |
+167 |             self.max_results = max_results_per_page
+168 |
+169 |         async def scrape(self, request: ScrapeRequest) -> list[SearchitResult]:
+    |                                ^^^^^^^ ARG002
+170 |             """
+171 |             Dummy scrape method for type checking.
+    |
+
+src/twat_search/web/engines/searchit.py:232:9: PLR0913 Too many arguments in function definition (6 > 5)
+    |
+230 |     env_api_key_names: ClassVar[list[str]] = []  # No API key needed for scrapers
+231 |
+232 |     def __init__(
+    |         ^^^^^^^^ PLR0913
+233 |         self,
+234 |         config: EngineConfig,
+    |
+
+src/twat_search/web/engines/searchit.py:238:9: FBT002 Boolean default positional argument in function definition
+    |
+236 |         country: str | None = None,
+237 |         language: str | None = None,
+238 |         safe_search: bool | str | None = True,
+    |         ^^^^^^^^^^^ FBT002
+239 |         time_frame: str | None = None,
+240 |         **kwargs: Any,
+    |
+
+src/twat_search/web/engines/searchit.py:675:11: PLR0913 Too many arguments in function definition (6 > 5)
+    |
+674 | # Convenience functions for each engine
+675 | async def google_searchit(
+    |           ^^^^^^^^^^^^^^^ PLR0913
+676 |     query: str,
+677 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/searchit.py:716:11: PLR0913 Too many arguments in function definition (6 > 5)
+    |
+716 | async def yandex_searchit(
+    |           ^^^^^^^^^^^^^^^ PLR0913
+717 |     query: str,
+718 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/searchit.py:757:11: PLR0913 Too many arguments in function definition (6 > 5)
+    |
+757 | async def qwant_searchit(
+    |           ^^^^^^^^^^^^^^ PLR0913
+758 |     query: str,
+759 |     num_results: int = 5,
+    |
+
+src/twat_search/web/engines/searchit.py:798:11: PLR0913 Too many arguments in function definition (6 > 5)
+    |
+798 | async def bing_searchit(
+    |           ^^^^^^^^^^^^^ PLR0913
+799 |     query: str,
+800 |     num_results: int = 5,
     |
 
 src/twat_search/web/engines/serpapi.py:49:9: PLR0913 Too many arguments in function definition (6 > 5)
@@ -2163,14 +2768,20 @@ tests/web/test_bing_scraper.py:272:15: N803 Argument name `mock_BingScraper` sho
 274 |         """Test handling of invalid result format."""
     |
 
-Found 197 errors (2 fixed, 195 remaining).
+Found 253 errors.
 
-2025-02-25 08:20:02 - 33 files left unchanged
+2025-02-26 10:12:27 - 36 files left unchanged
 
-2025-02-25 08:20:02 - >>>Running type checks...
-2025-02-25 08:20:13 - src/twat_search/web/engines/duckduckgo.py:16: error: Cannot find implementation or library stub for module named "duckduckgo_search"  [import-not-found]
+2025-02-26 10:12:27 - >>>Running type checks...
+2025-02-26 10:12:38 - src/twat_search/web/engines/searchit.py:24: error: Cannot find implementation or library stub for module named "searchit"  [import-not-found]
+src/twat_search/web/engines/searchit.py:31: error: Cannot find implementation or library stub for module named "searchit.scrapers.scraper"  [import-not-found]
+src/twat_search/web/engines/google_scraper.py:24: error: Cannot find implementation or library stub for module named "googlesearch"  [import-not-found]
+src/twat_search/web/engines/duckduckgo.py:16: error: Cannot find implementation or library stub for module named "duckduckgo_search"  [import-not-found]
 src/twat_search/web/engines/bing_scraper.py:24: error: Cannot find implementation or library stub for module named "scrape_bing"  [import-not-found]
-src/twat_search/web/engines/bing_scraper.py:24: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+src/twat_search/web/engines/anywebsearch.py:24: error: Cannot find implementation or library stub for module named "anywebsearch"  [import-not-found]
+src/twat_search/web/engines/anywebsearch.py:25: error: Cannot find implementation or library stub for module named "anywebsearch.tools"  [import-not-found]
+src/twat_search/web/engines/anywebsearch.py:25: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
+src/twat_search/web/engines/anywebsearch.py:71: error: Unused "type: ignore" comment  [unused-ignore]
 tests/conftest.py:54: error: Only concrete class can be given where "type[SearchEngine]" is expected  [type-abstract]
 src/twat_search/web/engines/you.py:65: error: "type[YouBaseEngine]" has no attribute "num_results_param"  [attr-defined]
 src/twat_search/web/engines/you.py:78: error: "type[YouBaseEngine]" has no attribute "num_results_param"  [attr-defined]
@@ -2180,24 +2791,24 @@ src/twat_search/web/engines/tavily.py:78: error: Function is missing a type anno
 src/twat_search/web/engines/brave.py:116: error: "BaseModel" has no attribute "description"  [attr-defined]
 src/twat_search/web/engines/brave.py:126: error: "BaseModel" has no attribute "title"  [attr-defined]
 src/twat_search/web/engines/brave.py:127: error: "BaseModel" has no attribute "url"  [attr-defined]
-src/twat_search/web/engines/__init__.py:46: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
-src/twat_search/web/engines/__init__.py:54: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str, list[str] | None, list[str] | None, bool, int | None, str, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
-src/twat_search/web/engines/__init__.py:62: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
-src/twat_search/web/engines/__init__.py:70: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
-src/twat_search/web/engines/__init__.py:71: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
-src/twat_search/web/engines/__init__.py:79: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None, str | None, list[str] | None, list[str] | None, dict[str, Any] | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
-src/twat_search/web/engines/__init__.py:87: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool, str | None, str | None, int, KwArg(Any)], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
-src/twat_search/web/engines/__init__.py:95: error: Incompatible types in assignment (expression has type "Callable[[str, int, int, float, KwArg(Any)], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
-src/twat_search/web/engines/__init__.py:109: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
-src/twat_search/web/engines/__init__.py:110: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:50: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:58: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str, list[str] | None, list[str] | None, bool, int | None, str, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:66: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:74: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:75: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:83: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool | None, str | None, str | None, str | None, list[str] | None, list[str] | None, dict[str, Any] | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:91: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None, bool, str | None, str | None, int, KwArg(Any)], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:99: error: Incompatible types in assignment (expression has type "Callable[[str, int, int, float, KwArg(Any)], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:113: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
+src/twat_search/web/engines/__init__.py:114: error: Incompatible types in assignment (expression has type "Callable[[str, int, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]", target has type "Callable[[str, int, str | None, str | None, bool | str | None, str | None, str | None], Coroutine[Any, Any, list[SearchResult]]]")  [assignment]
 tests/web/test_bing_scraper.py:281: error: Function is missing a return type annotation  [no-untyped-def]
 tests/web/test_bing_scraper.py:281: note: Use "-> None" if function does not return a value
 tests/test_twat_search.py:4: error: Function is missing a return type annotation  [no-untyped-def]
 tests/test_twat_search.py:4: note: Use "-> None" if function does not return a value
-Found 23 errors in 9 files (checked 34 source files)
+Found 29 errors in 12 files (checked 37 source files)
 
-2025-02-25 08:20:13 - >>> Running tests...
-2025-02-25 08:20:14 - ============================= test session starts ==============================
+2025-02-26 10:12:38 - >>> Running tests...
+2025-02-26 10:12:40 - ============================= test session starts ==============================
 platform darwin -- Python 3.12.8, pytest-8.3.4, pluggy-1.5.0 -- /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.venv/bin/python
 cachedir: .pytest_cache
 benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
@@ -2260,7 +2871,7 @@ tests/web/test_bing_scraper.py::TestBingScraperEngine::test_invalid_result_forma
 =================================== FAILURES ===================================
 _________________________ test_search_with_mock_engine _________________________
 
-mock_config = <twat_search.web.config.Config object at 0x10e35cd70>
+mock_config = <twat_search.web.config.Config object at 0x111743b90>
 setup_teardown = None
 
     @pytest.mark.asyncio
@@ -2277,7 +2888,7 @@ E        +  where 1 = len([SearchResult(title='Mock Result 1 for test query', ur
 tests/unit/web/test_api.py:104: AssertionError
 __________________________ test_config_with_env_vars ___________________________
 
-monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1111e38c0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x11173d070>
 env_vars_for_brave = None
 
     def test_config_with_env_vars(
@@ -2298,12 +2909,12 @@ tests/unit/web/test_config.py:55: AssertionError
 =========================== short test summary info ============================
 FAILED tests/unit/web/test_api.py::test_search_with_mock_engine - AssertionEr...
 FAILED tests/unit/web/test_config.py::test_config_with_env_vars - AssertionEr...
-========================= 2 failed, 47 passed in 0.66s =========================
+========================= 2 failed, 47 passed in 0.73s =========================
 
-2025-02-25 08:20:14 - All checks completed
-2025-02-25 08:20:14 - 
+2025-02-26 10:12:40 - All checks completed
+2025-02-26 10:12:40 - 
 === TODO.md ===
-2025-02-25 08:20:14 - # twat-search Web Package - Future Tasks
+2025-02-26 10:12:40 - # twat-search Web Package - Future Tasks
 
 The basic implementation of the `twat-search` web package is complete.
 
@@ -2420,45 +3031,53 @@ Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
   - Control concurrency limits
   - Implement proper resource cleanup
 
-2025-02-25 08:20:16 - 
+2025-02-26 10:12:41 - 
 📦 Repomix v0.2.29
 
 No custom config found at repomix.config.json or global config at /Users/adam/.config/repomix/repomix.config.json.
 You can add a config file for additional settings. Please check https://github.com/yamadashy/repomix for more information.
 ⠙ Collecting files...
-[2K[1A[2K[G⠹ Collect file... (4/47) .github/workflows/push.yml
-[2K[1A[2K[G⠸ Running security check...
-[2K[1A[2K[G⠼ Processing files...
-[2K[1A[2K[G⠴ Processing file... (11/47) src/twat_search/web/engines/duckduckgo.py
-[2K[1A[2K[G⠦ Calculating metrics...
-[2K[1A[2K[G⠧ Calculating metrics...
+[2K[1A[2K[G⠹ Collecting files...
+[2K[1A[2K[G⠸ Collect file... (42/51) .gitignore
+[2K[1A[2K[G⠼ Running security check...
+[2K[1A[2K[G⠴ Processing files...
+[2K[1A[2K[G⠦ Processing file... (5/50) .github/workflows/release.yml
+[2K[1A[2K[G⠧ Processing file... (34/50) tests/unit/web/test_exceptions.py
 [2K[1A[2K[G⠇ Calculating metrics...
-[2K[1A[2K[G⠏ Calculating metrics... (4/47) .github/workflows/push.yml
+[2K[1A[2K[G⠏ Calculating metrics...
+[2K[1A[2K[G⠋ Calculating metrics...
+[2K[1A[2K[G⠙ Calculating metrics... (8/50) src/twat_search/web/engines/base.py
 [2K[1A[2K[G✔ Packing completed successfully!
 
 📈 Top 5 Files by Character Count and Token Count:
 ──────────────────────────────────────────────────
-1.  pyproject.toml (9,832 chars, 2,678 tokens)
-2.  src/twat_search/web/cli.py (9,764 chars, 2,071 tokens)
-3.  cleanup.py (5,868 chars, 1,301 tokens)
-4.  TODO.md (4,242 chars, 945 tokens)
-5.  .cursor/rules/filetree.mdc (3,758 chars, 1,757 tokens)
+1.  README.md (20,981 chars, 5,079 tokens)
+2.  pyproject.toml (10,005 chars, 2,737 tokens)
+3.  src/twat_search/web/cli.py (9,538 chars, 2,007 tokens)
+4.  cleanup.py (5,868 chars, 1,301 tokens)
+5.  src/twat_search/web/engines/searchit.py (4,617 chars, 1,012 tokens)
 
 🔎 Security Check:
 ──────────────────
-✔ No suspicious files detected.
+1 suspicious file(s) detected and excluded from the output:
+1. NEXTENGINES.md
+   - found basic auth credential: http://username:password@proxy.host.com
+   - found basic auth credential: socks5://username:password@proxy.host.com
+
+These files have been excluded from the output for security reasons.
+Please review these files for potential sensitive information.
 
 📊 Pack Summary:
 ────────────────
-  Total Files: 47 files
-  Total Chars: 90,603 chars
- Total Tokens: 22,096 tokens
+  Total Files: 50 files
+  Total Chars: 120,731 chars
+ Total Tokens: 29,176 tokens
        Output: twat_search.txt
-     Security: ✔ No suspicious files detected
+     Security: 1 suspicious file(s) detected and excluded
 
 🎉 All Done!
 Your repository has been successfully packed.
 
 💡 Repomix is now available in your browser! Try it at https://repomix.com
 
-2025-02-25 08:20:16 - Repository content mixed into twat_search.txt
+2025-02-26 10:12:41 - Repository content mixed into twat_search.txt

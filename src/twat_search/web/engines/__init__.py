@@ -1,11 +1,15 @@
 # this_file: src/twat_search/web/engines/__init__.py
 
 """
-Search engine implementations.
+Package containing various search engine implementations for the twat_search.web API.
 
-This package contains the implementations of various search engines that
-can be used with the twat_search.web API.
+Each module in this package implements one or more search engines
+that can be used with the API.
 """
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 from typing import Any
 from collections.abc import Callable, Coroutine
@@ -118,6 +122,27 @@ try:
     )
 except ImportError:
     pass
+
+try:
+    from . import google_scraper  # noqa: F401
+
+    logger.debug("Imported google_scraper module")
+except (ImportError, SyntaxError) as e:
+    logger.warning(f"Failed to import google_scraper module: {e}")
+
+try:
+    from . import searchit  # noqa: F401
+
+    logger.debug("Imported searchit module")
+except (ImportError, SyntaxError) as e:
+    logger.warning(f"Failed to import searchit module: {e}")
+
+try:
+    from . import anywebsearch  # noqa: F401
+
+    logger.debug("Imported anywebsearch module")
+except (ImportError, SyntaxError) as e:
+    logger.warning(f"Failed to import anywebsearch module: {e}")
 
 
 # Add helper functions to the exports
