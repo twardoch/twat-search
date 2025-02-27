@@ -1,9 +1,10 @@
 # Falla-Yahoo
 # Sanix-darker
 
-from app.core.Falla import Falla
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+
+from twat_search.web.engines.lib_falla.core.falla import Falla
 
 
 class Yahoo(Falla):

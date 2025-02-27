@@ -11,6 +11,7 @@ Falla library for scraping search engine results.
 """
 
 import logging
+from urllib.parse import urlparse
 
 from twat_search.web.engines.base import SearchEngine
 from twat_search.web.engines.lib_falla.core import (
@@ -27,7 +28,7 @@ from twat_search.web.engines.lib_falla.core import (
     Yahoo,
     Yandex,
 )
-from twat_search.web.exceptions import SearchEngineError
+from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
 
 logger = logging.getLogger(__name__)
@@ -65,10 +66,7 @@ def is_falla_available() -> bool:
         # Check if Falla can be initialized without errors
         try:
             # Basic check - create and validate a Google instance
-            _check_engine = Google(
-                num_results=1,
-                language="en",
-            )
+            _check_engine = Google()
             _falla_available = True
         except Exception as e:
             logger.warning(f"Falla engines are not available: {e}")
@@ -81,7 +79,7 @@ class FallaSearchEngine(SearchEngine):
     """Base class for all Falla-based search engines."""
 
     # To be overridden by subclasses
-    engine_name = "falla"
+    engine_code = "falla"
     friendly_engine_name = "Falla Search"
     _falla_engine_class = Falla  # Base engine class
 
@@ -103,17 +101,9 @@ class FallaSearchEngine(SearchEngine):
         Returns:
             Falla: Instance of the Falla engine class
         """
-        # Parameters to pass to the Falla engine
-        params = {
-            "num_results": self.max_results,
-        }
-
-        # Add language if specified
-        if self.language:
-            params["language"] = self.language
-
-        # Create and return the engine instance
-        return self._falla_engine_class(**params)
+        # Create a new instance - passing name parameter for most engines
+        # Falla engines require a name parameter
+        return self._falla_engine_class(name=self.engine_code)
 
     async def search(self, query: str, **kwargs) -> list[SearchResult]:
         """
@@ -127,25 +117,28 @@ class FallaSearchEngine(SearchEngine):
             list[SearchResult]: List of search results
 
         Raises:
-            SearchEngineError: If the search fails
+            EngineError: If the search fails
         """
         try:
             # Perform the search
-            raw_results = self._falla_engine.search(
-                query=query,
-                num_results=self.max_results,
-            )
+            raw_results = self._falla_engine.search(query=query)
 
             # Convert to SearchResult objects
             results = []
-            for item in raw_results:
+            for i, item in enumerate(raw_results):
+                # Validate URL
+                url = item.get("link", "")
+                if not url:
+                    continue
+
+                # Create search result object
                 result = SearchResult(
                     title=item.get("title", ""),
-                    url=item.get("link", ""),
+                    url=url,
                     snippet=item.get("snippet", ""),
                     source=self.engine_code,
-                    position=len(results) + 1,
-                    query=query,
+                    rank=i + 1,
+                    raw=item,
                 )
                 results.append(result)
 
@@ -153,7 +146,7 @@ class FallaSearchEngine(SearchEngine):
         except Exception as e:
             logger.error(f"Search failed: {e!s}")
             msg = f"Search failed: {e!s}"
-            raise SearchEngineError(msg)
+            raise EngineError(self.engine_code, msg)
 
 
 # Define engine classes for specific Falla engines

@@ -1,7 +1,7 @@
 # Falla-StartPage
 # Sanix-darker
 
-from app.core.Falla import Falla
+from twat_search.web.engines.lib_falla.core.falla import Falla
 
 
 class StartPage(Falla):
