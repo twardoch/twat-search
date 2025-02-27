@@ -41,7 +41,6 @@ from twat_search.web.engine_constants import (
     TAVILY,
     YAHOO_FALLA,
     YANDEX_FALLA,
-    YANDEX_SEARCHIT,
     YOU,
     YOU_NEWS,
 )
@@ -269,9 +268,7 @@ ENV_VAR_MAP: dict[str, str | list[str]] = {
     "TAVILY_API_KEY": ["engines", TAVILY, "api_key"],
     "PPLX_API_KEY": ["engines", PPLX, "api_key"],
     "CRITIQUE_API_KEY": ["engines", CRITIQUE, "api_key"],
-    "YANDEX_API_KEY": ["engines", YANDEX_SEARCHIT, "api_key"],
     # Engine-specific config
-    "YANDEX_FOLDER_ID": ["engines", YANDEX_SEARCHIT, "default_params", "folder_id"],
 }
 
 # Additional environment variables that map to multiple paths

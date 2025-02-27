@@ -11,7 +11,7 @@ Falla library for scraping search engine results.
 """
 
 import logging
-from typing import TypeVar, cast
+from typing import Any, ClassVar, cast
 
 from pydantic import HttpUrl
 
@@ -34,9 +34,6 @@ from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
 
 logger = logging.getLogger(__name__)
-
-# Type variable for Falla engine types
-T = TypeVar("T", bound=Falla)
 
 # List of available Falla engine names
 FALLA_AVAILABLE_ENGINES = [
@@ -71,7 +68,7 @@ def is_falla_available() -> bool:
         # Check if Falla can be initialized without errors
         try:
             # Basic check - create and validate a Google instance
-            _check_engine = Google()
+            _check_engine = Google("google")
             _falla_available = True
         except Exception as e:
             logger.warning(f"Falla engines are not available: {e}")
@@ -87,9 +84,10 @@ class FallaSearchEngine(SearchEngine):
     # To be overridden by subclasses
     engine_code = "falla"
     friendly_engine_name = "Falla Search"
-    _falla_engine_class: type[T] = cast(type[T], Falla)  # Base engine class
+    env_api_key_names: ClassVar[list[str]] = []
+    _falla_engine_class: ClassVar[type[Falla]] = Falla
 
-    def __init__(self, config, **kwargs):
+    def __init__(self, config: Any, **kwargs: Any) -> None:
         """Initialize the Falla search engine."""
         super().__init__(config, **kwargs)
 
@@ -100,18 +98,18 @@ class FallaSearchEngine(SearchEngine):
         global _falla_initialized
         _falla_initialized = True
 
-    def _create_engine_instance(self) -> T:
+    def _create_engine_instance(self) -> Falla:
         """
         Create an instance of the Falla engine.
 
         Returns:
             Falla: Instance of the Falla engine class
         """
-        # Create a new instance
-        # Falla engine classes already initialize with their name in their own __init__ methods
-        return self._falla_engine_class()
+        # Create a new instance with the engine code as the name
+        # The name parameter is required by the Falla base class
+        return self._falla_engine_class(name=self.engine_code)
 
-    async def search(self, query: str, **_kwargs) -> list[SearchResult]:
+    async def search(self, query: str, **_kwargs: Any) -> list[SearchResult]:
         """
         Perform a search using the Falla engine.
 
@@ -126,8 +124,10 @@ class FallaSearchEngine(SearchEngine):
             EngineError: If the search fails
         """
         try:
-            # Perform the search - Falla engines return a list[dict]
-            raw_results = self._falla_engine.search(query=query)
+            # Perform the search
+            # Falla engines return a list[dict[str, str]] as documented in their search method
+            # Cast return value to ensure type safety
+            raw_results = cast(list[dict[str, str]], self._falla_engine.search(query=query))
 
             # Convert to SearchResult objects
             results = []
@@ -167,7 +167,7 @@ class GoogleFallaEngine(FallaSearchEngine):
 
     engine_code = "google_falla"
     friendly_engine_name = "Google (Falla)"
-    _falla_engine_class = cast(type[T], Google)
+    _falla_engine_class = Google
 
 
 @register_engine
@@ -176,7 +176,7 @@ class BingFallaEngine(FallaSearchEngine):
 
     engine_code = "bing_falla"
     friendly_engine_name = "Bing (Falla)"
-    _falla_engine_class = cast(type[T], Bing)
+    _falla_engine_class = Bing
 
 
 @register_engine
@@ -185,7 +185,7 @@ class DuckDuckGoFallaEngine(FallaSearchEngine):
 
     engine_code = "duckduckgo_falla"
     friendly_engine_name = "DuckDuckGo (Falla)"
-    _falla_engine_class = cast(type[T], DuckDuckGo)
+    _falla_engine_class = DuckDuckGo
 
 
 @register_engine
@@ -194,7 +194,7 @@ class YahooFallaEngine(FallaSearchEngine):
 
     engine_code = "yahoo_falla"
     friendly_engine_name = "Yahoo (Falla)"
-    _falla_engine_class = cast(type[T], Yahoo)
+    _falla_engine_class = Yahoo
 
 
 @register_engine
@@ -203,7 +203,7 @@ class AskFallaEngine(FallaSearchEngine):
 
     engine_code = "ask_falla"
     friendly_engine_name = "Ask.com (Falla)"
-    _falla_engine_class = cast(type[T], Ask)
+    _falla_engine_class = Ask
 
 
 @register_engine
@@ -212,7 +212,7 @@ class AolFallaEngine(FallaSearchEngine):
 
     engine_code = "aol_falla"
     friendly_engine_name = "AOL (Falla)"
-    _falla_engine_class = cast(type[T], Aol)
+    _falla_engine_class = Aol
 
 
 @register_engine
@@ -221,7 +221,7 @@ class DogpileFallaEngine(FallaSearchEngine):
 
     engine_code = "dogpile_falla"
     friendly_engine_name = "Dogpile (Falla)"
-    _falla_engine_class = cast(type[T], DogPile)
+    _falla_engine_class = DogPile
 
 
 @register_engine
@@ -230,7 +230,7 @@ class GibiruFallaEngine(FallaSearchEngine):
 
     engine_code = "gibiru_falla"
     friendly_engine_name = "Gibiru (Falla)"
-    _falla_engine_class = cast(type[T], Gibiru)
+    _falla_engine_class = Gibiru
 
 
 @register_engine
@@ -239,7 +239,7 @@ class MojeekFallaEngine(FallaSearchEngine):
 
     engine_code = "mojeek_falla"
     friendly_engine_name = "Mojeek (Falla)"
-    _falla_engine_class = cast(type[T], Mojeek)
+    _falla_engine_class = Mojeek
 
 
 @register_engine
@@ -248,7 +248,7 @@ class QwantFallaEngine(FallaSearchEngine):
 
     engine_code = "qwant_falla"
     friendly_engine_name = "Qwant (Falla)"
-    _falla_engine_class = cast(type[T], Qwant)
+    _falla_engine_class = Qwant
 
 
 @register_engine
@@ -257,205 +257,228 @@ class YandexFallaEngine(FallaSearchEngine):
 
     engine_code = "yandex_falla"
     friendly_engine_name = "Yandex (Falla)"
-    _falla_engine_class = cast(type[T], Yandex)
+    _falla_engine_class = Yandex
 
 
-# Helper functions for each engine to register with available_engine_functions
+# Convenience functions for direct API access
+# These match the function naming convention used in the module
 
 
-async def google_falla(query: str, **kwargs) -> list[SearchResult]:
+async def google_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search Google using the Falla engine.
+    Perform a Google search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("google_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["google_falla"],
+        **kwargs,
+    )
 
 
-async def bing_falla(query: str, **kwargs) -> list[SearchResult]:
+async def bing_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search Bing using the Falla engine.
+    Perform a Bing search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("bing_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["bing_falla"],
+        **kwargs,
+    )
 
 
-async def duckduckgo_falla(query: str, **kwargs) -> list[SearchResult]:
+async def duckduckgo_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search DuckDuckGo using the Falla engine.
+    Perform a DuckDuckGo search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("duckduckgo_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["duckduckgo_falla"],
+        **kwargs,
+    )
 
 
-async def yahoo_falla(query: str, **kwargs) -> list[SearchResult]:
+async def yahoo_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search Yahoo using the Falla engine.
+    Perform a Yahoo search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("yahoo_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["yahoo_falla"],
+        **kwargs,
+    )
 
 
-async def ask_falla(query: str, **kwargs) -> list[SearchResult]:
+async def ask_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search Ask.com using the Falla engine.
+    Perform an Ask.com search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("ask_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["ask_falla"],
+        **kwargs,
+    )
 
 
-async def aol_falla(query: str, **kwargs) -> list[SearchResult]:
+async def aol_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search AOL using the Falla engine.
+    Perform an AOL search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("aol_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["aol_falla"],
+        **kwargs,
+    )
 
 
-async def dogpile_falla(query: str, **kwargs) -> list[SearchResult]:
+async def dogpile_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search Dogpile using the Falla engine.
+    Perform a Dogpile search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("dogpile_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["dogpile_falla"],
+        **kwargs,
+    )
 
 
-async def gibiru_falla(query: str, **kwargs) -> list[SearchResult]:
+async def gibiru_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search Gibiru using the Falla engine.
+    Perform a Gibiru search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("gibiru_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["gibiru_falla"],
+        **kwargs,
+    )
 
 
-async def mojeek_falla(query: str, **kwargs) -> list[SearchResult]:
+async def mojeek_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search Mojeek using the Falla engine.
+    Perform a Mojeek search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("mojeek_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["mojeek_falla"],
+        **kwargs,
+    )
 
 
-async def qwant_falla(query: str, **kwargs) -> list[SearchResult]:
+async def qwant_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search Qwant using the Falla engine.
+    Perform a Qwant search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("qwant_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["qwant_falla"],
+        **kwargs,
+    )
 
 
-async def yandex_falla(query: str, **kwargs) -> list[SearchResult]:
+async def yandex_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Search Yandex using the Falla engine.
+    Perform a Yandex search using Falla engine.
 
     Args:
         query: Search query
-        **kwargs: Additional search parameters
+        **kwargs: Additional parameters passed to the search function
 
     Returns:
-        list[SearchResult]: List of search results
+        list[SearchResult]: Search results
     """
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.engines.base import get_engine
+    from twat_search.web.api import search
 
-    engine = get_engine("yandex_falla", EngineConfig(enabled=True))
-    return await engine.search(query, **kwargs)
+    return await search(
+        query,
+        engines=["yandex_falla"],
+        **kwargs,
+    )

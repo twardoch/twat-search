@@ -25,151 +25,137 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
 
 ## 1. Implementing Falla-based Search Engines
 
-Based on the NEXTENGINES.md file, we need to implement search engines based on the [Falla project](https://github.com/Sanix-Darker/falla), which is a search engine scraper supporting multiple search engines.
+Based on the NEXTENGINES.md file, we've implemented search engines based on the [Falla project](https://github.com/Sanix-Darker/falla), which is a search engine scraper supporting multiple search engines.
 
-### 1.1. Understanding Falla Architecture
+### 1.1. Current Implementation Status
 
-Falla is a Python-based search engine scraper that supports multiple search engines including Google, Bing, DuckDuckGo, and others. Each search engine has its own implementation file in the `app/core/` directory, inheriting from a base `Falla` class.
+We have successfully integrated Falla-based search engines into the twat-search project. Key accomplishments include:
 
-The key components of Falla are:
+1. Created a `lib_falla` directory in `src/twat_search/web/engines/` containing the embedded Falla code
+2. Developed a base `FallaSearchEngine` class and specific engine implementations for multiple search providers (Google, Bing, DuckDuckGo, etc.)
+3. Added proper engine registration and configuration
+4. Added necessary constants and imports for Falla engines
+5. Fixed compatibility issues with the embedded Falla code
 
-1. A base `Falla` class that handles common scraping functionality
-2. Individual engine classes (Google, Bing, etc.) that define engine-specific parameters
-3. A common interface for searching and result parsing
+### 1.2. Remaining Implementation Tasks
 
-### 1.2. Implementation Plan for *-falla Engines
+#### 1.2.1. Fix Linting and Type Issues
 
-#### 1.2.1. Setup and Dependencies
+1. Address remaining linter errors in the Falla implementation:
+   - Fix type annotation issues with TypeVar usage in the `falla.py` file
+   - Simplify the type system to avoid TypeVar complexity
+   - Ensure proper type annotations throughout all Falla-based implementations
 
-1. Create a new module `src/twat_search/web/engines/falla.py` to implement Falla-based engines
-2. Add necessary dependencies to `pyproject.toml`:
-   - `selenium` for browser automation
-   - `lxml` for HTML parsing
-   - `requests` for HTTP requests
-   - Optional: Consider if we need Docker/Splash for some engines
+#### 1.2.2. Resolve Search Result Issues
 
-3. Define engine constants in `src/twat_search/web/engine_constants.py`:
-   
-```python
-   # Falla-based engines
-   GOOGLE_FALLA = "google-falla"
-   BING_FALLA = "bing-falla"
-   DUCKDUCKGO_FALLA = "duckduckgo-falla"
-   AOL_FALLA = "aol-falla"
-   ASK_FALLA = "ask-falla"
-   DOGPILE_FALLA = "dogpile-falla"
-   GIBIRU_FALLA = "gibiru-falla"
-   MOJEEK_FALLA = "mojeek-falla"
-   QWANT_FALLA = "qwant-falla"
-   YAHOO_FALLA = "yahoo-falla"
-   YANDEX_FALLA = "yandex-falla"
-   
-   # Update ENGINE_FRIENDLY_NAMES
-   ENGINE_FRIENDLY_NAMES.update({
-       GOOGLE_FALLA: "Google (Falla)",
-       BING_FALLA: "Bing (Falla)",
-       DUCKDUCKGO_FALLA: "DuckDuckGo (Falla)",
-       AOL_FALLA: "AOL (Falla)",
-       ASK_FALLA: "Ask.com (Falla)",
-       DOGPILE_FALLA: "DogPile (Falla)",
-       GIBIRU_FALLA: "Gibiru (Falla)",
-       MOJEEK_FALLA: "Mojeek (Falla)",
-       QWANT_FALLA: "Qwant (Falla)",
-       YAHOO_FALLA: "Yahoo (Falla)",
-       YANDEX_FALLA: "Yandex (Falla)",
-   })
-   
-   # Update ALL_POSSIBLE_ENGINES
-   ALL_POSSIBLE_ENGINES.extend([
-       GOOGLE_FALLA,
-       BING_FALLA,
-       DUCKDUCKGO_FALLA,
-       AOL_FALLA,
-       ASK_FALLA,
-       DOGPILE_FALLA,
-       GIBIRU_FALLA,
-       MOJEEK_FALLA,
-       QWANT_FALLA,
-       YAHOO_FALLA,
-       YANDEX_FALLA,
-   ])
-   ```
+1. Debug and fix issues with search results:
+   - Implement better error logging for Falla engines returning empty results
+   - Add detailed debugging for common failure patterns
+   - Test each engine individually to identify specific issues
 
-4. Update `src/twat_search/web/engines/__init__.py` to import and register the new engines:
-   
-```python
-   # Add to imports
-   from twat_search.web.engine_constants import (
-       # ... existing imports ...
-       GOOGLE_FALLA,
-       BING_FALLA,
-       DUCKDUCKGO_FALLA,
-       AOL_FALLA,
-       ASK_FALLA,
-       DOGPILE_FALLA,
-       GIBIRU_FALLA,
-       MOJEEK_FALLA,
-       QWANT_FALLA,
-       YAHOO_FALLA,
-       YANDEX_FALLA,
-   )
-   
-   # Add to __all__
-   __all__ = [
-       # ... existing entries ...
-       "GOOGLE_FALLA",
-       "BING_FALLA",
-       "DUCKDUCKGO_FALLA",
-       "AOL_FALLA",
-       "ASK_FALLA",
-       "DOGPILE_FALLA",
-       "GIBIRU_FALLA",
-       "MOJEEK_FALLA",
-       "QWANT_FALLA",
-       "YAHOO_FALLA",
-       "YANDEX_FALLA",
-   ]
-   ```
+## 2. Fix Critical Engine Failures
 
-#### 1.2.2. Base Implementation
+### 2.1. Improve Error Handling and Reporting
 
-1. Create a base `FallaSearchEngine` class in `src/twat_search/web/engines/falla.py`
+1. Enhance `get_engine` function in `engines/__init__.py`:
+   - Add descriptive error messages when engines fail to initialize
+   - Improve error context for API key requirements
+   - Implement better handling of disabled engines
 
-2. Implement specific engine classes for each Falla engine
+2. Implement robust error handling for search operations:
+   - Add proper retries with exponential backoff
+   - Improve timeout handling
+   - Better detection of rate limiting and captchas
 
-#### 1.2.3. Falla Integration Approach
+### 2.2. Fix Failing Tests
 
-Instead of making Falla a dependency, we'll incorporate the Falla code directly into the project:
+1. Fix failing tests identified in PROGRESS.md:
+   - Address test failures in `test_api.py`
+   - Address test failures in `test_config.py` 
+   - Address test failures in `test_bing_scraper.py`
 
-1. Create a `lib_falla` directory in `src/twat_search/web/engines/` to contain the Falla code
-2. Adapt the Falla code to work within our project structure:
-   - Update import paths
-   - Fix any compatibility issues
-   - Ensure proper attribution and licensing
-3. Update the `FallaSearchEngine` class to use the embedded Falla code
-4. Create a fallback mechanism for when certain dependencies are not available
+## 3. Fix Data Integrity and Consistency Issues
 
-Benefits of this approach:
-* No dependency on an unmaintained external package
-* Better control over the code and its behavior
-* Ability to fix bugs and make improvements as needed
-* Simplified installation for users
+### 3.1. Standardize Result Format
 
-#### 1.2.4. Implementation Details
+1. Ensure consistent source attribution in all search results:
+   - Fix all engines to use `self.engine_code` when creating `SearchResult` objects
+   - Correct typos in result keys (e.g., `"snippetHighlitedWords"`)
+   - Standardize field names across all engines
 
-1. The `FallaSearchEngine` class will:
-   - Initialize the appropriate Falla engine based on the engine code
-   - Convert Falla results to our standard `SearchResult` format
-   - Handle errors gracefully
-   - Provide consistent behavior across all engines
+## 4. Address Empty Results
 
-2. Each specific engine class (e.g., `GoogleFallaEngine`) will:
-   - Define engine-specific parameters
-   - Initialize the appropriate Falla engine
-   - Register itself with the engine registry
+### 4.1. Fix Searchit-based Engines
 
-3. The embedded Falla code will be modified to:
-   - Work with our project structure
-   - Use our logging system
-   - Handle errors consistently with the rest of the project
-   - Support our configuration system
+1. Debug and fix engines returning empty results:
+   - `bing_searchit`
+   - `google_searchit`
+   - `qwant_searchit`
+   - `yandex_searchit`
+
+2. Improve implementation:
+   - Create test script to isolate specific issues
+   - Add detailed logging for debugging
+   - Verify proper installation and dependencies
+
+### 4.2. Implement Fallback Mechanisms
+
+1. Create fallback mechanisms for unreliable engines:
+   - Implement alternative parsing methods
+   - Add fallbacks when primary parsing fails
+   - Consider caching successful results for improved reliability
+
+## 5. Improve CLI Interface
+
+### 5.1. Enhance User Experience
+
+1. Update and improve the `q` command in the CLI:
+   - Add better progress indicators
+   - Improve error messaging
+   - Test all parameter combinations
+
+### 5.2. Add Engine Management
+
+1. Implement engine management commands:
+   - Add commands to test specific engines
+   - Add commands to enable/disable engines
+   - Add commands to view detailed engine status
+
+## 6. Enforce Consistent JSON Output Format
+
+### 6.1. Standardize JSON Output
+
+1. Enforce consistent JSON format across all engines:
+   - Use `SearchResult` model consistently
+   - Remove utility functions like `_process_results` and `_display_json_results`
+   - Remove `CustomJSONEncoder` class
+   - Update all engine `search` methods to return properly formatted results
+
+2. Update API function return types:
+   - Change return type to `list[SearchResult]`
+   - Ensure proper handling of results from all engines
+
+## 7. Testing and Documentation
+
+### 7.1. Expand Test Coverage
+
+1. Implement comprehensive tests:
+   - Add unit tests for all `FallaSearchEngine` implementations
+   - Create integration tests for end-to-end functionality
+   - Add tests for error handling and recovery
+
+### 7.2. Enhance Documentation
+
+1. Improve documentation:
+   - Document installation requirements for all engines
+   - Add troubleshooting guidelines
+   - Update CLI help text to include new engines
+   - Add appropriate disclaimers for web scraping
+
+## 8. Final Verification
+
+1. Run verification on all engines:
+   - Test with the problem case command
+   - Verify correct output format
+   - Ensure proper parameter handling
+   - Check for consistent error handling

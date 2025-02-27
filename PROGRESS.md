@@ -91,6 +91,11 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
     - [ ] Create fallback for when Falla is not installed
     - [ ] Document installation requirements
 
+- [ ] Fix remaining implementation issues
+  - [ ] Address linter errors with type annotations
+  - [ ] Fix issues with search returning empty results
+  - [ ] Improve error logging for debugging
+
 ## 2. Fix Critical Engine Failures
 
 - [ ] Improve `get_engine` function and error handling
@@ -122,6 +127,7 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
 
 - [ ] Test and fix other engines with empty results
   - [ ] Identify and address common failure patterns
+  - [ ] Add debugging for Falla engines returning empty results
 
 ## 5. Improve CLI Interface
 

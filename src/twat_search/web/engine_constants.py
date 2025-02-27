@@ -12,7 +12,6 @@ from __future__ import annotations
 DEFAULT_NUM_RESULTS = 5
 
 BING_SCRAPER = "bing_scraper"
-BING_SEARCHIT = "bing_searchit"
 BRAVE = "brave"
 BRAVE_NEWS = "brave_news"
 CRITIQUE = "critique"
@@ -20,12 +19,9 @@ DUCKDUCKGO = "duckduckgo"
 GOOGLE_HASDATA = "google_hasdata"
 GOOGLE_HASDATA_FULL = "google_hasdata_full"
 GOOGLE_SCRAPER = "google_scraper"
-GOOGLE_SEARCHIT = "google_searchit"
 GOOGLE_SERPAPI = "google_serpapi"
 PPLX = "pplx"
-QWANT_SEARCHIT = "qwant_searchit"
 TAVILY = "tavily"
-YANDEX_SEARCHIT = "yandex_searchit"
 YOU = "you"
 YOU_NEWS = "you_news"
 
@@ -46,7 +42,6 @@ YANDEX_FALLA = "yandex_falla"
 # Complete list of all possible engines
 ALL_POSSIBLE_ENGINES = [
     BING_SCRAPER,
-    BING_SEARCHIT,
     BRAVE_NEWS,
     BRAVE,
     CRITIQUE,
@@ -54,12 +49,9 @@ ALL_POSSIBLE_ENGINES = [
     GOOGLE_HASDATA_FULL,
     GOOGLE_HASDATA,
     GOOGLE_SCRAPER,
-    GOOGLE_SEARCHIT,
     GOOGLE_SERPAPI,
     PPLX,
-    QWANT_SEARCHIT,
     TAVILY,
-    YANDEX_SEARCHIT,
     YOU_NEWS,
     YOU,
     # Falla-based engines

@@ -18,7 +18,6 @@ from twat_search.web.engine_constants import (
     ASK_FALLA,
     BING_FALLA,
     BING_SCRAPER,
-    BING_SEARCHIT,
     BRAVE,
     BRAVE_NEWS,
     CRITIQUE,
@@ -31,16 +30,13 @@ from twat_search.web.engine_constants import (
     GOOGLE_HASDATA,
     GOOGLE_HASDATA_FULL,
     GOOGLE_SCRAPER,
-    GOOGLE_SEARCHIT,
     GOOGLE_SERPAPI,
     MOJEEK_FALLA,
     PPLX,
     QWANT_FALLA,
-    QWANT_SEARCHIT,
     TAVILY,
     YAHOO_FALLA,
     YANDEX_FALLA,
-    YANDEX_SEARCHIT,
     YOU,
     YOU_NEWS,
     standardize_engine_name,
@@ -62,7 +58,6 @@ __all__ = [
     "BING_FALLA",
     # Engine name constants
     "BING_SCRAPER",
-    "BING_SEARCHIT",
     "BRAVE",
     "BRAVE_NEWS",
     "CRITIQUE",
@@ -76,16 +71,13 @@ __all__ = [
     "GOOGLE_HASDATA",
     "GOOGLE_HASDATA_FULL",
     "GOOGLE_SCRAPER",
-    "GOOGLE_SEARCHIT",
     "GOOGLE_SERPAPI",
     "MOJEEK_FALLA",
     "PPLX",
     "QWANT_FALLA",
-    "QWANT_SEARCHIT",
     "TAVILY",
     "YAHOO_FALLA",
     "YANDEX_FALLA",
-    "YANDEX_SEARCHIT",
     "YOU",
     "YOU_NEWS",
     "available_engine_functions",
@@ -257,7 +249,6 @@ try:
         available_engine_functions["qwant_falla"] = qwant_falla
         available_engine_functions["yandex_falla"] = yandex_falla
 
-        logger.info("Falla-based search engines registered successfully")
     else:
         logger.warning("Falla search engines are not available")
 
