@@ -1,6 +1,6 @@
-2025-02-26 21:01:12 - 
+2025-02-27 12:04:50 - 
 === PROJECT STATEMENT ===
-2025-02-26 21:01:12 - ---
+2025-02-27 12:04:50 - ---
 description: About this project
 globs: 
 alwaysApply: false
@@ -15,43 +15,46 @@ alwaysApply: false
 - Clear provider protocol for adding new search backends
 - Strong typing and runtime checks throughout
 
-2025-02-26 21:01:12 - Error: _print_header() missing 1 required positional argument: 'message'
-2025-02-26 21:01:14 - 
+2025-02-27 12:04:50 - Error: _print_header() missing 1 required positional argument: 'message'
+2025-02-27 12:04:53 - 
 📦 Repomix v0.2.29
 
 No custom config found at repomix.config.json or global config at /Users/adam/.config/repomix/repomix.config.json.
 You can add a config file for additional settings. Please check https://github.com/yamadashy/repomix for more information.
 ⠙ Collecting files...
-[2K[1A[2K[G⠹ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠸ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠼ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠴ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠦ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠧ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠇ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠏ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠋ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠙ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠹ Collect file... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠸ Collect file... (35/53) tests/unit/web/test_exceptions.py
-[2K[1A[2K[G⠼ Running security check...
-[2K[1A[2K[G⠴ Running security check... (5/53) .github/workflows/release.yml
-[2K[1A[2K[G⠦ Processing files...
-[2K[1A[2K[G⠧ Processing file... (5/52) .github/workflows/release.yml
-[2K[1A[2K[G⠇ Processing file... (20/52) src/twat_search/web/api.py
-[2K[1A[2K[G⠏ Calculating metrics...
-[2K[1A[2K[G⠋ Calculating metrics...
+[2K[1A[2K[G⠹ Collecting files...
+[2K[1A[2K[G⠸ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠼ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠴ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠦ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠧ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠇ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠏ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠋ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠙ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠹ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠸ Collect file... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠼ Collect file... (9/64) resources/brave/brave_video.md
+[2K[1A[2K[G⠴ Collect file... (61/64) pyproject.toml
+[2K[1A[2K[G⠦ Running security check...
+[2K[1A[2K[G⠧ Running security check... (5/64) .github/workflows/release.yml
+[2K[1A[2K[G⠇ Processing files...
+[2K[1A[2K[G⠏ Processing file... (17/63) src/twat_search/web/engines/__init__.py
+[2K[1A[2K[G⠋ Processing file... (50/63) tests/web/test_bing_scraper.py
 [2K[1A[2K[G⠙ Calculating metrics...
-[2K[1A[2K[G⠹ Calculating metrics... (13/52) src/twat_search/web/engines/hasdata.py
+[2K[1A[2K[G⠹ Calculating metrics...
+[2K[1A[2K[G⠸ Calculating metrics...
+[2K[1A[2K[G⠼ Calculating metrics... (7/63) resources/brave/brave_news.md
+[2K[1A[2K[G⠴ Calculating metrics... (24/63) src/twat_search/web/engines/hasdata.py
 [2K[1A[2K[G✔ Packing completed successfully!
 
 📈 Top 5 Files by Character Count and Token Count:
 ──────────────────────────────────────────────────
-1.  TODO.md (45,355 chars, 9,609 tokens)
-2.  NEXTENGINES.md (30,860 chars, 7,971 tokens)
-3.  README.md (20,982 chars, 5,079 tokens)
-4.  src/twat_search/web/cli.py (10,244 chars, 2,194 tokens)
-5.  pyproject.toml (6,021 chars, 2,016 tokens)
+1.  resources/brave/brave.md (66,964 chars, 16,684 tokens)
+2.  resources/you/you_news.md (58,202 chars, 19,062 tokens)
+3.  resources/you/you.md (55,634 chars, 13,005 tokens)
+4.  TODO.md (45,355 chars, 9,609 tokens)
+5.  resources/pplx/pplx.md (32,839 chars, 8,446 tokens)
 
 🔎 Security Check:
 ──────────────────
@@ -64,9 +67,9 @@ Please review these files for potential sensitive information.
 
 📊 Pack Summary:
 ────────────────
-  Total Files: 52 files
-  Total Chars: 202,703 chars
- Total Tokens: 48,570 tokens
+  Total Files: 63 files
+  Total Chars: 512,904 chars
+ Total Tokens: 129,981 tokens
        Output: twat_search.txt
      Security: 1 suspicious file(s) detected and excluded
 
@@ -75,4 +78,4 @@ Your repository has been successfully packed.
 
 💡 Repomix is now available in your browser! Try it at https://repomix.com
 
-2025-02-26 21:01:14 - Repository content mixed into twat_search.txt
+2025-02-27 12:04:53 - Repository content mixed into twat_search.txt

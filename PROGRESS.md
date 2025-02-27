@@ -6,23 +6,88 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
 
 # Task List
 
-## 1. Fix Critical Engine Failures
+## 1. Implement Falla-based Search Engines
 
-- [x] Enhance `base.SearchEngine` class to enforce API key requirements
-  - [x] Modify to require subclasses to define `env_api_key_names` as a class variable
-  - [x] Add proper validation for engine code and API key requirements
-  - [x] Centralize HTTP request handling with retries and error management
+- [ ] Setup and dependencies
+  - [ ] Create new module `src/twat_search/web/engines/falla.py`
+  - [ ] Add necessary dependencies to `pyproject.toml` (selenium, lxml, requests)
+  - [ ] Define engine constants in `src/twat_search/web/engine_constants.py`
+  - [ ] Update `src/twat_search/web/engines/__init__.py` to import and register new engines
+  - [ ] Create utility function to check if Falla is installed and accessible
 
-- [x] Enhance `config.py` for better API key handling
-  - [x] Update `EngineConfig` to validate and require API keys as needed
-  - [x] Improve error messages for missing API keys
-  - [x] Add field validation for API keys
+- [ ] Create base `FallaSearchEngine` class
+  - [ ] Inherit from `SearchEngine`
+  - [ ] Define `FallaResult` Pydantic model for result validation
+  - [ ] Implement abstract `_initialize_falla_engine` method
+  - [ ] Create `_convert_result` method to convert Falla results to `SearchResult` objects
+  - [ ] Implement `search` method with proper error handling and retries
+  - [ ] Create fallback implementation for when Falla is not available
 
-- [x] Update engine implementations correctly
-  - [x] Fix You.com engines (`you` and `you_news`)
-  - [x] Fix Perplexity (`pplx`) implementation
-  - [ ] Fix SerpAPI integration
-  - [ ] Ensure all engines implement proper API key handling
+- [ ] Implement specific Falla-based engines
+  - [ ] `google-falla`: Google search using Falla
+    - [ ] Create `GoogleFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+  - [ ] `bing-falla`: Bing search using Falla
+    - [ ] Create `BingFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+  - [ ] `duckduckgo-falla`: DuckDuckGo search using Falla
+    - [ ] Create `DuckDuckGoFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+  - [ ] `aol-falla`: AOL search using Falla
+    - [ ] Create `AolFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+  - [ ] `ask-falla`: Ask.com search using Falla
+    - [ ] Create `AskFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+  - [ ] `dogpile-falla`: DogPile search using Falla
+    - [ ] Create `DogpileFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+  - [ ] `gibiru-falla`: Gibiru search using Falla
+    - [ ] Create `GibiruFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+  - [ ] `mojeek-falla`: Mojeek search using Falla
+    - [ ] Create `MojeekFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+  - [ ] `qwant-falla`: Qwant search using Falla
+    - [ ] Create `QwantFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+  - [ ] `yahoo-falla`: Yahoo search using Falla
+    - [ ] Create `YahooFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+  - [ ] `yandex-falla`: Yandex search using Falla
+    - [ ] Create `YandexFallaEngine` class
+    - [ ] Implement `_initialize_falla_engine` method
+    - [ ] Register with `@register_engine` decorator
+
+- [ ] Implement robust error handling
+  - [ ] Handle network errors gracefully
+  - [ ] Detect and handle captchas
+  - [ ] Implement rate limiting protection
+  - [ ] Add fallback mechanisms for failed engines
+  - [ ] Handle case when Falla is not available
+
+- [ ] Implement Falla integration approach
+  - [ ] Decide on integration approach (embedded vs. dependency)
+  - [ ] If embedded:
+    - [ ] Create simplified implementation of Falla core functionality
+    - [ ] Implement key scraping methods
+    - [ ] Ensure proper attribution and licensing
+  - [ ] If dependency:
+    - [ ] Add Falla as optional dependency in pyproject.toml
+    - [ ] Create fallback for when Falla is not installed
+    - [ ] Document installation requirements
+
+## 2. Fix Critical Engine Failures
 
 - [ ] Improve `get_engine` function and error handling
   - [ ] Add descriptive error messages when engines are not found or disabled
@@ -33,27 +98,13 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
   - [ ] Test engine availability detection
   - [ ] Test disabled engine handling
 
-## 2. Fix Data Integrity and Consistency Issues
-
-- [!] Fix inconsistent `num_results` parameter handling
-  - [x] Implement `_get_num_results` method in base class
-  - [!] Implement proper result limiting in working engines (currently `-n 1` returns multiple results)
-  - [!] Fix broken engines failing with "`object has no attribute 'get_num_results'`" error
-    - [!] Fix `brave` engine implementation
-    - [!] Fix `brave_news` engine implementation
-    - [ ] Fix `critique` engine implementation
-  - [ ] Ensure all engines properly handle and respect `num_results`
-  - [ ] Add result limiting logic to all engine implementations
+## 3. Fix Data Integrity and Consistency Issues
 
 - [ ] Fix source attribution in search results
   - [ ] Ensure all engines use `self.engine_code` when creating `SearchResult` objects
   - [ ] Fix typos in result keys (e.g., `"snippetHighlitedWords"`)
 
-- [!] Fix unwanted result combination in Google engines
-  - [!] Fix `google_hasdata` engine returning results from other engines
-  - [!] Fix `google_hasdata_full` engine returning results from other engines
-
-## 3. Address Engine Reliability Issues (Empty Results)
+## 4. Address Empty Results
 
 - [!] Fix `searchit`-based engines
   - [!] Fix `bing_searchit` returning empty results
@@ -65,31 +116,12 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
   - [ ] Add detailed logging for debugging
   - [ ] Fix implementation issues or remove if necessary
 
-- [!] Fix API key-based engines with initialization failures
-  - [!] Fix `pplx` engine initialization
-  - [!] Fix `you` engine initialization 
-  - [!] Fix `you_news` engine initialization
-  - [ ] Debug initialization failures and API key handling
-
 - [ ] Test and fix other engines with empty results
   - [ ] Identify and address common failure patterns
-
-## 4. Codebase Cleanup
-
-- [ ] Remove all `anywebsearch` engines
-  - [ ] Delete `src/twat_search/web/engines/anywebsearch.py`
-  - [ ] Remove related imports from all files
-  - [ ] Update engine constants and registration
-
-- [x] Fix code duplication in `base.SearchEngine`
-  - [x] Centralize common functionality
-  - [x] Improve error handling consistency
 
 ## 5. Improve CLI Interface
 
 - [ ] Update the `q` command in the CLI
-  - [ ] Remove engine-specific parameters
-  - [ ] Only use common parameters
   - [ ] Test CLI with various parameter combinations
 
 ## 6. Enforce Consistent JSON Output Format
@@ -129,7 +161,32 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
   - [ ] Add troubleshooting guidelines
   - [ ] Document parameter handling
 
-## 8. Final Verification
+## 8. Tests
+
+- [ ] Create comprehensive tests
+  - [ ] Create unit tests for base `FallaSearchEngine` class
+    - [ ] Test initialization
+    - [ ] Test result conversion
+    - [ ] Test error handling
+  - [ ] Create unit tests for each Falla-based engine
+    - [ ] Test initialization
+    - [ ] Test search functionality with mocked responses
+    - [ ] Test error handling
+  - [ ] Create integration tests with limited scope
+    - [ ] Test actual search functionality (skipped if Falla not available)
+    - [ ] Test result formatting
+  - [ ] Create test utility to verify all engines
+    - [ ] Test all engines with a simple query
+    - [ ] Verify results format
+
+- [ ] Documentation and examples
+  - [ ] Document installation requirements for Falla engines
+  - [ ] Add usage examples to README
+  - [ ] Document limitations and considerations
+  - [ ] Add appropriate disclaimers regarding web scraping
+  - [ ] Update CLI help text to include new engines
+
+## 9. Final Verification
 
 - [ ] Run test command on all engines
   - [ ] Verify correct output format
