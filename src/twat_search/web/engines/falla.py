@@ -11,7 +11,8 @@ Falla library for scraping search engine results.
 """
 
 import logging
-from urllib.parse import urlparse
+
+from pydantic import HttpUrl
 
 from twat_search.web.engines.base import SearchEngine
 from twat_search.web.engines.lib_falla.core import (
@@ -105,13 +106,13 @@ class FallaSearchEngine(SearchEngine):
         # Falla engines require a name parameter
         return self._falla_engine_class(name=self.engine_code)
 
-    async def search(self, query: str, **kwargs) -> list[SearchResult]:
+    async def search(self, query: str, **_kwargs) -> list[SearchResult]:
         """
         Perform a search using the Falla engine.
 
         Args:
             query: Search query
-            **kwargs: Additional search parameters
+            **_kwargs: Additional search parameters (ignored for Falla engines)
 
         Returns:
             list[SearchResult]: List of search results
@@ -131,22 +132,27 @@ class FallaSearchEngine(SearchEngine):
                 if not url:
                     continue
 
-                # Create search result object
-                result = SearchResult(
-                    title=item.get("title", ""),
-                    url=url,
-                    snippet=item.get("snippet", ""),
-                    source=self.engine_code,
-                    rank=i + 1,
-                    raw=item,
-                )
-                results.append(result)
+                try:
+                    # Create search result object - Pydantic will validate the URL
+                    result = SearchResult(
+                        title=item.get("title", ""),
+                        url=HttpUrl(url),  # Convert to HttpUrl type
+                        snippet=item.get("snippet", ""),
+                        source=self.engine_code,
+                        rank=i + 1,
+                        raw=item,
+                    )
+                    results.append(result)
+                except ValueError as url_err:
+                    # Log invalid URL but continue processing other results
+                    logger.warning(f"Invalid URL '{url}' in {self.engine_code} result: {url_err}")
+                    continue
 
             return self.limit_results(results)
         except Exception as e:
             logger.error(f"Search failed: {e!s}")
             msg = f"Search failed: {e!s}"
-            raise EngineError(self.engine_code, msg)
+            raise EngineError(self.engine_code, msg) from e
 
 
 # Define engine classes for specific Falla engines
