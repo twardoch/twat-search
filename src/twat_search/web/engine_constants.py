@@ -29,6 +29,19 @@ YANDEX_SEARCHIT = "yandex_searchit"
 YOU = "you"
 YOU_NEWS = "you_news"
 
+# Falla-based engines
+GOOGLE_FALLA = "google_falla"
+BING_FALLA = "bing_falla"
+DUCKDUCKGO_FALLA = "duckduckgo_falla"
+AOL_FALLA = "aol_falla"
+ASK_FALLA = "ask_falla"
+DOGPILE_FALLA = "dogpile_falla"
+GIBIRU_FALLA = "gibiru_falla"
+MOJEEK_FALLA = "mojeek_falla"
+QWANT_FALLA = "qwant_falla"
+YAHOO_FALLA = "yahoo_falla"
+YANDEX_FALLA = "yandex_falla"
+
 
 # Complete list of all possible engines
 ALL_POSSIBLE_ENGINES = [
@@ -49,12 +62,23 @@ ALL_POSSIBLE_ENGINES = [
     YANDEX_SEARCHIT,
     YOU_NEWS,
     YOU,
+    # Falla-based engines
+    GOOGLE_FALLA,
+    BING_FALLA,
+    DUCKDUCKGO_FALLA,
+    AOL_FALLA,
+    ASK_FALLA,
+    DOGPILE_FALLA,
+    GIBIRU_FALLA,
+    MOJEEK_FALLA,
+    QWANT_FALLA,
+    YAHOO_FALLA,
+    YANDEX_FALLA,
 ]
 
 # Dictionary of friendly names for engines
 ENGINE_FRIENDLY_NAMES = {
     BING_SCRAPER: "Bing scaper",
-    BING_SEARCHIT: "Bing via searchit",
     BRAVE_NEWS: "Brave News with API key",
     BRAVE: "Brave with API key",
     CRITIQUE: "Critique Labs with API key",
@@ -62,14 +86,23 @@ ENGINE_FRIENDLY_NAMES = {
     GOOGLE_HASDATA_FULL: "Full Google scraper via HasData with API key",
     GOOGLE_HASDATA: "Light Google scraper via HasData with API key",
     GOOGLE_SCRAPER: "Google scraper",
-    GOOGLE_SEARCHIT: "Google via searchit",
     GOOGLE_SERPAPI: "Google via SerpAPI with API key",
     PPLX: "Perplexity with API key",
-    QWANT_SEARCHIT: "Qwant via searchit",
     TAVILY: "Tavily with API key",
-    YANDEX_SEARCHIT: "Yandex via searchit",
     YOU_NEWS: "You.com News with API key",
     YOU: "You.com with API key",
+    # Falla-based engines
+    GOOGLE_FALLA: "Google (Falla)",
+    BING_FALLA: "Bing (Falla)",
+    DUCKDUCKGO_FALLA: "DuckDuckGo (Falla)",
+    AOL_FALLA: "AOL (Falla)",
+    ASK_FALLA: "Ask.com (Falla)",
+    DOGPILE_FALLA: "DogPile (Falla)",
+    GIBIRU_FALLA: "Gibiru (Falla)",
+    MOJEEK_FALLA: "Mojeek (Falla)",
+    QWANT_FALLA: "Qwant (Falla)",
+    YAHOO_FALLA: "Yahoo (Falla)",
+    YANDEX_FALLA: "Yandex (Falla)",
 }
 
 

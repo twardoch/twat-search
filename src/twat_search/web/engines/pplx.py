@@ -11,7 +11,6 @@ import logging
 import os
 from typing import Any, ClassVar
 
-import httpx
 from pydantic import BaseModel, Field, ValidationError
 from pydantic.networks import HttpUrl
 

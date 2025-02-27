@@ -254,13 +254,13 @@ class Cleanup:
             log_message(f"Failed to push changes: {e}")
 
 
-def _generate_tree(self) -> None:
+def _generate_tree() -> None:
     """Generate and display tree structure of the project."""
     if not check_command_exists("tree"):
         log_message(
             "Warning: 'tree' command not found. Skipping tree generation.",
         )
-        return None
+        return
 
     try:
         # Create/overwrite the file with YAML frontmatter
@@ -282,16 +282,16 @@ def _generate_tree(self) -> None:
 
     except Exception as e:
         log_message(f"Failed to generate tree: {e}")
-    return None
+    return
 
 
-def _git_status(self) -> bool:
+def _git_status() -> bool:
     """Check git status and return True if there are changes."""
     result = run_command(["git", "status", "--porcelain"], check=False)
     return bool(result.stdout.strip())
 
 
-def _run_checks(self) -> None:
+def _run_checks() -> None:
     """Run code quality checks using ruff and pytest."""
     log_message("Running code quality checks")
 
@@ -337,7 +337,7 @@ def _run_checks(self) -> None:
         log_message(f"Failed during checks: {e}")
 
 
-def _print_header(self, message: str) -> None:
+def _print_header(message: str) -> None:
     """Print a section header."""
     log_message(f"\n=== {message} ===")
 
@@ -397,23 +397,19 @@ def main() -> None:
     command = sys.argv[1]
     cleanup = Cleanup()
 
-    try:
-        if command == "status":
-            cleanup.status()
-        elif command == "venv":
-            cleanup.venv()
-        elif command == "install":
-            cleanup.install()
-        elif command == "update":
-            cleanup.update()
-        elif command == "push":
-            cleanup.push()
-        else:
-            print_usage()
-    except Exception as e:
-        log_message(f"Error: {e}")
+    if command == "status":
+        cleanup.status()
+    elif command == "venv":
+        cleanup.venv()
+    elif command == "install":
+        cleanup.install()
+    elif command == "update":
+        cleanup.update()
+    elif command == "push":
+        cleanup.push()
+    else:
+        print_usage()
     repomix()
-    print(LOG_FILE.read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":

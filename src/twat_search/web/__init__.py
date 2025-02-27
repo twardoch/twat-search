@@ -41,12 +41,6 @@ try:
 except ImportError:
     pass
 
-try:
-    from twat_search.web.engines import serpapi
-
-    __all__.extend(["serpapi"])
-except ImportError:
-    pass
 
 try:
     from twat_search.web.engines import tavily
@@ -80,5 +74,12 @@ try:
     from twat_search.web.engines import bing_scraper
 
     __all__.extend(["bing_scraper"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines import serpapi
+
+    __all__.extend(["serpapi"])
 except ImportError:
     pass

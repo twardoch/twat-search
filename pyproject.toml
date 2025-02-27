@@ -1,8 +1,5 @@
 [build-system]
-requires = [
-    'hatchling>=1.27.0',
-    'hatch-vcs>=0.4.0',
-]
+requires = ['hatchling>=1.27.0', 'hatch-vcs>=0.4.0']
 build-backend = 'hatchling.build'
 [tool.hatch.build.targets.wheel]
 packages = ['src/twat_search']
@@ -14,15 +11,19 @@ source = 'vcs'
 
 [tool.hatch.version.raw-options]
 version_scheme = 'post-release'
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.hatch.envs.default]
 dependencies = [
-    'pytest',
-    'pytest-cov',
+    'pytest>=1.3.4',
+    'pytest-cov>=1.0.0',
     'mypy>=1.15.0',
-    'ruff>=0.9.6',
+    'ruff>=0.9.7',
     'absolufy-imports>=0.3.1',
     'pre-commit>=4.1.0',
-    'pyupgrade>=3',
+    'pyupgrade>=3.19.1',
     'isort>=6.0.0',
 ]
 
@@ -30,42 +31,26 @@ dependencies = [
 test = 'pytest {args:tests}'
 test-cov = 'pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/twat_search --cov=tests {args:tests}'
 type-check = 'mypy src/twat_search tests'
-lint = [
-    'ruff check src/twat_search tests',
-    'ruff format src/twat_search tests',
-]
+lint = ['ruff check src/twat_search tests', 'ruff format src/twat_search tests']
 [[tool.hatch.envs.all.matrix]]
-python = [
-    '3.10',
-    '3.11',
-    '3.12',
-]
+python = ['3.10', '3.11', '3.12']
 
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
     'mypy>=1.15.0',
-    'ruff>=0.9.6',
+    'ruff>=0.9.7',
     'absolufy-imports>=0.3.1',
     'pre-commit>=4.1.0',
-    'pyupgrade>=3',
-    'isort>=6.0.0',
+    'pyupgrade>=3.19.1',
+    'isort>=6.0.1',
 ]
 
 [tool.hatch.envs.lint.scripts]
 typing = 'mypy --install-types --non-interactive {args:src/twat_search tests}'
-style = [
-    'ruff check {args:.}',
-    'ruff format {args:.}',
-]
-fmt = [
-    'ruff format {args:.}',
-    'ruff check --fix {args:.}',
-]
-all = [
-    'style',
-    'typing',
-]
+style = ['ruff check {args:.}', 'ruff format {args:.}']
+fmt = ['ruff format {args:.}', 'ruff check --fix {args:.}']
+all = ['style', 'typing']
 
 [tool.hatch.envs.test]
 dependencies = ['.[test]']
@@ -99,126 +84,86 @@ select = [
     'PLE',
     'PLR',
     'PLW',
-    'Q',
+    'PT',
+    'PTH',
+    'PYI',
+    'RET',
+    'RSE',
     'RUF',
     'S',
+    'SIM',
     'T',
+    'TCH',
     'TID',
     'UP',
     'W',
     'YTT',
 ]
 ignore = [
-    'ARG001',
-    'ARG002',
-    'ARG004',
-    'ARG005',
-    'B904',
+    'B027',
     'C901',
-    'DTZ005',
-    'E501',
-    'F401',
-    'F811',
-    'FBT001',
-    'FBT002',
     'FBT003',
-    'I001',
-    'ISC001',
-    'N803',
     'PLR0911',
     'PLR0912',
     'PLR0913',
     'PLR0915',
-    'PLR2004',
-    'S311',
-    'S603',
-    'S607',
-    'T201',
+    'PLR1714',
+    'PLW0603',
+    'PT013',
+    'PTH123',
+    'PYI056',
+    'S105',
+    'S106',
+    'S107',
+    'S110','SIM102'
 ]
+unfixable = [
+    # Don't touch unused imports
+    'F401',
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ['twat_search']
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = 'all'
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ['S101']
+# Tests can use magic values, assertions, and relative imports
+'tests/**/*' = ['PLR2004', 'S101', 'TID252']
 
-[tool.mypy]
-python_version = '3.10'
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
 [tool.coverage.run]
-source_pkgs = [
-    'twat_search',
-    'tests',
-]
+source_pkgs = ['twat_search', 'tests']
 branch = true
 parallel = true
 omit = ['src/twat_search/__about__.py']
 
 [tool.coverage.paths]
-twat_search = [
-    'src/twat_search',
-    '*/twat-search/src/twat_search',
-]
-tests = [
-    'tests',
-    '*/twat-search/tests',
-]
+twat_search = ['src/twat_search', '*/twat-search/src/twat_search']
+tests = ['tests', '*/twat-search/tests']
 
 [tool.coverage.report]
 exclude_lines = [
     'no cov',
     'if __name__ == .__main__.:',
     'if TYPE_CHECKING:',
-]
-[tool.pytest.ini_options]
-markers = ['''benchmark: marks tests as benchmarks (select with '-m benchmark')''']
-addopts = '-v -p no:briefcase'
-testpaths = ['tests']
-python_files = ['test_*.py']
-filterwarnings = [
-    'ignore::DeprecationWarning',
-    'ignore::UserWarning',
-]
-asyncio_mode = 'auto'
-
-[tool.pytest-benchmark]
-min_rounds = 100
-min_time = 0.1
-histogram = true
-storage = 'file'
-save-data = true
-compare = [
-    'min',
-    'max',
-    'mean',
-    'stddev',
-    'median',
-    'iqr',
-    'ops',
-    'rounds',
+    'pass',
+    'raise NotImplementedError',
+    'raise ImportError',
+    'except ImportError',
+    'except KeyError',
+    'except AttributeError',
+    'except NotImplementedError',
 ]
 
 [project]
 name = 'twat-search'
-dynamic = ['version']
-description = 'Advanced search utilities and tools for the twat ecosystem'
+description = 'Web search plugin for twat'
 readme = 'README.md'
 requires-python = '>=3.10'
-license = 'MIT'
-keywords = [
-    'twat',
-    'search',
-    'utilities',
-    'text-search',
-    'indexing',
-]
+license = { text = 'MIT' }
+keywords = []
+dynamic = ["version"]
 classifiers = [
     'Development Status :: 4 - Beta',
     'Programming Language :: Python',
@@ -231,12 +176,15 @@ classifiers = [
 dependencies = [
     'twat>=1.8.1',
     'pydantic>=2.10.6',
-    'pydantic-settings>=2.8.0',
+    'pydantic-settings>=2.8.1',
     'httpx>=0.28.1',
     'python-dotenv>=1.0.1',
-    'fire>=0.5.0',
-    'rich>=13.6.0',
-    'requests>=2.31.0',
+    'fire>=0.7.0',
+    'rich>=13.9.4',
+    'requests>=2.32.3',
+    'beautifulsoup4>=4.13.0',
+    'selenium>=4.29.0',
+    'lxml>=5.3.0',
 ]
 
 [[project.authors]]
@@ -260,30 +208,30 @@ test = [
 ]
 dev = [
     'pre-commit>=4.1.0',
-    'ruff>=0.9.6',
+    'ruff>=0.9.7',
     'mypy>=1.15.0',
     'absolufy-imports>=0.3.1',
-    'pyupgrade>=3',
-    'isort>=6.0.0',
+    'pyupgrade>=3.19.1',
+    'isort>=6.0.1',
 ]
 brave = []
 duckduckgo = ['duckduckgo-search>=7.5.0']
 bing_scraper = ['scrape-bing>=0.1.2.1']
-tavily = ['tavily-python>=0.5.0']
+tavily = ['tavily-python>=0.5.1']
 pplx = []
 serpapi = ['serpapi>=0.1.5']
 hasdata = []
 google_scraper = ['googlesearch-python>=1.3.0']
-searchit = ['searchit']
 all = [
     'twat',
     'duckduckgo-search>=7.5.0',
     'scrape-bing>=0.1.2.1',
-    'tavily-python>=0.5.0',
+    'tavily-python>=0.5.1',
     'serpapi>=0.1.5',
     'googlesearch-python>=1.3.0',
-    'searchit',
-    'requests>=2.31.0',
+    'beautifulsoup4>=4.13.0',
+    'selenium>=4.29.0',
+    'lxml>=5.3.0',
 ]
 
 [project.scripts]

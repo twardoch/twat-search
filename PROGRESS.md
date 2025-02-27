@@ -8,80 +8,84 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
 
 ## 1. Implement Falla-based Search Engines
 
-- [ ] Setup and dependencies
-  - [ ] Create new module `src/twat_search/web/engines/falla.py`
-  - [ ] Add necessary dependencies to `pyproject.toml` (selenium, lxml, requests)
-  - [ ] Define engine constants in `src/twat_search/web/engine_constants.py`
-  - [ ] Update `src/twat_search/web/engines/__init__.py` to import and register new engines
-  - [ ] Create utility function to check if Falla is installed and accessible
+- [x] Setup and dependencies
+  - [x] Create new module `src/twat_search/web/engines/falla.py`
+  - [x] Add necessary dependencies to `pyproject.toml` (selenium, lxml, requests)
+  - [x] Define engine constants in `src/twat_search/web/engine_constants.py`
+  - [x] Update `src/twat_search/web/engines/__init__.py` to import and register new engines
+  - [x] Create utility function to check if Falla is installed and accessible
 
-- [ ] Create base `FallaSearchEngine` class
-  - [ ] Inherit from `SearchEngine`
-  - [ ] Define `FallaResult` Pydantic model for result validation
-  - [ ] Implement abstract `_initialize_falla_engine` method
-  - [ ] Create `_convert_result` method to convert Falla results to `SearchResult` objects
-  - [ ] Implement `search` method with proper error handling and retries
-  - [ ] Create fallback implementation for when Falla is not available
+- [x] Create base `FallaSearchEngine` class
+  - [x] Inherit from `SearchEngine`
+  - [x] Define `FallaResult` Pydantic model for result validation
+  - [x] Implement abstract `_initialize_falla_engine` method
+  - [x] Create `_convert_result` method to convert Falla results to `SearchResult` objects
+  - [x] Implement `search` method with proper error handling and retries
+  - [x] Create fallback implementation for when Falla is not available
 
-- [ ] Implement specific Falla-based engines
-  - [ ] `google-falla`: Google search using Falla
-    - [ ] Create `GoogleFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
-  - [ ] `bing-falla`: Bing search using Falla
-    - [ ] Create `BingFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
-  - [ ] `duckduckgo-falla`: DuckDuckGo search using Falla
-    - [ ] Create `DuckDuckGoFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
-  - [ ] `aol-falla`: AOL search using Falla
-    - [ ] Create `AolFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
-  - [ ] `ask-falla`: Ask.com search using Falla
-    - [ ] Create `AskFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
-  - [ ] `dogpile-falla`: DogPile search using Falla
-    - [ ] Create `DogpileFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
-  - [ ] `gibiru-falla`: Gibiru search using Falla
-    - [ ] Create `GibiruFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
-  - [ ] `mojeek-falla`: Mojeek search using Falla
-    - [ ] Create `MojeekFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
-  - [ ] `qwant-falla`: Qwant search using Falla
-    - [ ] Create `QwantFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
-  - [ ] `yahoo-falla`: Yahoo search using Falla
-    - [ ] Create `YahooFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
-  - [ ] `yandex-falla`: Yandex search using Falla
-    - [ ] Create `YandexFallaEngine` class
-    - [ ] Implement `_initialize_falla_engine` method
-    - [ ] Register with `@register_engine` decorator
+- [x] Implement specific Falla-based engines
+  - [x] `google-falla`: Google search using Falla
+    - [x] Create `GoogleFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `bing-falla`: Bing search using Falla
+    - [x] Create `BingFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `duckduckgo-falla`: DuckDuckGo search using Falla
+    - [x] Create `DuckDuckGoFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `aol-falla`: AOL search using Falla
+    - [x] Create `AolFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `ask-falla`: Ask.com search using Falla
+    - [x] Create `AskFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `dogpile-falla`: DogPile search using Falla
+    - [x] Create `DogpileFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `gibiru-falla`: Gibiru search using Falla
+    - [x] Create `GibiruFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `mojeek-falla`: Mojeek search using Falla
+    - [x] Create `MojeekFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `qwant-falla`: Qwant search using Falla
+    - [x] Create `QwantFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `yahoo-falla`: Yahoo search using Falla
+    - [x] Create `YahooFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `yandex-falla`: Yandex search using Falla
+    - [x] Create `YandexFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
 
-- [ ] Implement robust error handling
-  - [ ] Handle network errors gracefully
-  - [ ] Detect and handle captchas
-  - [ ] Implement rate limiting protection
-  - [ ] Add fallback mechanisms for failed engines
-  - [ ] Handle case when Falla is not available
+- [x] Implement robust error handling
+  - [x] Handle network errors gracefully
+  - [x] Detect and handle captchas
+  - [x] Implement rate limiting protection
+  - [x] Add fallback mechanisms for failed engines
+  - [x] Handle case when Falla is not available
 
-- [ ] Implement Falla integration approach
-  - [ ] Decide on integration approach (embedded vs. dependency)
+- [x] Implement Falla integration approach
+  - [x] Decide on integration approach (embedded vs. dependency)
   - [ ] If embedded:
-    - [ ] Create simplified implementation of Falla core functionality
-    - [ ] Implement key scraping methods
-    - [ ] Ensure proper attribution and licensing
+    - [x] Create `lib_falla` directory to contain the Falla code
+    - [x] Adapt the Falla code to work within our project structure
+    - [x] Update import paths to use the embedded code
+    - [x] Fix compatibility issues
+    - [x] Ensure proper attribution and licensing
+    - [x] Update the `FallaSearchEngine` class to use the embedded Falla code
+    - [x] Create fallback mechanism for when certain dependencies are not available
   - [ ] If dependency:
     - [ ] Add Falla as optional dependency in pyproject.toml
     - [ ] Create fallback for when Falla is not installed

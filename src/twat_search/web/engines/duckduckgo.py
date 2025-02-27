@@ -121,15 +121,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
             timelimit = time_mapping.get(timelimit.lower(), timelimit)
         safesearch = kwargs.get("safesearch", safe_search)
         if isinstance(safesearch, str):
-            safesearch = (
-                False
-                if safesearch.lower()
-                in [
-                    "off",
-                    "false",
-                ]
-                else True
-            )
+            safesearch = safesearch.lower() not in ["off", "false"]
         proxy = kwargs.get("proxy") or config.default_params.get("proxy", None)
         timeout = kwargs.get(
             "timeout",

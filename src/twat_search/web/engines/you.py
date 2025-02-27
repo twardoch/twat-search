@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from typing import Any, ClassVar
 
-import httpx
 from pydantic import BaseModel, Field, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig

@@ -13,13 +13,15 @@ import asyncio
 import logging
 import os
 import random
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import httpx
 
-from twat_search.web.config import EngineConfig
-from twat_search.web.exceptions import EngineError, SearchError
-from twat_search.web.models import SearchResult
+from twat_search.web.exceptions import EngineError
+
+if TYPE_CHECKING:
+    from twat_search.web.config import EngineConfig
+    from twat_search.web.models import SearchResult
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -69,10 +71,10 @@ class SearchEngine(abc.ABC):
 
         # Common parameters with default values
         self.num_results = kwargs.get("num_results", 5)
-        self.country = kwargs.get("country", None)
-        self.language = kwargs.get("language", None)
+        self.country = kwargs.get("country")
+        self.language = kwargs.get("language")
         self.safe_search = kwargs.get("safe_search", True)
-        self.time_frame = kwargs.get("time_frame", None)
+        self.time_frame = kwargs.get("time_frame")
 
         # Settings for robust HTTP requests - can be overridden in kwargs
         self.timeout = kwargs.get("timeout", 10)

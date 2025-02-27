@@ -125,12 +125,12 @@ class SearchCLI:
                 engines = ["duckduckgo", "google_hasdata"]
                 self.logger.info(f"Using 'free' engines: {', '.join(engines)}")
                 return engines
-            elif engines_arg.strip().lower() == "best":
+            if engines_arg.strip().lower() == "best":
                 # 3 recommended engines (placeholder for user to edit)
                 engines = ["brave", "duckduckgo", "google_serpapi"]
                 self.logger.info(f"Using 'best' engines: {', '.join(engines)}")
                 return engines
-            elif engines_arg.strip().lower() == "all":
+            if engines_arg.strip().lower() == "all":
                 # Get all available engines programmatically
                 engines = get_available_engines()
                 self.logger.info(
@@ -249,9 +249,8 @@ class SearchCLI:
             if json:
                 _display_json_results(processed_results)
                 return []
-            else:
-                _display_results(processed_results, verbose, plain)
-                return processed_results
+            _display_results(processed_results, verbose, plain)
+            return processed_results
         except Exception as e:
             self.logger.error(f"{friendly} search failed: {e}")
             if not plain:
@@ -329,7 +328,7 @@ class SearchCLI:
 
         # Check if engine_list is empty but engines was specified (not None)
         # This would happen if all specified engines are invalid
-        if not engine_list and engines is not None and engines != "best" and engines != "free" and engines != "all":
+        if not engine_list and engines is not None and engines not in ("best", "free", "all"):
             error_msg = f"No valid engines found for: {engines}"
             self.logger.error(error_msg)
             _display_errors([error_msg])
@@ -372,13 +371,12 @@ class SearchCLI:
         if json:
             _display_json_results(results)
             return []
-        else:
-            _display_results(results, verbose, plain)
-            # Only return the actual results if verbose mode is enabled
-            # This prevents the CLI from printing the raw results
-            if verbose:
-                return results
-            return []
+        _display_results(results, verbose, plain)
+        # Only return the actual results if verbose mode is enabled
+        # This prevents the CLI from printing the raw results
+        if verbose:
+            return results
+        return []
 
     def info(
         self,
@@ -576,7 +574,6 @@ class SearchCLI:
                     registered_engines,
                 )
         # Print JSON output using the CustomJSONEncoder defined at the top of the file
-        print(json_lib.dumps(result, indent=2, cls=CustomJSONEncoder))
 
     async def critique(
         self,
@@ -1352,7 +1349,7 @@ def _display_json_results(processed_results: list[dict[str, Any]]) -> None:
         )
 
     # Print the JSON output using the CustomJSONEncoder defined at the top of the file
-    print(json_lib.dumps(results_by_engine, indent=2, cls=CustomJSONEncoder))
+    console.print(json_lib.dumps(results_by_engine, indent=2, cls=CustomJSONEncoder))
 
 
 def main() -> None:

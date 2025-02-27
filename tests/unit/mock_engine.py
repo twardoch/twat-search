@@ -9,13 +9,15 @@ in tests without making actual API calls.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import HttpUrl
 
-from twat_search.web.config import EngineConfig
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.models import SearchResult
+
+if TYPE_CHECKING:
+    from twat_search.web.config import EngineConfig
 
 
 class MockSearchEngine(SearchEngine):

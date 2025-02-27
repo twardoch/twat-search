@@ -8,34 +8,48 @@ that can be used with the API.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Coroutine
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from loguru import logger
 
 from twat_search.web.engine_constants import (
     ALL_POSSIBLE_ENGINES,
+    AOL_FALLA,
+    ASK_FALLA,
+    BING_FALLA,
     BING_SCRAPER,
     BING_SEARCHIT,
     BRAVE,
     BRAVE_NEWS,
     CRITIQUE,
+    DOGPILE_FALLA,
     DUCKDUCKGO,
+    DUCKDUCKGO_FALLA,
     ENGINE_FRIENDLY_NAMES,
+    GIBIRU_FALLA,
+    GOOGLE_FALLA,
     GOOGLE_HASDATA,
     GOOGLE_HASDATA_FULL,
     GOOGLE_SCRAPER,
     GOOGLE_SEARCHIT,
     GOOGLE_SERPAPI,
+    MOJEEK_FALLA,
     PPLX,
+    QWANT_FALLA,
     QWANT_SEARCHIT,
     TAVILY,
+    YAHOO_FALLA,
+    YANDEX_FALLA,
     YANDEX_SEARCHIT,
     YOU,
     YOU_NEWS,
     standardize_engine_name,
 )
-from twat_search.web.models import SearchResult
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Coroutine
+
+    from twat_search.web.models import SearchResult
 
 # Import engine constants from the dedicated module
 
@@ -43,22 +57,34 @@ from twat_search.web.models import SearchResult
 __all__ = [
     # Helper functions
     "ALL_POSSIBLE_ENGINES",
+    "AOL_FALLA",
+    "ASK_FALLA",
+    "BING_FALLA",
     # Engine name constants
     "BING_SCRAPER",
     "BING_SEARCHIT",
     "BRAVE",
     "BRAVE_NEWS",
     "CRITIQUE",
+    "DOGPILE_FALLA",
     "DUCKDUCKGO",
+    "DUCKDUCKGO_FALLA",
     "ENGINE_FRIENDLY_NAMES",
+    "GIBIRU_FALLA",
+    # Falla-based engines
+    "GOOGLE_FALLA",
     "GOOGLE_HASDATA",
     "GOOGLE_HASDATA_FULL",
     "GOOGLE_SCRAPER",
     "GOOGLE_SEARCHIT",
     "GOOGLE_SERPAPI",
+    "MOJEEK_FALLA",
     "PPLX",
+    "QWANT_FALLA",
     "QWANT_SEARCHIT",
     "TAVILY",
+    "YAHOO_FALLA",
+    "YANDEX_FALLA",
     "YANDEX_SEARCHIT",
     "YOU",
     "YOU_NEWS",
@@ -94,14 +120,6 @@ try:
 except ImportError:
     pass
 
-# Try to import SerpAPI engine
-try:
-    from twat_search.web.engines.serpapi import SerpApiSearchEngine, google_serpapi
-
-    available_engine_functions["google_serpapi"] = google_serpapi
-    __all__.extend(["SerpApiSearchEngine", "google_serpapi"])
-except (ImportError, AttributeError):
-    pass
 
 try:
     from twat_search.web.engines.tavily import TavilySearchEngine, tavily
@@ -186,37 +204,55 @@ try:
 except (ImportError, SyntaxError) as e:
     logger.warning(f"Failed to import google_scraper module: {e}")
 
-# Import Searchit engines
+# Try to import SerpAPI engine
 try:
-    from twat_search.web.engines.searchit import (
-        BingSearchitEngine,
-        GoogleSearchitEngine,
-        QwantSearchitEngine,
-        YandexSearchitEngine,
-        bing_searchit,
-        google_searchit,
-        qwant_searchit,
-        yandex_searchit,
+    from twat_search.web.engines.serpapi import SerpApiSearchEngine, google_serpapi
+
+    available_engine_functions["google_serpapi"] = google_serpapi
+    __all__.extend(["SerpApiSearchEngine", "google_serpapi"])
+except (ImportError, AttributeError):
+    pass
+
+
+# Import Falla-based engines
+try:
+    from twat_search.web.engines.falla import (
+        AolFallaEngine,
+        AskFallaEngine,
+        BingFallaEngine,
+        DogpileFallaEngine,
+        DuckDuckGoFallaEngine,
+        FallaSearchEngine,
+        GibiruFallaEngine,
+        GoogleFallaEngine,
+        MojeekFallaEngine,
+        QwantFallaEngine,
+        YahooFallaEngine,
+        YandexFallaEngine,
+        is_falla_available,
     )
 
-    available_engine_functions["bing_searchit"] = bing_searchit
-    available_engine_functions["google_searchit"] = google_searchit
-    available_engine_functions["qwant_searchit"] = qwant_searchit
-    available_engine_functions["yandex_searchit"] = yandex_searchit
+    # Register engine functions
+    # These will be implemented later as needed
     __all__.extend(
         [
-            "BingSearchitEngine",
-            "GoogleSearchitEngine",
-            "QwantSearchitEngine",
-            "YandexSearchitEngine",
-            "bing_searchit",
-            "google_searchit",
-            "qwant_searchit",
-            "yandex_searchit",
+            "AolFallaEngine",
+            "AskFallaEngine",
+            "BingFallaEngine",
+            "DogpileFallaEngine",
+            "DuckDuckGoFallaEngine",
+            "FallaSearchEngine",
+            "GibiruFallaEngine",
+            "GoogleFallaEngine",
+            "MojeekFallaEngine",
+            "QwantFallaEngine",
+            "YahooFallaEngine",
+            "YandexFallaEngine",
+            "is_falla_available",
         ],
     )
 except (ImportError, SyntaxError) as e:
-    logger.warning(f"Failed to import searchit module: {e}")
+    logger.warning(f"Failed to import falla module: {e}")
 
 
 # Add helper functions
@@ -249,7 +285,7 @@ def get_engine_function(
 
 
 def get_available_engines() -> list[str]:
-    """Get a list of all available engine names.
+    """Get a list of all available engines.
 
     Returns:
         List of available engine names

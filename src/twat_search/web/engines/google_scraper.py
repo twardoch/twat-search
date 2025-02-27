@@ -17,9 +17,9 @@ the standard SearchResult format used throughout the package.
 from __future__ import annotations
 
 import logging
-from typing import Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
-from pydantic import BaseModel, HttpUrl, ValidationError, field_validator
+from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import ENGINE_FRIENDLY_NAMES, GOOGLE_SCRAPER
@@ -50,10 +50,12 @@ except ImportError:
         return []
 
 
-from twat_search.web.config import EngineConfig
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
+
+if TYPE_CHECKING:
+    from twat_search.web.config import EngineConfig
 
 logger = logging.getLogger(__name__)
 

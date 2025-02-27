@@ -8,9 +8,12 @@ This module tests the configuration classes used for search engine settings.
 
 from __future__ import annotations
 
-from pytest import MonkeyPatch
+from typing import TYPE_CHECKING
 
 from twat_search.web.config import Config, EngineConfig
+
+if TYPE_CHECKING:
+    from pytest import MonkeyPatch
 
 
 def test_engine_config_defaults() -> None:

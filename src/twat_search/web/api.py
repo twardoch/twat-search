@@ -2,14 +2,17 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Coroutine
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from twat_search.web.config import Config, EngineConfig
 from twat_search.web.engines import standardize_engine_name
 from twat_search.web.engines.base import SearchEngine, get_engine, get_registered_engines
 from twat_search.web.exceptions import SearchError
-from twat_search.web.models import SearchResult
+
+if TYPE_CHECKING:
+    from collections.abc import Coroutine
+
+    from twat_search.web.models import SearchResult
 
 logger = logging.getLogger(__name__)
 

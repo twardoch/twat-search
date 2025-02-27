@@ -15,13 +15,10 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 from dotenv import load_dotenv
-from loguru import logger as loguru_logger
 from pydantic import BaseModel, Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from twat_search.web.engine_constants import (
     BING_SCRAPER,
-    BING_SEARCHIT,
     BRAVE,
     BRAVE_NEWS,
     CRITIQUE,
@@ -30,10 +27,8 @@ from twat_search.web.engine_constants import (
     GOOGLE_HASDATA,
     GOOGLE_HASDATA_FULL,
     GOOGLE_SCRAPER,
-    GOOGLE_SEARCHIT,
     GOOGLE_SERPAPI,
     PPLX,
-    QWANT_SEARCHIT,
     TAVILY,
     YANDEX_SEARCHIT,
     YOU,
@@ -67,16 +62,6 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
             "default_params": {
                 "country": "US",
                 "language": "en-US",
-                "safe_search": True,
-            },
-        },
-        # SerpAPI (Google)
-        GOOGLE_SERPAPI: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {
-                "country": "us",
-                "language": "en",
                 "safe_search": True,
             },
         },
@@ -160,6 +145,16 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
                 "language": "en",
             },
         },
+        # SerpAPI (Google)
+        GOOGLE_SERPAPI: {
+            "enabled": True,
+            "api_key": None,
+            "default_params": {
+                "country": "us",
+                "language": "en",
+                "safe_search": True,
+            },
+        },
         # Google Scraper
         GOOGLE_SCRAPER: {
             "enabled": True,
@@ -171,50 +166,6 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
             "enabled": True,
             "api_key": None,  # No API key required, it's a scraper
             "default_params": {"num_pages": 1, "delay": 0.5},
-        },
-        # Bing SearchIT
-        BING_SEARCHIT: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "language": "en",
-                "domain": "com",
-                "sleep_interval": 0,
-                "proxy": None,
-            },
-        },
-        # Qwant SearchIT
-        QWANT_SEARCHIT: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "language": "en",
-                "geo": "us",
-                "sleep_interval": 0,
-                "proxy": None,
-            },
-        },
-        # Yandex SearchIT
-        YANDEX_SEARCHIT: {
-            "enabled": True,
-            "api_key": None,  # Yandex API key
-            "default_params": {
-                "language": "en",
-                "sleep_interval": 0,
-                "proxy": None,
-                "domain": "com",
-            },
-        },
-        # Google SearchIT
-        GOOGLE_SEARCHIT: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "language": "en",
-                "sleep_interval": 0,
-                "proxy": None,
-                "domain": "com",
-            },
         },
     },
 }
@@ -505,11 +456,11 @@ def _parse_env_value(env_value: str) -> Any:
     """Parse environment variable value with type conversion."""
     if env_value.lower() in ("true", "yes", "1"):
         return True
-    elif env_value.lower() in ("false", "no", "0"):
+    if env_value.lower() in ("false", "no", "0"):
         return False
-    elif env_value.isdigit():
+    if env_value.isdigit():
         return int(env_value)
-    elif env_value.replace(".", "", 1).isdigit():
+    if env_value.replace(".", "", 1).isdigit():
         return float(env_value)
     return env_value
 

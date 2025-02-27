@@ -75,16 +75,37 @@ src/
   twat_search/
     web/
       engines/
+        lib_falla/
+          core/
+            __init__.py
+            aol.py
+            ask.py
+            bing.py
+            dogpile.py
+            duckduckgo.py
+            falla.py
+            gibiru.py
+            google.py
+            mojeek.py
+            qwant.py
+            searchencrypt.py
+            startpage.py
+            yahoo.py
+            yandex.py
+          __init__.py
+          main.py
+          settings.py
+          utils.py
         __init__.py
         base.py
         bing_scraper.py
         brave.py
         critique.py
         duckduckgo.py
+        falla.py
         google_scraper.py
         hasdata.py
         pplx.py
-        searchit.py
         serpapi.py
         tavily.py
         you.py
@@ -174,16 +195,16 @@ globs:
 ├── [  96]  .cursor
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
-│       ├── [ 558]  cleanup.mdc
-│       └── [5.7K]  filetree.mdc
+│       ├── [ 559]  cleanup.mdc
+│       └── [8.6K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
 │       └── [1.4K]  release.yml
 ├── [3.5K]  .gitignore
-├── [1.5K]  .pre-commit-config.yaml
+├── [1.1K]  .pre-commit-config.yaml
 ├── [ 128]  .specstory
-│   ├── [ 992]  history
+│   ├── [1.3K]  history
 │   │   ├── [2.0K]  .what-is-this.md
 │   │   ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │   │   ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -212,71 +233,116 @@ globs:
 │   │   ├── [102K]  2025-02-26_12-11-update-config-py-to-use-engine-constants.md
 │   │   ├── [278K]  2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md
 │   │   ├── [268K]  2025-02-26_13-40-search-engine-initialization-errors.md
-│   │   └── [ 54K]  2025-02-26_14-15-untitled.md
+│   │   ├── [ 61K]  2025-02-26_14-15-codebase-issue-analysis-and-fix-plan.md
+│   │   ├── [ 43K]  2025-02-26_14-52-resolving-critical-issues-in-todo-md.md
+│   │   ├── [247K]  2025-02-26_17-48-progress-update-for-twat-search-project.md
+│   │   ├── [ 28K]  2025-02-26_18-28-fixing-num-results-parameter-in-twat-search.md
+│   │   ├── [ 63K]  2025-02-26_18-44-fixing-search-engine-issues-in-codebase.md
+│   │   ├── [ 72K]  2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md
+│   │   ├── [ 98K]  2025-02-26_19-49-fixing-linting-errors-in-code.md
+│   │   ├── [761K]  2025-02-26_20-02-analyzing-todo-md-and-updating-progress-md.md
+│   │   ├── [ 69K]  2025-02-26_22-55-bing-scraper-result-inconsistency-investigation.md
+│   │   ├── [591K]  2025-02-26_23-13-google-scraper-result-validation-issues.md
+│   │   ├── [ 23K]  2025-02-27_12-02-plan-for-adding-support-for-falla-engines.md
+│   │   └── [352K]  2025-02-27_13-08-implementing-falla-and-tracking-progress.md
 │   └── [2.2M]  history.txt
 ├── [3.2K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 30K]  NEXTENGINES.md
-├── [1.2K]  PROGRESS.md
+├── [8.3K]  PROGRESS.md
 ├── [ 21K]  README.md
-├── [5.0K]  TODO.md
+├── [6.1K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [ 192]  dist
-├── [1.5K]  fix_name_attribute.py
-├── [ 10K]  pyproject.toml
+├── [5.5K]  pyproject.toml
+├── [ 224]  resources
+│   ├── [ 224]  brave
+│   │   ├── [ 65K]  brave.md
+│   │   ├── [ 29K]  brave_image.md
+│   │   ├── [ 22K]  brave_news.md
+│   │   └── [ 22K]  brave_video.md
+│   ├── [ 128]  pplx
+│   │   ├── [ 32K]  pplx.md
+│   │   └── [ 335]  pplx_urls.txt
+│   ├── [ 15K]  pricing.md
+│   └── [ 192]  you
+│       ├── [ 54K]  you.md
+│       ├── [ 251]  you.txt
+│       ├── [ 58K]  you_news.md
+│       └── [  98]  you_news.txt
 ├── [ 128]  src
 │   └── [ 256]  twat_search
-│       ├── [ 577]  __init__.py
-│       ├── [2.4K]  __main__.py
+│       ├── [ 613]  __init__.py
+│       ├── [2.5K]  __main__.py
 │       └── [ 416]  web
-│           ├── [1.7K]  __init__.py
-│           ├── [5.8K]  api.py
-│           ├── [ 45K]  cli.py
-│           ├── [ 13K]  config.py
-│           ├── [2.6K]  engine_constants.py
+│           ├── [1.8K]  __init__.py
+│           ├── [9.0K]  api.py
+│           ├── [ 48K]  cli.py
+│           ├── [ 17K]  config.py
+│           ├── [3.1K]  engine_constants.py
 │           ├── [ 576]  engines
-│           │   ├── [8.5K]  __init__.py
-│           │   ├── [ 25K]  anywebsearch.py
-│           │   ├── [4.4K]  base.py
+│           │   ├── [7.6K]  __init__.py
+│           │   ├── [ 16K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
-│           │   ├── [7.9K]  brave.py
-│           │   ├── [8.5K]  critique.py
-│           │   ├── [6.9K]  duckduckgo.py
+│           │   ├── [ 15K]  brave.py
+│           │   ├── [9.2K]  critique.py
+│           │   ├── [7.8K]  duckduckgo.py
+│           │   ├── [6.4K]  falla.py
 │           │   ├── [ 12K]  google_scraper.py
-│           │   ├── [7.5K]  hasdata.py
-│           │   ├── [5.1K]  pplx.py
-│           │   ├── [ 26K]  searchit.py
-│           │   ├── [7.2K]  serpapi.py
-│           │   ├── [7.6K]  tavily.py
-│           │   └── [7.5K]  you.py
+│           │   ├── [7.9K]  hasdata.py
+│           │   ├── [ 224]  lib_falla
+│           │   │   ├── [ 822]  __init__.py
+│           │   │   ├── [ 544]  core
+│           │   │   │   ├── [1.4K]  __init__.py
+│           │   │   │   ├── [ 763]  aol.py
+│           │   │   │   ├── [ 892]  ask.py
+│           │   │   │   ├── [ 900]  bing.py
+│           │   │   │   ├── [ 855]  dogpile.py
+│           │   │   │   ├── [1.0K]  duckduckgo.py
+│           │   │   │   ├── [7.5K]  falla.py
+│           │   │   │   ├── [ 860]  gibiru.py
+│           │   │   │   ├── [3.2K]  google.py
+│           │   │   │   ├── [ 762]  mojeek.py
+│           │   │   │   ├── [1.1K]  qwant.py
+│           │   │   │   ├── [ 923]  searchencrypt.py
+│           │   │   │   ├── [ 870]  startpage.py
+│           │   │   │   ├── [ 955]  yahoo.py
+│           │   │   │   └── [1.0K]  yandex.py
+│           │   │   ├── [1.5K]  main.py
+│           │   │   ├── [ 378]  settings.py
+│           │   │   └── [3.0K]  utils.py
+│           │   ├── [7.8K]  pplx.py
+│           │   ├── [7.3K]  serpapi.py
+│           │   ├── [8.2K]  tavily.py
+│           │   └── [8.7K]  you.py
 │           ├── [1.0K]  exceptions.py
-│           ├── [1.3K]  models.py
-│           └── [1.5K]  utils.py
+│           ├── [1.6K]  models.py
+│           └── [4.1K]  utils.py
 ├── [ 256]  tests
 │   ├── [  64]  .benchmarks
 │   ├── [2.0K]  conftest.py
-│   ├── [ 157]  test_twat_search.py
+│   ├── [ 193]  test_twat_search.py
 │   ├── [ 192]  unit
-│   │   ├── [  42]  __init__.py
-│   │   ├── [1.5K]  mock_engine.py
+│   │   ├── [  78]  __init__.py
+│   │   ├── [1.6K]  mock_engine.py
 │   │   └── [ 320]  web
-│   │       ├── [  46]  __init__.py
+│   │       ├── [  82]  __init__.py
 │   │       ├── [ 160]  engines
-│   │       │   ├── [  37]  __init__.py
-│   │       │   └── [4.3K]  test_base.py
-│   │       ├── [5.1K]  test_api.py
+│   │       │   ├── [  73]  __init__.py
+│   │       │   └── [4.4K]  test_base.py
+│   │       ├── [5.2K]  test_api.py
 │   │       ├── [2.7K]  test_config.py
 │   │       ├── [2.0K]  test_exceptions.py
-│   │       ├── [4.5K]  test_models.py
+│   │       ├── [4.1K]  test_models.py
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [158K]  twat_search.txt
+├── [477K]  twat_search.txt
 └── [267K]  uv.lock
 
-19 directories, 87 files
+25 directories, 126 files
 
 ================
 File: .github/workflows/push.yml
@@ -8293,10 +8359,232 @@ Users should consider their specific use case, such as volume, complexity, and i
 - [HasData Our Prices Experience the incredible accuracy](https://hasdata.com/prices)
 
 ================
+File: src/twat_search/web/engines/lib_falla/core/__init__.py
+================
+
+
+================
+File: src/twat_search/web/engines/lib_falla/core/aol.py
+================
+class Aol(Falla):
+    def __init__(self):
+    def search(self, search_text, pages=""):
+        url = "https://search.aol.com/aol/search?q=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/ask.py
+================
+class Ask(Falla):
+    def __init__(self):
+    def search(self, search_text, pages=""):
+        url = "https://www.ask.com/web?q=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/bing.py
+================
+class Bing(Falla):
+    def __init__(self):
+    def search(self, search_text, pages=""):
+        url = "https://www.bing.com/search?q=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/dogpile.py
+================
+class DogPile(Falla):
+    def __init__(self):
+    def search(self, search_text, pages=""):
+        url = "https://www.dogpile.com/serp?q=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/duckduckgo.py
+================
+class DuckDuckGo(Falla):
+    def __init__(self):
+        self.option = Options()
+        self.driver = webdriver.Firefox(options=self.option)
+    def search(self, search_text, pages=""):
+        url = "https://duckduckgo.com/?q=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/falla.py
+================
+class Falla:
+    def __init__(self, name: str) -> None:
+    def get_element_from_type(
+            return bs_obj.find(type_elem, attr_elem)
+    def get_tag(
+            return element.find(_type, _attr)
+    def parse_entry_point(self, entry_point: str, use_splash: bool = False) -> BeautifulSoup | None:
+                return BeautifulSoup(self.scrapy_splash_request(entry_point), "html.parser")
+            return BeautifulSoup(self.get_html_content(entry_point), "html.parser")
+    def get_each_elements(self, elements: bs4.element.ResultSet, is_test: bool = False) -> list[dict[str, str]]:
+            elements_list.append(
+                    "title": self.get_title(elm, is_test=is_test),
+                    "link": self.get_link(elm, is_test=is_test),
+                    "snippet": self.get_snippet(elm, is_test=is_test),
+    def scrapy_splash_request(self, entry_point: str) -> str:
+            return requests.get(splash_url, timeout=30).text
+    def get_html_content(self, url: str) -> str:
+                options = Options()
+                options.add_argument("--headless")
+                driver = webdriver.Firefox(options=options)
+                driver.get(url)
+                time.sleep(2)
+                driver.quit()
+            return requests.get(url, headers=headers, timeout=15).text
+    def fetch(self, entry_point: str, use_splash: bool = False) -> list[dict[str, str]]:
+            html_parser = self.parse_entry_point(entry_point, use_splash)
+                elements = html_parser.find_all(self.container_element[0], self.container_element[1])
+                return self.get_each_elements(elements)
+    def get_url(self, query: str) -> str:
+        raise NotImplementedError(msg)
+    def get_title(self, elm: bs4.element.Tag, is_test: bool = False) -> str:
+    def get_link(self, elm: bs4.element.Tag, is_test: bool = False) -> str:
+    def get_snippet(self, elm: bs4.element.Tag, is_test: bool = False) -> str:
+    def search(self, query: str, pages: str = "") -> list[dict[str, str]]:
+
+================
+File: src/twat_search/web/engines/lib_falla/core/gibiru.py
+================
+class Gibiru(Falla):
+    def __init__(self):
+    def search(self, search_text, pages=""):
+        url = "https://gibiru.com/results.html?q=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/google.py
+================
+class Google(Falla):
+    def __init__(self) -> None:
+        super().__init__(name="Google")
+    def get_url(self, query: str) -> str:
+        query_string = urllib.parse.urlencode(params)
+    def get_title(self, elm: Tag, is_test: bool = False) -> str:
+        title_elem = elm.find("h3")
+            return title_elem.get_text().strip()
+    def get_link(self, elm: Tag, is_test: bool = False) -> str:
+        link_elem = elm.find("a")
+        if link_elem and link_elem.has_attr("href"):
+            if href.startswith("/url?"):
+                href = href.split("&")[0].replace("/url?q=", "")
+                return urllib.parse.unquote(href)
+    def get_snippet(self, elm: Tag, is_test: bool = False) -> str:
+        snippet_elem = elm.find("div", {"class": "VwiC3b"})
+            return snippet_elem.get_text().strip()
+    def search(self, query: str, pages: str = "") -> list[dict[str, str]]:
+        url = self.get_url(query)
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/mojeek.py
+================
+class Mojeek(Falla):
+    def __init__(self):
+    def search(self, search_text, pages=""):
+        url = "https://www.mojeek.com/search?q=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/qwant.py
+================
+class Qwant(Falla):
+    def __init__(self):
+        self.option = Options()
+        self.driver = webdriver.Firefox(options=self.option)
+    def search(self, search_text, pages=""):
+        url = "https://www.qwant.com/?q=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/searchencrypt.py
+================
+class SearchEncrypt(Falla):
+    def __init__(self):
+    def search(self, search_text, pages=""):
+        url = "https://www.searchencrypt.com/search/?q=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/startpage.py
+================
+class StartPage(Falla):
+    def __init__(self):
+    def search(self, search_text, pages=""):
+        url = "https://www.startpage.com/sp/search?q=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/yahoo.py
+================
+class Yahoo(Falla):
+    def __init__(self):
+        self.option = Options()
+        self.driver = webdriver.Firefox(options=self.option)
+    def search(self, search_text, pages=""):
+        url = "https://search.yahoo.com/search?p=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/core/yandex.py
+================
+class Yandex(Falla):
+    def __init__(self):
+        self.option = Options()
+        self.driver = webdriver.Firefox(options=self.option)
+    def search(self, search_text, pages=""):
+        url = "https://yandex.com/search/?text=" + search_text.replace(" ", "+") + pages
+        return self.fetch(url)
+
+================
+File: src/twat_search/web/engines/lib_falla/__init__.py
+================
+PACKAGE_PATH = Path(__file__).parent
+
+================
+File: src/twat_search/web/engines/lib_falla/main.py
+================
+def main() -> None:
+    parser = argparse.ArgumentParser(
+    parser.add_argument("-e", "--engine", help="Search engine to use", required=True)
+    parser.add_argument("-q", "--query", help="Search query", required=True)
+    parser.add_argument("-n", "--num", help="Number of results to return", type=int, default=10)
+    parser.add_argument("-l", "--list", help="List available engines", action="store_true")
+    parser.add_argument("-v", "--version", help="Show version", action="store_true")
+    args = parser.parse_args()
+        for _engine in list_engines():
+        results = get_results(args.engine, args.query, args.num)
+        for _i, result in enumerate(results, 1):
+    main()
+
+================
+File: src/twat_search/web/engines/lib_falla/settings.py
+================
+SPLASH_SCRAP_URL = os.environ.get("FALLA_SPLASH_SCRAP_URL", "http://localhost:8050")
+FALLA_DIR = Path(__file__).parent
+
+================
+File: src/twat_search/web/engines/lib_falla/utils.py
+================
+class Bcolors:
+def list_engines() -> list[str]:
+    core_dir = Path(__file__).parent / "core"
+    for file in core_dir.glob("*.py"):
+            engines.append(engine_name)
+def get_results(engine: str, query: str, num_results: int = 10) -> list[dict[str, str]]:
+        raise ValueError(msg)
+    results = engine_instance.search(query)
+    if num_results and len(results) > num_results:
+
+================
 File: src/twat_search/web/engines/__init__.py
 ================
     __all__.extend(
-    __all__.extend(["SerpApiSearchEngine", "google_serpapi"])
     __all__.extend(["TavilySearchEngine", "tavily"])
     __all__.extend(["PerplexitySearchEngine", "pplx"])
     __all__.extend(["CritiqueSearchEngine", "critique"])
@@ -8305,7 +8593,8 @@ File: src/twat_search/web/engines/__init__.py
     logger.warning(f"Failed to import bing_scraper: {e}")
     __all__.extend(["GoogleScraperEngine", "google_scraper"])
     logger.warning(f"Failed to import google_scraper module: {e}")
-    logger.warning(f"Failed to import searchit module: {e}")
+    __all__.extend(["SerpApiSearchEngine", "google_serpapi"])
+    logger.warning(f"Failed to import falla module: {e}")
 def is_engine_available(engine_name: str) -> bool:
     standardized_name = standardize_engine_name(engine_name)
 def get_engine_function(
@@ -8320,10 +8609,10 @@ logger = logging.getLogger(__name__)
 class SearchEngine(abc.ABC):
     def __init__(self, config: EngineConfig, **kwargs: Any) -> None:
         self.num_results = kwargs.get("num_results", 5)
-        self.country = kwargs.get("country", None)
-        self.language = kwargs.get("language", None)
+        self.country = kwargs.get("country")
+        self.language = kwargs.get("language")
         self.safe_search = kwargs.get("safe_search", True)
-        self.time_frame = kwargs.get("time_frame", None)
+        self.time_frame = kwargs.get("time_frame")
         self.timeout = kwargs.get("timeout", 10)
         self.retries = kwargs.get("retries", 2)
         self.retry_delay = kwargs.get("retry_delay", 1.0)
@@ -8453,7 +8742,6 @@ class BaseBraveEngine(SearchEngine):
             raise EngineError(self.engine_code, "API key is required")
     async def search(self, query: str) -> list[SearchResult]:
         count_param = min(self.max_brave_results, self.num_results)
-        print(f"DEBUG: Sending API request with count={count_param}, num_results={self.num_results}")
         async with httpx.AsyncClient() as client:
                 response = await client.get(
                 response.raise_for_status()
@@ -8476,20 +8764,14 @@ class BaseBraveEngine(SearchEngine):
     async def _make_api_call(self, query: str) -> dict[str, Any]:
             raise EngineError(self.engine_code, "Search query cannot be empty")
             "count": min(
-        print(f"DEBUG: In _make_api_call, using count={params['count']}")
         if hasattr(self, "freshness") and self.freshness:
         response = await self.make_http_request(
             data: dict[str, Any] = response.json()
     def limit_results(self, results: list[SearchResult]) -> list[SearchResult]:
-        print(f"DEBUG: In limit_results, self.num_results={self.num_results}")
-        print(f"DEBUG: Limiting {len(results)} results to {self.num_results} results")
-        print(f"DEBUG: Returned {len(limited_results)} results")
 class BraveSearchEngine(BaseBraveEngine):
         data = await self._make_api_call(query)
-        print(f"DEBUG: Raw API response from Brave Web: {data}")
             web_result = data.get("web", {})
             items = web_result.get("results", [])
-            print(f"DEBUG: Found {len(items)} web search items")
             for _idx, item in enumerate(items, start=1):
                 title = item.get("title", "")
                 url = item.get("url", "")
@@ -8497,15 +8779,12 @@ class BraveSearchEngine(BaseBraveEngine):
                 results.append(
                     SearchResult(
 class BraveNewsSearchEngine(BaseBraveEngine):
-        print(f"DEBUG: Raw API response from Brave News: {data}")
             items = data.get("results", [])
-            print(f"DEBUG: Found {len(items)} news items")
                 if item.get("age") or item.get("source", {}).get("name"):
                     source_name = item.get("source", {}).get("name", "")
                     age = item.get("age", "")
                 elif item.get("age"):
                     description = f"{description} - {item.get('age')}"
-            print(f"DEBUG: Exception in BraveNewsSearchEngine.search: {e!s}")
 async def brave(
     config = EngineConfig(api_key=api_key, enabled=True)
     engine = BraveSearchEngine(
@@ -8590,7 +8869,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
             timelimit = time_mapping.get(timelimit.lower(), timelimit)
         safesearch = kwargs.get("safesearch", safe_search)
         if isinstance(safesearch, str):
-                if safesearch.lower()
+            safesearch = safesearch.lower() not in ["off", "false"]
         proxy = kwargs.get("proxy") or config.default_params.get("proxy", None)
         timeout = kwargs.get(
         ) or config.default_params.get("timeout", 10)
@@ -8609,6 +8888,42 @@ async def duckduckgo(
     config = EngineConfig(enabled=True)
     engine = DuckDuckGoSearchEngine(
     return await engine.search(query)
+
+================
+File: src/twat_search/web/engines/falla.py
+================
+logger = logging.getLogger(__name__)
+def is_falla_available() -> bool:
+            _check_engine = Google(
+            logger.warning(f"Falla engines are not available: {e}")
+class FallaSearchEngine(SearchEngine):
+    def __init__(self, config, **kwargs):
+        super().__init__(config, **kwargs)
+        self._falla_engine = self._create_engine_instance()
+    def _create_engine_instance(self):
+        return self._falla_engine_class(**params)
+    async def search(self, query: str, **kwargs) -> list[SearchResult]:
+            raw_results = self._falla_engine.search(
+                result = SearchResult(
+                    title=item.get("title", ""),
+                    url=item.get("link", ""),
+                    snippet=item.get("snippet", ""),
+                    position=len(results) + 1,
+                results.append(result)
+            return self.limit_results(results)
+            logger.error(f"Search failed: {e!s}")
+            raise SearchEngineError(msg)
+class GoogleFallaEngine(FallaSearchEngine):
+class BingFallaEngine(FallaSearchEngine):
+class DuckDuckGoFallaEngine(FallaSearchEngine):
+class YahooFallaEngine(FallaSearchEngine):
+class AskFallaEngine(FallaSearchEngine):
+class AolFallaEngine(FallaSearchEngine):
+class DogpileFallaEngine(FallaSearchEngine):
+class GibiruFallaEngine(FallaSearchEngine):
+class MojeekFallaEngine(FallaSearchEngine):
+class QwantFallaEngine(FallaSearchEngine):
+class YandexFallaEngine(FallaSearchEngine):
 
 ================
 File: src/twat_search/web/engines/google_scraper.py
@@ -8744,94 +9059,6 @@ async def pplx(
         logger.error(f"Error in pplx function: {e}")
 
 ================
-File: src/twat_search/web/engines/searchit.py
-================
-    class SearchitResult:  # type: ignore
-        def __init__(self, rank: int, url: str, title: str, description: str):
-    class ScrapeRequest:  # type: ignore
-        def __init__(
-    class GoogleScraper:  # type: ignore
-        def __init__(self, max_results_per_page: int = 100):
-        async def scrape(request: ScrapeRequest) -> list[SearchitResult]:
-    class YandexScraper:  # type: ignore
-        def __init__(self, max_results_per_page: int = 10):
-    class QwantScraper:  # type: ignore
-    class BingScraper:  # type: ignore
-logger = logging.getLogger(__name__)
-class SearchitScraperResult(BaseModel):
-    @field_validator("title", "description")
-    def validate_non_empty(cls, v: str) -> str:
-class SearchitEngine(SearchEngine):
-        super().__init__(config, **kwargs)
-        self.num_results: int = num_results or self.config.default_params.get(
-        self.language: str = language or self.config.default_params.get(
-        self.domain: str | None = country or self.config.default_params.get(
-        self.geo: str | None = country or self.config.default_params.get(
-        self.sleep_interval: int = kwargs.get(
-        ) or self.config.default_params.get("sleep_interval", 0)
-        self.proxy: str | None = kwargs.get("proxy") or self.config.default_params.get(
-            unused_params.append(f"safe_search={safe_search}")
-            unused_params.append(f"time_frame='{time_frame}'")
-            logger.debug(
-                f"Parameters {', '.join(unused_params)} set but not used by {self.engine_code}",
-    def _convert_result(self, result: SearchitResult) -> SearchResult | None:
-            logger.warning(f"Empty result received from {self.engine_code}")
-            validated = SearchitScraperResult(
-                url=HttpUrl(result.url),
-                description=result.description if hasattr(result, "description") else "",
-            return SearchResult(
-                    "url": str(result.url),
-                    "description": result.description if hasattr(result, "description") else "",
-            logger.warning(f"Validation error for result: {exc}")
-            logger.warning(f"Unexpected error converting result: {exc}")
-    async def _run_scraper(
-            loop = asyncio.get_event_loop()
-            return await loop.run_in_executor(
-                lambda: asyncio.run(scraper.scrape(request)),
-            logger.error(f"Error running searchit scraper: {exc}")
-            raise EngineError(
-class GoogleSearchitEngine(SearchitEngine):
-    async def search(self, query: str) -> list[SearchResult]:
-            raise EngineError(self.engine_code, "Search query cannot be empty")
-        logger.info(f"Searching Google (searchit) with query: '{query}'")
-            request = ScrapeRequest(
-            scraper = GoogleScraper(
-                max_results_per_page=min(100, self.num_results),
-            raw_results = await self._run_scraper(scraper, request)
-                logger.info("No results returned from Google (searchit)")
-                f"Received {len(raw_results)} raw results from Google (searchit)",
-                for search_result in (self._convert_result(result) for result in raw_results)
-            logger.info(
-                f"Returning {len(results)} validated results from Google (searchit)",
-            logger.error(error_msg)
-            raise EngineError(self.engine_code, error_msg) from exc
-class YandexSearchitEngine(SearchitEngine):
-        logger.info(f"Searching Yandex (searchit) with query: '{query}'")
-            scraper = YandexScraper(
-                max_results_per_page=min(10, self.num_results),
-                logger.info("No results returned from Yandex (searchit)")
-                f"Received {len(raw_results)} raw results from Yandex (searchit)",
-                f"Returning {len(results)} validated results from Yandex (searchit)",
-class QwantSearchitEngine(SearchitEngine):
-        logger.info(f"Searching Qwant (searchit) with query: '{query}'")
-            scraper = QwantScraper(
-                logger.info("No results returned from Qwant (searchit)")
-                f"Received {len(raw_results)} raw results from Qwant (searchit)",
-                f"Returning {len(results)} validated results from Qwant (searchit)",
-class BingSearchitEngine(SearchitEngine):
-        logger.info(f"Searching Bing (searchit) with query: '{query}'")
-            scraper = BingScraper(
-                max_results_per_page=min(30, self.num_results),
-                logger.info("No results returned from Bing (searchit)")
-                f"Received {len(raw_results)} raw results from Bing (searchit)",
-                f"Returning {len(results)} validated results from Bing (searchit)",
-async def google_searchit(
-    return await search(
-async def yandex_searchit(
-async def qwant_searchit(
-async def bing_searchit(
-
-================
 File: src/twat_search/web/engines/serpapi.py
 ================
 class SerpApiResult(BaseModel):
@@ -8960,12 +9187,12 @@ File: src/twat_search/web/__init__.py
     __all__.extend(["Config", "EngineConfig", "SearchResult", "search"])
     __all__.extend(["brave", "brave_news"])
     __all__.extend(["pplx"])
-    __all__.extend(["serpapi"])
     __all__.extend(["tavily"])
     __all__.extend(["you", "you_news"])
     __all__.extend(["critique"])
     __all__.extend(["duckduckgo"])
     __all__.extend(["bing_scraper"])
+    __all__.extend(["serpapi"])
 
 ================
 File: src/twat_search/web/api.py
@@ -9053,9 +9280,9 @@ class SearchCLI:
         if isinstance(engines_arg, str):
             if engines_arg.strip().lower() == "free":
                 self.logger.info(f"Using 'free' engines: {', '.join(engines)}")
-            elif engines_arg.strip().lower() == "best":
+            if engines_arg.strip().lower() == "best":
                 self.logger.info(f"Using 'best' engines: {', '.join(engines)}")
-            elif engines_arg.strip().lower() == "all":
+            if engines_arg.strip().lower() == "all":
                 engines = get_available_engines()
                 self.logger.info(
                     f"Using 'all' available engines: {', '.join(engines)}",
@@ -9088,7 +9315,7 @@ class SearchCLI:
             results = await engine_func(query=query, **params)
             processed_results = _process_results(results)
                 _display_json_results(processed_results)
-                _display_results(processed_results, verbose, plain)
+            _display_results(processed_results, verbose, plain)
             self.logger.error(f"{friendly} search failed: {e}")
     def q(
         self._configure_logging(verbose)
@@ -9103,7 +9330,7 @@ class SearchCLI:
                 self._run_search(
             with self.console.status(
             _display_json_results(results)
-            _display_results(results, verbose, plain)
+        _display_results(results, verbose, plain)
     def info(
             config = Config()
                 self._display_engines_json(engine, config)
@@ -9154,7 +9381,6 @@ class SearchCLI:
             result[engine] = _get_engine_info(
             for engine_name, engine_config in sorted(config.engines.items()):
                 result[engine_name] = _get_engine_info(
-        print(json_lib.dumps(result, indent=2, cls=CustomJSONEncoder))
     async def critique(
             params["source_whitelist"] = [domain.strip() for domain in source_whitelist.split(",")]
             params["source_blacklist"] = [domain.strip() for domain in source_blacklist.split(",")]
@@ -9221,7 +9447,7 @@ def _display_json_results(processed_results: list[dict[str, Any]]) -> None:
         results_by_engine[engine]["results"].append(
                 "snippet": result.get("snippet") if result.get("snippet") != "N/A" else None,
                 "raw": result.get("raw_result"),
-    print(json_lib.dumps(results_by_engine, indent=2, cls=CustomJSONEncoder))
+    console.print(json_lib.dumps(results_by_engine, indent=2, cls=CustomJSONEncoder))
 def main() -> None:
     fire.core.Display = lambda lines, out: console.print(*lines)
     fire.Fire(SearchCLI)
@@ -9290,10 +9516,10 @@ def _apply_env_overrides(config_data: dict[str, Any]) -> None:
                 _set_nested_value(config_data, path, value)
 def _parse_env_value(env_value: str) -> Any:
     if env_value.lower() in ("true", "yes", "1"):
-    elif env_value.lower() in ("false", "no", "0"):
-    elif env_value.isdigit():
+    if env_value.lower() in ("false", "no", "0"):
+    if env_value.isdigit():
         return int(env_value)
-    elif env_value.replace(".", "", 1).isdigit():
+    if env_value.replace(".", "", 1).isdigit():
         return float(env_value)
 def _set_nested_value(config_data: dict[str, Any], path: list[str], value: Any) -> None:
     for i, path_part in enumerate(path):
@@ -10172,7 +10398,7 @@ class Cleanup:
             run_command(["git", "push"])
             log_message("Changes pushed successfully")
             log_message(f"Failed to push changes: {e}")
-def _generate_tree(self) -> None:
+def _generate_tree() -> None:
     if not check_command_exists("tree"):
         rules_dir = Path(".cursor/rules")
         rules_dir.mkdir(parents=True, exist_ok=True)
@@ -10183,10 +10409,10 @@ def _generate_tree(self) -> None:
         log_message("\nProject structure:")
         log_message(tree_text)
         log_message(f"Failed to generate tree: {e}")
-def _git_status(self) -> bool:
+def _git_status() -> bool:
     result = run_command(["git", "status", "--porcelain"], check=False)
     return bool(result.stdout.strip())
-def _run_checks(self) -> None:
+def _run_checks() -> None:
     log_message("Running code quality checks")
         log_message(">>> Running code fixes...")
         log_message(">>>Running type checks...")
@@ -10195,7 +10421,7 @@ def _run_checks(self) -> None:
         run_command(["python", "-m", "pytest", "tests"], check=False)
         log_message("All checks completed")
         log_message(f"Failed during checks: {e}")
-def _print_header(self, message: str) -> None:
+def _print_header(message: str) -> None:
     log_message(f"\n=== {message} ===")
 def repomix(
             cmd.append("--compress")
@@ -10219,14 +10445,12 @@ def main() -> None:
         print_usage()
         sys.exit(1)
     cleanup = Cleanup()
-            cleanup.status()
-            cleanup.venv()
-            cleanup.install()
-            cleanup.update()
-            cleanup.push()
-        log_message(f"Error: {e}")
+        cleanup.status()
+        cleanup.venv()
+        cleanup.install()
+        cleanup.update()
+        cleanup.push()
     repomix()
-    print(LOG_FILE.read_text(encoding="utf-8"))
     main()
 
 ================
@@ -11448,23 +11672,92 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
 
 # Task List
 
-## 1. Fix Critical Engine Failures
+## 1. Implement Falla-based Search Engines
 
-- [x] Enhance `base.SearchEngine` class to enforce API key requirements
-  - [x] Modify to require subclasses to define `env_api_key_names` as a class variable
-  - [x] Add proper validation for engine code and API key requirements
-  - [x] Centralize HTTP request handling with retries and error management
+- [x] Setup and dependencies
+  - [x] Create new module `src/twat_search/web/engines/falla.py`
+  - [x] Add necessary dependencies to `pyproject.toml` (selenium, lxml, requests)
+  - [x] Define engine constants in `src/twat_search/web/engine_constants.py`
+  - [x] Update `src/twat_search/web/engines/__init__.py` to import and register new engines
+  - [x] Create utility function to check if Falla is installed and accessible
 
-- [x] Enhance `config.py` for better API key handling
-  - [x] Update `EngineConfig` to validate and require API keys as needed
-  - [x] Improve error messages for missing API keys
-  - [x] Add field validation for API keys
+- [x] Create base `FallaSearchEngine` class
+  - [x] Inherit from `SearchEngine`
+  - [x] Define `FallaResult` Pydantic model for result validation
+  - [x] Implement abstract `_initialize_falla_engine` method
+  - [x] Create `_convert_result` method to convert Falla results to `SearchResult` objects
+  - [x] Implement `search` method with proper error handling and retries
+  - [x] Create fallback implementation for when Falla is not available
 
-- [x] Update engine implementations correctly
-  - [x] Fix You.com engines (`you` and `you_news`)
-  - [x] Fix Perplexity (`pplx`) implementation
-  - [ ] Fix SerpAPI integration
-  - [ ] Ensure all engines implement proper API key handling
+- [x] Implement specific Falla-based engines
+  - [x] `google-falla`: Google search using Falla
+    - [x] Create `GoogleFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `bing-falla`: Bing search using Falla
+    - [x] Create `BingFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `duckduckgo-falla`: DuckDuckGo search using Falla
+    - [x] Create `DuckDuckGoFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `aol-falla`: AOL search using Falla
+    - [x] Create `AolFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `ask-falla`: Ask.com search using Falla
+    - [x] Create `AskFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `dogpile-falla`: DogPile search using Falla
+    - [x] Create `DogpileFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `gibiru-falla`: Gibiru search using Falla
+    - [x] Create `GibiruFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `mojeek-falla`: Mojeek search using Falla
+    - [x] Create `MojeekFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `qwant-falla`: Qwant search using Falla
+    - [x] Create `QwantFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `yahoo-falla`: Yahoo search using Falla
+    - [x] Create `YahooFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+  - [x] `yandex-falla`: Yandex search using Falla
+    - [x] Create `YandexFallaEngine` class
+    - [x] Implement `_initialize_falla_engine` method
+    - [x] Register with `@register_engine` decorator
+
+- [x] Implement robust error handling
+  - [x] Handle network errors gracefully
+  - [x] Detect and handle captchas
+  - [x] Implement rate limiting protection
+  - [x] Add fallback mechanisms for failed engines
+  - [x] Handle case when Falla is not available
+
+- [x] Implement Falla integration approach
+  - [x] Decide on integration approach (embedded vs. dependency)
+  - [ ] If embedded:
+    - [x] Create `lib_falla` directory to contain the Falla code
+    - [x] Adapt the Falla code to work within our project structure
+    - [x] Update import paths to use the embedded code
+    - [x] Fix compatibility issues
+    - [x] Ensure proper attribution and licensing
+    - [x] Update the `FallaSearchEngine` class to use the embedded Falla code
+    - [x] Create fallback mechanism for when certain dependencies are not available
+  - [ ] If dependency:
+    - [ ] Add Falla as optional dependency in pyproject.toml
+    - [ ] Create fallback for when Falla is not installed
+    - [ ] Document installation requirements
+
+## 2. Fix Critical Engine Failures
 
 - [ ] Improve `get_engine` function and error handling
   - [ ] Add descriptive error messages when engines are not found or disabled
@@ -11475,27 +11768,13 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
   - [ ] Test engine availability detection
   - [ ] Test disabled engine handling
 
-## 2. Fix Data Integrity and Consistency Issues
-
-- [!] Fix inconsistent `num_results` parameter handling
-  - [x] Implement `_get_num_results` method in base class
-  - [!] Implement proper result limiting in working engines (currently `-n 1` returns multiple results)
-  - [!] Fix broken engines failing with "`object has no attribute 'get_num_results'`" error
-    - [!] Fix `brave` engine implementation
-    - [!] Fix `brave_news` engine implementation
-    - [ ] Fix `critique` engine implementation
-  - [ ] Ensure all engines properly handle and respect `num_results`
-  - [ ] Add result limiting logic to all engine implementations
+## 3. Fix Data Integrity and Consistency Issues
 
 - [ ] Fix source attribution in search results
   - [ ] Ensure all engines use `self.engine_code` when creating `SearchResult` objects
   - [ ] Fix typos in result keys (e.g., `"snippetHighlitedWords"`)
 
-- [!] Fix unwanted result combination in Google engines
-  - [!] Fix `google_hasdata` engine returning results from other engines
-  - [!] Fix `google_hasdata_full` engine returning results from other engines
-
-## 3. Address Engine Reliability Issues (Empty Results)
+## 4. Address Empty Results
 
 - [!] Fix `searchit`-based engines
   - [!] Fix `bing_searchit` returning empty results
@@ -11507,31 +11786,12 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
   - [ ] Add detailed logging for debugging
   - [ ] Fix implementation issues or remove if necessary
 
-- [!] Fix API key-based engines with initialization failures
-  - [!] Fix `pplx` engine initialization
-  - [!] Fix `you` engine initialization 
-  - [!] Fix `you_news` engine initialization
-  - [ ] Debug initialization failures and API key handling
-
 - [ ] Test and fix other engines with empty results
   - [ ] Identify and address common failure patterns
-
-## 4. Codebase Cleanup
-
-- [ ] Remove all `anywebsearch` engines
-  - [ ] Delete `src/twat_search/web/engines/anywebsearch.py`
-  - [ ] Remove related imports from all files
-  - [ ] Update engine constants and registration
-
-- [x] Fix code duplication in `base.SearchEngine`
-  - [x] Centralize common functionality
-  - [x] Improve error handling consistency
 
 ## 5. Improve CLI Interface
 
 - [ ] Update the `q` command in the CLI
-  - [ ] Remove engine-specific parameters
-  - [ ] Only use common parameters
   - [ ] Test CLI with various parameter combinations
 
 ## 6. Enforce Consistent JSON Output Format
@@ -11571,7 +11831,32 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
   - [ ] Add troubleshooting guidelines
   - [ ] Document parameter handling
 
-## 8. Final Verification
+## 8. Tests
+
+- [ ] Create comprehensive tests
+  - [ ] Create unit tests for base `FallaSearchEngine` class
+    - [ ] Test initialization
+    - [ ] Test result conversion
+    - [ ] Test error handling
+  - [ ] Create unit tests for each Falla-based engine
+    - [ ] Test initialization
+    - [ ] Test search functionality with mocked responses
+    - [ ] Test error handling
+  - [ ] Create integration tests with limited scope
+    - [ ] Test actual search functionality (skipped if Falla not available)
+    - [ ] Test result formatting
+  - [ ] Create test utility to verify all engines
+    - [ ] Test all engines with a simple query
+    - [ ] Verify results format
+
+- [ ] Documentation and examples
+  - [ ] Document installation requirements for Falla engines
+  - [ ] Add usage examples to README
+  - [ ] Document limitations and considerations
+  - [ ] Add appropriate disclaimers regarding web scraping
+  - [ ] Update CLI help text to include new engines
+
+## 9. Final Verification
 
 - [ ] Run test command on all engines
   - [ ] Verify correct output format
@@ -11590,10 +11875,7 @@ Consult @TODO.md for the detailed plan. Work through these items, checking them 
 File: pyproject.toml
 ================
 [build-system]
-requires = [
-    'hatchling>=1.27.0',
-    'hatch-vcs>=0.4.0',
-]
+requires = ['hatchling>=1.27.0', 'hatch-vcs>=0.4.0']
 build-backend = 'hatchling.build'
 [tool.hatch.build.targets.wheel]
 packages = ['src/twat_search']
@@ -11605,15 +11887,19 @@ source = 'vcs'
 
 [tool.hatch.version.raw-options]
 version_scheme = 'post-release'
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.hatch.envs.default]
 dependencies = [
-    'pytest',
-    'pytest-cov',
+    'pytest>=1.3.4',
+    'pytest-cov>=1.0.0',
     'mypy>=1.15.0',
-    'ruff>=0.9.6',
+    'ruff>=0.9.7',
     'absolufy-imports>=0.3.1',
     'pre-commit>=4.1.0',
-    'pyupgrade>=3',
+    'pyupgrade>=3.19.1',
     'isort>=6.0.0',
 ]
 
@@ -11621,42 +11907,26 @@ dependencies = [
 test = 'pytest {args:tests}'
 test-cov = 'pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/twat_search --cov=tests {args:tests}'
 type-check = 'mypy src/twat_search tests'
-lint = [
-    'ruff check src/twat_search tests',
-    'ruff format src/twat_search tests',
-]
+lint = ['ruff check src/twat_search tests', 'ruff format src/twat_search tests']
 [[tool.hatch.envs.all.matrix]]
-python = [
-    '3.10',
-    '3.11',
-    '3.12',
-]
+python = ['3.10', '3.11', '3.12']
 
 [tool.hatch.envs.lint]
 detached = true
 dependencies = [
     'mypy>=1.15.0',
-    'ruff>=0.9.6',
+    'ruff>=0.9.7',
     'absolufy-imports>=0.3.1',
     'pre-commit>=4.1.0',
-    'pyupgrade>=3',
-    'isort>=6.0.0',
+    'pyupgrade>=3.19.1',
+    'isort>=6.0.1',
 ]
 
 [tool.hatch.envs.lint.scripts]
 typing = 'mypy --install-types --non-interactive {args:src/twat_search tests}'
-style = [
-    'ruff check {args:.}',
-    'ruff format {args:.}',
-]
-fmt = [
-    'ruff format {args:.}',
-    'ruff check --fix {args:.}',
-]
-all = [
-    'style',
-    'typing',
-]
+style = ['ruff check {args:.}', 'ruff format {args:.}']
+fmt = ['ruff format {args:.}', 'ruff check --fix {args:.}']
+all = ['style', 'typing']
 
 [tool.hatch.envs.test]
 dependencies = ['.[test]']
@@ -11690,126 +11960,84 @@ select = [
     'PLE',
     'PLR',
     'PLW',
-    'Q',
+    'PT',
+    'PTH',
+    'PYI',
+    'RET',
+    'RSE',
     'RUF',
     'S',
+    'SIM',
     'T',
+    'TCH',
     'TID',
     'UP',
     'W',
     'YTT',
 ]
 ignore = [
-    'ARG001',
-    'ARG002',
-    'ARG004',
-    'ARG005',
-    'B904',
-    'C901',
-    'DTZ005',
-    'E501',
-    'F401',
-    'F811',
-    'FBT001',
-    'FBT002',
+    # Allow non-abstract empty methods in abstract base classes
+    'B027',
+    # Allow boolean positional values in function calls, like `dict.get(... True)`
     'FBT003',
-    'I001',
-    'ISC001',
-    'N803',
+    # Ignore checks for possible passwords
+    'S105',
+    'S106',
+    'S107',
+    # Ignore complexity
+    'C901',
     'PLR0911',
     'PLR0912',
     'PLR0913',
     'PLR0915',
-    'PLR2004',
-    'S311',
-    'S603',
-    'S607',
-    'T201',
 ]
+unfixable = [
+    # Don't touch unused imports
+    'F401',
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ['twat_search']
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = 'all'
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ['S101']
+# Tests can use magic values, assertions, and relative imports
+'tests/**/*' = ['PLR2004', 'S101', 'TID252']
 
-[tool.mypy]
-python_version = '3.10'
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
 [tool.coverage.run]
-source_pkgs = [
-    'twat_search',
-    'tests',
-]
+source_pkgs = ['twat_search', 'tests']
 branch = true
 parallel = true
 omit = ['src/twat_search/__about__.py']
 
 [tool.coverage.paths]
-twat_search = [
-    'src/twat_search',
-    '*/twat-search/src/twat_search',
-]
-tests = [
-    'tests',
-    '*/twat-search/tests',
-]
+twat_search = ['src/twat_search', '*/twat-search/src/twat_search']
+tests = ['tests', '*/twat-search/tests']
 
 [tool.coverage.report]
 exclude_lines = [
     'no cov',
     'if __name__ == .__main__.:',
     'if TYPE_CHECKING:',
-]
-[tool.pytest.ini_options]
-markers = ['''benchmark: marks tests as benchmarks (select with '-m benchmark')''']
-addopts = '-v -p no:briefcase'
-testpaths = ['tests']
-python_files = ['test_*.py']
-filterwarnings = [
-    'ignore::DeprecationWarning',
-    'ignore::UserWarning',
-]
-asyncio_mode = 'auto'
-
-[tool.pytest-benchmark]
-min_rounds = 100
-min_time = 0.1
-histogram = true
-storage = 'file'
-save-data = true
-compare = [
-    'min',
-    'max',
-    'mean',
-    'stddev',
-    'median',
-    'iqr',
-    'ops',
-    'rounds',
+    'pass',
+    'raise NotImplementedError',
+    'raise ImportError',
+    'except ImportError',
+    'except KeyError',
+    'except AttributeError',
+    'except NotImplementedError',
 ]
 
 [project]
 name = 'twat-search'
-dynamic = ['version']
-description = 'Advanced search utilities and tools for the twat ecosystem'
+description = 'Web search plugin for twat'
 readme = 'README.md'
 requires-python = '>=3.10'
-license = 'MIT'
-keywords = [
-    'twat',
-    'search',
-    'utilities',
-    'text-search',
-    'indexing',
-]
+license = { text = 'MIT' }
+keywords = []
+dynamic = ["version"]
 classifiers = [
     'Development Status :: 4 - Beta',
     'Programming Language :: Python',
@@ -11822,12 +12050,15 @@ classifiers = [
 dependencies = [
     'twat>=1.8.1',
     'pydantic>=2.10.6',
-    'pydantic-settings>=2.8.0',
+    'pydantic-settings>=2.8.1',
     'httpx>=0.28.1',
     'python-dotenv>=1.0.1',
-    'fire>=0.5.0',
-    'rich>=13.6.0',
-    'requests>=2.31.0',
+    'fire>=0.7.0',
+    'rich>=13.9.4',
+    'requests>=2.32.3',
+    'beautifulsoup4>=4.13.0',
+    'selenium>=4.29.0',
+    'lxml>=5.3.0',
 ]
 
 [[project.authors]]
@@ -11851,30 +12082,30 @@ test = [
 ]
 dev = [
     'pre-commit>=4.1.0',
-    'ruff>=0.9.6',
+    'ruff>=0.9.7',
     'mypy>=1.15.0',
     'absolufy-imports>=0.3.1',
-    'pyupgrade>=3',
-    'isort>=6.0.0',
+    'pyupgrade>=3.19.1',
+    'isort>=6.0.1',
 ]
 brave = []
 duckduckgo = ['duckduckgo-search>=7.5.0']
 bing_scraper = ['scrape-bing>=0.1.2.1']
-tavily = ['tavily-python>=0.5.0']
+tavily = ['tavily-python>=0.5.1']
 pplx = []
 serpapi = ['serpapi>=0.1.5']
 hasdata = []
 google_scraper = ['googlesearch-python>=1.3.0']
-searchit = ['searchit']
 all = [
     'twat',
     'duckduckgo-search>=7.5.0',
     'scrape-bing>=0.1.2.1',
-    'tavily-python>=0.5.0',
+    'tavily-python>=0.5.1',
     'serpapi>=0.1.5',
     'googlesearch-python>=1.3.0',
-    'searchit',
-    'requests>=2.31.0',
+    'beautifulsoup4>=4.13.0',
+    'selenium>=4.29.0',
+    'lxml>=5.3.0',
 ]
 
 [project.scripts]
@@ -12617,969 +12848,171 @@ Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
 
 Edit the detailed plan in this file @TODO.md. Based on the plan, write an itemized list of tasks in @PROGRESS.md and then, as you work, check off your @PROGRESS.md.  
 
-## 1. Progress Update (2025-02-27)
-
-### 1.1. 1.1 Completed Tasks
-
-We have made significant progress in fixing several critical issues:
-
-1. Enhanced the `base.SearchEngine` class:
-   - Fixed API key handling with proper validation
-   - Improved error handling in HTTP requests with retries and better error messages
-   - Implemented type annotations to fix incompatible type errors
-   - Added proper documentation
-
-2. Updated engine implementations:
-   - Fixed You.com engines (`you` and `you_news`) with proper API key handling
-   - Fixed Perplexity (`pplx`) implementation with explicit string conversion in error messages
-   - Fixed Ruff code style issues across multiple files
-
-3. Fixed linter issues:
-   - Replaced assert statements with conditional checks
-   - Fixed string literals in exceptions
-   - Added proper type annotations
-
-### 1.2. Urgent TODOs
-
-Based on testing all engines with the command:
-```
-for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $engine"; twat-search web q -e $engine "Adam Twardoch" -n 1; done;
-```
-
-We've identified the following critical issues that need urgent attention:
-
-#### 1.2.1. Result Limiting Not Working
-Even with `-n 1` parameter, multiple results are returned for working engines. This needs to be fixed to ensure the `num_results` parameter is respected.
-
-#### 1.2.2. Engine Initialization Failures
-Several engines fail to initialize with error about missing `get_num_results` method:
-- `brave` - Object has no attribute 'get_num_results'
-- `brave_news` - Object has no attribute 'get_num_results'
-- `critique` - Initialization failure
-- `pplx` - Fails to initialize (likely API key related)
-- `you` - Fails to initialize (likely API key related)
-- `you_news` - Fails to initialize (likely API key related)
-
-#### 1.2.3. Empty Results from SearchIt-based Engines
-These engines return empty results consistently:
-- `bing_searchit`
-- `google_searchit`
-- `qwant_searchit`
-- `yandex_searchit`
-
-#### 1.2.4. Unwanted Result Combination
-Some engines are incorrectly combining results from multiple sources:
-- `google_hasdata` - Returns its own results plus results from other engines
-- `google_hasdata_full` - Returns its own results plus results from other engines
-
-#### 1.2.5. Working Engines
-The following engines are working, but have the issue with not respecting `num_results`:
-- `bing_scraper`
-- `duckduckgo`
-- `google_scraper`
-- `google_serpapi`
-- `tavily`
-
-### 1.3. `brave`
-
-twat-search web q "Adam Twardoch" -n 1 --verbose --json -e brave
-
-[02/26/25 20:51:35] DEBUG    Using num_results=5                                                                                                            cli.py:295
-                    DEBUG    Using selector: KqueueSelector                                                                                      selector_events.py:64
-                    DEBUG    Attempting to search with engines: ['brave']                                                                                   cli.py:171
-                    DEBUG    Search requested with num_results=5                                                                                            api.py:148
-                    DEBUG    Initializing engine 'brave' with num_results=5                                                                                  api.py:71
-                    WARNING  Failed to initialize engine 'brave': EngineError                                                                                api.py:92
-                    ERROR    Error initializing engine 'brave': Engine 'brave': Failed to initialize engine 'brave': 'BraveSearchEngine' object has no       api.py:95
-                             attribute 'get_num_results'                                                                                                              
-                    WARNING  Failed to initialize engine 'brave': Engine 'brave': Failed to initialize engine 'brave': 'BraveSearchEngine' object has no    api.py:184
-                             attribute 'get_num_results'                                                                                                              
-                    WARNING  Failed to initialize engines: brave                                                                                            api.py:191
-                    ERROR    No search engines could be initialized from requested engines: brave                                                           api.py:199
-                    ERROR    Search failed: No search engines could be initialized from requested engines: brave                                            api.py:246
-                    ERROR    Search failed: No search engines could be initialized from requested engines: brave                                            cli.py:177
-                            ❌ Search Errors                            
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Error                                                                ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ No search engines could be initialized from requested engines: brave │
-└──────────────────────────────────────────────────────────────────────┘
-{}
-
-
-### 1.4. `brave_news`
-
-```
-twat-search web q "Adam Twardoch" -n 1 --verbose --json -e brave_news
-```
-
-[02/26/25 20:52:52] DEBUG    Using num_results=5                                                                                                            cli.py:295
-                    DEBUG    Using selector: KqueueSelector                                                                                      selector_events.py:64
-                    DEBUG    Attempting to search with engines: ['brave_news']                                                                              cli.py:171
-                    DEBUG    Search requested with num_results=5                                                                                            api.py:148
-                    DEBUG    Initializing engine 'brave_news' with num_results=5                                                                             api.py:71
-                    WARNING  Failed to initialize engine 'brave_news': EngineError                                                                           api.py:92
-                    ERROR    Error initializing engine 'brave_news': Engine 'brave_news': Failed to initialize engine 'brave_news': 'BraveNewsSearchEngine'  api.py:95
-                             object has no attribute 'get_num_results'                                                                                                
-                    WARNING  Failed to initialize engine 'brave_news': Engine 'brave_news': Failed to initialize engine 'brave_news':                       api.py:184
-                             'BraveNewsSearchEngine' object has no attribute 'get_num_results'                                                                        
-                    WARNING  Failed to initialize engines: brave_news                                                                                       api.py:191
-                    ERROR    No search engines could be initialized from requested engines: brave_news                                                      api.py:199
-                    ERROR    Search failed: No search engines could be initialized from requested engines: brave_news                                       api.py:246
-                    ERROR    Search failed: No search engines could be initialized from requested engines: brave_news                                       cli.py:177
-                              ❌ Search Errors                               
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Error                                                                     ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ No search engines could be initialized from requested engines: brave_news │
-└───────────────────────────────────────────────────────────────────────────┘
-{}
-
-### 1.5. 1.8 Further TODOs
-
-Several issues still need immediate attention:
-
-1. Fix failing tests - The test suite has 5 failing tests out of 49:
-   - Tests in `test_api.py` related to search functionality
-   - Tests in `test_config.py` about configuration expectations
-   - A test in `test_bing_scraper.py` for the convenience function
-
-2. Address inconsistent `num_results` parameter handling in all engines
-
-3. Fix `searchit`-based engines that are returning empty results
-
-## 2. Project Status
-
-The basic implementation of the `twat-search` web package is complete. This multi-provider search tool now supports multiple search engines and has a functional CLI interface.
-
-## 3. Problem case
-
-This is the test command that I'm targeting: 
+This is the test command that we are targeting: 
 
 ```bash
 for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $engine"; twat-search web q -e $engine "Adam Twardoch" -n 1 --json --verbose; done;
 ```
 
-## 4. Proposed solution
-
-Okay, let's synthesize all the provided information into a single, comprehensive development guide for the `twat-search` project.  This guide will combine the problem statement, the detailed action plan (including code samples), the testing strategy, and the documentation considerations into a cohesive document. It's structured to be a practical guide for someone working on improving this project.
-
-## 5. Twat Search Development Guide
-
-This guide details the current state, problems, and a plan for refactoring and improving the `twat-search` web package.
-
-### 5.1. Project Overview
-
 `twat-search` is an asynchronous Python package designed to query multiple search engines simultaneously, aggregate their results, and present them through a unified API and command-line interface (CLI). It aims for:
 
-*   **Multi-Engine Support:**  Integrate with various search providers (Brave, Google, Tavily, etc.).
-*   **Asynchronous Operation:** Utilize `asyncio` for concurrent requests and improved performance.
-*   **Configurability:** Allow users to configure engines, API keys, and search parameters via environment variables or configuration files.
-*   **Extensibility:**  Make it easy to add new search engine integrations.
-*   **Robustness:**  Handle errors gracefully, including API limits and network issues.
-*   **Consistency:**  Provide a consistent JSON output format for all engines.
+* **Multi-Engine Support:**  Integrate with various search providers (Brave, Google, Tavily, etc.).
+* **Asynchronous Operation:** Utilize `asyncio` for concurrent requests and improved performance.
+* **Configurability:** Allow users to configure engines, API keys, and search parameters via environment variables or configuration files.
+* **Extensibility:**  Make it easy to add new search engine integrations.
+* **Robustness:**  Handle errors gracefully, including API limits and network issues.
+* **Consistency:**  Provide a consistent JSON output format for all engines.
 
-### 5.2. Current Status (as of 2025-02-27)
+## 1. Implementing Falla-based Search Engines
 
-The basic implementation is complete, with several engines integrated and a functional CLI. Major improvements have been made to the base `SearchEngine` class and error handling. However, there are still issues with test failures and some engines returning empty results that need to be addressed.
+Based on the NEXTENGINES.md file, we need to implement search engines based on the [Falla project](https://github.com/Sanix-Darker/falla), which is a search engine scraper supporting multiple search engines.
 
-### 5.3. Identified Problems
+### 1.1. Understanding Falla Architecture
 
-The following problems have been identified through testing and code review:
+Falla is a Python-based search engine scraper that supports multiple search engines including Google, Bing, DuckDuckGo, and others. Each search engine has its own implementation file in the `app/core/` directory, inheriting from a base `Falla` class.
 
-1.  **Test Failures:** Several tests are failing, particularly in `test_api.py`, `test_config.py`, and `test_bing_scraper.py`. These need to be fixed to ensure the code is working as expected.
+The key components of Falla are:
 
-2.  **Inconsistent `num_results` Handling:**  The `num_results` parameter, intended to control the number of results returned, is not consistently respected by all engines.
+1. A base `Falla` class that handles common scraping functionality
+2. Individual engine classes (Google, Bing, etc.) that define engine-specific parameters
+3. A common interface for searching and result parsing
 
-3.  **Empty Results from Some Engines:** The `searchit`-based engines (and potentially others) consistently return empty result sets, indicating a problem with their integration or underlying libraries.
+### 1.2. Implementation Plan for *-falla Engines
 
-4.  **Inconsistent JSON Output:** Different engines return results with varying key names and structures, making it difficult to process results uniformly. Example: Typos in keys like  `"snippetHighlitedWords"`.
+#### 1.2.1. Setup and Dependencies
 
-5.  **Code Duplication and Inconsistency in `base.SearchEngine`:**  The base class contains duplicated logic for handling HTTP requests, retries, and parameter validation.  This should be centralized.
+1. Create a new module `src/twat_search/web/engines/falla.py` to implement Falla-based engines
+2. Add necessary dependencies to `pyproject.toml`:
+   - `selenium` for browser automation
+   - `lxml` for HTML parsing
+   - `requests` for HTTP requests
+   - Optional: Consider if we need Docker/Splash for some engines
 
-6. **Anywebsearch:** Remove all `anywebsearch` engines.
-
-7. **Searchit:** Review the implementation of the `searchit` engines, or remove them.
-
-### 5.4. Action Plan and Implementation Guide
-
-This section provides a detailed, step-by-step plan to address the identified problems.
-
-#### 5.4.1. Fixing Critical Engine Failures
-
-**Goal:** Ensure all engines initialize correctly, handling API key requirements gracefully.
-
-**4.1.1.  Enforce API Key Requirements in `base.SearchEngine`**
-
-*   **File:** `src/twat_search/web/engines/base.py`
-*   **Change:**  Modify the `SearchEngine` base class to *require* subclasses to define `env_api_key_names` as an abstract property. Remove the class-level default.
-
-    ```python
-    import abc
-    import asyncio
-    import random  # Import the random module
-    import httpx
-    from pydantic import BaseModel, HttpUrl, field_validator, ValidationError
-    from typing import Any, Optional
-    import logging
-    from twat_search.web.exceptions import SearchError, EngineError
-    from twat_search.web.config import EngineConfig
-    from twat_search.web.models import SearchResult
-    from twat_search.web.engine_constants import (
-        USER_AGENTS,
-        ENGINE_FRIENDLY_NAMES,
-        standardize_engine_name,
-    )
-
-    logger = logging.getLogger(__name__)
-
-
-    class SearchEngine(abc.ABC):
-        engine_code: str  # REQUIRED: Engine code for config and CLI
-
-        # Should not be a class variable, should be an instance
-        # and a required property.
-        @property
-        @abc.abstractmethod
-        def env_api_key_names(self) -> list[str]:
-            """List of environment variable names that can hold the API key."""
-            ...  # raise NotImplementedError("Subclasses must define env_api_key_names")
-
-        @property
-        @abc.abstractmethod
-        def engine_code(self) -> str:
-            """
-            The engine code should be a short, unique identifier for the engine,
-            using only lowercase letters and underscores.
-            """
-            ...
-
-
-        def __init__(self, config: EngineConfig, **kwargs: Any) -> None:
-            self.config = config
-            # Prioritize kwargs, then config.default_params, then fallbacks.
-            self.num_results = self._get_num_results()  # Use the new method.
-            self.country = kwargs.get("country") or self.config.default_params.get("country")
-            self.language = kwargs.get("language") or self.config.default_params.get("language")
-            self.safe_search = kwargs.get("safe_search", self.config.default_params.get("safe_search", True))  # type: ignore
-            self.time_frame = kwargs.get("time_frame") or self.config.default_params.get("time_frame")
-            self.timeout = kwargs.get("timeout", self.config.default_params.get("timeout", 10))
-            self.retries = kwargs.get("retries", self.config.default_params.get("retries", 2))
-            self.retry_delay = kwargs.get("retry_delay", self.config.default_params.get("retry_delay", 1.0))
-            self.use_random_user_agent = kwargs.get("use_random_user_agent", self.config.default_params.get("use_random_user_agent", True))
-            # Store original kwargs for use in subclasses
-            self.kwargs = kwargs
-
-
-            # Check for API key if required
-            if self.env_api_key_names:  # Use the property, not the class variable
-                api_key = config.api_keys.get(self.engine_code)
-                if not api_key:
-                  msg = (
-                        f"API key is required for {self.engine_code}. "
-                        f"Please set it via one of these env vars: {', '.join(self.env_api_key_names)}" # Use property
-                    )
-                  logger.error(msg)
-                  raise EngineError(self.engine_code, msg)  # Use consistent EngineError
-                self.api_key = api_key # Assign it to the object if it passes.
-            else:
-              self.api_key = None
-
-
-
-        def _get_num_results(self, param_name: str = "num_results", min_value: int = 1) -> int:
-            # Get value from kwargs
-            value = self.kwargs.get(param_name)
-            if value is not None:
-                try:
-                    return max(min_value, int(value))
-                except (TypeError, ValueError):
-                    logger.warning(
-                        f"Invalid value for '{param_name}' ({value!r}) in {self.engine_code}, using default."
-                    )
-            #If not in kwargs get from config
-            default = self.config.default_params.get(
-                param_name
-            ) or self.config.default_params.get("num_results") # num_results as fallback
-            if default is not None:
-                try:
-                    return max(min_value, int(default))
-                except (TypeError, ValueError):
-                    logger.warning(
-                        f"Invalid value for '{param_name}' ({value!r}) in {self.engine_code}, using default."
-                    )
-            return self.num_results
-
-
-
-        async def make_http_request(
-            self, method, url, headers=None, **kwargs
-        ) -> httpx.Response: # return the full httpx.Response object
-            headers = headers or {}
-            if self.use_random_user_agent and "user-agent" not in {k.lower() for k in headers}:
-                headers["User-Agent"] = random.choice(USER_AGENTS)
-
-            delay = self.retry_delay #initiate delay
-            for attempt in range(1, self.retries + 2):  # One extra attempt
-                try:
-                    async with httpx.AsyncClient(timeout=self.timeout) as client:
-
-                        response = await client.request(
-                            method, url, headers=headers, **kwargs
-                        )
-                        response.raise_for_status()  # Raise for status here
-                        return response # return response
-
-                except httpx.HTTPError as e:
-                    if attempt > self.retries:  # Use  self.retries
-                        # Final retry failed.
-                        logger.error(f"Request failed after {self.retries} attempts: {e}")
-                        raise EngineError(self.engine_code, f"HTTP request failed after multiple retries: {e}") from e
-                    # exponential backoff with jitter
-                    jitter = random.uniform(0.5, 1.5)  # Add jitter
-                    actual_retry_delay = delay * jitter
-                    logger.warning(f"Request failed (attempt {attempt}), retrying in {actual_retry_delay:.2f} seconds: {e}")
-                    await asyncio.sleep(actual_retry_delay)
-                    delay *= 2  # Exponential backoff
-
-        @abc.abstractmethod
-        async def search(self, query: str) -> list[SearchResult]:
-            """Perform the search and return a list of SearchResult objects."""
-            ...
-
-    _engine_registry = {} # Move to the bottom, after the class definition
-
-
-    def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
-        try:
-          # Check that the engine class has required attributes.
-          if not hasattr(engine_class, "engine_code"):
-              raise AttributeError("Engine must define an 'engine_code' attribute.")
-
-          # Now using property, and check for its presence.
-          if not hasattr(engine_class, "env_api_key_names") or not callable(getattr(engine_class, 'env_api_key_names', None)):
-            raise AttributeError("Engine must define a 'env_api_key_names' property.")
-
-          standardized_name = standardize_engine_name(engine_class.engine_code)
-          # Check for collisions in engine codes
-          if standardized_name in _engine_registry:
-                raise ValueError(f"An engine with code '{standardized_name}' is already registered.")
-          _engine_registry[standardized_name] = engine_class
-          return engine_class
-        except Exception as e:
-            logger.warning(f"Failed to register engine {engine_class}: {e}")
-            return None # Ensure it is not treated as registed.
-
-
-
-
-    def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:
-        engine_class = _engine_registry.get(engine_name)
-        if engine_class is None:
-            raise EngineError(engine_name, f"Unknown search engine: '{engine_name}'.  Available engines: {', '.join(sorted(_engine_registry.keys()))}") # Improved error message.
-        if not config.enabled:
-            raise EngineError(engine_name, f"Search engine '{engine_name}' is disabled.")
-
-        return engine_class(config, **kwargs)
-
-    def get_registered_engines() -> dict[str, type[SearchEngine]]:
-        return _engine_registry.copy()
-    ```
-    **Key changes:**
-
-    *   `@abc.abstractmethod` is used for `env_api_key_names` and the new `_get_num_results`. This *forces* subclasses to implement them.
-    *   `engine_code` validation added.
-    *   A `ValueError` is raised if `engine_code` or the correct `env_api_key_names` are not provided. This prevents silent failures.
-    *   `get_engine` now raises a more descriptive `EngineError` if the engine isn't found or is disabled.
-    *   `make_http_request` centralizes request logic, including retries, user-agent randomization, and exception handling.  It now returns the full `httpx.Response` object, giving the calling engine more control.
-    *  The num_results is validated so that if an invalid value is passed it will take the default value.
-    * `_get_num_results` includes a fallback using the general `num_results`.
-
-**4.1.2.  Enhance `config.py`**
-
-*   **File:** `src/twat_search/web/config.py`
-*   **Change:** Modify `EngineConfig` to perform validation and require an API key if the engine specifies `env_api_key_names`.
-
+3. Define engine constants in `src/twat_search/web/engine_constants.py`:
+   
 ```python
-# In src/twat_search/web/config.py
-from pydantic import BaseModel, Field, field_validator, ValidationError
-import os
-import json
-import logging
-from pathlib import Path
-
-load_dotenv()
-logger = logging.getLogger(__name__)
-
-# ... (rest of your config.py) ...
-
-class EngineConfig(BaseModel):
-    api_key: str | None = Field(default=None) # Optional in general
-    enabled: bool = Field(default=False)
-    default_params: dict[str, Any] = Field(default_factory=dict)
-
-    @field_validator("api_key", mode="before")
-    def check_api_key(cls, v: str | None, values: ValidationInfo) -> str:
-        # print("check_api_key", v, values)
-        # if engine has api key names but no key, raise an error
-        engine_code = values.data.get('engine_code') # get it from data to avoid errors
-        if engine_code is None:
-            return v
-
-        try:
-            engine_class = get_registered_engines()[standardize_engine_name(engine_code)]
-        except KeyError:
-            # if engine is not registed yet, we can't check for api_key
-            return v
-
-        if hasattr(engine_class, "env_api_key_names"):
-            for key_name in engine_class.env_api_key_names:
-                if key := os.environ.get(key_name):
-                    return key
-
-            # if none is set
-            if v is None: # and also no api_key direct value set
-                    raise ValueError(
-                    f"Engine '{engine_code}' requires an API key. "
-                    f"Please set one of these environment variables: {', '.join(engine_class.env_api_key_names)}"
-                )
-
-        return v
-
-#keep Config class as is.
-class Config(BaseModel):
-    engines: dict[str, EngineConfig] = Field(default_factory=dict)
-    # ... (rest of your Config class) ...
-
-#Rest of file is ok.
-```
-
-**Key changes:**
-
-*   **`@field_validator("api_key", mode="before")`:**  This validator runs *before* the `api_key` field is assigned.  This is crucial because we need to check if the key is required *before* Pydantic's default value logic kicks in.  We use `values.data.get('engine_code')` to safely access the engine code *during* validation, even if it hasn't been fully assigned yet.
-*   **`get_registered_engines()`:** We call the `get_registered_engines()` function to access the registry.
-*   **`KeyError` Handling:** The code now includes a `try...except KeyError` block. This is important.  During the *initial* loading of the configuration, the `EngineConfig` for an engine might be created *before* the engine class itself is registered.  In this case, looking up the engine class in `_engine_registry` would raise a `KeyError`.  The `try...except` handles this gracefully, skipping the API key check if the engine isn't registered yet.  This prevents a chicken-and-egg problem during startup.
-* **Clear Error Message:**  The `ValueError` now provides a very specific message, telling the user *exactly* which environment variable(s) they need to set.
-* No longer need for the map with environment variables.
-
-**4.1.3. Update Engine Implementations**
-
-*   **Files:**  `src/twat_search/web/engines/you.py`, `src/twat_search/web/engines/pplx.py`, `src/twat_search/web/engines/serpapi.py` (and any other engine requiring an API key)
-*   **Change:**  Define the `env_api_key_names` correctly. Remove any existing API key handling from the `__init__` method (it's now handled by the base class and config).
-
-    ```python
-    # Example: src/twat_search/web/engines/you.py
-    @register_engine
-    class YouSearchEngine(YouBaseEngine):
-        engine_code = "you"
-        @property
-        def env_api_key_names(self) -> list[str]:
-          return ["YOU_API_KEY"]
-        # ... rest of the engine implementation ...
-
-    # Example: src/twat_search/web/engines/pplx.py
-    @register_engine
-    class PerplexitySearchEngine(SearchEngine):
-      engine_code = "pplx"
-      @property
-      def env_api_key_names(self) -> list[str]:
-        return ["PERPLEXITY_API_KEY"] # Or PERPLEXITYAI_API_KEY if that's correct
-    # ...
-    #Example: src/twat_search/web/engines/serpapi.py
-    @register_engine
-    class SerpApiSearchEngine(SearchEngine):
-        engine_code = "serpapi"
-
-        @property
-        def env_api_key_names(self) -> list[str]:
-            return ["SERPAPI_API_KEY"]
-    ```
-    Also in each class, make sure the `engine_code` is correct, and `_get_num_results` is defined.
-
-**4.1.4. Improve `get_engine`**
-
-Already addressed in 4.1.1.
-
-**4.1.5 Test Engine Initialization**
-
-*   **File:**  `tests/unit/web/engines/test_base.py` (and potentially engine-specific test files)
-*   **Change:** Add tests to cover the API key requirement and engine availability:
-
-    ```python
-    # Inside test_base.py or a new test file.
-    import pytest
-    from twat_search.web.engines.base import get_engine, SearchEngine, register_engine, EngineError
-    from twat_search.web.config import EngineConfig
-
-    @register_engine
-    class MockEngine(SearchEngine):
-        engine_code = "mock_engine"
-        @property
-        def env_api_key_names(self):
-          return ["MOCK_API_KEY"]
-
-        async def search(self, query: str) -> list:
-            return []
-
-    def test_get_engine_missing_api_key(monkeypatch):
-        monkeypatch.delenv("MOCK_API_KEY", raising=False)  # Ensure it's not set
-        config = EngineConfig(enabled=True)  # No API key provided
-        with pytest.raises(EngineError) as excinfo:
-            get_engine("mock_engine", config)
-        assert "MOCK_API_KEY" in str(excinfo.value) # Check for expected message
-
-    def test_get_engine_api_key_present(monkeypatch):
-        monkeypatch.setenv("MOCK_API_KEY", "test_key")
-        config = EngineConfig(enabled=True)
-        engine = get_engine("mock_engine", config) # Should not raise error
-        assert engine.api_key == "test_key"  # Access api_key (if needed)
-
-    def test_get_engine_disabled(monkeypatch):
-      monkeypatch.delenv("MOCK_API_KEY", raising=False)  # Ensure it's not set
-      config = EngineConfig(enabled=False)
-      with pytest.raises(EngineError):
-          get_engine("mock_engine", config)
-
-    ```
-
-**4.2. Data Integrity and Consistency**
-
-**4.2.1. `num_results` Implementation**
-
-*   **`base.SearchEngine`:** Already addressed above (abstract `_get_num_results` method).
-*   **Engine-Specific Implementation (Example: `bing_scraper.py`):**
-
-    ```python
-
-    class BingScraperSearchEngine(SearchEngine):
-        engine_code = "bing_scraper" # No API key
-        @property
-        def env_api_key_names(self):
-          return []
-
-        def __init__(self, config: EngineConfig, **kwargs: Any) -> None:
-          super().__init__(config, **kwargs)
-          self.max_results = self._get_num_results()
-
-        #... rest of your BingScraperSearchEngine code ...
-
-    ```
-    Make sure `self.max_results` is used to limit the results in the `search` method:
-    ```python
-    async def search(self, query: str) -> list[SearchResult]:
-      # ... your code to fetch results ...
-
-      results = []
-      for result in raw_results: # raw_results would be results from scraper.
-          search_result = self._convert_result(result)
-          if search_result:  # Handle potential None values.
-              results.append(search_result)
-          if len(results) >= self.max_results:  # Limit results here.
-              break
-
-      return results
-    ```
-
-*   **Repeat:**  Apply the same `_get_num_results` implementation and result limiting logic to *all* other engine classes.  This is repetitive but crucial.
-
-**4.2.2.  Source Attribution**
-*   **`base.SearchEngine`:**  Already addressed with the abstract `engine_code` property.
-*   **Engine-Specific Implementation:** In each engine, make *absolutely sure* you're using `self.engine_code` when creating the `SearchResult`:
-
-    ```python
-    # Example within an engine's search method:
-    def _convert_result(self, raw: dict[str, Any]) -> SearchResult | None:
-      try:
-        return SearchResult(
-            title=raw.get("title", ""),
-            url=HttpUrl(raw.get("link", "")), # Using link
-            snippet=raw.get("snippet", ""),
-            source=self.engine_code,  # ALWAYS use self.engine_code
-            raw=raw  # Include the raw data
-        )
-      except ValidationError as e:
-        # warning message
-        return None
-
-    ```
-
-**4.3. Engine Reliability (Empty Results)**
-
-*   **`searchit` Engines:**
-    1.  **Verify Installation:**  Run `uv pip install searchit` in your activated virtual environment.
-    2.  **Minimal Example:** Create a *separate* Python script (`test_searchit.py`):
-
-        ```python
-        import asyncio
-        from searchit.search import GoogleScraper, ScrapeRequest, SearchitResult
-
-        async def test_searchit():
-            scraper = GoogleScraper()
-            request = ScrapeRequest(query="test query")
-            results = await scraper.scrape(request)
-            print(results)
-
-        if __name__ == "__main__":
-            asyncio.run(test_searchit())
-
-        ```
-
-        Run this script independently: `python test_searchit.py`.  If this fails, the problem is with the `searchit` library itself, or your installation of it (or potentially network/proxy issues).  If it *works*, the problem is in your integration within `twat-search`.
-
-    3.  **Debugging (if the minimal example works):** Add detailed logging to `src/twat_search/web/engines/searchit.py`:
-
-        ```python
-        # Inside the GoogleSearchitEngine, YandexSearchitEngine, etc.
-        async def search(self, query: str) -> list[SearchResult]:
-            if not query:
-                raise EngineError(self.engine_code, "Search query cannot be empty")
-            logger.info(f"Searching Google (searchit) with query: '{query}'")
-
-            request = ScrapeRequest(
-                query=query,
-                domain=self.domain,
-                language=self.language,
-                geo=self.geo,
-                max_results=self.max_results, # Use self.max_results
-                sleep_interval=self.sleep_interval,
-
-            )
-            logger.debug(f"searchit request: {request!r}")  # Log the request object
-
-            scraper = GoogleScraper( # initiate object here, to pass max_results_per_page
-                max_results_per_page=min(100, self.max_results),
-            )
-
-            try:
-              raw_results = await self._run_scraper(scraper, request) # run scraper
-              logger.debug(f"Raw results from searchit: {raw_results!r}")  # Log raw results
-              if not raw_results:
-                  logger.info("No results returned from Google (searchit)")
-                  return []
-              logger.debug(
-                  f"Received {len(raw_results)} raw results from Google (searchit)",
-              )
-            except Exception as exc:
-                error_msg = f"Error running searchit scraper: {exc}"
-                logger.error(error_msg)
-                raise EngineError(self.engine_code, error_msg) from exc
-        # ...rest of code ...
-        ```
-*   **Brave News, Perplexity:**  Start by getting the *base* Brave and Perplexity engines working.  Then debug the news-specific versions, looking for differences in API endpoints, parameters, or response formats.  Use extensive logging.
-
-**4.4. Codebase Cleanup (`anywebsearch` Removal)**
-
-This is straightforward:
-
-1.  **Delete File:** Delete `src/twat_search/web/engines/anywebsearch.py`.
-2.  **Remove Imports:**  Remove *all* imports related to `anywebsearch` from:
-    *   `src/twat_search/web/engines/__init__.py`
-    *   `src/twat_search/web/engine_constants.py`
-    *   Any test files that might have been using it.
-3.  **Run Linters:** Use `ruff check --fix` and `ruff format` to automatically clean up unused imports and formatting.
-4.  **Run Tests:**  Run `pytest` to ensure that no other parts of the codebase were relying on `anywebsearch`.
-
-**4.5. Improve the CLI (q command)**
-* **Remove Engine Specific Params:** The `q` command in the CLI needs to be updated to only take common params. This should be done by making the parameters not prefixed.
-    ```python
-     @app.command(
-        help="Search across multiple engines simultaneously.",
-        context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
-    )
-    def q(
-        self,
-        ctx: fire.core.Context,
-        query: str = typer.Argument(..., help="The search query."),
-        engines: str | None = typer.Option(
-            None,
-            "--engines",
-            "-e",
-            help="Comma-separated list of search engines to use (e.g., brave,tavily).",
-        ),
-        num_results: int = typer.Option(
-            None,
-            "--num-results",
-            "-n",
-            help="Number of results to return (overrides engine defaults).",
-        ),
-        country: str = typer.Option(
-            None,
-            "--country",
-            "-c",
-            help="Country code for the search (e.g., US, GB).",
-        ),
-        language: str = typer.Option(
-            None,
-            "--language",
-            "-l",
-            help="Language code for the search (e.g., en, es).",
-        ),
-        safe_search: bool = typer.Option(
-            None,
-            "--safe-search",
-            "-s",
-            help="Enable or disable safe search (True/False).",
-        ),
-        json_output: bool = typer.Option(
-            False, "--json", help="Output results in JSON format."
-        ),
-        verbose: bool = typer.Option(
-            False, "--verbose", "-v", help="Enable verbose logging."
-        ),
-        plain: bool = typer.Option(
-            False, "--plain", "-p", help="Output in plain text, url only."
-        ),
-    ) -> None:
-    ```
-* **Remove engine specific parameters:**  from the various engine specific commands, like brave, tavily, pplx, etc.
-* **Test:** Run `cleanup.py status`
-
-**4.6 Enforce JSON Output Format**
-
-To standardize the JSON output format across all search engines, you should create a helper function that takes the necessary data and returns a dictionary with a consistent structure. This function will be used by each engine to format its results before returning them.  Since you are already using `pydantic`, use your existing `SearchResult` model.
-
-Here's how you would do this:
-
-1.  **Use `SearchResult` model:**
-
-    In `src/twat_search/web/models.py`, you have the following `SearchResult` model:
-
-    ```python
-    class SearchResult(BaseModel):
-        url: HttpUrl
-        title: str
-        snippet: str
-        source: str
-        raw: dict[str, Any] | None = None  # To store any engine-specific data
-
-        @field_validator("title", "snippet", "source")
-        def validate_non_empty(cls, v: str) -> str:
-            if not v or not v.strip():
-                msg = f"value must not be None or empty string, got='{v}'"
-                raise ValueError(msg)
-            return v.strip()
-    ```
-
-2. **Remove utility function**
-Remove the `_process_results` and `_display_json_results`. Remove `CustomJSONEncoder`.
-
-3.  **Modify Engine `search` Methods:**
-
-    Each engine's `search` method should now create and return a list of `SearchResult` objects directly, instead of plain dictionaries.
-
-    Example (using a simplified `DuckDuckGoSearchEngine` for illustration):
-
-    ```python
-    # src/twat_search/web/engines/duckduckgo.py
-    class DuckDuckGoSearchEngine(SearchEngine):
-      # ...
-
-      async def search(self, query: str) -> list[SearchResult]:
-          # ... (fetch raw results from DuckDuckGo API) ...
-          results: list[SearchResult] = []
-          for raw_result in raw_results:
-            try:
-              search_result = SearchResult(
-                  url=raw_result["url"],
-                  title=raw_result["title"],
-                  snippet=raw_result.get("snippet", ""),  # Provide a default
-                  source=self.engine_code, # Set source
-                  raw=raw_result,  # Store the raw result
-              )
-              results.append(search_result)
-              if len(results) >= self.max_results:
-                break # respect the num_results/max_results.
-            except ValidationError as e:
-                logger.warning(f"Validation error for result: {e}")
-                # Consider logging the raw_result here, for debugging.
-                continue  # Skip invalid results
-            except Exception as e: # catch unexpected errors
-                logger.warning(f"Unexpected error converting result: {e}")
-                continue
-
-          return results
-    ```
-    Key points here:
-    * Return type is now `list[SearchResult]`.
-    * A SearchResult is instantiated for *every* valid result.
-    * `source=self.engine_code` is used to correctly set the source.
-    * A `try...except ValidationError` block handles potential Pydantic validation errors, logging them and skipping the invalid result.
-    * We have added another exception block to catch other exceptions.
-    * Added a limit on the number of results using `self.max_results`.
-4. **Update API function**
-
+   # Falla-based engines
+   GOOGLE_FALLA = "google-falla"
+   BING_FALLA = "bing-falla"
+   DUCKDUCKGO_FALLA = "duckduckgo-falla"
+   AOL_FALLA = "aol-falla"
+   ASK_FALLA = "ask-falla"
+   DOGPILE_FALLA = "dogpile-falla"
+   GIBIRU_FALLA = "gibiru-falla"
+   MOJEEK_FALLA = "mojeek-falla"
+   QWANT_FALLA = "qwant-falla"
+   YAHOO_FALLA = "yahoo-falla"
+   YANDEX_FALLA = "yandex-falla"
+   
+   # Update ENGINE_FRIENDLY_NAMES
+   ENGINE_FRIENDLY_NAMES.update({
+       GOOGLE_FALLA: "Google (Falla)",
+       BING_FALLA: "Bing (Falla)",
+       DUCKDUCKGO_FALLA: "DuckDuckGo (Falla)",
+       AOL_FALLA: "AOL (Falla)",
+       ASK_FALLA: "Ask.com (Falla)",
+       DOGPILE_FALLA: "DogPile (Falla)",
+       GIBIRU_FALLA: "Gibiru (Falla)",
+       MOJEEK_FALLA: "Mojeek (Falla)",
+       QWANT_FALLA: "Qwant (Falla)",
+       YAHOO_FALLA: "Yahoo (Falla)",
+       YANDEX_FALLA: "Yandex (Falla)",
+   })
+   
+   # Update ALL_POSSIBLE_ENGINES
+   ALL_POSSIBLE_ENGINES.extend([
+       GOOGLE_FALLA,
+       BING_FALLA,
+       DUCKDUCKGO_FALLA,
+       AOL_FALLA,
+       ASK_FALLA,
+       DOGPILE_FALLA,
+       GIBIRU_FALLA,
+       MOJEEK_FALLA,
+       QWANT_FALLA,
+       YAHOO_FALLA,
+       YANDEX_FALLA,
+   ])
+   ```
+
+4. Update `src/twat_search/web/engines/__init__.py` to import and register the new engines:
+   
 ```python
-#src/twat_search/web/api.py
+   # Add to imports
+   from twat_search.web.engine_constants import (
+       # ... existing imports ...
+       GOOGLE_FALLA,
+       BING_FALLA,
+       DUCKDUCKGO_FALLA,
+       AOL_FALLA,
+       ASK_FALLA,
+       DOGPILE_FALLA,
+       GIBIRU_FALLA,
+       MOJEEK_FALLA,
+       QWANT_FALLA,
+       YAHOO_FALLA,
+       YANDEX_FALLA,
+   )
+   
+   # Add to __all__
+   __all__ = [
+       # ... existing entries ...
+       "GOOGLE_FALLA",
+       "BING_FALLA",
+       "DUCKDUCKGO_FALLA",
+       "AOL_FALLA",
+       "ASK_FALLA",
+       "DOGPILE_FALLA",
+       "GIBIRU_FALLA",
+       "MOJEEK_FALLA",
+       "QWANT_FALLA",
+       "YAHOO_FALLA",
+       "YANDEX_FALLA",
+   ]
+   ```
 
-async def search(
-    query: str,
-    engines: list[str] | None = None,
-    config: Config | None = None,
-    strict_mode: bool = True, # added to ensure that error is raised if engine does not exist.
-    **kwargs: Any,
-) -> list[SearchResult]: # Change return type
-```
+#### 1.2.2. Base Implementation
 
-Change the return type to `list[SearchResult]`.
+1. Create a base `FallaSearchEngine` class in `src/twat_search/web/engines/falla.py`
 
-```python
-    results = await asyncio.gather(*tasks, return_exceptions=True)
+2. Implement specific engine classes for each Falla engine
 
-    flattened_results: list[SearchResult] = []
-    for engine_name, result in zip(engine_names, results, strict=False):
-        if isinstance(result, Exception):
-            logger.error(
-                f"Engine '{engine_name}' failed: {type(result).__name__} - {result}",
-            )
-        elif isinstance(result, list):
-            # This part now expects a list of SearchResult objects. No conversion needed!
-            logger.info(
-                f"✅ Engine '{engine_name}' returned {len(result)} results",
-            )
+#### 1.2.3. Falla Integration Approach
 
-            for search_result in result:
-                search_result.source = engine_name # override and use the engine name
-                flattened_results.append(search_result)
-        else:
-            logger.warning(
-                f"⚠️ Engine '{engine_name}' returned no results or unexpected type: {type(result)}",
-            )
+Instead of making Falla a dependency, we'll incorporate the Falla code directly into the project:
 
-    if not flattened_results:
-        logger.error(f"Search failed: {e}")
-        raise SearchError("No results found from any search engine.")
+1. Create a `lib_falla` directory in `src/twat_search/web/engines/` to contain the Falla code
+2. Adapt the Falla code to work within our project structure:
+   - Update import paths
+   - Fix any compatibility issues
+   - Ensure proper attribution and licensing
+3. Update the `FallaSearchEngine` class to use the embedded Falla code
+4. Create a fallback mechanism for when certain dependencies are not available
 
-    return flattened_results
+Benefits of this approach:
+* No dependency on an unmaintained external package
+* Better control over the code and its behavior
+* Ability to fix bugs and make improvements as needed
+* Simplified installation for users
 
-```
-The important part here is that `flattened_result` and the return is a list of `SearchResult`.
+#### 1.2.4. Implementation Details
 
-5. **Update CLI function**
-Update the `q` command in `cli.py`
+1. The `FallaSearchEngine` class will:
+   - Initialize the appropriate Falla engine based on the engine code
+   - Convert Falla results to our standard `SearchResult` format
+   - Handle errors gracefully
+   - Provide consistent behavior across all engines
 
-```python
-@app.command(
-    help="Search across multiple engines simultaneously.",
-    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
-)
-def q(
-    self,
-    ctx: fire.core.Context,
-    query: str = typer.Argument(..., help="The search query."),
-    engines: str | None = typer.Option(
-        None,
-        "--engines",
-        "-e",
-        help="Comma-separated list of search engines to use (e.g., brave,tavily).",
-    ),
-    num_results: int = typer.Option(
-        None,
-        "--num-results",
-        "-n",
-        help="Number of results to return (overrides engine defaults).",
-    ),
-    country: str = typer.Option(
-        None,
-        "--country",
-        "-c",
-        help="Country code for the search (e.g., US, GB).",
-    ),
-    language: str = typer.Option(
-        None,
-        "--language",
-        "-l",
-        help="Language code for the search (e.g., en, es).",
-    ),
-    safe_search: bool = typer.Option(
-        None,
-        "--safe-search",
-        "-s",
-        help="Enable or disable safe search (True/False).",
-    ),
-    json_output: bool = typer.Option(
-        False, "--json", help="Output results in JSON format."
-    ),
-    verbose: bool = typer.Option(
-        False, "--verbose", "-v", help="Enable verbose logging."
-    ),
-    plain: bool = typer.Option(
-        False, "--plain", "-p", help="Output in plain text, url only."
-    ),
-) -> None:
+2. Each specific engine class (e.g., `GoogleFallaEngine`) will:
+   - Define engine-specific parameters
+   - Initialize the appropriate Falla engine
+   - Register itself with the engine registry
 
-    self._configure_logging(verbose)
-    #... parse engines, as you did before ...
-    if num_results is not None:
-        self.logger.debug(f"Using num_results={num_results}")
-        common_params["num_results"] = num_results
-
-    # Run search and handle potential errors.
-    try:
-        results = asyncio.run(
-            self._run_search(
-                query,
-                engine_list,
-                **common_params
-            )
-        )
-        if json_output:
-            # Use model_dump to serialize Pydantic models to dict
-            print(json.dumps([r.model_dump() for r in results], indent=2)) # Now serializing correctly.
-        else:
-            _display_results(results, verbose, plain) #Simplified _display_results
-
-    except SearchError as e:
-        self.logger.error(f"Search failed: {e}")
-        _display_errors([str(e)])
-```
-
-*   **Key changes:**
-    *   The `q` command no longer takes engine-specific parameters.  It only takes common parameters, which are passed to the `_run_search` function.
-    * The JSON output uses pydantic `model_dump` to convert `SearchResult` to dict.
-    *   The non-JSON output uses a simplified `_display_results` function (see below).
-
-```python
-#Simplified display function
-def _display_results(results: list[SearchResult], verbose: bool, plain: bool) -> None:
-    if not results:
-        console.print("[bold red]No results found![/bold red]")
-        return
-
-    if plain:
-        urls = set()
-        for result in results:
-            # Avoid duplicate URLs
-            if str(result.url) not in urls:
-                urls.add(str(result.url))
-        for url in sorted(urls):
-            console.print(url)
-        return
-
-    table = Table()  # Remove show_lines=True to eliminate row separator lines
-    table.add_column("Engine", style="magenta")
-    if verbose:
-      table.add_column("Title", style="green")
-      table.add_column("URL", style="blue", overflow="fold", max_width=70)
-    else:
-      table.add_column("URL", style="blue", overflow="fold")
-
-    for result in results:
-        if verbose:
-          table.add_row(result.source, result.title, str(result.url))
-        else:
-          table.add_row(result.source, str(result.url))
-    console.print(table)
-```
-
-* **Remove helper functions:**
-`_process_results`, `_display_json_results` and `CustomJSONEncoder` class are not needed anymore since `twat_search.web.models.SearchResult` model and pydantic `model_dump` are used.
-
-**6. Testing:**
-
-*   Create test cases for each of the above changes, especially within `tests/unit/web/engines/test_base.py` and in individual engine test files.
-*   Test the CLI using `fire.Fire`'s testing utilities, as demonstrated in your existing `tests/test_twat_search.py`.
-
-By systematically applying these steps, the code will become more robust, maintainable, and consistent. The detailed plan and code samples will guide you through the refactoring process. Remember to execute `cleanup.py status` regularly and run `pytest` to check for any errors or regressions introduced during the modifications.  Address *all* Ruff and Mypy issues.
+3. The embedded Falla code will be modified to:
+   - Work with our project structure
+   - Use our logging system
+   - Handle errors consistently with the rest of the project
+   - Support our configuration system
 
 ================
 File: VERSION.txt

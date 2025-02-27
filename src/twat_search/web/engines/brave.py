@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar
 
 import httpx
 from pydantic import BaseModel, HttpUrl, ValidationError
@@ -86,7 +86,6 @@ class BaseBraveEngine(SearchEngine):
             params["freshness"] = self.freshness
 
         # Add debug logging to see the exact params we're sending
-        print(f"DEBUG: Sending API request with count={count_param}, num_results={self.num_results}")
 
         async with httpx.AsyncClient() as client:
             try:
@@ -175,7 +174,6 @@ class BaseBraveEngine(SearchEngine):
         }
 
         # Add debug logging to see what count is being used in the API call
-        print(f"DEBUG: In _make_api_call, using count={params['count']}")
 
         if hasattr(self, "freshness") and self.freshness:
             params["freshness"] = self.freshness
@@ -218,15 +216,9 @@ class BaseBraveEngine(SearchEngine):
             return results
 
         # Add debug logging
-        print(f"DEBUG: In limit_results, self.num_results={self.num_results}")
-        print(f"DEBUG: Limiting {len(results)} results to {self.num_results} results")
 
         # Use the num_results value directly
-        limited_results = results[: self.num_results]
-
-        print(f"DEBUG: Returned {len(limited_results)} results")
-
-        return limited_results
+        return results[: self.num_results]
 
 
 @register_engine
@@ -244,7 +236,6 @@ class BraveSearchEngine(BaseBraveEngine):
         data = await self._make_api_call(query)
 
         # Add debug logging of raw API response for debugging
-        print(f"DEBUG: Raw API response from Brave Web: {data}")
 
         results = []
         try:
@@ -252,7 +243,6 @@ class BraveSearchEngine(BaseBraveEngine):
             items = web_result.get("results", [])
 
             # Add debug for items extracted
-            print(f"DEBUG: Found {len(items)} web search items")
 
             for _idx, item in enumerate(items, start=1):
                 title = item.get("title", "")
@@ -301,7 +291,6 @@ class BraveNewsSearchEngine(BaseBraveEngine):
         data = await self._make_api_call(query)
 
         # Add debug logging of raw API response
-        print(f"DEBUG: Raw API response from Brave News: {data}")
 
         results = []
         try:
@@ -313,7 +302,6 @@ class BraveNewsSearchEngine(BaseBraveEngine):
             items = data.get("results", [])
 
             # Add debug for items extracted
-            print(f"DEBUG: Found {len(items)} news items")
 
             for _idx, item in enumerate(items, start=1):
                 title = item.get("title", "")
@@ -352,7 +340,6 @@ class BraveNewsSearchEngine(BaseBraveEngine):
             # Use the limit_results method to enforce num_results
             return self.limit_results(results)
         except Exception as e:
-            print(f"DEBUG: Exception in BraveNewsSearchEngine.search: {e!s}")
             raise EngineError(
                 self.engine_code,
                 f"Failed to process results from Brave News API: {e}",
@@ -386,7 +373,7 @@ async def brave(
     config = EngineConfig(api_key=api_key, enabled=True)
 
     # Convert safe_search to bool if it's a string or None
-    safe_search_bool = True if safe_search in (True, "strict", "moderate", None) else False
+    safe_search_bool = safe_search in (True, "strict", "moderate", None)
 
     engine = BraveSearchEngine(
         config,
@@ -426,7 +413,7 @@ async def brave_news(
     config = EngineConfig(api_key=api_key, enabled=True)
 
     # Convert safe_search to bool if it's a string or None
-    safe_search_bool = True if safe_search in (True, "strict", "moderate", None) else False
+    safe_search_bool = safe_search in (True, "strict", "moderate", None)
 
     engine = BraveNewsSearchEngine(
         config,
