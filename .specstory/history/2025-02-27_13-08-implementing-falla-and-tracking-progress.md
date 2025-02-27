@@ -13449,6 +13449,2633 @@ Run 'info ENGINE_NAME' for more details about a specific engine.
 
 _**Assistant**_
 
+<think>I see that there's an issue with importing `SearchEngineError` from `twat_search.web.exceptions`. Based on the error message, this class doesn't exist in the exceptions module. Let's look at the relevant files to understand how to fix this.
+
+Looking at the error:
+```
+Failed to import falla module: cannot import name 'SearchEngineError' from 'twat_search.web.exceptions'
+```
+
+And from the exceptions.py content we can see:
+```python
+class SearchError(Exception):
+    """Base exception for search-related errors."""
+    # ...
+
+class EngineError(SearchError):
+    """Error for an issue with a specific search engine."""
+    # ...
+```
+
+There is no `SearchEngineError` class defined, but there's `EngineError` which seems to serve a similar purpose. The falla.py file is trying to import `SearchEngineError` which doesn't exist.
+
+Let's fix this by modifying the import in falla.py to use `EngineError` instead of `SearchEngineError`.
+
+Also, there seems to be an issue with how the Google engine and other Falla engines are initialized. Looking at the code:
+
+1. The Google engine in Google.py initializes with `super().__init__(name="Google")` but we're trying to pass `num_results` and `language` parameters.
+2. The SearchResult class apparently doesn't have `position` and `query` parameters.
+
+Let's make the necessary changes to fix these issues:
+
+1. Change `SearchEngineError` to `EngineError`
+2. Fix the initialization of Falla engines to match their constructor signatures
+3. Fix the parameters for SearchResult
+
+Once these changes are made, we should run the linter again to check if there are any remaining issues.</think>Looking at the error message, we need to fix the issue with importing `SearchEngineError` from `twat_search.web.exceptions`. Let's first check what exception classes are actually available in that module and update our code accordingly.
+
+---
+
+_****_
+
+```diff
+  
+  import logging
++ from urllib.parse import urlparse
+  
+  from twat_search.web.engines.base import SearchEngine
+      Yandex,
+  )
+- from twat_search.web.exceptions import SearchEngineError
++ from twat_search.web.exceptions import EngineError
+  from twat_search.web.models import SearchResult
+  
+          try:
+              # Basic check - create and validate a Google instance
+-             _check_engine = Google(
+-                 num_results=1,
+-                 language="en",
+-             )
++             _check_engine = Google()
+              _falla_available = True
+          except Exception as e:
+  
+      # To be overridden by subclasses
+-     engine_name = "falla"
++     engine_code = "falla"
+      friendly_engine_name = "Falla Search"
+      _falla_engine_class = Falla  # Base engine class
+              Falla: Instance of the Falla engine class
+          """
+-         # Parameters to pass to the Falla engine
+-         params = {
+-             "num_results": self.max_results,
+-         }
+- 
+-         # Add language if specified
+-         if self.language:
+-             params["language"] = self.language
+- 
+-         # Create and return the engine instance
+-         return self._falla_engine_class(**params)
++         # Create a new instance - passing name parameter for most engines
++         # Falla engines require a name parameter
++         return self._falla_engine_class(name=self.engine_code)
+  
+      async def search(self, query: str, **kwargs) -> list[SearchResult]:
+  
+          Raises:
+-             SearchEngineError: If the search fails
++             EngineError: If the search fails
+          """
+          try:
+              # Perform the search
+-             raw_results = self._falla_engine.search(
+-                 query=query,
+-                 num_results=self.max_results,
+-             )
++             raw_results = self._falla_engine.search(query=query)
+  
+              # Convert to SearchResult objects
+              results = []
+-             for item in raw_results:
++             for i, item in enumerate(raw_results):
++                 # Validate URL
++                 url = item.get("link", "")
++                 if not url:
++                     continue
++                 
++                 # Create search result object
+                  result = SearchResult(
+                      title=item.get("title", ""),
+-                     url=item.get("link", ""),
++                     url=url,
+                      snippet=item.get("snippet", ""),
+                      source=self.engine_code,
+-                     position=len(results) + 1,
+-                     query=query,
++                     rank=i + 1,
++                     raw=item,
+                  )
+                  results.append(result)
+              logger.error(f"Search failed: {e!s}")
+              msg = f"Search failed: {e!s}"
+-             raise SearchEngineError(msg)
++             raise EngineError(self.engine_code, msg)
+  
+  
+```
+
+---
+
+_****_
+
+
+
+Now let's run the linter to see if there are any remaining issues:
+
+---
+
+_****_
+
+```bash
+ruff check src/twat_search/web/engines/falla.py
+```
+
+```
+src/twat_search/web/engines/falla.py:14:26: F401 `urllib.parse.url
+parse` imported but unused
+   |
+13 | import logging
+14 | from urllib.parse import urlparse
+   |                          ^^^^^^^^ F401
+15 |
+16 | from twat_search.web.engines.base import SearchEngine
+   |
+   = help: Remove unused import: `urllib.parse.urlparse`
+
+src/twat_search/web/engines/falla.py:108:42: ARG002 Unused method 
+argument: `kwargs`
+    |
+106 |         return self._falla_engine_class(name=self.engine_cod
+e)
+107 |
+108 |     async def search(self, query: str, **kwargs) -> list[Sea
+rchResult]:
+    |                                          ^^^^^^ ARG002
+109 |         """
+110 |         Perform a search using the Falla engine.
+    |
+
+src/twat_search/web/engines/falla.py:149:13: B904 Within an `excep
+t` clause, raise exceptions with `raise ... from err` or `raise ..
+. from None` to distinguish them from errors in exception handling
+    |
+147 |             logger.error(f"Search failed: {e!s}")
+148 |             msg = f"Search failed: {e!s}"
+149 |             raise EngineError(self.engine_code, msg)
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ B904
+    |
+
+Found 3 errors.
+
+```
+
+---
+
+_****_
+
+
+
+
+
+Let's fix the remaining linter issues:
+
+---
+
+_****_
+
+```diff
+  
+  import logging
+- from urllib.parse import urlparse
+  
+  from twat_search.web.engines.base import SearchEngine
+          return self._falla_engine_class(name=self.engine_code)
+  
+-     async def search(self, query: str, **kwargs) -> list[SearchResult]:
++     async def search(self, query: str, **_kwargs) -> list[SearchResult]:
+          """
+          Perform a search using the Falla engine.
+  
+          Args:
+              query: Search query
+-             **kwargs: Additional search parameters
++             **_kwargs: Additional search parameters (ignored for Falla engines)
+  
+          Returns:
+              logger.error(f"Search failed: {e!s}")
+              msg = f"Search failed: {e!s}"
+-             raise EngineError(self.engine_code, msg)
++             raise EngineError(self.engine_code, msg) from e
+  
+  
+```
+
+---
+
+_****_
+
+
+
+Let's run the linter to check our progress:
+
+---
+
+_****_
+
+```bash
+ruff check --select=F,B,ARG src/twat_search/web/engines/falla.py
+```
+
+```
+All checks passed!
+
+```
+
+---
+
+_****_
+
+
+
+
+
+Now that we've resolved the basic linting issues, let's check the web.models module to see the correct structure for SearchResult and fix the URL typing issue:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/models.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+Now let's fix the URL typing issue in the falla.py file:
+
+---
+
+_****_
+
+```diff
+  
+  import logging
++ 
++ from pydantic import HttpUrl
+  
+  from twat_search.web.engines.base import SearchEngine
+                      continue
+  
+-                 # Create search result object
++                 try:
++                     # Create search result object - Pydantic will validate the URL
+                      result = SearchResult(
+                          title=item.get("title", ""),
+-                     url=url,
++                         url=HttpUrl(url),  # Convert to HttpUrl type
+                          snippet=item.get("snippet", ""),
+                          source=self.engine_code,
+                      )
+                      results.append(result)
++                 except ValueError as url_err:
++                     # Log invalid URL but continue processing other results
++                     logger.warning(f"Invalid URL '{url}' in {self.engine_code} result: {url_err}")
++                     continue
+  
+              return self.limit_results(results)
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+Now let's run the linter again to check for any remaining issues:
+
+---
+
+_****_
+
+```bash
+ruff check src/twat_search/web/engines/falla.py
+```
+
+```
+All checks passed!
+
+```
+
+---
+
+_****_
+
+
+
+
+
+Excellent! We've successfully fixed all the linter issues in the `falla.py` file. Now let's run the `twat-search web info` command again to see if our changes have fixed the import error:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -m twat_search web info
+```
+
+```
+            🔎 Available Search Engines             
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ Engine              ┃ Enabled ┃ API Key Required ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ bing_scraper        │ ✅      │ ❌               │
+│ brave               │ ✅      │ ✅               │
+│ brave_news          │ ✅      │ ✅               │
+│ critique            │ ✅      │ ✅               │
+│ duckduckgo          │ ✅      │ ❌               │
+│ google_hasdata      │ ✅      │ ✅               │
+│ google_hasdata_full │ ✅      │ ✅               │
+│ google_scraper      │ ✅      │ ❌               │
+│ google_serpapi      │ ✅      │ ✅               │
+│ pplx                │ ✅      │ ✅               │
+│ tavily              │ ✅      │ ✅               │
+│ you                 │ ✅      │ ✅               │
+│ you_news            │ ✅      │ ✅               │
+└─────────────────────┴─────────┴──────────────────┘
+
+Run 'info ENGINE_NAME' for more details about a specific engine.
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+The error message about importing `SearchEngineError` is gone, which is a good sign! However, I notice that the Falla engines are not showing up in the list of available engines. Let's check if we need to register them in the engine registry:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/engines/__init__.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+I see the issue now. The Falla engines are imported in `__init__.py`, but engine functions are not being added to the `available_engine_functions` dictionary. Let's implement these engine functions and register them:
+
+---
+
+_****_
+
+```diff
+  from pydantic import HttpUrl
+  
+- from twat_search.web.engines.base import SearchEngine
++ from twat_search.web.engines.base import SearchEngine, register_engine
+  from twat_search.web.engines.lib_falla.core import (
+      Aol,
+  
+  
++ @register_engine
+  class FallaSearchEngine(SearchEngine):
+      """Base class for all Falla-based search engines."""
+  
+  # Define engine classes for specific Falla engines
++ @register_engine
+  class GoogleFallaEngine(FallaSearchEngine):
+      """Google search implementation using Falla."""
+  
+  
++ @register_engine
+  class BingFallaEngine(FallaSearchEngine):
+      """Bing search implementation using Falla."""
+  
+  
++ @register_engine
+  class DuckDuckGoFallaEngine(FallaSearchEngine):
+      """DuckDuckGo search implementation using Falla."""
+  
+  
++ @register_engine
+  class YahooFallaEngine(FallaSearchEngine):
+      """Yahoo search implementation using Falla."""
+  
+  
++ @register_engine
+  class AskFallaEngine(FallaSearchEngine):
+      """Ask.com search implementation using Falla."""
+  
+  
++ @register_engine
+  class AolFallaEngine(FallaSearchEngine):
+      """AOL search implementation using Falla."""
+  
+  
++ @register_engine
+  class DogpileFallaEngine(FallaSearchEngine):
+      """Dogpile search implementation using Falla."""
+  
+  
++ @register_engine
+  class GibiruFallaEngine(FallaSearchEngine):
+      """Gibiru search implementation using Falla."""
+  
+  
++ @register_engine
+  class MojeekFallaEngine(FallaSearchEngine):
+      """Mojeek search implementation using Falla."""
+  
+  
++ @register_engine
+  class QwantFallaEngine(FallaSearchEngine):
+      """Qwant search implementation using Falla."""
+  
+  
++ @register_engine
+  class YandexFallaEngine(FallaSearchEngine):
+      """Yandex search implementation using Falla."""
+      friendly_engine_name = "Yandex (Falla)"
+      _falla_engine_class = Yandex
++ 
++ 
++ # Helper functions for each engine to register with available_engine_functions
++ 
++ async def google_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search Google using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("google_falla")
++     return await engine.search(query, **kwargs)
++ 
++ 
++ async def bing_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search Bing using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("bing_falla")
++     return await engine.search(query, **kwargs)
++ 
++ 
++ async def duckduckgo_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search DuckDuckGo using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("duckduckgo_falla")
++     return await engine.search(query, **kwargs)
++ 
++ 
++ async def yahoo_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search Yahoo using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("yahoo_falla")
++     return await engine.search(query, **kwargs)
++ 
++ 
++ async def ask_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search Ask.com using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("ask_falla")
++     return await engine.search(query, **kwargs)
++ 
++ 
++ async def aol_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search AOL using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("aol_falla")
++     return await engine.search(query, **kwargs)
++ 
++ 
++ async def dogpile_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search Dogpile using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("dogpile_falla")
++     return await engine.search(query, **kwargs)
++ 
++ 
++ async def gibiru_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search Gibiru using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("gibiru_falla")
++     return await engine.search(query, **kwargs)
++ 
++ 
++ async def mojeek_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search Mojeek using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("mojeek_falla")
++     return await engine.search(query, **kwargs)
++ 
++ 
++ async def qwant_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search Qwant using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("qwant_falla")
++     return await engine.search(query, **kwargs)
++ 
++ 
++ async def yandex_falla(query: str, **kwargs) -> list[SearchResult]:
++     """
++     Search Yandex using the Falla engine.
++     
++     Args:
++         query: Search query
++         **kwargs: Additional search parameters
++         
++     Returns:
++         list[SearchResult]: List of search results
++     """
++     from twat_search.web.engines.base import get_engine
++     engine = get_engine("yandex_falla")
++     return await engine.search(query, **kwargs)
+  
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+We need to fix the function helpers to properly pass the config parameter to the engine initialization. Let's update them:
+
+---
+
+_****_
+
+```diff
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import get_engine_config
+  
+-     engine = get_engine("google_falla")
++     config = get_engine_config("google_falla")
++     engine = get_engine("google_falla", config=config)
+      return await engine.search(query, **kwargs)
+  
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+Now we need to update all functions to use `get_engine_config` correctly. Let's check how `get_engine` is actually used in the codebase:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/engines/base.py
+
+---
+
+_****_
+
+
+
+
+
+Now we need to find out how to access the config module:
+
+---
+
+_****_
+
+```bash
+grep -r "get_engine_config" --include="*.py" src/
+```
+
+```
+src//twat_search/web/engines/falla.py:    from twat_search.web.con
+fig import get_engine_config
+src//twat_search/web/engines/falla.py:    config = get_engine_conf
+ig("google_falla")
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+Let's check the config module to see how `get_engine_config` is defined:
+
+---
+
+_****_
+
+Tool call timed out after 5000ms
+
+---
+
+_****_
+
+
+
+
+
+
+
+Let's try a different approach and examine how engines are typically initialized in the codebase:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "get_engine\(.+config" • **10** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L8670 | `def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9643 | `engine_instance = get_engine("new_engine", EngineConfig())` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9647 | `get_engine("nonexistent_engine", EngineConfig())` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9651 | `get_engine("disabled_engine", config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9654 | `engine = get_engine("test_engine", config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9656 | `engine = get_engine("test_engine", EngineConfig(), **kwargs)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L1414 | `+     engine_instance = get_engine("new_engine", EngineConfig())` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L1421 | `+         get_engine("nonexistent_engine", EngineConfig())` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L1428 | `+         get_engine("disabled_engine", config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L1439 | `+     engine = get_engine("test_engine", config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L1449 | `+     engine = get_engine("test_engine", EngineConfig(), **kwargs)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3761 | `engine = get_engine(engine_name, engine_config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3783 | `3. Tries to initialize each engine using `get_engine(engine_name, engine_config)`` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3801 | `engine = get_engine(engine_name, engine_config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2031 | `engine_instance = get_engine(engine_name, engine_config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/engines/base.py` | L373 | `def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/engines/falla.py` | L276 | `engine = get_engine("google_falla", config=config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_01-58-creating-and-tracking-project-tasks.md` | L739 | `+ def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L481 | `def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_20-02-analyzing-todo-md-and-updating-progress-md.md` | L714 | `def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_20-02-analyzing-todo-md-and-updating-progress-md.md` | L14291 | `⟪ 118 characters skipped ⟫arch/web/engines/base.py` | L328 | `def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/unit/web/engines/test_base.py` | L98 | `engine_instance = get_engine("new_engine", EngineConfig())` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/unit/web/engines/test_base.py` | L105 | `get_engine("nonexistent_engine", EngineConfig())` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/unit/web/engines/test_base.py` | L112 | `get_engine("disabled_engine", config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/unit/web/engines/test_base.py` | L123 | `engine = get_engine("test_engine", config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/unit/web/engines/test_base.py` | L133 | `engine = get_engine("test_engine", EngineConfig(), **kwargs)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L792 | `+ def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L4094 | `+     engine_instance = get_engine("new_engine", EngineConfig())` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L4101 | `+         get_engine("nonexistent_engine", EngineConfig())` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L4108 | `+         get_engine("disabled_engine", config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L4119 | `+     engine = get_engine("test_engine", config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L4129 | `+     engine = get_engine("test_engine", EngineConfig(), **kwargs)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6441 | `engine = get_engine(engine_name, engine_config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6463 | `3. Tries to initialize each engine using `get_engine(engine_name, engine_config)`` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6481 | `engine = get_engine(engine_name, engine_config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18332 | `engine_instance = get_engine(engine_name, engine_config)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L19983 | `def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:` |
+
+</details>
+
+---
+
+_****_
+
+
+
+---
+
+_**User**_
+
+@twat_search.txt Look at the while coebase and check where the engines need to be added (various inits and the cli)
+
+---
+
+_**Assistant**_
+
+<think>I need to look at how the search engines are registered and made available in the `twat-search` codebase. Based on the linter errors and previous exploration, I need to address:
+
+1. The issue with `get_engine_config` being an unknown import
+2. The missing `config` parameter in multiple engine function calls
+3. Updating the initialization in the various parts of the code where engines need to be registered
+
+Let's first fix the immediate issues in the `falla.py` file, then look at other parts of the codebase where the engines need to be registered.</think>Looking at the linter errors, we need to fix multiple issues with the `falla.py` file before we can examine the full codebase integration. Let's address these issues first:
+
+---
+
+_****_
+
+```diff
+  
+  import logging
++ from typing import Any, cast, TypeVar
+  
+  from pydantic import HttpUrl
+  
+  logger = logging.getLogger(__name__)
++ 
++ # Type variable for Falla engine types
++ T = TypeVar("T", bound=Falla)
+  
+  # List of available Falla engine names
+      engine_code = "falla"
+      friendly_engine_name = "Falla Search"
+-     _falla_engine_class = Falla  # Base engine class
++     _falla_engine_class: type[T] = cast(type[T], Falla)  # Base engine class
+      
+      def __init__(self, config, **kwargs):
+          _falla_initialized = True
+      
+-     def _create_engine_instance(self):
++     def _create_engine_instance(self) -> T:
+          """
+          Create an instance of the Falla engine.
+          """
+          try:
+-             # Perform the search
++             # Perform the search - Falla engines return a list[dict]
+              raw_results = self._falla_engine.search(query=query)
+              
+      engine_code = "google_falla"
+      friendly_engine_name = "Google (Falla)"
+-     _falla_engine_class = Google
++     _falla_engine_class = cast(type[T], Google)
+  
+  
+      engine_code = "bing_falla"
+      friendly_engine_name = "Bing (Falla)"
+-     _falla_engine_class = Bing
++     _falla_engine_class = cast(type[T], Bing)
+  
+  
+      engine_code = "duckduckgo_falla"
+      friendly_engine_name = "DuckDuckGo (Falla)"
+-     _falla_engine_class = DuckDuckGo
++     _falla_engine_class = cast(type[T], DuckDuckGo)
+  
+  
+      engine_code = "yahoo_falla"
+      friendly_engine_name = "Yahoo (Falla)"
+-     _falla_engine_class = Yahoo
++     _falla_engine_class = cast(type[T], Yahoo)
+  
+  
+      engine_code = "ask_falla"
+      friendly_engine_name = "Ask.com (Falla)"
+-     _falla_engine_class = Ask
++     _falla_engine_class = cast(type[T], Ask)
+  
+  
+      engine_code = "aol_falla"
+      friendly_engine_name = "AOL (Falla)"
+-     _falla_engine_class = Aol
++     _falla_engine_class = cast(type[T], Aol)
+  
+  
+      engine_code = "dogpile_falla"
+      friendly_engine_name = "Dogpile (Falla)"
+-     _falla_engine_class = DogPile
++     _falla_engine_class = cast(type[T], DogPile)
+  
+  
+      engine_code = "gibiru_falla"
+      friendly_engine_name = "Gibiru (Falla)"
+-     _falla_engine_class = Gibiru
++     _falla_engine_class = cast(type[T], Gibiru)
+  
+  
+      engine_code = "mojeek_falla"
+      friendly_engine_name = "Mojeek (Falla)"
+-     _falla_engine_class = Mojeek
++     _falla_engine_class = cast(type[T], Mojeek)
+  
+  
+      engine_code = "qwant_falla"
+      friendly_engine_name = "Qwant (Falla)"
+-     _falla_engine_class = Qwant
++     _falla_engine_class = cast(type[T], Qwant)
+  
+  
+      engine_code = "yandex_falla"
+      friendly_engine_name = "Yandex (Falla)"
+-     _falla_engine_class = Yandex
++     _falla_engine_class = cast(type[T], Yandex)
+  
+  
+  # Helper functions for each engine to register with available_engine_functions
+- 
+  
+  async def google_falla(query: str, **kwargs) -> list[SearchResult]:
+      """
+      from twat_search.web.engines.base import get_engine
+-     from twat_search.web.config import get_engine_config
++     from twat_search.web.config import EngineConfig
+      
+-     config = get_engine_config("google_falla")
+-     engine = get_engine("google_falla", config=config)
++     engine = get_engine("google_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import EngineConfig
+      
+-     engine = get_engine("bing_falla")
++     engine = get_engine("bing_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import EngineConfig
+      
+-     engine = get_engine("duckduckgo_falla")
++     engine = get_engine("duckduckgo_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import EngineConfig
+      
+-     engine = get_engine("yahoo_falla")
++     engine = get_engine("yahoo_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import EngineConfig
+      
+-     engine = get_engine("ask_falla")
++     engine = get_engine("ask_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import EngineConfig
+      
+-     engine = get_engine("aol_falla")
++     engine = get_engine("aol_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import EngineConfig
+      
+-     engine = get_engine("dogpile_falla")
++     engine = get_engine("dogpile_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import EngineConfig
+      
+-     engine = get_engine("gibiru_falla")
++     engine = get_engine("gibiru_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import EngineConfig
+      
+-     engine = get_engine("mojeek_falla")
++     engine = get_engine("mojeek_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import EngineConfig
+      
+-     engine = get_engine("qwant_falla")
++     engine = get_engine("qwant_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+      """
+      from twat_search.web.engines.base import get_engine
++     from twat_search.web.config import EngineConfig
+      
+-     engine = get_engine("yandex_falla")
++     engine = get_engine("yandex_falla", EngineConfig(enabled=True))
+      return await engine.search(query, **kwargs)
+  
+```
+
+---
+
+_****_
+
+
+
+
+
+Now let's run the linter to see what issues remain:
+
+---
+
+_****_
+
+```bash
+ruff check src/twat_search/web/engines/falla.py
+```
+
+```
+src/twat_search/web/engines/falla.py:13:1: I001 [*] Import block i
+s un-sorted or un-formatted
+   |
+11 |   """
+12 |
+13 | / import logging
+14 | | from typing import Any, cast, TypeVar
+15 | |
+16 | | from pydantic import HttpUrl
+17 | |
+18 | | from twat_search.web.engines.base import SearchEngine, regi
+ster_engine
+19 | | from twat_search.web.engines.lib_falla.core import (
+20 | |     Aol,
+21 | |     Ask,
+22 | |     Bing,
+23 | |     DogPile,
+24 | |     DuckDuckGo,
+25 | |     Falla,
+26 | |     Gibiru,
+27 | |     Google,
+28 | |     Mojeek,
+29 | |     Qwant,
+30 | |     Yahoo,
+31 | |     Yandex,
+32 | | )
+33 | | from twat_search.web.exceptions import EngineError
+34 | | from twat_search.web.models import SearchResult
+   | |_______________________________________________^ I001
+35 |
+36 |   logger = logging.getLogger(__name__)
+   |
+   = help: Organize imports
+
+src/twat_search/web/engines/falla.py:14:20: F401 `typing.Any` impo
+rted but unused
+   |
+13 | import logging
+14 | from typing import Any, cast, TypeVar
+   |                    ^^^ F401
+15 |
+16 | from pydantic import HttpUrl
+   |
+   = help: Remove unused import: `typing.Any`
+
+src/twat_search/web/engines/falla.py:277:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+275 |           list[SearchResult]: List of search results
+276 |       """
+277 | /     from twat_search.web.engines.base import get_engine
+278 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+279 |
+280 |       engine = get_engine("google_falla", EngineConfig(enabl
+ed=True))
+    |
+    = help: Organize imports
+
+src/twat_search/web/engines/falla.py:295:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+293 |           list[SearchResult]: List of search results
+294 |       """
+295 | /     from twat_search.web.engines.base import get_engine
+296 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+297 |
+298 |       engine = get_engine("bing_falla", EngineConfig(enabled
+=True))
+    |
+    = help: Organize imports
+
+src/twat_search/web/engines/falla.py:313:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+311 |           list[SearchResult]: List of search results
+312 |       """
+313 | /     from twat_search.web.engines.base import get_engine
+314 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+315 |
+316 |       engine = get_engine("duckduckgo_falla", EngineConfig(e
+nabled=True))
+    |
+    = help: Organize imports
+
+src/twat_search/web/engines/falla.py:331:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+329 |           list[SearchResult]: List of search results
+330 |       """
+331 | /     from twat_search.web.engines.base import get_engine
+332 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+333 |
+334 |       engine = get_engine("yahoo_falla", EngineConfig(enable
+d=True))
+    |
+    = help: Organize imports
+
+src/twat_search/web/engines/falla.py:349:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+347 |           list[SearchResult]: List of search results
+348 |       """
+349 | /     from twat_search.web.engines.base import get_engine
+350 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+351 |
+352 |       engine = get_engine("ask_falla", EngineConfig(enabled=
+True))
+    |
+    = help: Organize imports
+
+src/twat_search/web/engines/falla.py:367:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+365 |           list[SearchResult]: List of search results
+366 |       """
+367 | /     from twat_search.web.engines.base import get_engine
+368 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+369 |
+370 |       engine = get_engine("aol_falla", EngineConfig(enabled=
+True))
+    |
+    = help: Organize imports
+
+src/twat_search/web/engines/falla.py:385:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+383 |           list[SearchResult]: List of search results
+384 |       """
+385 | /     from twat_search.web.engines.base import get_engine
+386 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+387 |
+388 |       engine = get_engine("dogpile_falla", EngineConfig(enab
+led=True))
+    |
+    = help: Organize imports
+
+src/twat_search/web/engines/falla.py:403:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+401 |           list[SearchResult]: List of search results
+402 |       """
+403 | /     from twat_search.web.engines.base import get_engine
+404 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+405 |
+406 |       engine = get_engine("gibiru_falla", EngineConfig(enabl
+ed=True))
+    |
+    = help: Organize imports
+
+src/twat_search/web/engines/falla.py:421:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+419 |           list[SearchResult]: List of search results
+420 |       """
+421 | /     from twat_search.web.engines.base import get_engine
+422 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+423 |
+424 |       engine = get_engine("mojeek_falla", EngineConfig(enabl
+ed=True))
+    |
+    = help: Organize imports
+
+src/twat_search/web/engines/falla.py:439:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+437 |           list[SearchResult]: List of search results
+438 |       """
+439 | /     from twat_search.web.engines.base import get_engine
+440 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+441 |
+442 |       engine = get_engine("qwant_falla", EngineConfig(enable
+d=True))
+    |
+    = help: Organize imports
+
+src/twat_search/web/engines/falla.py:457:5: I001 [*] Import block 
+is un-sorted or un-formatted
+    |
+455 |           list[SearchResult]: List of search results
+456 |       """
+457 | /     from twat_search.web.engines.base import get_engine
+458 | |     from twat_search.web.config import EngineConfig
+    | |___________________________________________________^ I001
+459 |
+460 |       engine = get_engine("yandex_falla", EngineConfig(enabl
+ed=True))
+    |
+    = help: Organize imports
+
+Found 13 errors.
+[*] 12 fixable with the `--fix` option.
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+Let's fix the imports and other issues that can be fixed automatically:
+
+---
+
+_****_
+
+```bash
+ruff check src/twat_search/web/engines/falla.py --fix
+```
+
+```
+src/twat_search/web/engines/falla.py:14:20: F401 `typing.Any` impo
+rted but unused
+   |
+13 | import logging
+14 | from typing import Any, TypeVar, cast
+   |                    ^^^ F401
+15 |
+16 | from pydantic import HttpUrl
+   |
+   = help: Remove unused import: `typing.Any`
+
+Found 13 errors (12 fixed, 1 remaining).
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+Let's fix the remaining issue and check if our Falla engines are now available in the search engine list:
+
+---
+
+_****_
+
+```diff
+  
+  import logging
+- from typing import Any, TypeVar, cast
++ from typing import TypeVar, cast
+  
+  from pydantic import HttpUrl
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+Let's make sure the Falla engines are properly registered in the `__init__.py` file:
+
+---
+
+_****_
+
+```diff
+          YahooFallaEngine,
+          YandexFallaEngine,
++         aol_falla,
++         ask_falla,
++         bing_falla,
++         dogpile_falla,
++         duckduckgo_falla,
++         gibiru_falla,
++         google_falla,
+          is_falla_available,
++         mojeek_falla,
++         qwant_falla,
++         yahoo_falla,
++         yandex_falla,
+      )
+  
+      # Register engine functions
+-     # These will be implemented later as needed
++     if is_falla_available():
++         available_engine_functions["google_falla"] = google_falla
++         available_engine_functions["bing_falla"] = bing_falla
++         available_engine_functions["duckduckgo_falla"] = duckduckgo_falla
++         available_engine_functions["yahoo_falla"] = yahoo_falla
++         available_engine_functions["ask_falla"] = ask_falla
++         available_engine_functions["aol_falla"] = aol_falla
++         available_engine_functions["dogpile_falla"] = dogpile_falla
++         available_engine_functions["gibiru_falla"] = gibiru_falla
++         available_engine_functions["mojeek_falla"] = mojeek_falla
++         available_engine_functions["qwant_falla"] = qwant_falla
++         available_engine_functions["yandex_falla"] = yandex_falla
++         
++         logger.info("Falla-based search engines registered successfully")
++     else:
++         logger.warning("Falla search engines are not available")
++ 
++     # Add to __all__
+      __all__.extend(
+          [
+              "YahooFallaEngine",
+              "YandexFallaEngine",
++             "aol_falla",
++             "ask_falla",
++             "bing_falla",
++             "dogpile_falla",
++             "duckduckgo_falla",
++             "gibiru_falla",
++             "google_falla",
+              "is_falla_available",
++             "mojeek_falla", 
++             "qwant_falla",
++             "yahoo_falla",
++             "yandex_falla",
+          ],
+      )
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+Now let's update the engine constants to make sure our Falla engines are included:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/engine_constants.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+Let's check if the Falla engines are already included in `ALL_POSSIBLE_ENGINES`:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/engine_constants.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+Great! The Falla engines are already defined in the constants file and included in `ALL_POSSIBLE_ENGINES`. Let's run the web info command to see if they're now properly registered:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -m twat_search web info
+```
+
+```
+2025-02-27 15:01:47.703 | INFO     | twat_search.web.engines:<modu
+le>:260 - Falla-based search engines registered successfully
+            🔎 Available Search Engines             
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ Engine              ┃ Enabled ┃ API Key Required ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ bing_scraper        │ ✅      │ ❌               │
+│ brave               │ ✅      │ ✅               │
+│ brave_news          │ ✅      │ ✅               │
+│ critique            │ ✅      │ ✅               │
+│ duckduckgo          │ ✅      │ ❌               │
+│ google_hasdata      │ ✅      │ ✅               │
+│ google_hasdata_full │ ✅      │ ✅               │
+│ google_scraper      │ ✅      │ ❌               │
+│ google_serpapi      │ ✅      │ ✅               │
+│ pplx                │ ✅      │ ✅               │
+│ tavily              │ ✅      │ ✅               │
+│ you                 │ ✅      │ ✅               │
+│ you_news            │ ✅      │ ✅               │
+└─────────────────────┴─────────┴──────────────────┘
+
+Run 'info ENGINE_NAME' for more details about a specific engine.
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+I notice that we're seeing the log message "Falla-based search engines registered successfully", but they still don't appear in the list. Let's check the CLI implementation to see why they're not showing up:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "def info|def get_info" • **8** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9333 | `def info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L1343 | `447 |     def info(self, engine: str | None = None, json: bool =` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L1355 | `447 |     def info(self, engine: str | None = None, json: bool =` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L3113 | `458 |     def info(self, engine: str | None = None, json: bool =` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_06-34-implementing-safe-import-patterns-in-modules.md` | L3125 | `458 |     def info(self, engine: str | None = None, json: bool =` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L2331 | `331 |     def info(self, engine: str | None = None, json: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L2342 | `331 |     def info(self, engine: str | None = None, json: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L3474 | `def info(self, engine: str | None = None, json: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L1965 | `def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2097 | `+     def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2338 | `def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-16-implementing-functions-for-brave-search-engines.md` | L2400 | `def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L261 | `-     def info(self, engine: str | None = None, json: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L262 | `+     def info(self, engine: str | None = None, json: bool = False, plain: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L887 | `def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L5659 | `-     def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L5660 | `+     def info(self, engine: str | None = None, json: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L380 | `def info(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18266 | `def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18398 | `+     def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18639 | `def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L18701 | `def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L20389 | `def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L25161 | `-     def info(self, engine: str | None = None) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L25162 | `+     def info(self, engine: str | None = None, json: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L36536 | `447 |     def info(self, engine: str | None = None, json: bool =` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L36548 | `447 |     def info(self, engine: str | None = None, json: bool =` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L38306 | `458 |     def info(self, engine: str | None = None, json: bool =` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L38318 | `458 |     def info(self, engine: str | None = None, json: bool =` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L43320 | `331 |     def info(self, engine: str | None = None, json: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L43331 | `331 |     def info(self, engine: str | None = None, json: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L44463 | `def info(self, engine: str | None = None, json: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L52014 | `-     def info(self, engine: str | None = None, json: bool = False) -> None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L52015 | `+     def info(self, engine: str | None = None, json: bool = False, plain: bool = False) -> None:` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+Let's read the `info` command implementation:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/cli.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+Let's look at the method that gets the available engines:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/config.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+Now let's check where `get_available_engines` is used to understand how the list shown in the CLI is populated:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "get_available_engines" • **10** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L8601 | `def get_available_engines() -> list[str]:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9269 | `available_engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9285 | `engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L338 | `+     "get_available_engines",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L506 | `-         "get_available_engines",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L1292 | `+     "get_available_engines",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L1296 | `-     "get_available_engines",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L1979 | `138 | |     "get_available_engines",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2045 | `python -c "from twat_search.web.engines import get_available_engines; print('Available engines:', get_available_engines()); print('Test passed!')"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2050 | `h.web.engines import get_available_engines; print('Available engin` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2051 | `es:', get_available_engines()); print('Tpython -c "from twat_searc` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2052 | `h.web.engines import get_available_engines; print('Available engin` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2053 | `es:', get_available_engines()); print('Test passed!')"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2598 | `"get_available_engines",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2833 | `python -c "from twat_search.web.engines import get_available_engines; print('Available engines:', get_available_engines()); print('Test passed!')"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2838 | `h.web.engines import get_available_engines; print('Available engin` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2839 | `es:', get_available_engines()); print('Tpython -c "from twat_searc` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2840 | `h.web.engines import get_available_engines; print('Available engin` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_12-18-update-engine-imports-and-exports-in-init-py.md` | L2841 | `es:', get_available_engines()); print('Test passed!')"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_10-55-standardizing-engine-naming-conventions.md` | L3431 | `', 'brave', 'critique', 'duckduckgo', 'get_available_engines', 'ge` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_10-55-standardizing-engine-naming-conventions.md` | L4981 | `'brave_news', 'critique', 'duckduckgo', 'get_available_engines',` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L703 | `python -c "from twat_search.web.engines import get_available_engines; print(get_available_engines())"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L708 | `ch.web.engines import get_available_engines; print(get_available_` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L710 | `ch.web.engines import get_available_engines; print(get_available_` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L1172 | `python -c "from twat_search.web.engines import get_available_engines; print(get_available_engines())"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L1177 | `ch.web.engines import get_available_engines; print(get_available_` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L1179 | `ch.web.engines import get_available_engines; print(get_available_` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L1557 | `available_engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L5485 | `Let's also look at how available engines are determined in `get_available_engines()` from `twat_search.web.engines`.` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_07-34-integrating-hasdata-google-serp-apis.md` | L5504 | `available_engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L31 | `get_available_engines,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L73 | `available_engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L134 | `engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-27_13-08-implementing-falla-and-tracking-progress.md` | L1137 | `"get_available_engines",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-27_13-08-implementing-falla-and-tracking-progress.md` | L1183 | `def get_available_engines() -> list[str]:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L3194 | `get_available_engines,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L3215 | `available_engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L3733 | `+                 return get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L3753 | `We need to add an import for `get_available_engines` at the top of the file:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L3774 | `-     get_available_engines,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L3777 | `+     get_available_engines,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L3801 | `get_available_engines,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L3979 | `3. **✅ `all` keyword**: Programmatically expands to all available engines using the `get_available_engines()` function` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L4017 | `-                 return get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L4018 | `+                 engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/engines/__init__.py` | L91 | `"get_available_engines",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/engines/__init__.py` | L325 | `def get_available_engines() -> list[str]:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L41692 | `python -c "from twat_search.web.engines import get_available_engines; print(get_available_engines())"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L41697 | `ch.web.engines import get_available_engines; print(get_available_` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L41699 | `ch.web.engines import get_available_engines; print(get_available_` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L42161 | `python -c "from twat_search.web.engines import get_available_engines; print(get_available_engines())"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L42166 | `ch.web.engines import get_available_engines; print(get_available_` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L42168 | `ch.web.engines import get_available_engines; print(get_available_` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L42546 | `available_engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L46474 | `Let's also look at how available engines are determined in `get_available_engines()` from `twat_search.web.engines`.` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L46493 | `available_engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54947 | `get_available_engines,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L54968 | `available_engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L55486 | `+                 return get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L55506 | `We need to add an import for `get_available_engines` at the top of the file:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L55527 | `-     get_available_engines,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L55530 | `+     get_available_engines,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L55554 | `get_available_engines,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L55732 | `3. **✅ `all` keyword**: Programmatically expands to all available engines using the `get_available_engines()` function` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L55770 | `-                 return get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L55771 | `+                 engines = get_available_engines()` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/engines/__init__.py` | L91 | `"get_available_engines",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/engines/__init__.py` | L325 | `def get_available_engines() -> list[str]:` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's check the implementation of `get_available_engines` to see why our Falla engines are not showing up:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/engines/__init__.py
+
+---
+
+_****_
+
+
+
+
+
+Now we can see why our Falla engines aren't showing up. Let's verify that our helper functions are being added to the `available_engine_functions` dictionary. Let's run the following command to check this:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -c "from twat_search.web.engines import available_engine_functions; print('Available engine functions:', sorted(available_engine_functions.keys()))"
+```
+
+```
+2025-02-27 15:02:19.427 | INFO     | twat_search.web.engines:<modu
+le>:260 - Falla-based search engines registered successfully
+Available engine functions: ['aol_falla', 'ask_falla', 'bing_falla
+', 'bing_scraper', 'brave', 'brave_news', 'critique', 'dogpile_fal
+la', 'duckduckgo', 'duckduckgo_falla', 'gibiru_falla', 'google_fal
+la', 'google_scraper', 'google_serpapi', 'hasdata_google', 'hasdat
+a_google_full', 'mojeek_falla', 'pplx', 'qwant_falla', 'tavily', '
+yahoo_falla', 'yandex_falla', 'you', 'you_news']
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+Great! The Falla engine functions are indeed registered in the `available_engine_functions` dictionary. Now we need to check why they aren't showing up in the CLI's info command. Let's look at the `_list_all_engines` method:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/cli.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+Now we can see the issue. In the `_list_all_engines` method, the engines are obtained from `config.engines` rather than `available_engine_functions`. We need to update the Config class to include our Falla engines:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/config.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+Let's check how it loads default engines:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/config.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+Now we understand the issue. The Falla engines aren't showing up in the CLI because they're not defined in the `DEFAULT_CONFIG` dictionary. Let's update the `DEFAULT_CONFIG` to include our Falla engines:
+
+---
+
+_****_
+
+```diff
+  
+  from twat_search.web.engine_constants import (
++     AOL_FALLA,
++     ASK_FALLA,
++     BING_FALLA,
+      BING_SCRAPER,
+      BRAVE,
+      BRAVE_NEWS,
+      CRITIQUE,
+      DEFAULT_NUM_RESULTS,
++     DOGPILE_FALLA,
+      DUCKDUCKGO,
++     DUCKDUCKGO_FALLA,
++     GIBIRU_FALLA,
++     GOOGLE_FALLA,
+      GOOGLE_HASDATA,
+      GOOGLE_HASDATA_FULL,
+      GOOGLE_SCRAPER,
+      GOOGLE_SERPAPI,
++     MOJEEK_FALLA,
+      PPLX,
++     QWANT_FALLA,
+      TAVILY,
++     YAHOO_FALLA,
++     YANDEX_FALLA,
+      YANDEX_SEARCHIT,
+      YOU,
+              "default_params": {"num_pages": 1, "delay": 0.5},
+          },
++         # Falla-based engines
++         GOOGLE_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
++         BING_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
++         DUCKDUCKGO_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
++         YAHOO_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
++         ASK_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
++         AOL_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
++         DOGPILE_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
++         GIBIRU_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
++         MOJEEK_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
++         QWANT_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
++         YANDEX_FALLA: {
++             "enabled": True,
++             "api_key": None,  # No API key required
++             "default_params": {
++                 "num_results": DEFAULT_NUM_RESULTS,
++             },
++         },
+      },
+  }
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+Now let's run the web info command again to see if our Falla engines are showing up:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -m twat_search web info
+```
+
+```
+2025-02-27 15:03:09.845 | INFO     | twat_search.web.engines:<modu
+le>:260 - Falla-based search engines registered successfully
+            🔎 Available Search Engines             
+┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┓
+┃ Engine              ┃ Enabled ┃ API Key Required ┃
+┡━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━━━━━┩
+│ aol_falla           │ ✅      │ ❌               │
+│ ask_falla           │ ✅      │ ❌               │
+│ bing_falla          │ ✅      │ ❌               │
+│ bing_scraper        │ ✅      │ ❌               │
+│ brave               │ ✅      │ ✅               │
+│ brave_news          │ ✅      │ ✅               │
+│ critique            │ ✅      │ ✅               │
+│ dogpile_falla       │ ✅      │ ❌               │
+│ duckduckgo          │ ✅      │ ❌               │
+│ duckduckgo_falla    │ ✅      │ ❌               │
+│ gibiru_falla        │ ✅      │ ❌               │
+│ google_falla        │ ✅      │ ❌               │
+│ google_hasdata      │ ✅      │ ✅               │
+│ google_hasdata_full │ ✅      │ ✅               │
+│ google_scraper      │ ✅      │ ❌               │
+│ google_serpapi      │ ✅      │ ✅               │
+│ mojeek_falla        │ ✅      │ ❌               │
+│ pplx                │ ✅      │ ✅               │
+│ qwant_falla         │ ✅      │ ❌               │
+│ tavily              │ ✅      │ ✅               │
+│ yahoo_falla         │ ✅      │ ❌               │
+│ yandex_falla        │ ✅      │ ❌               │
+│ you                 │ ✅      │ ✅               │
+│ you_news            │ ✅      │ ✅               │
+└─────────────────────┴─────────┴──────────────────┘
+
+Run 'info ENGINE_NAME' for more details about a specific engine.
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+Great! Now our Falla engines are showing up in the list. Let's test one of them:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -m twat_search web q -e google_falla "Adam Twardoch" -n 1
+```
+
+```
+2025-02-27 15:04:07.043 | INFO     | twat_search.web.engines:<modu
+le>:260 - Falla-based search engines registered successfully
+                         ❌ Search Errors                         
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Error                                                          ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ No search engines could be initialized from requested engines: │
+│ google_falla                                                   │
+└────────────────────────────────────────────────────────────────┘
+No results found!
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+We need to fix the remaining issues with the Falla engine implementation. Let's run with verbose output to see what's going wrong:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -m twat_search web q -e google_falla "Adam Twardoch" -n 1 --verbose
+```
+
+```
+2025-02-27 15:04:25.916 | INFO     | twat_search.web.engines:<modu
+le>:260 - Falla-based search engines registered successfully
+[02/27/25 15:04:25] DEBUG    Overriding num_results=5   cli.py:311
+                             with n=1
+
+                    DEBUG    Args - n: 1, num_results:  cli.py:315
+                             1
+
+                    DEBUG    Using num_results=1        cli.py:318
+                    DEBUG    Right before executing     cli.py:347
+                             search, num_results=1
+
+                    DEBUG    Using selector: selector_events.py:64
+                             KqueueSelector
+
+                    DEBUG    Attempting to search with  cli.py:187
+                             engines: ['google_falla']
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Search requested with      api.py:151
+                             num_results=1
+
+                    DEBUG    Initializing engine         api.py:74
+                             'google_falla' with
+
+                             num_results=1
+
+                    WARNING  Failed to initialize engine api.py:95
+                             'google_falla': EngineError
+
+                    ERROR    Error initializing engine   api.py:98
+                             'google_falla': Engine
+
+                             'google_falla': Failed to
+
+                             initialize engine
+
+                             'google_falla':
+
+                             Google.__init__() got an
+
+                             unexpected keyword argument
+
+                             'name'
+
+                    WARNING  Failed to initialize       api.py:187
+                             engine 'google_falla':
+
+                             Engine 'google_falla':
+
+                             Failed to initialize
+
+                             engine 'google_falla':
+
+                             Google.__init__() got an
+
+                             unexpected keyword
+
+                             argument 'name'
+
+                    WARNING  Failed to initialize       api.py:194
+                             engines: google_falla
+
+                    ERROR    No search engines could be api.py:202
+                             initialized from requested
+
+                             engines: google_falla
+
+                    ERROR    Search failed: No search   api.py:249
+                             engines could be
+
+                             initialized from requested
+
+                             engines: google_falla
+
+                    ERROR    Search failed: No search   cli.py:193
+                             engines could be
+
+                             initialized from requested
+
+                             engines: google_falla
+
+                         ❌ Search Errors                         
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Error                                                          ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ No search engines could be initialized from requested engines: │
+│ google_falla                                                   │
+└────────────────────────────────────────────────────────────────┘
+No results found!
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The error message is: "Google.__init__() got an unexpected keyword argument 'name'". This indicates that our Falla engine Google class doesn't actually take a `name` parameter. Let's look at how the Google class is defined in the Falla library:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/engines/lib_falla/core/google.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's also check how the base Falla class is defined:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/engines/lib_falla/core/falla.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+I see the issue now. We need to fix the `_create_engine_instance` method in our `FallaSearchEngine` class. Let's update it to remove the unnecessary `name` parameter:
+
+---
+
+_****_
+
+```diff
+              Falla: Instance of the Falla engine class
+          """
+-         # Create a new instance - passing name parameter for most engines
+-         # Falla engines require a name parameter
+-         return self._falla_engine_class(name=self.engine_code)
++         # Create a new instance
++         # Falla engine classes already initialize with their name in their own __init__ methods
++         return self._falla_engine_class()
+  
+      async def search(self, query: str, **_kwargs) -> list[SearchResult]:
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Now let's test if our Falla engines work:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -m twat_search web q -e google_falla "Adam Twardoch" -n 1
+```
+
+```
+2025-02-27 15:05:49.697 | INFO     | twat_search.web.engines:<modu
+le>:260 - Falla-based search engines registered successfully
+No results found!
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's check the logs with verbose output:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -m twat_search web q -e google_falla "Adam Twardoch" -n 1 --verbose
+```
+
+```
+2025-02-27 15:05:58.308 | INFO     | twat_search.web.engines:<modu
+le>:260 - Falla-based search engines registered successfully
+[02/27/25 15:05:58] DEBUG    Overriding num_results=5   cli.py:311
+                             with n=1
+
+                    DEBUG    Args - n: 1, num_results:  cli.py:315
+                             1
+
+                    DEBUG    Using num_results=1        cli.py:318
+                    DEBUG    Right before executing     cli.py:347
+                             search, num_results=1
+
+                    DEBUG    Using selector: selector_events.py:64
+                             KqueueSelector
+
+                    DEBUG    Attempting to search with  cli.py:187
+                             engines: ['google_falla']
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: True
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Validating API key for  config.py:357
+                             engine 'None', current
+
+                             value: False
+
+                    DEBUG    Search requested with      api.py:151
+                             num_results=1
+
+                    DEBUG    Initializing engine         api.py:74
+                             'google_falla' with
+
+                             num_results=1
+
+                    INFO     🔍 Querying engine:         api.py:92
+                             google_falla
+
+                    DEBUG    Starting new   connectionpool.py:1049
+                             HTTPS
+
+                             connection
+
+                             (1):
+
+                             www.google.com
+
+                             :443
+
+⠙ Searching for 'Adam Twardoch'...                    DEBUG    htt
+ps://www.goo connectionpool.py:544
+                             gle.com:443
+
+                             "GET
+
+                             /search?q=Adam+
+
+                             Twardoch&num=10
+
+                             0&hl=en&gl=us
+
+                             HTTP/1.1" 200
+
+                             None
+
+⠹ Searching for 'Adam Twardoch'...                    DEBUG    lim
+it_results: Got 0      base.py:190
+                             results,
+
+                             self.num_results=1
+
+                    INFO     ✅ Engine 'google_falla'   api.py:240
+                             returned 0 results
+
+⠹ Searching for 'Adam Twardoch'...
+No results found!
+
+```
+
+---
+
+_****_
+
+
+
+
+
+---
+
+_**User**_
+
+update the detailed plan in @TODO.md and update @PROGRESS.md  
+
+---
+
+_**Assistant**_
+
 
 
 ---

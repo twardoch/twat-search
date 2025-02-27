@@ -229,11 +229,39 @@ try:
         QwantFallaEngine,
         YahooFallaEngine,
         YandexFallaEngine,
+        aol_falla,
+        ask_falla,
+        bing_falla,
+        dogpile_falla,
+        duckduckgo_falla,
+        gibiru_falla,
+        google_falla,
         is_falla_available,
+        mojeek_falla,
+        qwant_falla,
+        yahoo_falla,
+        yandex_falla,
     )
 
     # Register engine functions
-    # These will be implemented later as needed
+    if is_falla_available():
+        available_engine_functions["google_falla"] = google_falla
+        available_engine_functions["bing_falla"] = bing_falla
+        available_engine_functions["duckduckgo_falla"] = duckduckgo_falla
+        available_engine_functions["yahoo_falla"] = yahoo_falla
+        available_engine_functions["ask_falla"] = ask_falla
+        available_engine_functions["aol_falla"] = aol_falla
+        available_engine_functions["dogpile_falla"] = dogpile_falla
+        available_engine_functions["gibiru_falla"] = gibiru_falla
+        available_engine_functions["mojeek_falla"] = mojeek_falla
+        available_engine_functions["qwant_falla"] = qwant_falla
+        available_engine_functions["yandex_falla"] = yandex_falla
+
+        logger.info("Falla-based search engines registered successfully")
+    else:
+        logger.warning("Falla search engines are not available")
+
+    # Add to __all__
     __all__.extend(
         [
             "AolFallaEngine",
@@ -248,7 +276,18 @@ try:
             "QwantFallaEngine",
             "YahooFallaEngine",
             "YandexFallaEngine",
+            "aol_falla",
+            "ask_falla",
+            "bing_falla",
+            "dogpile_falla",
+            "duckduckgo_falla",
+            "gibiru_falla",
+            "google_falla",
             "is_falla_available",
+            "mojeek_falla",
+            "qwant_falla",
+            "yahoo_falla",
+            "yandex_falla",
         ],
     )
 except (ImportError, SyntaxError) as e:

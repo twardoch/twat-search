@@ -18,18 +18,29 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field, field_validator
 
 from twat_search.web.engine_constants import (
+    AOL_FALLA,
+    ASK_FALLA,
+    BING_FALLA,
     BING_SCRAPER,
     BRAVE,
     BRAVE_NEWS,
     CRITIQUE,
     DEFAULT_NUM_RESULTS,
+    DOGPILE_FALLA,
     DUCKDUCKGO,
+    DUCKDUCKGO_FALLA,
+    GIBIRU_FALLA,
+    GOOGLE_FALLA,
     GOOGLE_HASDATA,
     GOOGLE_HASDATA_FULL,
     GOOGLE_SCRAPER,
     GOOGLE_SERPAPI,
+    MOJEEK_FALLA,
     PPLX,
+    QWANT_FALLA,
     TAVILY,
+    YAHOO_FALLA,
+    YANDEX_FALLA,
     YANDEX_SEARCHIT,
     YOU,
     YOU_NEWS,
@@ -166,6 +177,84 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
             "enabled": True,
             "api_key": None,  # No API key required, it's a scraper
             "default_params": {"num_pages": 1, "delay": 0.5},
+        },
+        # Falla-based engines
+        GOOGLE_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
+        },
+        BING_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
+        },
+        DUCKDUCKGO_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
+        },
+        YAHOO_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
+        },
+        ASK_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
+        },
+        AOL_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
+        },
+        DOGPILE_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
+        },
+        GIBIRU_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
+        },
+        MOJEEK_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
+        },
+        QWANT_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
+        },
+        YANDEX_FALLA: {
+            "enabled": True,
+            "api_key": None,  # No API key required
+            "default_params": {
+                "num_results": DEFAULT_NUM_RESULTS,
+            },
         },
     },
 }
