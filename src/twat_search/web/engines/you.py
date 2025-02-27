@@ -58,7 +58,7 @@ class YouBaseEngine(SearchEngine):
 
         # Set up API headers using the api_key from base class
         self.headers = {
-            "X-API-Key": self.api_key,
+            "X-API-Key": self.api_key if self.api_key is not None else "",
             "Accept": "application/json",
         }
 
@@ -71,14 +71,14 @@ class YouBaseEngine(SearchEngine):
     async def _make_api_call(self, query: str) -> Any:
         """Handle the common API call logic."""
         params: dict[str, Any] = {
-            "q": query,
+            "query": query,
             self.num_results_param: self.max_results,
         }
 
         if self.country_code:
             params["country_code"] = self.country_code
         if self.safe_search is not None:
-            params["safe_search"] = str(self.safe_search).lower()
+            params["safesearch"] = str(self.safe_search).lower()
 
         logger.debug(f"Making You.com API request to {self.base_url} with params: {params}")
 
@@ -102,7 +102,8 @@ class YouSearchEngine(YouBaseEngine):
 
     engine_code = YOU
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[YOU]
-    base_url = "https://api.you.com/api/search"
+    # base_url = "https://chat-api.you.com/search"
+    base_url = "https://api.ydc-index.io/search"
     num_results_param = "num_web_results"
 
     async def search(self, query: str) -> list[SearchResult]:
@@ -145,7 +146,7 @@ class YouNewsSearchEngine(YouBaseEngine):
 
     engine_code = YOU_NEWS
     friendly_engine_name = ENGINE_FRIENDLY_NAMES[YOU_NEWS]
-    base_url = "https://api.you.com/api/news"
+    base_url = "https://chat-api.you.com/news"
     num_results_param = "num_news_results"
 
     async def search(self, query: str) -> list[SearchResult]:
