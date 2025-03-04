@@ -37,21 +37,22 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
 - [ ] Improve Falla integration with Playwright:
   - [ ] Ensure proper browser and context management for efficient resource usage
   - [ ] Implement specific exception handling for common Playwright errors
-  - [ ] Return empty results on failure instead of raising exceptions
   - [ ] Add comprehensive type hinting throughout the codebase
   - [ ] Improve method docstrings for better code documentation
 
-### Phase 2: Fix Critical Engine Failures
-
-- [ ] Improve `get_engine` function and error handling
-  - [ ] Add descriptive error messages when engines are not found or disabled
-  - [ ] Handle engine initialization failures gracefully
-  - [ ] Add comprehensive tests for engine initialization
+### Phase 2: Address Remaining Engine Issues
 
 - [ ] Fix engines returning empty results
   - [ ] Identify and address common failure patterns
   - [ ] Add detailed logging for debugging
   - [ ] Create test script to isolate issues
+
+- [ ] Fix linting errors in the codebase:
+  - [ ] Address FBT001/FBT002 errors in CLI functions (Boolean-typed positional arguments)
+  - [ ] Fix E501 line length issues in various files
+  - [ ] Address F401 unused import errors in `__init__.py` and other files
+  - [ ] Fix B904 exception handling issues (use `raise ... from err` pattern)
+  - [ ] Address PLR2004 magic value comparison issues
 
 ## Medium Priority
 
@@ -59,7 +60,6 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
 
 - [ ] Implement comprehensive error handling:
   - [ ] Add try-except blocks for all external API calls
-  - [ ] Implement proper error logging with context information
   - [ ] Create custom exception classes for different error scenarios
   - [ ] Add graceful fallbacks for common error cases
 
@@ -153,4 +153,14 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
   - [x] Replace insecure usage of temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
   - [x] Replace `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
   - [x] Remove unused imports (`os` and `NavigableString`) from `google.py`
+
+- [x] Improve `get_engine` function and error handling
+  - [x] Add descriptive error messages when engines are not found or disabled
+  - [x] Handle engine initialization failures gracefully
+  - [x] Improve error handling in `init_engine_task` function
+  - [x] Update `search` function to handle the changes to `init_engine_task`
+  - [x] Add standardization of engine names for more consistent lookups
+  - [x] Add wrapper coroutine to handle exceptions during search process
+  - [x] Add detailed logging for engine initialization and search processes
+  - [x] Return empty results on failure instead of raising exceptions
 
