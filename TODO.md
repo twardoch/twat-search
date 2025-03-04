@@ -2,11 +2,9 @@
 this_file: TODO.md
 --- 
 
-# twat-search 
+# TODO
 
 Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
-
-Edit the detailed plan in this file @TODO.md. Based on the plan, write an itemized list of tasks in @PROGRESS.md and then, as you work, check off your @PROGRESS.md.  
 
 This is the test command that we are targeting: 
 
@@ -14,148 +12,145 @@ This is the test command that we are targeting:
 for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $engine"; twat-search web q -e $engine "Adam Twardoch" -n 1 --json --verbose; done;
 ```
 
-`twat-search` is an asynchronous Python package designed to query multiple search engines simultaneously, aggregate their results, and present them through a unified API and command-line interface (CLI). It aims for:
+## High Priority
 
-* **Multi-Engine Support:**  Integrate with various search providers (Brave, Google, Tavily, etc.).
-* **Asynchronous Operation:** Utilize `asyncio` for concurrent requests and improved performance.
-* **Configurability:** Allow users to configure engines, API keys, and search parameters via environment variables or configuration files.
-* **Extensibility:**  Make it easy to add new search engine integrations.
-* **Robustness:**  Handle errors gracefully, including API limits and network issues.
-* **Consistency:**  Provide a consistent JSON output format for all engines.
+### Fix Falla-based Search Engines
 
-## 1. Implementing Falla-based Search Engines
+- [ ] Fix Yahoo and Qwant search engines
+  - [ ] Update selectors in Yahoo implementation to match current page structure
+  - [ ] Update selectors in Qwant implementation to match current page structure
+  - [ ] Test with various search queries to ensure reliability
+  - [ ] Handle consent pages and other interactive elements
 
-Based on the NEXTENGINES.md file, we've implemented search engines based on the [Falla project](https://github.com/Sanix-Darker/falla), which is a search engine scraper supporting multiple search engines.
+- [ ] Fix Google and DuckDuckGo search engines
+  - [ ] Update selectors in Google implementation to match current page structure
+  - [ ] Update selectors in DuckDuckGo implementation to match current page structure
+  - [ ] Implement proper handling of CAPTCHA challenges
+  - [ ] Test with various search queries to ensure reliability
 
-### 1.1. Current Implementation Status
+- [ ] Fix type errors in `google.py`:
+  - [ ] Fix type error in `wait_for_selector` where `self.wait_for_selector` could be `None`
+  - [ ] Fix type error in `find_all` where `attrs` parameter has incompatible type
+  - [ ] Fix type error in `get_title`, `get_link`, and `get_snippet` where `elem` parameter has incompatible type
+  - [ ] Fix type error in `elem.find` where `PageElement` has no attribute `find`
 
-We have successfully integrated Falla-based search engines into the twat-search project. Key accomplishments include:
+- [ ] Improve Falla integration with Playwright:
+  - [ ] Ensure proper browser and context management for efficient resource usage
+  - [ ] Implement specific exception handling for common Playwright errors
+  - [ ] Return empty results on failure instead of raising exceptions
+  - [ ] Add comprehensive type hinting throughout the codebase
+  - [ ] Improve method docstrings for better code documentation
 
-1. Created a `lib_falla` directory in `src/twat_search/web/engines/` containing the embedded Falla code
-2. Developed a base `FallaSearchEngine` class and specific engine implementations for multiple search providers (Google, Bing, DuckDuckGo, etc.)
-3. Added proper engine registration and configuration
-4. Added necessary constants and imports for Falla engines
-5. Fixed compatibility issues with the embedded Falla code
+### Fix Critical Engine Failures
 
-### 1.2. Remaining Implementation Tasks
+- [ ] Improve `get_engine` function and error handling
+  - [ ] Add descriptive error messages when engines are not found or disabled
+  - [ ] Handle engine initialization failures gracefully
+  - [ ] Add comprehensive tests for engine initialization
 
-#### 1.2.1. Fix Linting and Type Issues
+- [ ] Fix engines returning empty results
+  - [ ] Identify and address common failure patterns
+  - [ ] Add detailed logging for debugging
+  - [ ] Create test script to isolate issues
 
-1. Address remaining linter errors in the Falla implementation:
-   - Fix type annotation issues with TypeVar usage in the `falla.py` file
-   - Simplify the type system to avoid TypeVar complexity
-   - Ensure proper type annotations throughout all Falla-based implementations
+## Medium Priority
 
-#### 1.2.2. Resolve Search Result Issues
+### Improve Code Quality
 
-1. Debug and fix issues with search results:
-   - Implement better error logging for Falla engines returning empty results
-   - Add detailed debugging for common failure patterns
-   - Test each engine individually to identify specific issues
+- [ ] Implement comprehensive error handling:
+  - [ ] Add try-except blocks for all external API calls
+  - [ ] Implement proper error logging with context information
+  - [ ] Create custom exception classes for different error scenarios
+  - [ ] Add graceful fallbacks for common error cases
 
-## 2. Fix Critical Engine Failures
+- [ ] Improve test coverage:
+  - [ ] Add unit tests for all search engine implementations
+  - [ ] Add integration tests for the entire search pipeline
+  - [ ] Implement mock responses for external API calls in tests
+  - [ ] Add performance benchmarks for search operations
 
-### 2.1. Improve Error Handling and Reporting
+- [ ] Enhance documentation:
+  - [ ] Add detailed docstrings to all classes and methods
+  - [ ] Create comprehensive API documentation
+  - [ ] Add usage examples for all search engines
+  - [ ] Document configuration options and environment variables
 
-1. Enhance `get_engine` function in `engines/__init__.py`:
-   - Add descriptive error messages when engines fail to initialize
-   - Improve error context for API key requirements
-   - Implement better handling of disabled engines
+### Standardize JSON Output Format
 
-2. Implement robust error handling for search operations:
-   - Add proper retries with exponential backoff
-   - Improve timeout handling
-   - Better detection of rate limiting and captchas
+- [ ] Standardize JSON output across all engines
+  - [ ] Utilize the existing `SearchResult` model consistently
+  - [ ] Remove utility functions like `_process_results` and `_display_json_results`
+  - [ ] Remove `CustomJSONEncoder` class
+  - [ ] Update engine `search` methods to return list of `SearchResult` objects
 
-### 2.2. Fix Failing Tests
+- [ ] Update API function return types
+  - [ ] Change return type to `list[SearchResult]`
+  - [ ] Ensure proper handling of results from engines
 
-1. Fix failing tests identified in PROGRESS.md:
-   - Address test failures in `test_api.py`
-   - Address test failures in `test_config.py` 
-   - Address test failures in `test_bing_scraper.py`
+- [ ] Update CLI display functions
+  - [ ] Use `model_dump` for JSON serialization
+  - [ ] Implement simplified result display
 
-## 3. Fix Data Integrity and Consistency Issues
+## Low Priority
 
-### 3.1. Standardize Result Format
+### Feature Enhancements
 
-1. Ensure consistent source attribution in all search results:
-   - Fix all engines to use `self.engine_code` when creating `SearchResult` objects
-   - Correct typos in result keys (e.g., `"snippetHighlitedWords"`)
-   - Standardize field names across all engines
+- [ ] Add support for additional search engines:
+  - [ ] Implement Ecosia search
+  - [ ] Implement Startpage search
+  - [ ] Implement other alternative search engines
+  - [ ] Implement Qwant AI engine using the QwantAI package (https://pypi.org/project/QwantAI/)
 
-## 4. Address Empty Results
+- [ ] Enhance result processing:
+  - [ ] Implement result deduplication across engines
+  - [ ] Add result ranking based on relevance
+  - [ ] Implement result filtering options
+  - [ ] Add support for different result formats (HTML, Markdown, etc.)
 
-### 4.1. Fix Searchit-based Engines
+- [ ] Improve CLI functionality:
+  - [ ] Add interactive mode for search operations
+  - [ ] Implement result pagination in CLI output
+  - [ ] Add support for saving search results to file
+  - [ ] Implement search history functionality
 
-1. Debug and fix engines returning empty results:
-   - `bing_searchit`
-   - `google_searchit`
-   - `qwant_searchit`
-   - `yandex_searchit`
+- [ ] Add advanced search features:
+  - [ ] Implement image search capabilities
+  - [ ] Add support for news search
+  - [ ] Implement video search functionality
+  - [ ] Add support for academic/scholarly search
 
-2. Improve implementation:
-   - Create test script to isolate specific issues
-   - Add detailed logging for debugging
-   - Verify proper installation and dependencies
+- [ ] Optimize performance:
+  - [ ] Implement caching for search results
+  - [ ] Optimize concurrent search operations
+  - [ ] Reduce memory usage during search operations
+  - [ ] Implement timeout handling for slow search engines
 
-### 4.2. Implement Fallback Mechanisms
+## Completed Tasks
 
-1. Create fallback mechanisms for unreliable engines:
-   - Implement alternative parsing methods
-   - Add fallbacks when primary parsing fails
-   - Consider caching successful results for improved reliability
+- [x] Setup and dependencies
+  - [x] Create new module `src/twat_search/web/engines/falla.py`
+  - [x] Add necessary dependencies to `pyproject.toml`
+  - [x] Define engine constants in `src/twat_search/web/engine_constants.py`
+  - [x] Update `src/twat_search/web/engines/__init__.py` to import and register new engines
+  - [x] Create utility function to check if Falla is installed and accessible
 
-## 5. Improve CLI Interface
+- [x] Create base `FallaSearchEngine` class
+  - [x] Inherit from `SearchEngine`
+  - [x] Implement `search` method with proper error handling and retries
+  - [x] Create fallback implementation for when Falla is not available
 
-### 5.1. Enhance User Experience
+- [x] Implement specific Falla-based engines
+  - [x] `google-falla`: Google search using Falla
+  - [x] `bing-falla`: Bing search using Falla
+  - [x] `duckduckgo-falla`: DuckDuckGo search using Falla
+  - [x] `yahoo-falla`: Yahoo search using Falla
+  - [x] `qwant-falla`: Qwant search using Falla
+  - [x] And other engines (Aol, Ask, Dogpile, Gibiru, Mojeek, Yandex)
 
-1. Update and improve the `q` command in the CLI:
-   - Add better progress indicators
-   - Improve error messaging
-   - Test all parameter combinations
+- [x] Fix linting errors in the codebase:
+  - [x] Replace `os.path.abspath()` with `Path.resolve()` in `google.py`
+  - [x] Replace `os.path.exists()` with `Path.exists()` in `google.py`
+  - [x] Replace insecure usage of temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
+  - [x] Replace `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
+  - [x] Remove unused imports (`os` and `NavigableString`) from `google.py`
 
-### 5.2. Add Engine Management
-
-1. Implement engine management commands:
-   - Add commands to test specific engines
-   - Add commands to enable/disable engines
-   - Add commands to view detailed engine status
-
-## 6. Enforce Consistent JSON Output Format
-
-### 6.1. Standardize JSON Output
-
-1. Enforce consistent JSON format across all engines:
-   - Use `SearchResult` model consistently
-   - Remove utility functions like `_process_results` and `_display_json_results`
-   - Remove `CustomJSONEncoder` class
-   - Update all engine `search` methods to return properly formatted results
-
-2. Update API function return types:
-   - Change return type to `list[SearchResult]`
-   - Ensure proper handling of results from all engines
-
-## 7. Testing and Documentation
-
-### 7.1. Expand Test Coverage
-
-1. Implement comprehensive tests:
-   - Add unit tests for all `FallaSearchEngine` implementations
-   - Create integration tests for end-to-end functionality
-   - Add tests for error handling and recovery
-
-### 7.2. Enhance Documentation
-
-1. Improve documentation:
-   - Document installation requirements for all engines
-   - Add troubleshooting guidelines
-   - Update CLI help text to include new engines
-   - Add appropriate disclaimers for web scraping
-
-## 8. Final Verification
-
-1. Run verification on all engines:
-   - Test with the problem case command
-   - Verify correct output format
-   - Ensure proper parameter handling
-   - Check for consistent error handling

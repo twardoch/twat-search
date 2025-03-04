@@ -2,22 +2,22 @@
 description: File tree of the project
 globs: 
 ---
-[1.0K]  .
+[1.3K]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 559]  cleanup.mdc
-│       └── [8.6K]  filetree.mdc
+│       └── [9.8K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
 │       └── [1.4K]  release.yml
 ├── [3.5K]  .gitignore
-├── [1.1K]  .pre-commit-config.yaml
+├── [1.2K]  .pre-commit-config.yaml
 ├── [ 128]  .specstory
-│   ├── [1.3K]  history
-│   │   ├── [2.0K]  .what-is-this.md
+│   ├── [1.5K]  history
+│   │   ├── [2.7K]  .what-is-this.md
 │   │   ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │   │   ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
 │   │   ├── [ 11K]  2025-02-25_02-24-planning-tests-for-twat-search-web-package.md
@@ -56,19 +56,34 @@ globs:
 │   │   ├── [ 69K]  2025-02-26_22-55-bing-scraper-result-inconsistency-investigation.md
 │   │   ├── [591K]  2025-02-26_23-13-google-scraper-result-validation-issues.md
 │   │   ├── [ 23K]  2025-02-27_12-02-plan-for-adding-support-for-falla-engines.md
-│   │   └── [352K]  2025-02-27_13-08-implementing-falla-and-tracking-progress.md
+│   │   ├── [615K]  2025-02-27_13-08-implementing-falla-and-tracking-progress.md
+│   │   ├── [ 43K]  2025-02-27_15-08-project-update-and-task-management.md
+│   │   ├── [317K]  2025-02-27_15-45-updating-falla-library-selenium-to-playwright.md
+│   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
+│   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
+│   │   └── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
 │   └── [2.2M]  history.txt
-├── [3.2K]  CHANGELOG.md
+├── [3.3K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
-├── [ 30K]  NEXTENGINES.md
-├── [8.3K]  PROGRESS.md
-├── [ 21K]  README.md
-├── [6.1K]  TODO.md
+├── [ 23K]  README.md
+├── [6.3K]  TODO.md
+├── [9.4K]  TODOENGINE.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
+├── [6.3K]  debug_fetch.py
+├── [ 256]  debug_output
+│   ├── [ 445]  qwant_analysis.txt
+│   ├── [100K]  qwant_content.html
+│   ├── [153K]  qwant_screenshot.png
+│   ├── [ 476]  yahoo_analysis.txt
+│   ├── [ 88K]  yahoo_content.html
+│   └── [402K]  yahoo_screenshot.png
 ├── [ 192]  dist
-├── [5.5K]  pyproject.toml
+├── [7.4K]  falla_search.py
+├── [4.0K]  google_debug_Python_programming_language.html
+├── [5.4K]  pyproject.toml
+├── [  43]  requirements.txt
 ├── [ 224]  resources
 │   ├── [ 224]  brave
 │   │   ├── [ 65K]  brave.md
@@ -92,46 +107,53 @@ globs:
 │           ├── [1.8K]  __init__.py
 │           ├── [9.0K]  api.py
 │           ├── [ 48K]  cli.py
-│           ├── [ 17K]  config.py
-│           ├── [3.1K]  engine_constants.py
+│           ├── [ 19K]  config.py
+│           ├── [2.8K]  engine_constants.py
 │           ├── [ 576]  engines
-│           │   ├── [7.6K]  __init__.py
+│           │   ├── [8.7K]  __init__.py
 │           │   ├── [ 16K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [ 15K]  brave.py
 │           │   ├── [9.2K]  critique.py
 │           │   ├── [7.8K]  duckduckgo.py
-│           │   ├── [6.4K]  falla.py
+│           │   ├── [ 12K]  falla.py
 │           │   ├── [ 12K]  google_scraper.py
 │           │   ├── [7.9K]  hasdata.py
-│           │   ├── [ 224]  lib_falla
+│           │   ├── [ 288]  lib_falla
 │           │   │   ├── [ 822]  __init__.py
-│           │   │   ├── [ 544]  core
+│           │   │   ├── [ 608]  core
 │           │   │   │   ├── [1.4K]  __init__.py
 │           │   │   │   ├── [ 763]  aol.py
 │           │   │   │   ├── [ 892]  ask.py
-│           │   │   │   ├── [ 900]  bing.py
+│           │   │   │   ├── [2.4K]  bing.py
 │           │   │   │   ├── [ 855]  dogpile.py
-│           │   │   │   ├── [1.0K]  duckduckgo.py
-│           │   │   │   ├── [7.5K]  falla.py
+│           │   │   │   ├── [3.8K]  duckduckgo.py
+│           │   │   │   ├── [ 18K]  falla.py
+│           │   │   │   ├── [2.4K]  fetch_page.py
 │           │   │   │   ├── [ 860]  gibiru.py
-│           │   │   │   ├── [3.2K]  google.py
+│           │   │   │   ├── [ 12K]  google.py
 │           │   │   │   ├── [ 762]  mojeek.py
-│           │   │   │   ├── [1.1K]  qwant.py
+│           │   │   │   ├── [2.7K]  qwant.py
 │           │   │   │   ├── [ 923]  searchencrypt.py
-│           │   │   │   ├── [ 870]  startpage.py
-│           │   │   │   ├── [ 955]  yahoo.py
-│           │   │   │   └── [1.0K]  yandex.py
-│           │   │   ├── [1.5K]  main.py
+│           │   │   │   ├── [ 900]  startpage.py
+│           │   │   │   ├── [2.7K]  yahoo.py
+│           │   │   │   └── [2.1K]  yandex.py
+│           │   │   ├── [2.9K]  main.py
+│           │   │   ├── [ 365]  requirements.txt
 │           │   │   ├── [ 378]  settings.py
-│           │   │   └── [3.0K]  utils.py
-│           │   ├── [7.8K]  pplx.py
+│           │   │   └── [4.8K]  utils.py
+│           │   ├── [7.7K]  pplx.py
 │           │   ├── [7.3K]  serpapi.py
 │           │   ├── [8.2K]  tavily.py
-│           │   └── [8.7K]  you.py
+│           │   └── [8.6K]  you.py
 │           ├── [1.0K]  exceptions.py
 │           ├── [1.6K]  models.py
 │           └── [4.1K]  utils.py
+├── [ 453]  test_async_falla.py
+├── [ 443]  test_falla.py
+├── [3.3K]  test_google_falla_debug.py
+├── [1.7K]  test_simple.py
+├── [ 341]  test_sync_falla.py
 ├── [ 256]  tests
 │   ├── [  64]  .benchmarks
 │   ├── [2.0K]  conftest.py
@@ -151,7 +173,7 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [477K]  twat_search.txt
-└── [267K]  uv.lock
+├── [668K]  twat_search.txt
+└── [195K]  uv.lock
 
-25 directories, 126 files
+26 directories, 147 files

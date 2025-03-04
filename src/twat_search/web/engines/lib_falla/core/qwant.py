@@ -1,31 +1,106 @@
 # Falla-Qwant
 # Sanix-darker
 
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+import logging
+import urllib.parse
+
+from bs4.element import Tag
 
 from twat_search.web.engines.lib_falla.core.falla import Falla
 
+logger = logging.getLogger(__name__)
+
 
 class Qwant(Falla):
-    def __init__(self):
-        self.option = Options()
-        self.option.headless = True
-        self.driver = webdriver.Firefox(options=self.option)
+    """Qwant search engine implementation for Falla."""
 
-        self.try_it = 0
-        self.max_retry = 3
-        self.source = "Qwant"
-        self.mode = "selenium"
-        self.results_box = "//div[@class='result_fragment']"
-        self.each_element = {"tag": "div", "attr": {"class": "result--web"}}
-        self.href = {"tag": "a:result--web--link", "type": "attribute", "key": "href", "child": {}}
-        self.title = {"tag": "span:result--web--title", "type": "text", "child": {}}
-        self.cite = {"tag": "div:result--web", "child": {"tag": "p", "type": "text"}}
+    def __init__(self) -> None:
+        """Initialize the Qwant search engine."""
+        super().__init__(name="Qwant")
+        self.use_method = "playwright"
+        self.container_element = ("article", {"class": "webResult"})
+        self.wait_for_selector = ".webResults"
+        # Increase timeout for Qwant which can be slow to load
+        self.max_retries = 5
 
-    def search(self, search_text, pages=""):
-        url = "https://www.qwant.com/?q=" + search_text.replace(" ", "+") + pages
+        # Qwant may show a consent dialog or have different layouts
+        # We'll need to handle that with flexible selectors
 
+    def get_url(self, query: str) -> str:
+        """
+        Get the search URL for a query.
+
+        Args:
+            query: Search query
+
+        Returns:
+            URL string
+        """
+        params = {
+            "q": query,
+        }
+        query_string = urllib.parse.urlencode(params)
+        return f"https://www.qwant.com/?{query_string}"
+
+    def get_title(self, elm: Tag) -> str:
+        """
+        Extract the title from a search result element.
+
+        Args:
+            elm: BeautifulSoup element
+
+        Returns:
+            Title string
+        """
+        title_elem = elm.select_one(".title")
+        if title_elem:
+            return title_elem.get_text().strip()
+        return ""
+
+    def get_link(self, elm: Tag) -> str:
+        """
+        Extract the link from a search result element.
+
+        Args:
+            elm: BeautifulSoup element
+
+        Returns:
+            Link URL string
+        """
+        link_elem = elm.select_one(".title")
+        if link_elem and "href" in link_elem.attrs:
+            return str(link_elem.attrs["href"])
+        return ""
+
+    def get_snippet(self, elm: Tag) -> str:
+        """
+        Extract the snippet from a search result element.
+
+        Args:
+            elm: BeautifulSoup element
+
+        Returns:
+            Snippet text string
+        """
+        snippet_elem = elm.select_one(".description")
+        if snippet_elem:
+            return snippet_elem.get_text().strip()
+        return ""
+
+    def search(self, query: str, pages: str = "") -> list[dict[str, str]]:
+        """
+        Search for a query and return results.
+
+        Args:
+            query: Search query
+            pages: Optional pagination parameter
+
+        Returns:
+            List of dictionaries containing search results
+        """
+        url = self.get_url(query)
+        if pages:
+            url += f"&{pages}"
         return self.fetch(url)
 
 

@@ -1,3 +1,7 @@
+---
+this_file: README.md
+---
+
 # Twat Search: multi-engine web search aggregator
 
 ## Executive summary
@@ -15,6 +19,8 @@ Twat Search is a powerful, asynchronous Python package that provides a unified i
 - **Extensible Architecture**: Designed for easy addition of new search engines
 - **Command-Line Interface**: Rich, interactive CLI for searching and exploring engine configurations
 - **JSON Output**: Supports JSON output for easy integration with other tools
+- **Modern Path Handling**: Uses `pathlib.Path` for robust and platform-independent file operations
+- **Secure Temporary File Operations**: Implements secure temporary file handling using the standard library's `tempfile` module
 
 ## Installation options
 
@@ -48,6 +54,47 @@ After installation, both `Twat Search` and `Twat Search-web` commands should be 
 ```bash
 python -m twat_search.__main__
 python -m twat_search.web.cli
+```
+
+## Project Documentation
+
+The project maintains several key documentation files:
+
+- **README.md**: This file, containing an overview of the project, installation instructions, and usage examples.
+- **CHANGELOG.md**: Documents all notable changes to the project, organized by version.
+- **TODO.md**: Contains a prioritized list of tasks and improvements planned for the project.
+- **LICENSE**: The project's license information.
+
+## Development Workflow
+
+When contributing to this project, please follow these guidelines:
+
+1. Check the **TODO.md** file for prioritized tasks that need attention.
+2. Run `./cleanup.py status` regularly to check for linting errors and test failures.
+3. Document all changes in **CHANGELOG.md** under the appropriate version section.
+4. Add comprehensive tests for new features and bug fixes.
+5. Ensure all code passes linting and type checking before submitting.
+
+### Code Quality Tools
+
+The project uses several tools to maintain code quality:
+
+- **Ruff**: For linting and formatting Python code
+- **Mypy**: For static type checking
+- **Pytest**: For running tests
+- **Pre-commit hooks**: To ensure code quality before commits
+
+Run these tools regularly during development:
+
+```bash
+# Format code
+ruff format --respect-gitignore --target-version py312 .
+
+# Lint code
+ruff check --output-format=github --fix --unsafe-fixes .
+
+# Run tests
+python -m pytest
 ```
 
 ## Quick start guide
@@ -101,6 +148,11 @@ twat_search/
     │   ├── brave.py        # Brave search implementation
     │   ├── bing_scraper.py # Bing scraper implementation
     │   └── ...             # Other engine implementations
+    │   └── lib_falla/      # Falla-based search engine implementations
+    │       ├── core/       # Core Falla functionality
+    │       │   ├── falla.py    # Base Falla class
+    │       │   ├── google.py   # Google search implementation
+    │       │   └── ...         # Other Falla-based implementations
     ├── __init__.py         # Module exports
     ├── api.py              # Main search API
     ├── cli.py              # Command-line interface
@@ -128,6 +180,16 @@ Twat Search provides a consistent interface to the following search engines:
 | Critique | `critique` | Yes | Visual and textual search capabilities | - |
 | DuckDuckGo | `duckduckgo` | No | Privacy-focused search results | `duckduckgo` |
 | Bing Scraper | `bing_scraper` | No | Web scraping of Bing search results | `bing_scraper` |
+| Google Falla | `google_falla` | No | Google search via Playwright-based scraping | `falla` |
+
+## Recent improvements
+
+The project has recently undergone several improvements:
+
+1. **Enhanced Path Handling**: Replaced legacy `os.path` functions with modern `pathlib.Path` operations for better cross-platform compatibility and code readability
+2. **Improved Security**: Implemented secure temporary file handling using the standard library's `tempfile` module instead of hardcoded paths
+3. **Code Quality**: Removed unused imports and improved type annotations throughout the codebase
+4. **Linting Compliance**: Fixed various linting errors to ensure code quality and maintainability
 
 ## Detailed usage guide
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # /// script
-# dependencies = ["selenium", "lxml", "requests"]
+# dependencies = ["playwright", "lxml", "requests"]
 # ///
 # this_file: src/twat_search/web/engines/falla.py
 """
@@ -68,7 +68,8 @@ def is_falla_available() -> bool:
         # Check if Falla can be initialized without errors
         try:
             # Basic check - create and validate a Google instance
-            _check_engine = Google("google")
+            # Google constructor doesn't take a name parameter
+            _check_engine = Google()
             _falla_available = True
         except Exception as e:
             logger.warning(f"Falla engines are not available: {e}")
@@ -85,7 +86,11 @@ class FallaSearchEngine(SearchEngine):
     engine_code = "falla"
     friendly_engine_name = "Falla Search"
     env_api_key_names: ClassVar[list[str]] = []
-    _falla_engine_class: ClassVar[type[Falla]] = Falla
+
+    # Note: This is marked as a ClassVar for type-checking, but will be overridden
+    # by subclasses with their specific engine classes (Google, Bing, etc.)
+    # The actual implementation doesn't use Falla directly
+    _falla_engine_class: Any = Google  # Use Google as a default callable
 
     def __init__(self, config: Any, **kwargs: Any) -> None:
         """Initialize the Falla search engine."""
@@ -105,9 +110,9 @@ class FallaSearchEngine(SearchEngine):
         Returns:
             Falla: Instance of the Falla engine class
         """
-        # Create a new instance with the engine code as the name
-        # The name parameter is required by the Falla base class
-        return self._falla_engine_class(name=self.engine_code)
+        # Create a new instance - each subclass of Falla has its own __init__
+        # that handles initialization without explicit parameters
+        return self._falla_engine_class()
 
     async def search(self, query: str, **_kwargs: Any) -> list[SearchResult]:
         """
@@ -124,10 +129,10 @@ class FallaSearchEngine(SearchEngine):
             EngineError: If the search fails
         """
         try:
-            # Perform the search
-            # Falla engines return a list[dict[str, str]] as documented in their search method
+            # Perform the search using the async method
+            # Falla engines return a list[dict[str, str]] as documented in their search_async method
             # Cast return value to ensure type safety
-            raw_results = cast(list[dict[str, str]], self._falla_engine.search(query=query))
+            raw_results = cast(list[dict[str, str]], await self._falla_engine.search_async(query=query))
 
             # Convert to SearchResult objects
             results = []

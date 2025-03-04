@@ -1,48 +1,82 @@
+---
+this_file: CHANGELOG.md
+---
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
 
-## Changes by date
+## [Unreleased]
 
-### 2025-02-26
+## [0.1.2] - 2025-03-04
 
-#### Changed
+### Fixed
+- Fixed linting errors in the codebase:
+  - Replaced `os.path.abspath()` with `Path.resolve()` in `google.py`
+  - Replaced `os.path.exists()` with `Path.exists()` in `google.py`
+  - Replaced insecure usage of the temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
+  - Replaced `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
+  - Removed unused imports (`os` and `NavigableString`) from `google.py`
 
-- Refactored the CLI to import engine functions more safely, handling missing dependencies.
-- Updated the CLI to use a dictionary to map the registered engines to their convenience functions, making it easier to call functions.
-- Standardized engine names to use underscores internally.
-- Modified the `_parse_engines` method in the CLI to handle special strings ("free", "best", "all") for selecting groups of engines.
-- Updated the `q` method in the CLI to use unified parameters and to control verbose output.
-- Updated the `info` method in the CLI to use unified parameters, to list engines, and to provide detailed information about specific engines.
-- Updated `_display_results` in the CLI to handle multiple results per engine and optional plain-text output (no table, just URLs).
-- Updated the `_display_json_results` function in the CLI to create JSON output.
-- Updated the `config` class to parse environment variables for engines using a regular expression, addressing issues with engine configuration.
-- Updated various engine implementations (Brave, Tavily, You, Perplexity, SerpApi) to use unified parameters and improve URL handling.
+### Improved
+- Improved code quality and maintainability through better path handling using `pathlib.Path`
+- Enhanced security by using the standard library's `tempfile` module for temporary file operations
 
-#### Added
+## [0.1.1] - 2025-02-26
 
-- Implemented `bing_scraper` convenience function.
-- Added comprehensive tests to verify the correct behavior of the `bing_scraper` convenience function.
-- Implemented the `WebScoutEngine` class, providing basic search functionality.
-- Added new search engine integrations:
-    - `google_scraper.py`: Implemented a `GoogleScraperEngine` and a `google_scraper` convenience function.
-    - `searchit.py`: Implemented several search engines using the `searchit` library: `GoogleSearchitEngine`, `YandexSearchitEngine`, `QwantSearchitEngine`, `BingSearchitEngine`.
-    - `anywebsearch.py`: Implemented multiple search engines using the `anywebsearch` library: `GoogleAnyWebSearchEngine`, `BingAnyWebSearchEngine`, `BraveAnyWebSearchEngine`, `QwantAnyWebSearchEngine`, `YandexAnyWebSearchEngine`.
-    - `hasdata.py`: Implemented `HasDataGoogleEngine` and `HasDataGoogleLightEngine`.
-- Added tests for `bing_scraper`.
+### Added
+- Refactored CLI to use `fire` for better command-line interface
+- Updated methods to use unified parameters
+- Added `brave` search engine integration
+- Added `tavily` search engine integration
+- Added `perplexity` search engine integration
+- Added `you` search engine integration
+- Added `searchit` search engine integration
+- Added `falla` search engine integration
+- Added `bing_falla` search engine integration
+- Added `google_falla` search engine integration
+- Added `duckduckgo_falla` search engine integration
+- Added `aol_falla` search engine integration
+- Added `ask_falla` search engine integration
+- Added `dogpile_falla` search engine integration
+- Added `gibiru_falla` search engine integration
+- Added `mojeek_falla` search engine integration
+- Added `qwant_falla` search engine integration
+- Added `yahoo_falla` search engine integration
+- Added `yandex_falla` search engine integration
+- Added `bing_searchit` search engine integration
+- Added `google_searchit` search engine integration
+- Added `qwant_searchit` search engine integration
+- Added `yandex_searchit` search engine integration
+- Added `utils.py` for common utility functions
+- Added `config.py` for configuration management
+- Added `api.py` for API functions
+- Added `cli.py` for CLI functions
+- Added `base.py` for base classes
+- Added `engine_constants.py` for engine constants
+- Added `models.py` for data models
+- Added `exceptions.py` for custom exceptions
+- Added `__init__.py` files for package structure
+- Added `pyproject.toml` for package configuration
+- Added `README.md` for documentation
+- Added `LICENSE` for licensing information
+- Added `CHANGELOG.md` for change tracking
+- Added `TODO.md` for task tracking
+- Added `PROGRESS.md` for progress tracking
+- Added `cleanup.py` for code cleanup
 
-### 2025-02-25
+## [0.1.0] - 2025-02-25
 
-#### Added
+### Added
+- Initial project structure
+- Core functionality
+- Basic search engine integrations
+- Command-line interface
+- Python API
+- Documentation
+- Tests
 
-- Created initial project structure and implemented several search engine integrations (Brave, Google, Tavily, Perplexity, You.com).
-- Developed core functionality, including a command-line interface (CLI) and asynchronous search capabilities.
-- Implemented configuration management and exception handling.
-- Implemented rate limiting utility.
-- Added Pydantic models for data validation.
-- Added unit tests for the models, configuration, utility functions, exceptions, and the base search engine class.
-
-#### Changed
+### Changed
 
 - Updated the `config.py` file to correctly import BaseSettings from the pydantic-settings package.
 - Updated the `pyproject.toml` file to add pydantic-settings as a dependency.
