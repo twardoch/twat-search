@@ -14,13 +14,20 @@ Twat Search is a powerful, asynchronous Python package that provides a unified i
 - **Asynchronous Operation**: Leverages `asyncio` for concurrent searches, maximizing speed and efficiency
 - **Rate Limiting**: Built-in mechanisms to prevent exceeding API limits of individual search providers
 - **Strong Typing**: Full type annotations and Pydantic validation for improved code reliability and maintainability
-- **Robust Error Handling**: Custom exception classes for graceful error management
+- **Robust Error Handling**: Custom exception classes for graceful error management, with improved engine initialization and search process error handling
 - **Flexible Configuration**: Configure search engines via environment variables, `.env` files, or directly in code
 - **Extensible Architecture**: Designed for easy addition of new search engines
 - **Command-Line Interface**: Rich, interactive CLI for searching and exploring engine configurations
 - **JSON Output**: Supports JSON output for easy integration with other tools
 - **Modern Path Handling**: Uses `pathlib.Path` for robust and platform-independent file operations
 - **Secure Temporary File Operations**: Implements secure temporary file handling using the standard library's `tempfile` module
+
+## Recent improvements
+
+- **Enhanced Error Handling**: Improved error handling in engine initialization and search processes to prevent failures in one engine from affecting others
+- **Standardized Engine Names**: Added standardization of engine names for more consistent lookups and better backward compatibility
+- **Detailed Logging**: Added comprehensive logging throughout the search process for better debugging and monitoring
+- **Graceful Fallbacks**: Implemented graceful fallbacks when specific engines fail to initialize or return results
 
 ## Installation options
 
@@ -181,152 +188,6 @@ Twat Search provides a consistent interface to the following search engines:
 | DuckDuckGo | `duckduckgo` | No | Privacy-focused search results | `duckduckgo` |
 | Bing Scraper | `bing_scraper` | No | Web scraping of Bing search results | `bing_scraper` |
 | Google Falla | `google_falla` | No | Google search via Playwright-based scraping | `falla` |
-
-## Recent improvements
-
-The project has recently undergone several improvements:
-
-1. **Enhanced Path Handling**: Replaced legacy `os.path` functions with modern `pathlib.Path` operations for better cross-platform compatibility and code readability
-2. **Improved Security**: Implemented secure temporary file handling using the standard library's `tempfile` module instead of hardcoded paths
-3. **Code Quality**: Removed unused imports and improved type annotations throughout the codebase
-4. **Linting Compliance**: Fixed various linting errors to ensure code quality and maintainability
-
-## Detailed usage guide
-
-### Python API
-
-#### The `search()` function
-
-The core function for performing searches is `twat_search.web.search()` :
-
-```python
-from twat_search.web import search, Config
-
-# Basic usage
-results = await search("python async programming")
-
-# Advanced usage with specific engines and parameters
-results = await search(
-    query="python async programming",
-    engines=["brave", "tavily", "bing_scraper"],
-    num_results=5,
-    language="en",
-    country="US",
-    safe_search=True
-)
-```
-
-Parameters:
-
-- **`query`**: The search query string (required)
-- **`engines`**: A list of engine names to use (e.g., `["brave", "tavily"]`). If `None` or empty, all configured engines will be used
-- **`config`**: A `Config` object. If `None`, configuration is loaded from environment variables
-- **`**kwargs`\*\*: Additional parameters passed to engines. These can be:
-  - General parameters applied to all engines (e.g., `num_results=10`)
-  - Engine-specific parameters with prefixes (e.g., `brave_count=20`, `tavily_search_depth="advanced"`)
-
-#### Engine-specific functions
-
-Each engine provides a direct function for individual access:
-
-```python
-from twat_search.web.engines.brave import brave
-from twat_search.web.engines.bing_scraper import bing_scraper
-
-# Using brave search
-brave_results = await brave(
-    query="machine learning tutorials",
-    count=10,
-    country="US",
-    safe_search=True
-)
-
-# Using bing scraper (no api key required)
-bing_results = await bing_scraper(
-    query="data science projects",
-    num_results=10,
-    max_retries=3,
-    delay_between_requests=1.0
-)
-```
-
-#### Working with search results
-
-The `SearchResult` model provides a consistent structure across all engines:
-
-```python
-from twat_search.web.models import SearchResult
-from pydantic import HttpUrl
-
-# Creating a search result
-result = SearchResult(
-    title="Example Search Result",
-    url=HttpUrl("https://example.com"),
-    snippet="This is an example search result snippet...",
-    source="brave",
-    raw={"original_data": "from_engine"}  # Optional raw data
-)
-
-# Accessing properties
-print(result.title)    # "Example Search Result"
-print(result.url)      # "https://example.com/"
-print(result.source)   # "brave"
-print(result.snippet)  # "This is an example search result snippet..."
-```
-
-### Command line interface
-
-The CLI provides convenient access to all search engines through the `Twat Search` command.
-
-#### General search command
-
-```bash
-Twat Search q <query> [options]
-```
-
-Common options:
-
-- `--engines <engine1,engine2,...>`: Specify engines to use
-- `--num_results <n>`: Number of results to return
-- `--country <country_code>`: Country to search in (e.g., "US", "GB")
-- `--language <lang_code>`: Language to search in (e.g., "en", "es")
-- `--safe_search <true|false>`: Enable or disable safe search
-- `--json`: Output results in JSON format
-- `--verbose`: Enable verbose logging
-
-Engine-specific parameters can be passed with `--<engine>_<param> <value>` , for example:
-
-```bash
-Twat Search q "machine learning" --brave_count 15 --tavily_search_depth advanced
-```
-
-#### Engine information command
-
-```bash
-Twat Search info [engine_name] [--json]
-```
-
-- Shows information about available search engines
-- If `engine_name` is provided, shows detailed information about that engine
-- The `--json` flag outputs in JSON format
-
-#### Engine-specific commands
-
-Each engine has a dedicated command for direct access:
-
-```bash
-# Brave search
-Twat Search brave "web development trends" --count 10
-
-# Duckduckgo search
-Twat Search duckduckgo "privacy tools" --max_results 5
-
-# Bing scraper
-Twat Search bing_scraper "python tutorials" --num_results 10
-
-# Critique with image
-Twat Search critique --image-url "https://example.com/image.jpg" "Is this image real?"
-```
 
 ## Configuration management
 

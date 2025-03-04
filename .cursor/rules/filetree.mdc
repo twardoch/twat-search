@@ -61,14 +61,14 @@ globs:
 │   │   ├── [317K]  2025-02-27_15-45-updating-falla-library-selenium-to-playwright.md
 │   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
 │   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
-│   │   └── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
+│   │   ├── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
+│   │   └── [100K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 │   └── [2.2M]  history.txt
 ├── [3.3K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 23K]  README.md
-├── [6.3K]  TODO.md
-├── [9.4K]  TODOENGINE.md
+├── [6.4K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [6.3K]  debug_fetch.py
@@ -82,6 +82,7 @@ globs:
 ├── [ 192]  dist
 ├── [7.4K]  falla_search.py
 ├── [4.0K]  google_debug_Python_programming_language.html
+├── [3.9K]  google_debug_test_query.html
 ├── [5.4K]  pyproject.toml
 ├── [  43]  requirements.txt
 ├── [ 224]  resources
@@ -105,13 +106,13 @@ globs:
 │       ├── [2.5K]  __main__.py
 │       └── [ 416]  web
 │           ├── [1.8K]  __init__.py
-│           ├── [9.0K]  api.py
+│           ├── [ 11K]  api.py
 │           ├── [ 48K]  cli.py
 │           ├── [ 19K]  config.py
 │           ├── [2.8K]  engine_constants.py
 │           ├── [ 576]  engines
 │           │   ├── [8.7K]  __init__.py
-│           │   ├── [ 16K]  base.py
+│           │   ├── [ 17K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [ 15K]  brave.py
 │           │   ├── [9.2K]  critique.py
@@ -127,16 +128,16 @@ globs:
 │           │   │   │   ├── [ 892]  ask.py
 │           │   │   │   ├── [2.4K]  bing.py
 │           │   │   │   ├── [ 855]  dogpile.py
-│           │   │   │   ├── [3.8K]  duckduckgo.py
+│           │   │   │   ├── [6.7K]  duckduckgo.py
 │           │   │   │   ├── [ 18K]  falla.py
 │           │   │   │   ├── [2.4K]  fetch_page.py
 │           │   │   │   ├── [ 860]  gibiru.py
 │           │   │   │   ├── [ 12K]  google.py
 │           │   │   │   ├── [ 762]  mojeek.py
-│           │   │   │   ├── [2.7K]  qwant.py
+│           │   │   │   ├── [5.9K]  qwant.py
 │           │   │   │   ├── [ 923]  searchencrypt.py
 │           │   │   │   ├── [ 900]  startpage.py
-│           │   │   │   ├── [2.7K]  yahoo.py
+│           │   │   │   ├── [5.4K]  yahoo.py
 │           │   │   │   └── [2.1K]  yandex.py
 │           │   │   ├── [2.9K]  main.py
 │           │   │   ├── [ 365]  requirements.txt
@@ -173,7 +174,7 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [668K]  twat_search.txt
+├── [659K]  twat_search.txt
 └── [195K]  uv.lock
 
-26 directories, 147 files
+26 directories, 148 files

@@ -151,6 +151,7 @@ cleanup.py
 debug_fetch.py
 falla_search.py
 google_debug_Python_programming_language.html
+google_debug_test_query.html
 LICENSE
 pyproject.toml
 README.md
@@ -263,14 +264,14 @@ globs:
 │   │   ├── [317K]  2025-02-27_15-45-updating-falla-library-selenium-to-playwright.md
 │   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
 │   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
-│   │   └── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
+│   │   ├── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
+│   │   └── [100K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 │   └── [2.2M]  history.txt
 ├── [3.3K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 23K]  README.md
-├── [6.3K]  TODO.md
-├── [9.4K]  TODOENGINE.md
+├── [6.4K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [6.3K]  debug_fetch.py
@@ -284,6 +285,7 @@ globs:
 ├── [ 192]  dist
 ├── [7.4K]  falla_search.py
 ├── [4.0K]  google_debug_Python_programming_language.html
+├── [3.9K]  google_debug_test_query.html
 ├── [5.4K]  pyproject.toml
 ├── [  43]  requirements.txt
 ├── [ 224]  resources
@@ -307,13 +309,13 @@ globs:
 │       ├── [2.5K]  __main__.py
 │       └── [ 416]  web
 │           ├── [1.8K]  __init__.py
-│           ├── [9.0K]  api.py
+│           ├── [ 11K]  api.py
 │           ├── [ 48K]  cli.py
 │           ├── [ 19K]  config.py
 │           ├── [2.8K]  engine_constants.py
 │           ├── [ 576]  engines
 │           │   ├── [8.7K]  __init__.py
-│           │   ├── [ 16K]  base.py
+│           │   ├── [ 17K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [ 15K]  brave.py
 │           │   ├── [9.2K]  critique.py
@@ -329,16 +331,16 @@ globs:
 │           │   │   │   ├── [ 892]  ask.py
 │           │   │   │   ├── [2.4K]  bing.py
 │           │   │   │   ├── [ 855]  dogpile.py
-│           │   │   │   ├── [3.8K]  duckduckgo.py
+│           │   │   │   ├── [6.7K]  duckduckgo.py
 │           │   │   │   ├── [ 18K]  falla.py
 │           │   │   │   ├── [2.4K]  fetch_page.py
 │           │   │   │   ├── [ 860]  gibiru.py
 │           │   │   │   ├── [ 12K]  google.py
 │           │   │   │   ├── [ 762]  mojeek.py
-│           │   │   │   ├── [2.7K]  qwant.py
+│           │   │   │   ├── [5.9K]  qwant.py
 │           │   │   │   ├── [ 923]  searchencrypt.py
 │           │   │   │   ├── [ 900]  startpage.py
-│           │   │   │   ├── [2.7K]  yahoo.py
+│           │   │   │   ├── [5.4K]  yahoo.py
 │           │   │   │   └── [2.1K]  yandex.py
 │           │   │   ├── [2.9K]  main.py
 │           │   │   ├── [ 365]  requirements.txt
@@ -375,10 +377,10 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [668K]  twat_search.txt
+├── [659K]  twat_search.txt
 └── [195K]  uv.lock
 
-26 directories, 147 files
+26 directories, 148 files
 
 ================
 File: .github/workflows/push.yml
@@ -8707,6 +8709,27 @@ class DuckDuckGo(Falla):
         super().__init__(name="DuckDuckGo")
     def get_url(self, query: str) -> str:
         query_string = urllib.parse.urlencode(params)
+    async def _fetch_page(self, url: str) -> str:
+            await self._initialize_browser()
+                logger.error("Browser context not initialized")
+            page = await self.browser_context.new_page()
+            await page.goto(url, timeout=30000, wait_until="domcontentloaded")
+                    challenge_exists = await page.evaluate(f"""() => {{
+                        logger.warning(f"Challenge detected on DuckDuckGo using selector: {selector}")
+                        await page.screenshot(path="duckduckgo_challenge.png")
+                        html_content = await page.content()
+                        with open("duckduckgo_challenge.html", "w", encoding="utf-8") as f:
+                            f.write(html_content)
+                        logger.info("Saved challenge page content for debugging")
+                logger.debug(f"Error checking for challenges: {e}")
+                    logger.info(f"Waiting for selector: {self.wait_for_selector}")
+                    await page.wait_for_selector(self.wait_for_selector, timeout=5000)
+                    await asyncio.sleep(2)
+                logger.warning(f"Timeout waiting for selector in {self.name}: {e}")
+            return await page.content()
+            logger.error(f"Error fetching page with Playwright: {e}")
+                return await self._fetch_page(url)
+                await page.close()
     def get_title(self, elm: Tag) -> str:
         title_elem = elm.select_one(".result__title")
             return title_elem.get_text().strip()
@@ -8869,6 +8892,7 @@ class Google(Falla):
         query_string = urllib.parse.urlencode(params)
     def get_title(self, elm: Tag) -> str:
         title_elem = elm.find("h3")
+        if title_elem and isinstance(title_elem, Tag):
             return title_elem.get_text().strip()
     def get_link(self, elm: Tag) -> str:
         link_elem = elm.find("a")
@@ -8879,6 +8903,7 @@ class Google(Falla):
                 return urllib.parse.unquote(href)
     def get_snippet(self, elm: Tag) -> str:
         snippet_elem = elm.find("div", {"class": "VwiC3b"})
+        if not snippet_elem or not isinstance(snippet_elem, Tag):
             snippet_elem = elm.find("span", {"class": "aCOpRe"})
             snippet_elem = elm.find("div", {"class": "BNeawe s3v9rd AP7Wnd"})
             text_containers = elm.find_all(["div", "span", "p"], class_=True)
@@ -8887,6 +8912,13 @@ class Google(Falla):
                     and hasattr(container, "name")
         if snippet_elem and isinstance(snippet_elem, Tag):
             return snippet_elem.get_text().strip()
+    def get_each_elements(self, elements: ResultSet) -> list[dict[str, str]]:
+            if not isinstance(elm, Tag):
+                title = self.get_title(elm)
+                link = self.get_link(elm)
+                snippet = self.get_snippet(elm)
+                    elements_list.append(
+                logger.debug(f"Error processing element: {e}")
     async def search_async(self, query: str, pages: str = "") -> list[dict[str, str]]:
             url = self.get_url(query)
             logger.info(f"Starting Google search for: {query}")
@@ -8896,9 +8928,13 @@ class Google(Falla):
             page = await self.browser_context.new_page()
                 await page.goto(url, timeout=60000, wait_until="domcontentloaded")
                 logger.info("Page loaded, waiting for selector...")
-                    await page.wait_for_selector(self.wait_for_selector, timeout=10000)
-                    logger.info(f"Selector '{self.wait_for_selector}' found")
+                        await page.wait_for_selector(self.wait_for_selector, timeout=10000)
+                        logger.info(f"Selector '{self.wait_for_selector}' found")
                     logger.warning(f"Timeout waiting for selector: {e}")
+                    captcha_exists = await page.evaluate(f"""() => {{
+                        logger.warning("CAPTCHA detected on Google search page")
+                        await page.screenshot(path="google_captcha.png")
+                    logger.error(f"Error checking for CAPTCHA: {e}")
                 html_content = await page.content()
                 logger.info(f"Retrieved HTML content, length: {len(html_content)}")
                 debug_file = f"google_debug_{query.replace(' ', '_')}.html"
@@ -8922,31 +8958,15 @@ class Google(Falla):
                         elements = soup.find_all(selector_type, attrs=selector_attrs)
                         logger.info(f"Found {len(elements)} elements")
                             logger.info(f"Using alternate container: {self.container_element}")
+                                if not isinstance(elem, Tag):
                                 title = self.get_title(elem) or ""
                                 link = self.get_link(elem) or ""
                                 snippet = self.get_snippet(elem) or ""
                                     logger.info(f"Found result: {title} - {link}")
                                     manual_results.append(
-                                logger.info(f"Returning {len(manual_results)} manually parsed results")
-            await self._close_browser()
+                                logger.info(f"Found {len(manual_results)} results with alternate parsing")
+            logger.error(f"Search failed: {e}", exc_info=True)
     def search(self, query: str, pages: str = "") -> list[dict[str, str]]:
-        html_parser = self.parse_entry_point(url)
-            html_content = str(html_parser)
-            logger.debug(f"Google search HTML content length: {len(html_content)}")
-            logger.debug(f"HTML Preview: {html_content[:500]}...")
-            logger.debug("Testing various selectors:")
-            elements = html_parser.find_all(self.container_element[0], attrs=self.container_element[1])
-            logger.debug(f"Found {len(elements)} results with selector: div.g")
-                alt_elements = html_parser.find_all(selector_type, attrs=selector_attrs)
-                attr_str = ", ".join([f"{k}={v}" for k, v in selector_attrs.items()])
-                logger.debug(f"Found {len(alt_elements)} results with selector: {selector_type}[{attr_str}]")
-                    for i, elem in enumerate(alt_elements[:3]):
-                        h3 = elem.find("h3")
-                        a = elem.find("a", href=True)
-                        logger.debug(f"Element {i}: h3={h3 is not None}, a={a is not None}")
-                debug_file = f"google_debug_{query.replace(' ', '_')}_sync.html"
-                logger.info(f"Saved Google HTML content to: {debug_file}")
-                logger.error(f"Failed to save debug HTML: {e}")
         return self.fetch(url)
 
 ================
@@ -8967,15 +8987,40 @@ class Qwant(Falla):
         super().__init__(name="Qwant")
     def get_url(self, query: str) -> str:
         query_string = urllib.parse.urlencode(params)
+    async def _fetch_page(self, url: str) -> str:
+            await self._initialize_browser()
+                logger.error("Browser context not initialized")
+            page = await self.browser_context.new_page()
+            await page.goto(url, timeout=30000, wait_until="domcontentloaded")
+                consent_button = page.locator('button:has-text("Accept all")')
+                if await consent_button.count() > 0:
+                    logger.info("Consent page detected, clicking 'Accept all'")
+                    await consent_button.click()
+                    await page.wait_for_load_state("networkidle")
+                logger.debug(f"No consent page or error handling consent: {e}")
+                    logger.info(f"Waiting for selector: {self.wait_for_selector}")
+                    await page.wait_for_selector(self.wait_for_selector, timeout=5000)
+                    await asyncio.sleep(2)
+                logger.warning(f"Timeout waiting for selector in {self.name}: {e}")
+            return await page.content()
+            logger.error(f"Error fetching page with Playwright: {e}")
+                return await self._fetch_page(url)
+                await page.close()
     def get_title(self, elm: Tag) -> str:
-        title_elem = elm.select_one(".title")
+        title_elem = elm.select_one(".result__title")
             return title_elem.get_text().strip()
+        title_elem = elm.select_one("a.url")
+        title_elem = elm.select_one("h3")
     def get_link(self, elm: Tag) -> str:
-        link_elem = elm.select_one(".title")
+        link_elem = elm.select_one(".result__url")
             return str(link_elem.attrs["href"])
+        link_elem = elm.select_one("a.url")
+        link_elem = elm.select_one("a[href]")
     def get_snippet(self, elm: Tag) -> str:
-        snippet_elem = elm.select_one(".description")
+        snippet_elem = elm.select_one(".result__desc")
             return snippet_elem.get_text().strip()
+        snippet_elem = elm.select_one(".result__snippet")
+        snippet_elem = elm.select_one("p")
     def search(self, query: str, pages: str = "") -> list[dict[str, str]]:
         url = self.get_url(query)
         return self.fetch(url)
@@ -9007,15 +9052,37 @@ class Yahoo(Falla):
         super().__init__(name="Yahoo")
     def get_url(self, query: str) -> str:
         query_string = urllib.parse.urlencode(params)
+    async def _fetch_page(self, url: str) -> str:
+            await self._initialize_browser()
+                logger.error("Browser context not initialized")
+            page = await self.browser_context.new_page()
+            await page.goto(url, timeout=30000, wait_until="domcontentloaded")
+                consent_button = page.locator('button:has-text("Accept all")')
+                if await consent_button.count() > 0:
+                    logger.info("Consent page detected, clicking 'Accept all'")
+                    await consent_button.click()
+                    await page.wait_for_load_state("networkidle")
+                logger.debug(f"No consent page or error handling consent: {e}")
+                    logger.info(f"Waiting for selector: {self.wait_for_selector}")
+                    await page.wait_for_selector(self.wait_for_selector, timeout=5000)
+                    await asyncio.sleep(2)
+                logger.warning(f"Timeout waiting for selector in {self.name}: {e}")
+            return await page.content()
+            logger.error(f"Error fetching page with Playwright: {e}")
+                return await self._fetch_page(url)
+                await page.close()
     def get_title(self, elm: Tag) -> str:
-        title_elem = elm.select_one("h3.title")
+        title_elem = elm.select_one("h3.title a")
             return title_elem.get_text().strip()
+        title_elem = elm.select_one("h3")
     def get_link(self, elm: Tag) -> str:
-        link_elem = elm.select_one("a.d-ib")
+        link_elem = elm.select_one("h3.title a")
             return str(link_elem.attrs["href"])
+        link_elem = elm.select_one("a[href]")
     def get_snippet(self, elm: Tag) -> str:
-        snippet_elem = elm.select_one("div.compText.aAbs")
+        snippet_elem = elm.select_one("div.compText")
             return snippet_elem.get_text().strip()
+        snippet_elem = elm.select_one("p")
     def search(self, query: str, pages: str = "") -> list[dict[str, str]]:
         url = self.get_url(query)
         return self.fetch(url)
@@ -9205,14 +9272,20 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
                 engine_class.friendly_engine_name = ENGINE_FRIENDLY_NAMES.get(
         logger.error(f"Failed to register engine {engine_class.__name__}: {e}")
 def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:
-    engine_class = _engine_registry.get(engine_name)
-        available_engines = ", ".join(sorted(_engine_registry.keys()))
+    engines = get_registered_engines()
+    std_engine_name = standardize_engine_name(engine_name)
+    engine_class = engines.get(std_engine_name)
+        engine_class = engines.get(engine_name)
+        available_engines = ", ".join(sorted(engines.keys()))
+        logger.error(msg)
         raise EngineError(engine_name, msg)
-    if hasattr(engine_class, "env_api_key_names") and engine_class.env_api_key_names:
-            logger.debug(f"No API key in config for {engine_name}, checking environment variables")
-                    logger.debug(f"Found API key in environment variable {env_var}")
-        return engine_class(config, **kwargs)
-        raise EngineError(engine_name, msg) from e
+            logger.warning(msg)
+        engine_instance = engine_class(config, **kwargs)
+        logger.debug(f"Successfully initialized engine: {engine_name}")
+        if "API key" in str(e):
+            env_vars = getattr(engine_class, "env_api_key_names", [])
+            env_vars_str = ", ".join(env_vars) if env_vars else "No environment variables defined"
+            raise EngineError(engine_name, msg) from e
 def get_registered_engines() -> dict[str, type[SearchEngine]]:
     return _engine_registry.copy()
 
@@ -9760,7 +9833,7 @@ def get_engine_params(
 def init_engine_task(
     engine_config = config.engines.get(std_engine_name)
         engine_config = config.engines.get(engine_name)
-            logger.warning(f"Engine '{engine_name}' not configured.")
+            logger.warning(f"Engine '{engine_name}' not configured, using default configuration.")
             engine_config = EngineConfig(enabled=True)
     num_results = kwargs.get("num_results")
         logger.debug(f"Initializing engine '{engine_name}' with num_results={num_results}")
@@ -9769,10 +9842,15 @@ def init_engine_task(
             common_params=kwargs.get("common_params", {}),
         engine_instance: SearchEngine = get_engine(
         logger.info(f"🔍 Querying engine: {engine_name}")
-        return engine_name, engine_instance.search(query)
-        logger.warning(
-            f"Failed to initialize engine '{engine_name}': {type(e).__name__}",
-        logger.error(f"Error initializing engine '{engine_name}': {e}")
+        async def search_with_error_handling() -> list[SearchResult]:
+                return await engine_instance.search(query)
+                logger.error(f"Search with engine '{engine_name}' failed: {e}")
+        return engine_name, search_with_error_handling()
+        error_type = type(e).__name__
+        error_msg = str(e)
+            logger.error(
+            logger.warning(f"Engine '{engine_name}' is disabled. Enable it in your configuration to use it.")
+            logger.error(f"Failed to initialize engine '{engine_name}': {error_type}: {error_msg}")
 async def search(
         config = config or Config()
         explicit_engines_requested = engines is not None and len(engines) > 0
@@ -9781,27 +9859,29 @@ async def search(
             raise SearchError(msg)
         logger.debug(f"Search requested with num_results={num_results}")
         engines_to_try = [standardize_engine_name(e) for e in engines_to_try]
-                task = init_engine_task(
-                    engine_names.append(task[0])
-                    tasks.append(task[1])
-                logger.warning(f"Failed to initialize engine '{engine_name}': {e}")
-                failed_engines.append(engine_name)
+                task_result = init_engine_task(
+                    engine_names.append(task_result[0])
+                    tasks.append(task_result[1])
+                    failed_engines.append(engine_name)
+                logger.warning(f"Unexpected error initializing engine '{engine_name}': {e}")
             failed_engines_str = ", ".join(failed_engines)
             logger.warning(f"Failed to initialize engines: {failed_engines_str}")
                 msg = f"No search engines could be initialized from requested engines: {', '.join(engines_to_try)}"
             logger.warning("Falling back to any available search engine...")
             for engine_name in get_registered_engines():
-                    logger.debug(f"Failed to initialize engine {engine_name}: {e}")
+                        logger.info(f"Successfully fell back to engine: {engine_name}")
+                    logger.debug(f"Failed to initialize fallback engine {engine_name}: {e}")
         results = await asyncio.gather(*tasks, return_exceptions=True)
         for engine_name, result in zip(engine_names, results, strict=False):
             if isinstance(result, Exception):
-                logger.error(
             elif isinstance(result, list):
-                logger.info(
-                    f"✅ Engine '{engine_name}' returned {len(result)} results",
-                flattened_results.extend(result)
-                    f"⚠️ Engine '{engine_name}' returned no results or unexpected type: {type(result)}",
+                result_count = len(result)
+                    logger.info(
+                    flattened_results.extend(result)
+                logger.warning(
+                    f"⚠️ Engine '{engine_name}' returned unexpected type: {type(result)}",
         logger.error(f"Search failed: {e}")
+    logger.info(f"Total results found across all engines: {len(flattened_results)}")
 
 ================
 File: src/twat_search/web/cli.py
@@ -11185,6 +11265,36 @@ IP address: 2a02:a312:c8c8:4a00:891b:9a5d:c116:bcb<br>Time: 2025-03-04T04:19:36Z
 </body></html>
 
 ================
+File: google_debug_test_query.html
+================
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head><meta http-equiv="origin-trial" content="A/kargTFyk8MR5ueravczef/wIlTkbVk1qXQesp39nV+xNECPdLBVeYffxrM8TmZT6RArWGQVCJ0LRivD7glcAUAAACQeyJvcmlnaW4iOiJodHRwczovL2dvb2dsZS5jb206NDQzIiwiZmVhdHVyZSI6IkRpc2FibGVUaGlyZFBhcnR5U3RvcmFnZVBhcnRpdGlvbmluZzIiLCJleHBpcnkiOjE3NDIzNDIzOTksImlzU3ViZG9tYWluIjp0cnVlLCJpc1RoaXJkUGFydHkiOnRydWV9"><meta http-equiv="content-type" content="text/html; charset=utf-8"><meta name="viewport" content="initial-scale=1"><title>https://www.google.com/search?q=test+query&amp;num=100&amp;hl=en&amp;gl=us&amp;sei=4YbGZ-DbL4yNxc8P4uOmgQg</title></head>
+<body style="font-family: arial, sans-serif; background-color: #fff; color: #000; padding:20px; font-size:18px; overscroll-behavior:contain;" onload="e=document.getElementById('captcha');if(e){e.focus();} if(solveSimpleChallenge) {solveSimpleChallenge(0,0);}">
+<div style="max-width:400px;">
+<hr noshade="" size="1" style="color:#ccc; background-color:#ccc;"><br>
+<form id="captcha-form" action="index" method="post">
+<noscript>
+<div style="font-size:13px;">
+  In order to continue, please enable javascript on your web browser.
+</div>
+</noscript>
+<script type="text/javascript" async="" charset="utf-8" src="https://www.gstatic.com/recaptcha/releases/rW64dpMGAGrjU7JJQr9xxPl8/recaptcha__en.js" crossorigin="anonymous" integrity="sha384-stI8i0l4UnrupDOI6In0RQyfmG7x4RHoRSlzjf/yDu+T9clp2es/I4WNYpU4isM0"></script><script src="https://www.google.com/recaptcha/api.js" async="" defer=""></script>
+<script>var submitCallback = function(response) {document.getElementById('captcha-form').submit();};</script>
+<div id="recaptcha" class="g-recaptcha" data-sitekey="6LfwuyUTAAAAAOAmoS0fdqijC2PbbdH4kjq62Y1b" data-callback="submitCallback" data-s="FqngvDzHeZnU97lmKD1UxwWETdILMoDw8MPTPlsKvh_DUItYKzRxxheg4ttQqMSmncOae3bMD4rAgM0_4aTE6nfRoyJIv6bKITJtcEM3dPdhunKfIzoBMotBAt83t0iBpUPOp8sMUzY-6pvdwGGqEcND2GILtsz_7j6-htwn0-wVK96f9yq_Dl6-jNBenTMPhdmb1k4tJFZ066jMqLFl8AmvC1Kc1IKcKTqQDoSR7Kozs5nn5j8M4KI-hz0HLDFeFYFIZXASnCWF8c9DZQ1-QfrhWKqZ1vY"></div>
+<input type="hidden" name="q" value="EhAqAqMSyMhKAIkbml3BFgvLGOKNmr4GIjBO7UBahpD_eHomWH46AYpWusU92R1i9lWqHXc-RRZMKtceXQDkLhqsMpEbCCRe_jsyAXJaAUM"><input type="hidden" name="continue" value="https://www.google.com/search?q=test+query&amp;num=100&amp;hl=en&amp;gl=us&amp;sei=4YbGZ-DbL4yNxc8P4uOmgQg">
+</form>
+<hr noshade="" size="1" style="color:#ccc; background-color:#ccc;">
+<div style="font-size:13px; line-break: anywhere;">
+<b>About this page</b><br><br>
+Our systems have detected unusual traffic from your computer network.  This page checks to see if it's really you sending the requests, and not a robot.  <a href="#" onclick="document.getElementById('infoDiv').style.display='block';">Why did this happen?</a><br><br>
+<div id="infoDiv" style="display:none; background-color:#eee; padding:10px; margin:0 0 15px 0; line-height:1.4em;">
+This page appears when Google automatically detects requests coming from your computer network which appear to be in violation of the <a href="//www.google.com/policies/terms/">Terms of Service</a>. The block will expire shortly after those requests stop.  In the meantime, solving the above CAPTCHA will let you continue to use our services.<br><br>This traffic may have been sent by malicious software, a browser plug-in, or a script that sends automated requests.  If you share your network connection, ask your administrator for help — a different computer using the same IP address may be responsible.  <a href="//support.google.com/websearch/answer/86640">Learn more</a><br><br>Sometimes you may be asked to solve the CAPTCHA if you are using advanced terms that robots are known to use, or sending requests very quickly.
+</div>
+IP address: 2a02:a312:c8c8:4a00:891b:9a5d:c116:bcb<br>Time: 2025-03-04T04:51:46Z<br>URL: https://www.google.com/search?q=test+query&amp;num=100&amp;hl=en&amp;gl=us&amp;sei=4YbGZ-DbL4yNxc8P4uOmgQg<br>
+</div>
+</div>
+</body></html>
+
+================
 File: LICENSE
 ================
 MIT License
@@ -12355,7 +12465,7 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
 
 ## High Priority
 
-### Fix Falla-based Search Engines
+### Phase 1: Fix Falla-based Search Engines
 
 - [ ] Fix Yahoo and Qwant search engines
   - [ ] Update selectors in Yahoo implementation to match current page structure
@@ -12382,7 +12492,7 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
   - [ ] Add comprehensive type hinting throughout the codebase
   - [ ] Improve method docstrings for better code documentation
 
-### Fix Critical Engine Failures
+### Phase 2: Fix Critical Engine Failures
 
 - [ ] Improve `get_engine` function and error handling
   - [ ] Add descriptive error messages when engines are not found or disabled

@@ -1,6 +1,6 @@
-2025-03-04 05:33:15 - 
+2025-03-04 05:57:31 - 
 === PROJECT STATEMENT ===
-2025-03-04 05:33:15 - ---
+2025-03-04 05:57:31 - ---
 description: About this project
 globs: 
 alwaysApply: false
@@ -15,10 +15,10 @@ alwaysApply: false
 - Clear provider protocol for adding new search backends
 - Strong typing and runtime checks throughout
 
-2025-03-04 05:33:15 - 
+2025-03-04 05:57:31 - 
 === Current Status ===
-2025-03-04 05:33:15 - Error: LOG.md is missing
-2025-03-04 05:33:15 - [1.3K]  .
+2025-03-04 05:57:31 - Error: LOG.md is missing
+2025-03-04 05:57:31 - [1.3K]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 192]  rules
@@ -77,14 +77,14 @@ alwaysApply: false
 │   │   ├── [317K]  2025-02-27_15-45-updating-falla-library-selenium-to-playwright.md
 │   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
 │   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
-│   │   └── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
+│   │   ├── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
+│   │   └── [100K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 │   └── [2.2M]  history.txt
 ├── [3.3K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 23K]  README.md
-├── [6.3K]  TODO.md
-├── [9.4K]  TODOENGINE.md
+├── [6.4K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [6.3K]  debug_fetch.py
@@ -98,6 +98,7 @@ alwaysApply: false
 ├── [ 192]  dist
 ├── [7.4K]  falla_search.py
 ├── [4.0K]  google_debug_Python_programming_language.html
+├── [3.9K]  google_debug_test_query.html
 ├── [5.4K]  pyproject.toml
 ├── [  43]  requirements.txt
 ├── [ 224]  resources
@@ -121,13 +122,13 @@ alwaysApply: false
 │       ├── [2.5K]  __main__.py
 │       └── [ 416]  web
 │           ├── [1.8K]  __init__.py
-│           ├── [9.0K]  api.py
+│           ├── [ 11K]  api.py
 │           ├── [ 48K]  cli.py
 │           ├── [ 19K]  config.py
 │           ├── [2.8K]  engine_constants.py
 │           ├── [ 576]  engines
 │           │   ├── [8.7K]  __init__.py
-│           │   ├── [ 16K]  base.py
+│           │   ├── [ 17K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [ 15K]  brave.py
 │           │   ├── [9.2K]  critique.py
@@ -143,16 +144,16 @@ alwaysApply: false
 │           │   │   │   ├── [ 892]  ask.py
 │           │   │   │   ├── [2.4K]  bing.py
 │           │   │   │   ├── [ 855]  dogpile.py
-│           │   │   │   ├── [3.8K]  duckduckgo.py
+│           │   │   │   ├── [6.7K]  duckduckgo.py
 │           │   │   │   ├── [ 18K]  falla.py
 │           │   │   │   ├── [2.4K]  fetch_page.py
 │           │   │   │   ├── [ 860]  gibiru.py
 │           │   │   │   ├── [ 12K]  google.py
 │           │   │   │   ├── [ 762]  mojeek.py
-│           │   │   │   ├── [2.7K]  qwant.py
+│           │   │   │   ├── [5.9K]  qwant.py
 │           │   │   │   ├── [ 923]  searchencrypt.py
 │           │   │   │   ├── [ 900]  startpage.py
-│           │   │   │   ├── [2.7K]  yahoo.py
+│           │   │   │   ├── [5.4K]  yahoo.py
 │           │   │   │   └── [2.1K]  yandex.py
 │           │   │   ├── [2.9K]  main.py
 │           │   │   ├── [ 365]  requirements.txt
@@ -189,14 +190,14 @@ alwaysApply: false
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [668K]  twat_search.txt
+├── [659K]  twat_search.txt
 └── [195K]  uv.lock
 
-26 directories, 147 files
+26 directories, 148 files
 
-2025-03-04 05:33:15 - 
+2025-03-04 05:57:31 - 
 Project structure:
-2025-03-04 05:33:15 - [1.3K]  .
+2025-03-04 05:57:31 - [1.3K]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 192]  rules
@@ -255,14 +256,14 @@ Project structure:
 │   │   ├── [317K]  2025-02-27_15-45-updating-falla-library-selenium-to-playwright.md
 │   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
 │   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
-│   │   └── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
+│   │   ├── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
+│   │   └── [100K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 │   └── [2.2M]  history.txt
 ├── [3.3K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 23K]  README.md
-├── [6.3K]  TODO.md
-├── [9.4K]  TODOENGINE.md
+├── [6.4K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [6.3K]  debug_fetch.py
@@ -276,6 +277,7 @@ Project structure:
 ├── [ 192]  dist
 ├── [7.4K]  falla_search.py
 ├── [4.0K]  google_debug_Python_programming_language.html
+├── [3.9K]  google_debug_test_query.html
 ├── [5.4K]  pyproject.toml
 ├── [  43]  requirements.txt
 ├── [ 224]  resources
@@ -299,13 +301,13 @@ Project structure:
 │       ├── [2.5K]  __main__.py
 │       └── [ 416]  web
 │           ├── [1.8K]  __init__.py
-│           ├── [9.0K]  api.py
+│           ├── [ 11K]  api.py
 │           ├── [ 48K]  cli.py
 │           ├── [ 19K]  config.py
 │           ├── [2.8K]  engine_constants.py
 │           ├── [ 576]  engines
 │           │   ├── [8.7K]  __init__.py
-│           │   ├── [ 16K]  base.py
+│           │   ├── [ 17K]  base.py
 │           │   ├── [ 11K]  bing_scraper.py
 │           │   ├── [ 15K]  brave.py
 │           │   ├── [9.2K]  critique.py
@@ -321,16 +323,16 @@ Project structure:
 │           │   │   │   ├── [ 892]  ask.py
 │           │   │   │   ├── [2.4K]  bing.py
 │           │   │   │   ├── [ 855]  dogpile.py
-│           │   │   │   ├── [3.8K]  duckduckgo.py
+│           │   │   │   ├── [6.7K]  duckduckgo.py
 │           │   │   │   ├── [ 18K]  falla.py
 │           │   │   │   ├── [2.4K]  fetch_page.py
 │           │   │   │   ├── [ 860]  gibiru.py
 │           │   │   │   ├── [ 12K]  google.py
 │           │   │   │   ├── [ 762]  mojeek.py
-│           │   │   │   ├── [2.7K]  qwant.py
+│           │   │   │   ├── [5.9K]  qwant.py
 │           │   │   │   ├── [ 923]  searchencrypt.py
 │           │   │   │   ├── [ 900]  startpage.py
-│           │   │   │   ├── [2.7K]  yahoo.py
+│           │   │   │   ├── [5.4K]  yahoo.py
 │           │   │   │   └── [2.1K]  yandex.py
 │           │   │   ├── [2.9K]  main.py
 │           │   │   ├── [ 365]  requirements.txt
@@ -367,156 +369,46 @@ Project structure:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [668K]  twat_search.txt
+├── [659K]  twat_search.txt
 └── [195K]  uv.lock
 
-26 directories, 147 files
+26 directories, 148 files
 
-2025-03-04 05:33:15 - On branch main
+2025-03-04 05:57:31 - On branch main
 Your branch is up to date with 'origin/main'.
 
-Changes to be committed:
-  (use "git restore --staged <file>..." to unstage)
-	modified:   .cursor/rules/filetree.mdc
-	modified:   .pre-commit-config.yaml
-	new file:   .specstory/history/2025-02-27_15-45-updating-falla-library-selenium-to-playwright.md
-	new file:   .specstory/history/2025-02-27_17-02-fixing-falla-py-async-issues.md
-	new file:   .specstory/history/2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
-	modified:   CLEANUP.txt
-	modified:   PROGRESS.md
-	modified:   TODO.md
-	new file:   TODOENGINE.md
-	new file:   debug_fetch.py
-	new file:   debug_output/qwant_analysis.txt
-	new file:   debug_output/qwant_content.html
-	new file:   debug_output/qwant_screenshot.png
-	new file:   debug_output/yahoo_analysis.txt
-	new file:   debug_output/yahoo_content.html
-	new file:   debug_output/yahoo_screenshot.png
-	new file:   falla_search.py
-	new file:   google_debug_Python_programming_language.html
-	modified:   pyproject.toml
-	new file:   requirements.txt
-	modified:   src/twat_search/web/engines/falla.py
-	modified:   src/twat_search/web/engines/lib_falla/core/bing.py
-	modified:   src/twat_search/web/engines/lib_falla/core/duckduckgo.py
-	modified:   src/twat_search/web/engines/lib_falla/core/falla.py
-	new file:   src/twat_search/web/engines/lib_falla/core/fetch_page.py
-	modified:   src/twat_search/web/engines/lib_falla/core/google.py
-	modified:   src/twat_search/web/engines/lib_falla/core/qwant.py
-	modified:   src/twat_search/web/engines/lib_falla/core/yahoo.py
-	modified:   src/twat_search/web/engines/lib_falla/core/yandex.py
-	modified:   src/twat_search/web/engines/lib_falla/main.py
-	new file:   src/twat_search/web/engines/lib_falla/requirements.txt
-	modified:   src/twat_search/web/engines/lib_falla/utils.py
-	new file:   test_async_falla.py
-	new file:   test_falla.py
-	new file:   test_google_falla_debug.py
-	new file:   test_simple.py
-	new file:   test_sync_falla.py
-	modified:   twat_search.txt
-	modified:   uv.lock
-
 Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
+  (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
 	modified:   .cursor/rules/filetree.mdc
-	modified:   .specstory/history/.what-is-this.md
-	modified:   .specstory/history/2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
-	modified:   CHANGELOG.md
+	modified:   .specstory/history/2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 	modified:   CLEANUP.txt
-	deleted:    PROGRESS.md
-	modified:   README.md
-	modified:   TODO.md
-	modified:   google_debug_Python_programming_language.html
-	modified:   src/twat_search/web/engines/lib_falla/core/falla.py
-	modified:   src/twat_search/web/engines/lib_falla/core/google.py
-	modified:   test_google_falla_debug.py
-	modified:   twat_search.txt
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	.specstory/history/2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
+no changes added to commit (use "git add" and/or "git commit -a")
 
-
-2025-03-04 05:33:15 - On branch main
+2025-03-04 05:57:31 - On branch main
 Your branch is up to date with 'origin/main'.
 
-Changes to be committed:
-  (use "git restore --staged <file>..." to unstage)
-	modified:   .cursor/rules/filetree.mdc
-	modified:   .pre-commit-config.yaml
-	new file:   .specstory/history/2025-02-27_15-45-updating-falla-library-selenium-to-playwright.md
-	new file:   .specstory/history/2025-02-27_17-02-fixing-falla-py-async-issues.md
-	new file:   .specstory/history/2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
-	modified:   CLEANUP.txt
-	modified:   PROGRESS.md
-	modified:   TODO.md
-	new file:   TODOENGINE.md
-	new file:   debug_fetch.py
-	new file:   debug_output/qwant_analysis.txt
-	new file:   debug_output/qwant_content.html
-	new file:   debug_output/qwant_screenshot.png
-	new file:   debug_output/yahoo_analysis.txt
-	new file:   debug_output/yahoo_content.html
-	new file:   debug_output/yahoo_screenshot.png
-	new file:   falla_search.py
-	new file:   google_debug_Python_programming_language.html
-	modified:   pyproject.toml
-	new file:   requirements.txt
-	modified:   src/twat_search/web/engines/falla.py
-	modified:   src/twat_search/web/engines/lib_falla/core/bing.py
-	modified:   src/twat_search/web/engines/lib_falla/core/duckduckgo.py
-	modified:   src/twat_search/web/engines/lib_falla/core/falla.py
-	new file:   src/twat_search/web/engines/lib_falla/core/fetch_page.py
-	modified:   src/twat_search/web/engines/lib_falla/core/google.py
-	modified:   src/twat_search/web/engines/lib_falla/core/qwant.py
-	modified:   src/twat_search/web/engines/lib_falla/core/yahoo.py
-	modified:   src/twat_search/web/engines/lib_falla/core/yandex.py
-	modified:   src/twat_search/web/engines/lib_falla/main.py
-	new file:   src/twat_search/web/engines/lib_falla/requirements.txt
-	modified:   src/twat_search/web/engines/lib_falla/utils.py
-	new file:   test_async_falla.py
-	new file:   test_falla.py
-	new file:   test_google_falla_debug.py
-	new file:   test_simple.py
-	new file:   test_sync_falla.py
-	modified:   twat_search.txt
-	modified:   uv.lock
-
 Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
+  (use "git add <file>..." to update what will be committed)
   (use "git restore <file>..." to discard changes in working directory)
 	modified:   .cursor/rules/filetree.mdc
-	modified:   .specstory/history/.what-is-this.md
-	modified:   .specstory/history/2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
-	modified:   CHANGELOG.md
+	modified:   .specstory/history/2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 	modified:   CLEANUP.txt
-	deleted:    PROGRESS.md
-	modified:   README.md
-	modified:   TODO.md
-	modified:   google_debug_Python_programming_language.html
-	modified:   src/twat_search/web/engines/lib_falla/core/falla.py
-	modified:   src/twat_search/web/engines/lib_falla/core/google.py
-	modified:   test_google_falla_debug.py
-	modified:   twat_search.txt
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-	.specstory/history/2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
+no changes added to commit (use "git add" and/or "git commit -a")
 
-
-2025-03-04 05:33:15 - 
+2025-03-04 05:57:31 - 
 === Environment Status ===
-2025-03-04 05:33:15 - Setting up virtual environment
-2025-03-04 05:33:16 - Virtual environment created and activated
-2025-03-04 05:33:16 - Installing package with all extras
-2025-03-04 05:33:16 - Setting up virtual environment
-2025-03-04 05:33:16 - Virtual environment created and activated
-2025-03-04 05:33:17 - Package installed successfully
-2025-03-04 05:33:17 - Running code quality checks
-2025-03-04 05:33:17 - >>> Running code fixes...
-2025-03-04 05:33:17 - src/twat_search/__init__.py:24:29: F401 `twat_search.web` imported but unused; consider using `importlib.util.find_spec` to test for availability
+2025-03-04 05:57:31 - Setting up virtual environment
+2025-03-04 05:57:32 - Virtual environment created and activated
+2025-03-04 05:57:32 - Installing package with all extras
+2025-03-04 05:57:32 - Setting up virtual environment
+2025-03-04 05:57:32 - Virtual environment created and activated
+2025-03-04 05:57:33 - Package installed successfully
+2025-03-04 05:57:33 - Running code quality checks
+2025-03-04 05:57:33 - >>> Running code fixes...
+2025-03-04 05:57:33 - src/twat_search/__init__.py:24:29: F401 `twat_search.web` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
 22 | # Import submodules if available
 23 | try:
@@ -696,44 +588,44 @@ src/twat_search/web/__init__.py:81:41: F401 `twat_search.web.engines.serpapi` im
    |
    = help: Remove unused import: `twat_search.web.engines.serpapi`
 
-src/twat_search/web/api.py:108:5: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/api.py:142:5: FBT001 Boolean-typed positional argument in function definition
     |
-106 |     country: str | None = None,
-107 |     language: str | None = None,
-108 |     safe_search: bool = True,
+140 |     country: str | None = None,
+141 |     language: str | None = None,
+142 |     safe_search: bool = True,
     |     ^^^^^^^^^^^ FBT001
-109 |     time_frame: str | None = None,
-110 |     config: Config | None = None,
+143 |     time_frame: str | None = None,
+144 |     config: Config | None = None,
     |
 
-src/twat_search/web/api.py:108:5: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/api.py:142:5: FBT002 Boolean default positional argument in function definition
     |
-106 |     country: str | None = None,
-107 |     language: str | None = None,
-108 |     safe_search: bool = True,
+140 |     country: str | None = None,
+141 |     language: str | None = None,
+142 |     safe_search: bool = True,
     |     ^^^^^^^^^^^ FBT002
-109 |     time_frame: str | None = None,
-110 |     config: Config | None = None,
+143 |     time_frame: str | None = None,
+144 |     config: Config | None = None,
     |
 
-src/twat_search/web/api.py:111:5: FBT001 Boolean-typed positional argument in function definition
+src/twat_search/web/api.py:145:5: FBT001 Boolean-typed positional argument in function definition
     |
-109 |     time_frame: str | None = None,
-110 |     config: Config | None = None,
-111 |     strict_mode: bool = True,
+143 |     time_frame: str | None = None,
+144 |     config: Config | None = None,
+145 |     strict_mode: bool = True,
     |     ^^^^^^^^^^^ FBT001
-112 |     **kwargs: Any,
-113 | ) -> list[SearchResult]:
+146 |     **kwargs: Any,
+147 | ) -> list[SearchResult]:
     |
 
-src/twat_search/web/api.py:111:5: FBT002 Boolean default positional argument in function definition
+src/twat_search/web/api.py:145:5: FBT002 Boolean default positional argument in function definition
     |
-109 |     time_frame: str | None = None,
-110 |     config: Config | None = None,
-111 |     strict_mode: bool = True,
+143 |     time_frame: str | None = None,
+144 |     config: Config | None = None,
+145 |     strict_mode: bool = True,
     |     ^^^^^^^^^^^ FBT002
-112 |     **kwargs: Any,
-113 | ) -> list[SearchResult]:
+146 |     **kwargs: Any,
+147 | ) -> list[SearchResult]:
     |
 
 src/twat_search/web/cli.py:83:34: FBT001 Boolean-typed positional argument in function definition
@@ -2539,6 +2431,17 @@ src/twat_search/web/engines/lib_falla/core/fetch_page.py:44:121: E501 Line too l
 45 | …
    |
 
+src/twat_search/web/engines/lib_falla/core/google.py:11:40: F401 `typing.Optional` imported but unused
+   |
+ 9 | import urllib.parse
+10 | from pathlib import Path
+11 | from typing import TYPE_CHECKING, Any, Optional, cast
+   |                                        ^^^^^^^^ F401
+12 |
+13 | from bs4 import BeautifulSoup
+   |
+   = help: Remove unused import: `typing.Optional`
+
 src/twat_search/web/engines/pplx.py:110:13: B904 Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
     |
 108 |               data = response.json()
@@ -2978,28 +2881,19 @@ tests/web/test_bing_scraper.py:257:48: N803 Argument name `mock_BingScraper` sho
 259 |         # Setup mock to return results with missing attributes
     |
 
-Found 245 errors.
+Found 247 errors (1 fixed, 246 remaining).
 
-2025-03-04 05:33:17 - 56 files left unchanged
+2025-03-04 05:57:33 - 56 files left unchanged
 
-2025-03-04 05:33:17 - >>>Running type checks...
-2025-03-04 05:33:40 - src/twat_search/web/engines/lib_falla/core/fetch_page.py:15: error: Cannot find implementation or library stub for module named "playwright.async_api"  [import-not-found]
+2025-03-04 05:57:33 - >>>Running type checks...
+2025-03-04 05:57:58 - src/twat_search/web/engines/lib_falla/core/fetch_page.py:15: error: Cannot find implementation or library stub for module named "playwright.async_api"  [import-not-found]
 src/twat_search/web/engines/lib_falla/core/falla.py:19: error: Library stubs not installed for "requests"  [import-untyped]
 src/twat_search/web/engines/lib_falla/core/falla.py:19: note: Hint: "python3 -m pip install types-requests"
 src/twat_search/web/engines/lib_falla/core/falla.py:19: note: (or run "mypy --install-types" to install all missing stub packages)
 src/twat_search/web/engines/lib_falla/core/falla.py:21: error: Cannot find implementation or library stub for module named "playwright.async_api"  [import-not-found]
 src/twat_search/web/engines/lib_falla/core/falla.py:21: note: See https://mypy.readthedocs.io/en/stable/running_mypy.html#missing-imports
-src/twat_search/web/engines/lib_falla/core/google.py:231: error: Argument "attrs" to "find_all" of "Tag" has incompatible type "dict[str, str]"; expected "dict[str, str | bytes | Pattern[str] | bool | Callable[[str], bool] | Iterable[str | bytes | Pattern[str] | bool | Callable[[str], bool]]]"  [arg-type]
-src/twat_search/web/engines/lib_falla/core/google.py:231: note: "Dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
-src/twat_search/web/engines/lib_falla/core/google.py:231: note: Consider using "Mapping" instead, which is covariant in the value type
-src/twat_search/web/engines/lib_falla/core/google.py:240: error: Argument 1 to "get_title" of "Google" has incompatible type "PageElement | Tag | NavigableString"; expected "Tag"  [arg-type]
-src/twat_search/web/engines/lib_falla/core/google.py:241: error: Argument 1 to "get_link" of "Google" has incompatible type "PageElement | Tag | NavigableString"; expected "Tag"  [arg-type]
-src/twat_search/web/engines/lib_falla/core/google.py:242: error: Argument 1 to "get_snippet" of "Google" has incompatible type "PageElement | Tag | NavigableString"; expected "Tag"  [arg-type]
-src/twat_search/web/engines/lib_falla/core/google.py:304: error: Argument "attrs" to "find_all" of "Tag" has incompatible type "dict[str, str]"; expected "dict[str, str | bytes | Pattern[str] | bool | Callable[[str], bool] | Iterable[str | bytes | Pattern[str] | bool | Callable[[str], bool]]]"  [arg-type]
-src/twat_search/web/engines/lib_falla/core/google.py:304: note: "Dict" is invariant -- see https://mypy.readthedocs.io/en/stable/common_issues.html#variance
-src/twat_search/web/engines/lib_falla/core/google.py:304: note: Consider using "Mapping" instead, which is covariant in the value type
-src/twat_search/web/engines/lib_falla/core/google.py:311: error: "PageElement" has no attribute "find"  [attr-defined]
-src/twat_search/web/engines/lib_falla/core/google.py:312: error: "PageElement" has no attribute "find"  [attr-defined]
+src/twat_search/web/engines/lib_falla/core/google.py:285: error: Argument "attrs" to "find_all" of "Tag" has incompatible type "Mapping[str, Any]"; expected "dict[str, str | bytes | Pattern[str] | bool | Callable[[str], bool] | Iterable[str | bytes | Pattern[str] | bool | Callable[[str], bool]]]"  [arg-type]
+src/twat_search/web/engines/lib_falla/core/google.py:289: error: Incompatible types in assignment (expression has type "tuple[str, Mapping[str, Any]]", variable has type "tuple[str, dict[str, Any]]")  [assignment]
 src/twat_search/web/engines/lib_falla/utils.py:119: error: Missing positional argument "name" in call to "Falla"  [call-arg]
 src/twat_search/web/engines/lib_falla/utils.py:150: error: Missing positional argument "name" in call to "Falla"  [call-arg]
 tests/unit/web/test_utils.py:53: error: No overload variant of "range" matches argument type "float"  [call-overload]
@@ -3011,10 +2905,10 @@ src/twat_search/web/engines/duckduckgo.py:17: error: Cannot find implementation 
 tests/conftest.py:52: error: Only concrete class can be given where "type[SearchEngine]" is expected  [type-abstract]
 src/twat_search/web/cli.py:21: error: Skipping analyzing "fire.core": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 src/twat_search/web/cli.py:21: error: Skipping analyzing "fire": module is installed, but missing library stubs or py.typed marker  [import-untyped]
-Found 18 errors in 9 files (checked 57 source files)
+Found 13 errors in 9 files (checked 57 source files)
 
-2025-03-04 05:33:40 - >>> Running tests...
-2025-03-04 05:33:43 - ============================= test session starts ==============================
+2025-03-04 05:57:58 - >>> Running tests...
+2025-03-04 05:58:02 - ============================= test session starts ==============================
 platform darwin -- Python 3.12.8, pytest-8.3.5, pluggy-1.5.0 -- /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.venv/bin/python
 cachedir: .pytest_cache
 benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
@@ -3028,7 +2922,7 @@ tests/test_twat_search.py::test_version PASSED                           [  2%]
 tests/unit/web/engines/test_base.py::test_search_engine_is_abstract PASSED [  4%]
 tests/unit/web/engines/test_base.py::test_search_engine_name_class_var PASSED [  6%]
 tests/unit/web/engines/test_base.py::test_engine_registration PASSED     [  8%]
-tests/unit/web/engines/test_base.py::test_get_engine_with_invalid_name PASSED [ 10%]
+tests/unit/web/engines/test_base.py::test_get_engine_with_invalid_name FAILED [ 10%]
 tests/unit/web/engines/test_base.py::test_get_engine_with_disabled_engine PASSED [ 12%]
 tests/unit/web/engines/test_base.py::test_get_engine_with_config PASSED  [ 14%]
 tests/unit/web/engines/test_base.py::test_get_engine_with_kwargs PASSED  [ 16%]
@@ -3075,6 +2969,80 @@ tests/web/test_bing_scraper.py::TestBingScraperEngine::test_parsing_error PASSED
 tests/web/test_bing_scraper.py::TestBingScraperEngine::test_invalid_result_format PASSED [100%]
 
 =================================== FAILURES ===================================
+______________________ test_get_engine_with_invalid_name _______________________
+
+    def test_get_engine_with_invalid_name() -> None:
+        """Test that get_engine raises an error for invalid engine names."""
+        with pytest.raises(SearchError, match="Unknown search engine"):
+>           get_engine("nonexistent_engine", EngineConfig())
+
+tests/unit/web/engines/test_base.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+engine_name = 'nonexistent_engine'
+config = EngineConfig(enabled=True, api_key=None, default_params={}, engine_code=None)
+kwargs = {}
+engines = {'bing_scraper': <class 'twat_search.web.engines.bing_scraper.BingScraperSearchEngine'>, 'brave': <class 'twat_search....ngines.brave.BraveNewsSearchEngine'>, 'critique': <class 'twat_search.web.engines.critique.CritiqueSearchEngine'>, ...}
+standardize_engine_name = <function standardize_engine_name at 0x105d740e0>
+std_engine_name = 'nonexistent_engine', engine_class = None
+available_engines = 'bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news'
+msg = "Engine 'nonexistent_engine' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine,...sdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news"
+
+    def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchEngine:
+        """
+        Get an instance of a search engine by name.
+    
+        This function looks up the engine class by name, then instantiates it
+        with the provided configuration and parameters.
+    
+        Args:
+            engine_name: Name of the engine to instantiate
+            config: Engine configuration
+            **kwargs: Additional engine-specific parameters
+    
+        Returns:
+            An instance of the requested search engine
+    
+        Raises:
+            EngineError: If the engine is not found, disabled, or fails to initialize
+        """
+        # Get the registry of engines
+        engines = get_registered_engines()
+    
+        # Standardize the engine name for lookup
+        from twat_search.web.engines import standardize_engine_name
+    
+        std_engine_name = standardize_engine_name(engine_name)
+    
+        # Try to find the engine class
+        engine_class = engines.get(std_engine_name)
+    
+        # If not found with standardized name, try original name (for backward compatibility)
+        if engine_class is None:
+            engine_class = engines.get(engine_name)
+    
+        # If still not found, provide a helpful error message
+        if engine_class is None:
+            available_engines = ", ".join(sorted(engines.keys()))
+            msg = f"Engine '{engine_name}' not found. Available engines: {available_engines}"
+            logger.error(msg)
+>           raise EngineError(engine_name, msg)
+E           twat_search.web.exceptions.EngineError: Engine 'nonexistent_engine': Engine 'nonexistent_engine' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+
+src/twat_search/web/engines/base.py:412: EngineError
+
+During handling of the above exception, another exception occurred:
+
+    def test_get_engine_with_invalid_name() -> None:
+        """Test that get_engine raises an error for invalid engine names."""
+>       with pytest.raises(SearchError, match="Unknown search engine"):
+E       AssertionError: Regex pattern did not match.
+E        Regex: 'Unknown search engine'
+E        Input: "Engine 'nonexistent_engine': Engine 'nonexistent_engine' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news"
+
+tests/unit/web/engines/test_base.py:105: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'nonexistent_engine' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
 _________________________ test_search_with_mock_engine _________________________
 
 mock_config = Config(engines={'mock': EngineConfig(enabled=True, api_key='mock_key', default_params={'result_count': 2}, engine_code=None)})
@@ -3105,83 +3073,61 @@ E       Failed: DID NOT RAISE <class 'twat_search.web.exceptions.SearchError'>
 
 tests/unit/web/test_api.py:146: Failed
 ------------------------------ Captured log call -------------------------------
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'duckduckgo': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'duckduckgo': Engine 'duckduckgo': Unknown search engine: 'duckduckgo'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'duckduckgo': Engine 'duckduckgo': Unknown search engine: 'duckduckgo'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'duckduckgo' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'duckduckgo' is disabled. Enable it in your configuration to use it.
 ERROR    twat_search.web.engines.base:base.py:119 API key validation failed: API key is required for brave. Please set it via one of these env vars: BRAVE_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'brave': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'brave': Engine 'brave': Failed to initialize engine 'brave': Engine 'brave': API key is required for brave. Please set it via one of these env vars: BRAVE_API_KEY
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'brave': Engine 'brave': Failed to initialize engine 'brave': Engine 'brave': API key is required for brave. Please set it via one of these env vars: BRAVE_API_KEY
+ERROR    twat_search.web.engines.base:base.py:436 Engine 'brave': API key is required for brave. Please set it via one of these env vars: BRAVE_API_KEY Environment variables for this engine: BRAVE_API_KEY
+ERROR    twat_search.web.api:api.py:123 Failed to initialize engine 'brave': Missing or invalid API key. Check your environment variables or configuration.
 ERROR    twat_search.web.engines.base:base.py:119 API key validation failed: API key is required for tavily. Please set it via one of these env vars: TAVILY_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'tavily': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'tavily': Engine 'tavily': Failed to initialize engine 'tavily': Engine 'tavily': API key is required for tavily. Please set it via one of these env vars: TAVILY_API_KEY
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'tavily': Engine 'tavily': Failed to initialize engine 'tavily': Engine 'tavily': API key is required for tavily. Please set it via one of these env vars: TAVILY_API_KEY
+ERROR    twat_search.web.engines.base:base.py:436 Engine 'tavily': API key is required for tavily. Please set it via one of these env vars: TAVILY_API_KEY Environment variables for this engine: TAVILY_API_KEY
+ERROR    twat_search.web.api:api.py:123 Failed to initialize engine 'tavily': Missing or invalid API key. Check your environment variables or configuration.
 ERROR    twat_search.web.engines.base:base.py:119 API key validation failed: API key is required for you. Please set it via one of these env vars: YOUCOM_API_KEY, YOU_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'you': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'you': Engine 'you': Failed to initialize engine 'you': Engine 'you': API key is required for you. Please set it via one of these env vars: YOUCOM_API_KEY, YOU_API_KEY
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'you': Engine 'you': Failed to initialize engine 'you': Engine 'you': API key is required for you. Please set it via one of these env vars: YOUCOM_API_KEY, YOU_API_KEY
+ERROR    twat_search.web.engines.base:base.py:436 Engine 'you': API key is required for you. Please set it via one of these env vars: YOUCOM_API_KEY, YOU_API_KEY Environment variables for this engine: YOUCOM_API_KEY, YOU_API_KEY
+ERROR    twat_search.web.api:api.py:123 Failed to initialize engine 'you': Missing or invalid API key. Check your environment variables or configuration.
 ERROR    twat_search.web.engines.base:base.py:119 API key validation failed: API key is required for you_news. Please set it via one of these env vars: YOUCOM_API_KEY, YOU_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'you_news': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'you_news': Engine 'you_news': Failed to initialize engine 'you_news': Engine 'you_news': API key is required for you_news. Please set it via one of these env vars: YOUCOM_API_KEY, YOU_API_KEY
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'you_news': Engine 'you_news': Failed to initialize engine 'you_news': Engine 'you_news': API key is required for you_news. Please set it via one of these env vars: YOUCOM_API_KEY, YOU_API_KEY
+ERROR    twat_search.web.engines.base:base.py:436 Engine 'you_news': API key is required for you_news. Please set it via one of these env vars: YOUCOM_API_KEY, YOU_API_KEY Environment variables for this engine: YOUCOM_API_KEY, YOU_API_KEY
+ERROR    twat_search.web.api:api.py:123 Failed to initialize engine 'you_news': Missing or invalid API key. Check your environment variables or configuration.
 ERROR    twat_search.web.engines.base:base.py:119 API key validation failed: API key is required for pplx. Please set it via one of these env vars: PERPLEXITYAI_API_KEY, PERPLEXITY_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'pplx': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'pplx': Engine 'pplx': Failed to initialize engine 'pplx': Engine 'pplx': API key is required for pplx. Please set it via one of these env vars: PERPLEXITYAI_API_KEY, PERPLEXITY_API_KEY
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'pplx': Engine 'pplx': Failed to initialize engine 'pplx': Engine 'pplx': API key is required for pplx. Please set it via one of these env vars: PERPLEXITYAI_API_KEY, PERPLEXITY_API_KEY
+ERROR    twat_search.web.engines.base:base.py:436 Engine 'pplx': API key is required for pplx. Please set it via one of these env vars: PERPLEXITYAI_API_KEY, PERPLEXITY_API_KEY Environment variables for this engine: PERPLEXITYAI_API_KEY, PERPLEXITY_API_KEY
+ERROR    twat_search.web.api:api.py:123 Failed to initialize engine 'pplx': Missing or invalid API key. Check your environment variables or configuration.
 ERROR    twat_search.web.engines.base:base.py:119 API key validation failed: API key is required for critique. Please set it via one of these env vars: CRITIQUE_LABS_API_KEY, CRITIQUE_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'critique': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'critique': Engine 'critique': Failed to initialize engine 'critique': Engine 'critique': API key is required for critique. Please set it via one of these env vars: CRITIQUE_LABS_API_KEY, CRITIQUE_API_KEY
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'critique': Engine 'critique': Failed to initialize engine 'critique': Engine 'critique': API key is required for critique. Please set it via one of these env vars: CRITIQUE_LABS_API_KEY, CRITIQUE_API_KEY
+ERROR    twat_search.web.engines.base:base.py:436 Engine 'critique': API key is required for critique. Please set it via one of these env vars: CRITIQUE_LABS_API_KEY, CRITIQUE_API_KEY Environment variables for this engine: CRITIQUE_LABS_API_KEY, CRITIQUE_API_KEY
+ERROR    twat_search.web.api:api.py:123 Failed to initialize engine 'critique': Missing or invalid API key. Check your environment variables or configuration.
 ERROR    twat_search.web.engines.base:base.py:119 API key validation failed: API key is required for brave_news. Please set it via one of these env vars: BRAVE_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'brave_news': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'brave_news': Engine 'brave_news': Failed to initialize engine 'brave_news': Engine 'brave_news': API key is required for brave_news. Please set it via one of these env vars: BRAVE_API_KEY
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'brave_news': Engine 'brave_news': Failed to initialize engine 'brave_news': Engine 'brave_news': API key is required for brave_news. Please set it via one of these env vars: BRAVE_API_KEY
+ERROR    twat_search.web.engines.base:base.py:436 Engine 'brave_news': API key is required for brave_news. Please set it via one of these env vars: BRAVE_API_KEY Environment variables for this engine: BRAVE_API_KEY
+ERROR    twat_search.web.api:api.py:123 Failed to initialize engine 'brave_news': Missing or invalid API key. Check your environment variables or configuration.
 ERROR    twat_search.web.engines.base:base.py:119 API key validation failed: API key is required for google_hasdata. Please set it via one of these env vars: HASDATA_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'google_hasdata': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'google_hasdata': Engine 'google_hasdata': Failed to initialize engine 'google_hasdata': Engine 'google_hasdata': API key is required for google_hasdata. Please set it via one of these env vars: HASDATA_API_KEY
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'google_hasdata': Engine 'google_hasdata': Failed to initialize engine 'google_hasdata': Engine 'google_hasdata': API key is required for google_hasdata. Please set it via one of these env vars: HASDATA_API_KEY
+ERROR    twat_search.web.engines.base:base.py:436 Engine 'google_hasdata': API key is required for google_hasdata. Please set it via one of these env vars: HASDATA_API_KEY Environment variables for this engine: HASDATA_API_KEY
+ERROR    twat_search.web.api:api.py:123 Failed to initialize engine 'google_hasdata': Missing or invalid API key. Check your environment variables or configuration.
 ERROR    twat_search.web.engines.base:base.py:119 API key validation failed: API key is required for google_hasdata_full. Please set it via one of these env vars: HASDATA_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'google_hasdata_full': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'google_hasdata_full': Engine 'google_hasdata_full': Failed to initialize engine 'google_hasdata_full': Engine 'google_hasdata_full': API key is required for google_hasdata_full. Please set it via one of these env vars: HASDATA_API_KEY
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'google_hasdata_full': Engine 'google_hasdata_full': Failed to initialize engine 'google_hasdata_full': Engine 'google_hasdata_full': API key is required for google_hasdata_full. Please set it via one of these env vars: HASDATA_API_KEY
+ERROR    twat_search.web.engines.base:base.py:436 Engine 'google_hasdata_full': API key is required for google_hasdata_full. Please set it via one of these env vars: HASDATA_API_KEY Environment variables for this engine: HASDATA_API_KEY
+ERROR    twat_search.web.api:api.py:123 Failed to initialize engine 'google_hasdata_full': Missing or invalid API key. Check your environment variables or configuration.
 ERROR    twat_search.web.engines.base:base.py:119 API key validation failed: API key is required for google_serpapi. Please set it via one of these env vars: SERPAPI_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'google_serpapi': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'google_serpapi': Engine 'google_serpapi': Failed to initialize engine 'google_serpapi': Engine 'google_serpapi': API key is required for google_serpapi. Please set it via one of these env vars: SERPAPI_API_KEY
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'google_serpapi': Engine 'google_serpapi': Failed to initialize engine 'google_serpapi': Engine 'google_serpapi': API key is required for google_serpapi. Please set it via one of these env vars: SERPAPI_API_KEY
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'google_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'google_falla': Engine 'google_falla': Unknown search engine: 'google_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'google_falla': Engine 'google_falla': Unknown search engine: 'google_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'bing_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'bing_falla': Engine 'bing_falla': Unknown search engine: 'bing_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'bing_falla': Engine 'bing_falla': Unknown search engine: 'bing_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'duckduckgo_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'duckduckgo_falla': Engine 'duckduckgo_falla': Unknown search engine: 'duckduckgo_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'duckduckgo_falla': Engine 'duckduckgo_falla': Unknown search engine: 'duckduckgo_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'yahoo_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'yahoo_falla': Engine 'yahoo_falla': Unknown search engine: 'yahoo_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'yahoo_falla': Engine 'yahoo_falla': Unknown search engine: 'yahoo_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'ask_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'ask_falla': Engine 'ask_falla': Unknown search engine: 'ask_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'ask_falla': Engine 'ask_falla': Unknown search engine: 'ask_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'aol_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'aol_falla': Engine 'aol_falla': Unknown search engine: 'aol_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'aol_falla': Engine 'aol_falla': Unknown search engine: 'aol_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'dogpile_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'dogpile_falla': Engine 'dogpile_falla': Unknown search engine: 'dogpile_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'dogpile_falla': Engine 'dogpile_falla': Unknown search engine: 'dogpile_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'gibiru_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'gibiru_falla': Engine 'gibiru_falla': Unknown search engine: 'gibiru_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'gibiru_falla': Engine 'gibiru_falla': Unknown search engine: 'gibiru_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'mojeek_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'mojeek_falla': Engine 'mojeek_falla': Unknown search engine: 'mojeek_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'mojeek_falla': Engine 'mojeek_falla': Unknown search engine: 'mojeek_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'qwant_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'qwant_falla': Engine 'qwant_falla': Unknown search engine: 'qwant_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'qwant_falla': Engine 'qwant_falla': Unknown search engine: 'qwant_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:95 Failed to initialize engine 'yandex_falla': EngineError
-ERROR    twat_search.web.api:api.py:98 Error initializing engine 'yandex_falla': Engine 'yandex_falla': Unknown search engine: 'yandex_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:187 Failed to initialize engine 'yandex_falla': Engine 'yandex_falla': Unknown search engine: 'yandex_falla'. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
-WARNING  twat_search.web.api:api.py:194 Failed to initialize engines: duckduckgo, brave, tavily, you, you_news, pplx, critique, brave_news, google_hasdata, google_hasdata_full, google_serpapi, google_falla, bing_falla, duckduckgo_falla, yahoo_falla, ask_falla, aol_falla, dogpile_falla, gibiru_falla, mojeek_falla, qwant_falla, yandex_falla
+ERROR    twat_search.web.engines.base:base.py:436 Engine 'google_serpapi': API key is required for google_serpapi. Please set it via one of these env vars: SERPAPI_API_KEY Environment variables for this engine: SERPAPI_API_KEY
+ERROR    twat_search.web.api:api.py:123 Failed to initialize engine 'google_serpapi': Missing or invalid API key. Check your environment variables or configuration.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'google_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'google_falla' is disabled. Enable it in your configuration to use it.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'bing_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'bing_falla' is disabled. Enable it in your configuration to use it.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'duckduckgo_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'duckduckgo_falla' is disabled. Enable it in your configuration to use it.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'yahoo_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'yahoo_falla' is disabled. Enable it in your configuration to use it.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'ask_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'ask_falla' is disabled. Enable it in your configuration to use it.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'aol_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'aol_falla' is disabled. Enable it in your configuration to use it.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'dogpile_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'dogpile_falla' is disabled. Enable it in your configuration to use it.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'gibiru_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'gibiru_falla' is disabled. Enable it in your configuration to use it.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'mojeek_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'mojeek_falla' is disabled. Enable it in your configuration to use it.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'qwant_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'qwant_falla' is disabled. Enable it in your configuration to use it.
+ERROR    twat_search.web.engines.base:base.py:411 Engine 'yandex_falla' not found. Available engines: bing_scraper, brave, brave_news, critique, disabled_engine, google_hasdata, google_hasdata_full, google_scraper, google_serpapi, mock, new_engine, pplx, tavily, test_engine, you, you_news
+WARNING  twat_search.web.api:api.py:128 Engine 'yandex_falla' is disabled. Enable it in your configuration to use it.
+WARNING  twat_search.web.api:api.py:233 Failed to initialize engines: duckduckgo, brave, tavily, you, you_news, pplx, critique, brave_news, google_hasdata, google_hasdata_full, google_serpapi, google_falla, bing_falla, duckduckgo_falla, yahoo_falla, ask_falla, aol_falla, dogpile_falla, gibiru_falla, mojeek_falla, qwant_falla, yandex_falla
 _____________________________ test_config_defaults _____________________________
 
 isolate_env_vars = None
@@ -3199,7 +3145,7 @@ E        +    where {'aol_falla': EngineConfig(enabled=True, api_key=None, defau
 tests/unit/web/test_config.py:46: AssertionError
 __________________________ test_config_with_env_vars ___________________________
 
-monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x1096cd3a0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x106792cf0>
 env_vars_for_brave = None
 
     def test_config_with_env_vars(monkeypatch: MonkeyPatch, env_vars_for_brave: None) -> None:
@@ -3229,8 +3175,8 @@ tests/unit/web/test_config.py:59: AssertionError
 ERROR    twat_search.web.engines.base:base.py:370 Failed to register engine MockBraveEngine: Engine must define a non-empty 'engine_code' attribute.
 _________ TestBingScraperEngine.test_bing_scraper_convenience_function _________
 
-self = <test_bing_scraper.TestBingScraperEngine object at 0x1096fecf0>
-mock_search = <AsyncMock name='search' id='4454368560'>
+self = <test_bing_scraper.TestBingScraperEngine object at 0x10675fbf0>
+mock_search = <AsyncMock name='search' id='4404067504'>
 
     @patch("twat_search.web.api.search")
     @pytest.mark.asyncio
@@ -3269,17 +3215,18 @@ E         - ]
 
 tests/web/test_bing_scraper.py:189: AssertionError
 =========================== short test summary info ============================
+FAILED tests/unit/web/engines/test_base.py::test_get_engine_with_invalid_name
 FAILED tests/unit/web/test_api.py::test_search_with_mock_engine - AssertionEr...
 FAILED tests/unit/web/test_api.py::test_search_with_no_engines - Failed: DID ...
 FAILED tests/unit/web/test_config.py::test_config_defaults - AssertionError: ...
 FAILED tests/unit/web/test_config.py::test_config_with_env_vars - AssertionEr...
 FAILED tests/web/test_bing_scraper.py::TestBingScraperEngine::test_bing_scraper_convenience_function
-========================= 5 failed, 44 passed in 1.87s =========================
+========================= 6 failed, 43 passed in 2.84s =========================
 
-2025-03-04 05:33:43 - All checks completed
-2025-03-04 05:33:43 - 
+2025-03-04 05:58:02 - All checks completed
+2025-03-04 05:58:02 - 
 === TODO.md ===
-2025-03-04 05:33:43 - --- 
+2025-03-04 05:58:02 - --- 
 this_file: TODO.md
 --- 
 
@@ -3295,7 +3242,7 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
 
 ## High Priority
 
-### Fix Falla-based Search Engines
+### Phase 1: Fix Falla-based Search Engines
 
 - [ ] Fix Yahoo and Qwant search engines
   - [ ] Update selectors in Yahoo implementation to match current page structure
@@ -3322,7 +3269,7 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
   - [ ] Add comprehensive type hinting throughout the codebase
   - [ ] Improve method docstrings for better code documentation
 
-### Fix Critical Engine Failures
+### Phase 2: Fix Critical Engine Failures
 
 - [ ] Improve `get_engine` function and error handling
   - [ ] Add descriptive error messages when engines are not found or disabled
@@ -3436,7 +3383,7 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
   - [x] Remove unused imports (`os` and `NavigableString`) from `google.py`
 
 
-2025-03-04 05:33:47 - 
+2025-03-04 05:58:08 - 
 📦 Repomix v0.2.29
 
 No custom config found at repomix.config.json or global config at /Users/adam/.config/repomix/repomix.config.json.
@@ -3444,50 +3391,70 @@ You can add a config file for additional settings. Please check https://github.c
 ⠙ Collecting files...
 [2K[1A[2K[G⠹ Collecting files...
 [2K[1A[2K[G⠸ Collecting files...
-[2K[1A[2K[G⠼ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠴ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠦ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠧ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠇ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠏ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠋ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠙ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠹ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠸ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠼ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠴ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠦ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠧ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠇ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠏ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠋ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠙ Collect file... (5/98) .github/workflows/release.yml
-[2K[1A[2K[G⠹ Collect file... (13/98) resources/brave/brave_image.md
-[2K[1A[2K[G⠸ Collect file... (28/98) src/twat_search/web/engines/lib_falla/core/dogpile.py
-[2K[1A[2K[G⠼ Running security check...
-[2K[1A[2K[G⠴ Running security check... (5/96) .github/workflows/release.yml
-[2K[1A[2K[G⠦ Running security check... (5/96) .github/workflows/release.yml
-[2K[1A[2K[G⠧ Running security check... (61/96) src/twat_search/web/exceptions.py
-[2K[1A[2K[G⠇ Processing files...
-[2K[1A[2K[G⠏ Processing file... (20/95) resources/pricing.md
-[2K[1A[2K[G⠋ Processing file... (42/95) src/twat_search/web/engines/__init__.py
-[2K[1A[2K[G⠙ Processing file... (56/95) src/twat_search/web/api.py
-[2K[1A[2K[G⠹ Processing file... (81/95) cleanup.py
+[2K[1A[2K[G⠼ Collect file... (2/99) .cursor/rules/cleanup.mdc
+[2K[1A[2K[G⠴ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠦ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠧ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠇ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠏ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠋ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠙ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠹ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠸ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠼ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠴ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠦ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠧ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠇ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠏ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠋ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠙ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠹ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠸ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠼ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠴ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠦ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠧ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠇ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠏ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠋ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠙ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠹ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠸ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠼ Collect file... (7/99) debug_output/qwant_analysis.txt
+[2K[1A[2K[G⠴ Collect file... (12/99) debug_output/yahoo_screenshot.png
+[2K[1A[2K[G⠦ Collect file... (17/99) resources/pplx/pplx_urls.txt
+[2K[1A[2K[G⠧ Collect file... (20/99) resources/you/you_news.txt
+[2K[1A[2K[G⠇ Collect file... (59/99) src/twat_search/web/api.py
+[2K[1A[2K[G⠏ Running security check...
+[2K[1A[2K[G⠋ Running security check...
+[2K[1A[2K[G⠙ Running security check... (5/97) .github/workflows/release.yml
+[2K[1A[2K[G⠹ Running security check... (5/97) .github/workflows/release.yml
+[2K[1A[2K[G⠸ Running security check... (16/97) resources/pplx/pplx.md
+[2K[1A[2K[G⠼ Running security check... (85/97) google_debug_Python_programming_language.htm
+l
+[2K[1A[2K[1A[2K[G⠴ Processing files...
+[2K[1A[2K[G⠦ Processing files...
+[2K[1A[2K[G⠧ Processing file... (25/96) src/twat_search/web/engines/lib_falla/core/dogpile.
+py
+[2K[1A[2K[1A[2K[G⠇ Processing file... (34/96) src/twat_search/web/engines/lib_falla/core/startpag
+e.py
+[2K[1A[2K[1A[2K[G⠏ Processing file... (49/96) src/twat_search/web/engines/google_scraper.py
+[2K[1A[2K[G⠋ Processing file... (61/96) src/twat_search/web/models.py
+[2K[1A[2K[G⠙ Writing output file...
+[2K[1A[2K[G⠹ Calculating metrics...
 [2K[1A[2K[G⠸ Calculating metrics...
 [2K[1A[2K[G⠼ Calculating metrics...
 [2K[1A[2K[G⠴ Calculating metrics...
 [2K[1A[2K[G⠦ Calculating metrics...
 [2K[1A[2K[G⠧ Calculating metrics...
-[2K[1A[2K[G⠇ Calculating metrics...
-[2K[1A[2K[G⠏ Calculating metrics...
-[2K[1A[2K[G⠋ Calculating metrics...
-[2K[1A[2K[G⠙ Calculating metrics...
-[2K[1A[2K[G⠹ Calculating metrics...
-[2K[1A[2K[G⠸ Calculating metrics... (2/95) .cursor/rules/cleanup.mdc
-[2K[1A[2K[G⠼ Calculating metrics... (6/95) debug_output/qwant_analysis.txt
-[2K[1A[2K[G⠴ Calculating metrics... (10/95) resources/brave/brave_image.md
-[2K[1A[2K[G⠦ Calculating metrics... (15/95) resources/pplx/pplx.md
-[2K[1A[2K[G⠧ Calculating metrics... (42/95) src/twat_search/web/engines/__init__.py
+[2K[1A[2K[G⠇ Calculating metrics... (2/96) .cursor/rules/cleanup.mdc
+[2K[1A[2K[G⠏ Calculating metrics... (8/96) debug_output/yahoo_analysis.txt
+[2K[1A[2K[G⠋ Calculating metrics... (9/96) debug_output/yahoo_content.html
+[2K[1A[2K[G⠙ Calculating metrics... (14/96) resources/pplx/pplx_urls.txt
+[2K[1A[2K[G⠹ Calculating metrics... (17/96) resources/you/you_news.txt
+[2K[1A[2K[G⠸ Calculating metrics... (56/96) src/twat_search/web/api.py
+[2K[1A[2K[G⠼ Calculating metrics... (95/96) TODO.md
 [2K[1A[2K[G✔ Packing completed successfully!
 
 📈 Top 5 Files by Character Count and Token Count:
@@ -3509,9 +3476,9 @@ Please review these files for potential sensitive information.
 
 📊 Pack Summary:
 ────────────────
-  Total Files: 95 files
-  Total Chars: 671,101 chars
- Total Tokens: 188,840 tokens
+  Total Files: 96 files
+  Total Chars: 679,876 chars
+ Total Tokens: 191,181 tokens
        Output: twat_search.txt
      Security: 1 suspicious file(s) detected and excluded
 
@@ -3520,4 +3487,4 @@ Your repository has been successfully packed.
 
 💡 Repomix is now available in your browser! Try it at https://repomix.com
 
-2025-03-04 05:33:47 - Repository content mixed into twat_search.txt
+2025-03-04 05:58:09 - Repository content mixed into twat_search.txt
