@@ -6559,6 +6559,1344 @@ _****_
 
 
 
+
+
+
+
+Now let's run the tests again to see if they pass:
+
+---
+
+_****_
+
+```bash
+cd /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search && python -m pytest tests/unit/web/test_config.py -v
+```
+
+```
+/Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/
+twat/plugins/repos/twat_search/.venv/lib/python3.12/site-packages/
+pytest_asyncio/plugin.py:207: PytestDeprecationWarning: The config
+uration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the
+ fixture caching scope. Future versions of pytest-asyncio will def
+ault the loop scope for asynchronous fixtures to function scope. S
+et the default fixture loop scope explicitly in order to avoid une
+xpected behavior in the future. Valid fixture loop scopes are: "fu
+nction", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCO
+PE_UNSET))
+====================== test session starts =======================
+platform darwin -- Python 3.12.8, pytest-8.3.5, pluggy-1.5.0 -- /U
+sers/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/tw
+at/plugins/repos/twat_search/.venv/bin/python
+cachedir: .pytest_cache
+benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=Fal
+se min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precisi
+on=10 warmup=False warmup_iterations=100000)
+rootdir: /Users/adam/Developer/vcs/github.twardoch/pub/twat-packag
+es/_good/twat
+configfile: pyproject.toml
+plugins: cov-6.0.0, asyncio-0.25.3, anyio-4.8.0, benchmark-5.1.0, 
+xdist-3.6.1
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=None
+collected 6 items                                                
+
+tests/unit/web/test_config.py::test_engine_config_defaults PASSED 
+[ 16%]
+tests/unit/web/test_config.py::test_engine_config_values PASSED [ 
+33%]
+tests/unit/web/test_config.py::test_config_defaults PASSED [ 50%]
+tests/unit/web/test_config.py::test_config_with_env_vars FAILED [ 
+66%]
+tests/unit/web/test_config.py::test_config_with_direct_initializat
+ion PASSED [ 83%]
+tests/unit/web/test_config.py::test_config_env_vars_override_direc
+t_config PASSED [100%]
+
+============================ FAILURES ============================
+___________________ test_config_with_env_vars ____________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x111f427
+b0>
+env_vars_for_brave = None
+
+    def test_config_with_env_vars(monkeypatch: MonkeyPatch, env_va
+rs_for_brave: None) -> None:
+        """Test Config loads settings from environment variables."
+""
+        # Create config
+        config = Config()
+    
+        # Check the brave engine was configured
+        assert "brave" in config.engines
+        brave_config = config.engines["brave"]
+        assert brave_config.api_key == "test_brave_key"
+        assert brave_config.enabled is True
+>       assert brave_config.default_params == {"count": 10}
+E       AssertionError: assert {'country': 'US', 'language': 'en-U
+S', 'safe_search': True} == {'count': 10}
+E         
+E         Left contains 3 more items:
+E         {'country': 'US', 'language': 'en-US', 'safe_search': Tr
+ue}
+E         Right contains 1 more item:
+E         {'count': 10}
+E         
+E         Full diff:
+E           {
+E         -     'count': 10,
+E         ?              ^^
+E         +     'country': 'US',
+E         ?           ++   ^^^^
+E         +     'language': 'en-US',
+E         +     'safe_search': True,
+E           }
+
+tests/unit/web/test_config.py:59: AssertionError
+----------------------- Captured log setup -----------------------
+ERROR    twat_search.web.engines.base:base.py:370 Failed to regist
+er engine MockBraveEngine: Engine must define a non-empty 'engine_
+code' attribute.
+==================== short test summary info =====================
+FAILED tests/unit/web/test_config.py::test_config_with_env_vars - 
+AssertionError: assert {'country': 'US', 'language': 'en-US', 'saf
+e_search': True} == {'count': 10}
+  
+  Left contains 3 more items:
+  {'country': 'US', 'language': 'en-US', 'safe_search': True}
+  Right contains 1 more item:
+  {'count': 10}
+  
+  Full diff:
+    {
+  -     'count': 10,
+  ?              ^^
+  +     'country': 'US',
+  ?           ++   ^^^^
+  +     'language': 'en-US',
+  +     'safe_search': True,
+    }
+================== 1 failed, 5 passed in 0.90s ===================
+
+```
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+We've fixed the `test_config_defaults` test, but we still have an issue with the `test_config_with_env_vars` test. The problem is that the environment variable is setting the API key and enabled flag correctly, but the default parameters are not being overridden correctly. Let's look at how the environment variables are processed:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/config.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+Let's look at the ENV_VAR_MAP to see how the BRAVE_DEFAULT_PARAMS environment variable is mapped:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "ENV_VAR_MAP =" • **1** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1191 | `+ ENV_VAR_MAP = {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1561 | `- ENV_VAR_MAP = {` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at the ENV_VAR_MAP in the config.py file:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/config.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at the ENV_VAR_MAP in the config.py file:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "ENV_VAR_MAP" • **5** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L262 | `ENV_VAR_MAP: dict[str, str | list[str]] = {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L521 | `for env_var, config_path in ENV_VAR_MAP.items():` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L10141 | `for env_var, config_path in ENV_VAR_MAP.items():` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-49-fixing-linting-errors-in-code.md` | L1462 | `The changes we made in the ENV_VAR_MAP dictionary will now allow the system to read environment variables from either the original or the new names we've defined. The _apply_env_overrides function uses the entries in ENV_VAR_MAP to determine which environment variables to check, and now it will include our new environment variable names.` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1191 | `+ ENV_VAR_MAP = {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1506 | `+     for env_var, config_path in ENV_VAR_MAP.items():` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1561 | `- ENV_VAR_MAP = {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1562 | `+ ENV_VAR_MAP: dict[str, str | list[str]] = {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L262 | `ENV_VAR_MAP: dict[str, str | list[str]] = {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L521 | `for env_var, config_path in ENV_VAR_MAP.items():` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at the ENV_VAR_MAP definition:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/config.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at the rest of the MULTI_PATH_ENV_VARS:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/config.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the BRAVE_DEFAULT_PARAMS environment variable is processed:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "BRAVE_DEFAULT_PARAMS" • **5** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L219 | `BRAVE_DEFAULT_PARAMS={"count": 10, "safesearch": "off"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/conftest.py` | L59 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L10519 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11926 | `BRAVE_DEFAULT_PARAMS={"count": 10, "safesearch": "off"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L3584 | `+         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L3626 | `+     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L4577 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L5865 | `+         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6010 | `+     - ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6137 | `-         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6381 | `"BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6600 | `- ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6950 | `-     - ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L7470 | `+     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L7504 | `-     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L7906 | `-         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L904 | `+         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L946 | `+     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L1897 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3185 | `+         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3330 | `+     - ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3457 | `-         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3701 | `"BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3920 | `- ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4270 | `-     - ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4790 | `+     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4824 | `-     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L5226 | `-         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the default parameters are processed for engines:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "_ENGINE_DEFAULT_PARAMS" • **0** files</summary>
+        
+No results found
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how environment variables are processed for engine default parameters:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "DEFAULT_PARAMS" • **8** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9241 | `default = self.config.default_params.get(param_name) or self.config.default_params.get("num_results")` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9302 | `) or self.config.default_params.get("max_retries", 3)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9304 | `) or self.config.default_params.get("delay_between_requests", 1.0)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9472 | `) or config.default_params.get("num_results", 10)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9473 | `region = kwargs.get("region", country) or config.default_params.get(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9474 | `lang = language or config.default_params.get("language", None)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9475 | `timelimit = kwargs.get("timelimit", time_frame) or config.default_params.get(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9481 | `proxy = kwargs.get("proxy") or config.default_params.get("proxy", None)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9483 | `) or config.default_params.get("timeout", 10)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9561 | `self.num_results: int = num_results or self.config.default_params.get(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9562 | `self.language: str = language or self.config.default_params.get(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9563 | `self.region: str | None = country or self.config.default_params.get(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9564 | `else self.config.default_params.get("safe", "active")` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9566 | `) or self.config.default_params.get("sleep_interval", 0.0)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9568 | `) or self.config.default_params.get("ssl_verify", None)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9569 | `self.proxy: str | None = kwargs.get("proxy") or self.config.default_params.get(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9570 | `self.unique: bool = kwargs.get("unique") or self.config.default_params.get(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9612 | `self.location = location or kwargs.get("location") or self.config.default_params.get("location")` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9613 | `device_type or kwargs.get("device_type") or self.config.default_params.get("device_type", "desktop")` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9646 | `self.model = self.kwargs.get("model") or self.config.default_params.get("model", "sonar")` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9691 | `"num": kwargs.get("num", num_results) or self.config.default_params.get("num", 10),` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9693 | `or self.config.default_params.get("google_domain", "google.com"),` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9694 | `"gl": kwargs.get("gl", country) or self.config.default_params.get("gl"),` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9695 | `"hl": kwargs.get("hl", language) or self.config.default_params.get("hl"),` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9696 | `"safe": _convert_safe(kwargs.get("safe", safe_search)) or self.config.default_params.get("safe"),` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9697 | `"time_period": kwargs.get("time_period", time_frame) or self.config.default_params.get("time_period"),` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9726 | `self.num_results = kwargs.get("num_results") or self.config.default_params.get(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9727 | `self.search_depth = search_depth or self.config.default_params.get("search_depth", "basic")` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9728 | `self.include_domains = include_domains or self.config.default_params.get("include_domains", None)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9729 | `self.exclude_domains = exclude_domains or self.config.default_params.get("exclude_domains", None)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9730 | `self.include_answer = include_answer or self.config.default_params.get("include_answer", False)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9731 | `self.max_tokens = max_tokens or self.config.default_params.get("max_tokens", None)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9732 | `self.search_type = search_type or self.config.default_params.get("search_type", "search")` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9775 | `self.country_code = kwargs.get("country") or self.config.default_params.get(` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L9997 | `for param, value in engine_config.default_params.items():` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L10091 | `default_params: dict[str, Any] = Field(default_factory=dict)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L10138 | `engine_config.default_params.update(default_params)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L10351 | `engines={"test_engine": EngineConfig(api_key="direct_key", enabled=True, default_params={"count": 5})},` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L10354 | `engines={"brave": EngineConfig(api_key="direct_key", enabled=True, default_params={"count": 5})},` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L10510 | `if any(env_var.endswith(suffix) for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]):` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L10519 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11926 | `BRAVE_DEFAULT_PARAMS={"count": 10, "safesearch": "off"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11927 | `TAVILY_DEFAULT_PARAMS={"max_results": 5, "search_depth": "basic"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11928 | `PERPLEXITY_DEFAULT_PARAMS={"model": "pplx-7b-online"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11929 | `YOU_DEFAULT_PARAMS={"safe_search": true, "count": 8}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11930 | `SERPAPI_DEFAULT_PARAMS={"num": 10, "gl": "us"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11931 | `HASDATA_GOOGLE_DEFAULT_PARAMS={"location": "Austin,Texas,United States", "device_type": "desktop"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11932 | `DUCKDUCKGO_DEFAULT_PARAMS={"max_results": 10, "safesearch": "moderate", "time": "d"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11933 | `BING_SCRAPER_DEFAULT_PARAMS={"max_retries": 3, "delay_between_requests": 1.0}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11954 | `default_params={"count": 10, "country": "US"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11958 | `default_params={"max_retries": 3, "delay_between_requests": 1.0}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11963 | `default_params={"search_depth": "advanced"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L219 | `BRAVE_DEFAULT_PARAMS={"count": 10, "safesearch": "off"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L220 | `TAVILY_DEFAULT_PARAMS={"max_results": 5, "search_depth": "basic"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L221 | `PERPLEXITY_DEFAULT_PARAMS={"model": "pplx-7b-online"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L222 | `YOU_DEFAULT_PARAMS={"safe_search": true, "count": 8}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L223 | `SERPAPI_DEFAULT_PARAMS={"num": 10, "gl": "us"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L224 | `HASDATA_GOOGLE_DEFAULT_PARAMS={"location": "Austin,Texas,United States", "device_type": "desktop"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L225 | `DUCKDUCKGO_DEFAULT_PARAMS={"max_results": 10, "safesearch": "moderate", "time": "d"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L226 | `BING_SCRAPER_DEFAULT_PARAMS={"max_retries": 3, "delay_between_requests": 1.0}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L247 | `default_params={"count": 10, "country": "US"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L251 | `default_params={"max_retries": 3, "delay_between_requests": 1.0}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L256 | `default_params={"search_depth": "advanced"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/conftest.py` | L28 | `if any(env_var.endswith(suffix) for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]):` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/conftest.py` | L59 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/api.py` | L221 | `if engine_config and engine_config.default_params:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/api.py` | L222 | `default_result_count = engine_config.default_params.get("result_count")` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L508 | `if engine_config.default_params:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L509 | `for param, value in engine_config.default_params.items():` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L547 | `f"Default Parameters: {engine_config.default_params}",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1200 | `default_params = (` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1201 | `engine_config.default_params` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1204 | `"default_params",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/cli.py` | L1213 | `"default_params": default_params,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/CLEANUP.txt` | L1635 | `479 |         default_params: dict[str, Any] | None = None,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/CLEANUP.txt` | L1645 | `479 |         default_params: dict[str, Any] | None = None,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/CLEANUP.txt` | L2982 | `config = EngineConfig(enabled=True, api_key=None, default_params={}, engine_code=None)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/CLEANUP.txt` | L3047 | `mock_config = Config(engines={'mock': EngineConfig(enabled=True, api_key='mock_key', default_params={'result_count': 2}, engine_code=None)})` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/CLEANUP.txt` | L3141 | `E        +  where 24 = len({'aol_falla': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'ask_falla': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'bing_falla': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'bing_scraper': EngineConfig(enabled=True, api_key=None, default_params={'num_pages': 1, 'delay': 0.5}, engine_code=None), ...})` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/CLEANUP.txt` | L3142 | `E        +    where {'aol_falla': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'ask_falla': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'bing_falla': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'bing_scraper': EngineConfig(enabled=True, api_key=None, default_params={'num_pages': 1, 'delay': 0.5}, engine_code=None), ...} = Config(engines={'duckduckgo': EngineConfig(enabled=True, api_key=None, default_params={'region': 'us-en', 'safesearch': 'moderate', 'timelimit': 'y', 'num_results': 20}, engine_code=None), 'brave': EngineConfig(enabled=True, api_key=None, default_params={'country': 'US', 'language': 'en-US', 'safe_search': True}, engine_code=None), 'tavily': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5, 'search_depth': 'basic', 'include_domains': [], 'exclude_domains': [], 'include_answer': False, 'include_raw_content': False, 'include_images': False}, engine_code=None), 'you': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5, 'country_code': 'us', 'safe_search': True}, engine_code=None), 'you_news': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5, 'country_code': 'us', 'safe_search': True}, engine_code=None), 'pplx': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5, 'focus': None}, engine_code=None), 'critique': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5, 'relevance_adjustment': 0.5}, engine_code=None), 'brave_news': EngineConfig(enabled=True, api_key=None, defa...ngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'bing_falla': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'duckduckgo_falla': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'yahoo_falla': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'ask_falla': EngineConfig(enabled=True, api_key=None, default_params={'num_results': 5}, engine_code=None), 'aol_falla': EngineConfig(enabled=True` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/engines/base.py` | L151 | `default = self.config.default_params.get(param_name) or self.config.default_params.get("num_results")` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L60 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L71 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L81 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L95 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L105 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L115 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L124 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L133 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L143 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L152 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L161 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L171 | `"default_params": {"num_results": DEFAULT_NUM_RESULTS, "language": "en", "safe": True},` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L177 | `"default_params": {"num_pages": 1, "delay": 0.5},` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L183 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L190 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L197 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L204 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L211 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L218 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L225 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L232 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L239 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L246 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L253 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L306 | `default_params: dict[str, Any] = Field(default_factory=dict)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L482 | `default_params: dict[str, Any] | None = None,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L491 | `default_params: Default parameters for the engine` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L493 | `if default_params is None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L494 | `default_params = {}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L502 | `engine_config.default_params.update(default_params)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L508 | `default_params=default_params,` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the BRAVE_DEFAULT_PARAMS environment variable is processed:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/config.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the engine-specific default parameters are processed:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "_ENGINE_DEFAULT_PARAMS" • **0** files</summary>
+        
+No results found
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how environment variables are processed for engine default parameters:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "_DEFAULT_PARAMS" • **10** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L219 | `BRAVE_DEFAULT_PARAMS={"count": 10, "safesearch": "off"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L220 | `TAVILY_DEFAULT_PARAMS={"max_results": 5, "search_depth": "basic"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L221 | `PERPLEXITY_DEFAULT_PARAMS={"model": "pplx-7b-online"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L222 | `YOU_DEFAULT_PARAMS={"safe_search": true, "count": 8}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L223 | `SERPAPI_DEFAULT_PARAMS={"num": 10, "gl": "us"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L224 | `HASDATA_GOOGLE_DEFAULT_PARAMS={"location": "Austin,Texas,United States", "device_type": "desktop"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L225 | `DUCKDUCKGO_DEFAULT_PARAMS={"max_results": 10, "safesearch": "moderate", "time": "d"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/README.md` | L226 | `BING_SCRAPER_DEFAULT_PARAMS={"max_retries": 3, "delay_between_requests": 1.0}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L10510 | `if any(env_var.endswith(suffix) for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]):` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L10519 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11926 | `BRAVE_DEFAULT_PARAMS={"count": 10, "safesearch": "off"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11927 | `TAVILY_DEFAULT_PARAMS={"max_results": 5, "search_depth": "basic"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11928 | `PERPLEXITY_DEFAULT_PARAMS={"model": "pplx-7b-online"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11929 | `YOU_DEFAULT_PARAMS={"safe_search": true, "count": 8}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11930 | `SERPAPI_DEFAULT_PARAMS={"num": 10, "gl": "us"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11931 | `HASDATA_GOOGLE_DEFAULT_PARAMS={"location": "Austin,Texas,United States", "device_type": "desktop"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11932 | `DUCKDUCKGO_DEFAULT_PARAMS={"max_results": 10, "safesearch": "moderate", "time": "d"}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/twat_search.txt` | L11933 | `BING_SCRAPER_DEFAULT_PARAMS={"max_retries": 3, "delay_between_requests": 1.0}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/conftest.py` | L28 | `if any(env_var.endswith(suffix) for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]):` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/conftest.py` | L59 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_05-43-implementing-the-webscout-search-engine.md` | L3470 | `+     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_05-43-implementing-the-webscout-search-engine.md` | L3810 | `-     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_05-43-implementing-the-webscout-search-engine.md` | L4360 | `+     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L3285 | `engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L3584 | `+         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L3626 | `+     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L4577 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L5074 | `+         - ENGINE_DEFAULT_PARAMS (as JSON string)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L5096 | `+             match = re.match(r"^([A-Z0-9_]+)_DEFAULT_PARAMS$", env_var)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L5850 | `+             for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L5865 | `+         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6010 | `+     - ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6033 | `-         - ENGINE_DEFAULT_PARAMS (as JSON string)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6055 | `-             match = re.match(r"^([A-Z0-9_]+)_DEFAULT_PARAMS$", env_var)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6071 | `+         # Pattern to match ENGINE_API_KEY, ENGINE_ENABLED, ENGINE_DEFAULT_PARAMS` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6137 | `-         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6366 | `for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6381 | `"BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6600 | `- ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6621 | `# Pattern to match ENGINE_API_KEY, ENGINE_ENABLED, ENGINE_DEFAULT_PARAMS` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6656 | `1. Defines a regex pattern that matches any environment variable like `ENGINE_API_KEY`, `ENGINE_ENABLED`, or `ENGINE_DEFAULT_PARAMS`` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6676 | `matches ANY environment variable that follows the pattern `SOMETHING_API_KEY`, `SOMETHING_ENABLED`, or `SOMETHING_DEFAULT_PARAMS`, and creates an engine config for it regardless of whether that engine is actually registered in the system.` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6781 | `# Pattern to match ENGINE_API_KEY, ENGINE_ENABLED, ENGINE_DEFAULT_PARAMS` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6799 | `2. It matches any variable that looks like `ENGINE_API_KEY`, `ENGINE_ENABLED`, or `ENGINE_DEFAULT_PARAMS`` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6897 | `+         engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6950 | `-     - ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6962 | `-         # Pattern to match ENGINE_API_KEY, ENGINE_ENABLED, ENGINE_DEFAULT_PARAMS` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L7409 | `+         # ENGINE_API_KEY, ENGINE_ENABLED, ENGINE_DEFAULT_PARAMS` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L7470 | `+     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L7504 | `-     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L7906 | `-         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L19976 | `engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L31987 | `+     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L32327 | `-     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L32877 | `+     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L40741 | `+ BING_SCRAPER_DEFAULT_PARAMS='{"max_retries": 3, "delay_between_requests": 1.0}'` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L40749 | `+     bing_scraper_default_params={"max_retries": 5, "delay_between_requests": 2.0}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L55038 | `engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L57089 | `+                 f"{std_engine_name.upper()}_DEFAULT_PARAMS",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L57090 | `+                 f"TWAT_SEARCH_{std_engine_name.upper()}_DEFAULT_PARAMS",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_14-52-resolving-critical-issues-in-todo-md.md` | L477 | `f"{std_engine_name.upper()}_DEFAULT_PARAMS",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_14-52-resolving-critical-issues-in-todo-md.md` | L478 | `+                 f"{engine_name.upper()}_DEFAULT_PARAMS",  # Original name for backward compatibility` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_14-52-resolving-critical-issues-in-todo-md.md` | L479 | `f"TWAT_SEARCH_{std_engine_name.upper()}_DEFAULT_PARAMS",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1479 | `-                 f"{std_engine_name.upper()}_DEFAULT_PARAMS",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1481 | `-                 f"{engine_name.upper()}_DEFAULT_PARAMS",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1482 | `-                 f"TWAT_SEARCH_{std_engine_name.upper()}_DEFAULT_PARAMS",` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L904 | `+         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L946 | `+     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L1897 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L2394 | `+         - ENGINE_DEFAULT_PARAMS (as JSON string)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L2416 | `+             match = re.match(r"^([A-Z0-9_]+)_DEFAULT_PARAMS$", env_var)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3170 | `+             for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3185 | `+         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3330 | `+     - ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3353 | `-         - ENGINE_DEFAULT_PARAMS (as JSON string)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3375 | `-             match = re.match(r"^([A-Z0-9_]+)_DEFAULT_PARAMS$", env_var)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3391 | `+         # Pattern to match ENGINE_API_KEY, ENGINE_ENABLED, ENGINE_DEFAULT_PARAMS` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3457 | `-         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3686 | `for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3701 | `"BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3920 | `- ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3941 | `# Pattern to match ENGINE_API_KEY, ENGINE_ENABLED, ENGINE_DEFAULT_PARAMS` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3976 | `1. Defines a regex pattern that matches any environment variable like `ENGINE_API_KEY`, `ENGINE_ENABLED`, or `ENGINE_DEFAULT_PARAMS`` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L3996 | `matches ANY environment variable that follows the pattern `SOMETHING_API_KEY`, `SOMETHING_ENABLED`, or `SOMETHING_DEFAULT_PARAMS`, and creates an engine config for it regardless of whether that engine is actually registered in the system.` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4101 | `# Pattern to match ENGINE_API_KEY, ENGINE_ENABLED, ENGINE_DEFAULT_PARAMS` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4119 | `2. It matches any variable that looks like `ENGINE_API_KEY`, `ENGINE_ENABLED`, or `ENGINE_DEFAULT_PARAMS`` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4217 | `+         engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4270 | `-     - ENGINE_DEFAULT_PARAMS (e.g., BRAVE_DEFAULT_PARAMS)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4282 | `-         # Pattern to match ENGINE_API_KEY, ENGINE_ENABLED, ENGINE_DEFAULT_PARAMS` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4729 | `+         # ENGINE_API_KEY, ENGINE_ENABLED, ENGINE_DEFAULT_PARAMS` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4790 | `+     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4824 | `-     monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 5}')` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L5226 | `-         "BRAVE_DEFAULT_PARAMS={\"count\": 10}\n"` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L474 | `engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the engine-specific default parameters are processed from environment variables:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/config.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the engine-specific default parameters are processed from environment variables:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "env_params_names" • **13** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_10-55-standardizing-engine-naming-conventions.md` | L1243 | `-             for env_name in engine_class.env_params_names:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4194 | `+     env_params_names: ClassVar[List[str]] = []   # Override with engine-specific names` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4216 | `+     if not engine_class.env_params_names:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4217 | `+         engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4329 | `+             for env_name in engine_class.env_params_names:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_02-27-implementing-tests-for-twat-search-package.md` | L4751 | `for env_name in engine_class.env_params_names:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_09-54-implementing-plain-option-for-search-commands.md` | L3285 | `engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1473 | `-         if engine_class and hasattr(engine_class, "env_params_names"):` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_19-37-removing-anywebsearch-references-from-codebase.md` | L1474 | `-             params_vars.extend(engine_class.env_params_names)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6874 | `+     env_params_names: ClassVar[List[str]] = []   # Override with engine-specific names` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6896 | `+     if not engine_class.env_params_names:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L6897 | `+         engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L7009 | `+             for env_name in engine_class.env_params_names:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L7431 | `for env_name in engine_class.env_params_names:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L19974 | `-     if not engine_class.env_params_names:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L19975 | `+     if not hasattr(engine_class, "env_params_names"):` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L19976 | `engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L31987 | `+     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L32327 | `-     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L32877 | `+     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L55038 | `engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history.txt` | L57080 | `-             for env_name in engine_class.env_params_names:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_20-02-analyzing-todo-md-and-updating-progress-md.md` | L521 | `env_params_names: ClassVar[list[str]] = []` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_20-02-analyzing-todo-md-and-updating-progress-md.md` | L680 | `-     if not hasattr(engine_class, "env_params_names"):` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_20-02-analyzing-todo-md-and-updating-progress-md.md` | L681 | `-         engine_class.env_params_names = [` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_20-02-analyzing-todo-md-and-updating-progress-md.md` | L796 | `env_params_names: ClassVar[list[str]] = []` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_14-52-resolving-critical-issues-in-todo-md.md` | L472 | `+             if engine_class and hasattr(engine_class, "env_params_names"):` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_14-52-resolving-critical-issues-in-todo-md.md` | L473 | `+                 params_vars.extend(engine_class.env_params_names)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_23-13-google-scraper-result-validation-issues.md` | L4455 | `env_params_names: ClassVar[list[str]] = []` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/engines/base.py` | L55 | `env_params_names: ClassVar[list[str]] = []` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L472 | `-     if not engine_class.env_params_names:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L473 | `+     if not hasattr(engine_class, "env_params_names"):` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_04-48-unifying-search-engine-parameters-in-twat-search.md` | L474 | `engine_class.env_params_names = [f"{engine_class.name.upper()}_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_05-43-implementing-the-webscout-search-engine.md` | L3470 | `+     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_05-43-implementing-the-webscout-search-engine.md` | L3810 | `-     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-25_05-43-implementing-the-webscout-search-engine.md` | L4360 | `+     env_params_names: ClassVar[list[str]] = ["WEBSCOUT_DEFAULT_PARAMS"]` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L1732 | `⟪ 113 characters skipped ⟫at_search/web/engines/base.py` | L49 | `env_params_names: ClassVar[list[str]] = []` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L1739 | `⟪ 144 characters skipped ⟫| L228 | `if not hasattr(engine_class, "env_params_names"):` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.specstory/history/2025-02-26_17-48-progress-update-for-twat-search-project.md` | L1740 | `⟪ 127 characters skipped ⟫engines/base.py` | L229 | `engine_class.env_params_names = [` |` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/engines/base.py` | L55 | `env_params_names: ClassVar[list[str]] = []` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the engine-specific default parameters are processed from environment variables in the base.py file:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/engines/base.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the engine-specific default parameters are processed from environment variables in the config.py file:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "_process_engine_env_vars" • **0** files</summary>
+        
+No results found
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the engine-specific default parameters are processed from environment variables in the config.py file:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "process_engine_env_vars" • **0** files</summary>
+        
+No results found
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the engine-specific default parameters are processed from environment variables in the config.py file:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "_DEFAULT_PARAMS" • **1** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/conftest.py` | L28 | `if any(env_var.endswith(suffix) for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]):` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/tests/conftest.py` | L59 | `monkeypatch.setenv("BRAVE_DEFAULT_PARAMS", '{"count": 10}')` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the engine-specific default parameters are processed from environment variables in the config.py file:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "_DEFAULT_PARAMS" • **0** files</summary>
+        
+No results found
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the engine-specific default parameters are processed from environment variables in the config.py file:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "DEFAULT_PARAMS" • **2** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L60 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L71 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L81 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L95 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L105 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L115 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L124 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L133 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L143 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L152 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L161 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L171 | `"default_params": {"num_results": DEFAULT_NUM_RESULTS, "language": "en", "safe": True},` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L177 | `"default_params": {"num_pages": 1, "delay": 0.5},` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L183 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L190 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L197 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L204 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L211 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L218 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L225 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L232 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L239 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L246 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L253 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L306 | `default_params: dict[str, Any] = Field(default_factory=dict)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L482 | `default_params: dict[str, Any] | None = None,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L491 | `default_params: Default parameters for the engine` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L493 | `if default_params is None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L494 | `default_params = {}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L502 | `engine_config.default_params.update(default_params)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L508 | `default_params=default_params,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L60 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L71 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L81 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L95 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L105 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L115 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L124 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L133 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L143 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L152 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L161 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L171 | `"default_params": {"num_results": DEFAULT_NUM_RESULTS, "language": "en", "safe": True},` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L177 | `"default_params": {"num_pages": 1, "delay": 0.5},` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L183 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L190 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L197 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L204 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L211 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L218 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L225 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L232 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L239 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L246 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L253 | `"default_params": {` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L306 | `default_params: dict[str, Any] = Field(default_factory=dict)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L482 | `default_params: dict[str, Any] | None = None,` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L491 | `default_params: Default parameters for the engine` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L493 | `if default_params is None:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L494 | `default_params = {}` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L502 | `engine_config.default_params.update(default_params)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L508 | `default_params=default_params,` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at how the engine-specific default parameters are processed from environment variables in the config.py file:
+
+---
+
+_****_
+
+<details>
+            <summary>Grep search for "_parse_env_value" • **2** files</summary>
+        
+| File | Line | Match |
+|------|------|-------|
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L525 | `value = _parse_env_value(env_value)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L539 | `value = _parse_env_value(env_value)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L544 | `def _parse_env_value(env_value: str) -> Any:` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L525 | `value = _parse_env_value(env_value)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L539 | `value = _parse_env_value(env_value)` |
+| `file:///Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/src/twat_search/web/config.py` | L544 | `def _parse_env_value(env_value: str) -> Any:` |
+
+</details>
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's look at the _parse_env_value function to see how it handles JSON strings:
+
+---
+
+_****_
+
+Read file: src/twat_search/web/config.py
+
+---
+
+_****_
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Let's update the _parse_env_value function to handle JSON strings:
+
+---
+
+_****_
+
+```diff
+  def _parse_env_value(env_value: str) -> Any:
+      """Parse environment variable value with type conversion."""
++     # Try to parse as JSON first (for default_params and other complex values)
++     if env_value.startswith("{") and env_value.endswith("}"):
++         try:
++             return json.loads(env_value)
++         except json.JSONDecodeError:
++             # Not valid JSON, continue with other parsing methods
++             pass
++             
+      if env_value.lower() in ("true", "yes", "1"):
+          return True
+```
+
+---
+
+_****_
+
+
+
+
+
 ---
 
 
