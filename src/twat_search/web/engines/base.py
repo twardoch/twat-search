@@ -409,7 +409,8 @@ def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchE
         available_engines = ", ".join(sorted(engines.keys()))
         msg = f"Engine '{engine_name}' not found. Available engines: {available_engines}"
         logger.error(msg)
-        raise SearchError(f"Unknown search engine '{engine_name}'")
+        msg = f"Unknown search engine '{engine_name}'"
+        raise SearchError(msg)
 
     try:
         # Check if the engine is enabled in the configuration

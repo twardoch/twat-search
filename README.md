@@ -2,66 +2,129 @@
 this_file: README.md
 ---
 
-# Twat Search: multi-engine web search aggregator
+# Twat Search
 
-## Executive summary
+A multi-engine web search aggregator that provides a unified interface for searching across various search engines.
 
-Twat Search is a powerful, asynchronous Python package that provides a unified interface to query multiple search engines simultaneously. It facilitates efficient information retrieval by aggregating, normalizing, and processing results from various search providers through a consistent API. This comprehensive documentation serves as a definitive guide for both CLI and Python usage of the package.
+## Features
 
-## Key features
+- **Multi-engine search**: Search across various providers including Brave, Google (via SerpAPI), Bing, and more
+- **Asynchronous operation**: Uses `asyncio` for efficient concurrent searches
+- **Rate limiting**: Built-in rate limiting to prevent API throttling
+- **Strong typing**: Pydantic validation for all data models
+- **Robust error handling**: Graceful handling of engine failures
+- **Flexible configuration**: Configure via environment variables, `.env` files, or directly in code
+- **CLI interface**: Interactive command-line interface with rich output formatting
+- **JSON output**: Standardized JSON output format for all search results
+- **Modern path handling**: Uses `pathlib` for cross-platform path operations
+- **Secure temp files**: Uses `tempfile` for secure temporary file operations
 
-- **Multi-Engine Search**: A single query can simultaneously search across multiple providers including Brave, Google (via SerpAPI/HasData), Tavily, Perplexity, You.com, Bing (via web scraping), and more
-- **Asynchronous Operation**: Leverages `asyncio` for concurrent searches, maximizing speed and efficiency
-- **Rate Limiting**: Built-in mechanisms to prevent exceeding API limits of individual search providers
-- **Strong Typing**: Full type annotations and Pydantic validation for improved code reliability and maintainability
-- **Robust Error Handling**: Custom exception classes for graceful error management, with improved engine initialization and search process error handling
-- **Flexible Configuration**: Configure search engines via environment variables, `.env` files, or directly in code
-- **Extensible Architecture**: Designed for easy addition of new search engines
-- **Command-Line Interface**: Rich, interactive CLI for searching and exploring engine configurations
-- **JSON Output**: Supports JSON output for easy integration with other tools
-- **Modern Path Handling**: Uses `pathlib.Path` for robust and platform-independent file operations
-- **Secure Temporary File Operations**: Implements secure temporary file handling using the standard library's `tempfile` module
+## Recent Improvements
 
-## Recent improvements
+- Enhanced error handling for search engines, including proper handling of empty engine lists
+- Standardized engine names for more consistent lookups
+- Detailed logging for search engine initialization and execution
+- Improved environment variable handling for engine configuration
+- Fixed issues with mock engine result count handling
+- Added proper JSON string parsing for engine default parameters
 
-- **Enhanced Error Handling**: Improved error handling in engine initialization and search processes to prevent failures in one engine from affecting others
-- **Standardized Engine Names**: Added standardization of engine names for more consistent lookups and better backward compatibility
-- **Detailed Logging**: Added comprehensive logging throughout the search process for better debugging and monitoring
-- **Graceful Fallbacks**: Implemented graceful fallbacks when specific engines fail to initialize or return results
-
-## Installation options
-
-### Full installation
+## Installation
 
 ```bash
-uv pip install --system twat-search[all]
+pip install twat-search
 ```
 
-or 
+## Usage
+
+### Basic Usage
+
+```python
+import asyncio
+from twat_search.web.api import search
+
+async def main():
+    results = await search("Python programming", engines=["brave", "google"])
+    for result in results:
+        print(f"Title: {result.title}")
+        print(f"URL: {result.url}")
+        print(f"Description: {result.description}")
+        print("---")
+
+asyncio.run(main())
+```
+
+### Configuration
+
+You can configure the search engines using environment variables:
 
 ```bash
-uv pip install --system twat-search[all]
+# Enable/disable engines
+export BRAVE_ENABLED=true
+export GOOGLE_ENABLED=false
+
+# Set API keys
+export SERPAPI_API_KEY=your_api_key
+export TAVILY_API_KEY=your_api_key
+
+# Configure engine parameters
+export BRAVE_DEFAULT_PARAMS='{"count": 10, "country": "US"}'
 ```
 
+Or directly in code:
 
-### Selective installation
+```python
+from twat_search.web.config import Config
 
-Install only specific engine dependencies:
+config = Config(
+    brave={"enabled": True, "default_params": {"count": 10}},
+    google={"enabled": False}
+)
+```
+
+### Command Line Interface
 
 ```bash
-# Example: install only brave and duckduckgo dependencies
-pip install "twat-search[brave,duckduckgo]"
+# Basic search
+twat-search "Python programming"
 
-# Example: install duckduckgo and bing scraper
-pip install "twat-search[duckduckgo,bing_scraper]"
+# Specify engines
+twat-search "Python programming" --engines brave google
+
+# Get JSON output
+twat-search "Python programming" --json
+
+# List available engines
+twat-search --list-engines
 ```
 
-After installation, both `Twat Search` and `Twat Search-web` commands should be available in your PATH. Alternatively, you can run:
+## Error Handling
 
-```bash
-python -m twat_search.__main__
-python -m twat_search.web.cli
+The package provides robust error handling with custom exception classes:
+
+- `SearchError`: Base exception for all search-related errors
+- `EngineError`: Raised when there's an issue with a specific engine
+
+Example:
+
+```python
+from twat_search.web.api import search
+from twat_search.web.exceptions import SearchError, EngineError
+
+try:
+    results = await search("Python programming")
+except EngineError as e:
+    print(f"Engine error: {e}")
+except SearchError as e:
+    print(f"Search error: {e}")
 ```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Project Documentation
 

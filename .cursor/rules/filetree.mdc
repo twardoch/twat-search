@@ -8,7 +8,7 @@ globs:
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 559]  cleanup.mdc
-│       └── [9.8K]  filetree.mdc
+│       └── [9.9K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
@@ -62,13 +62,13 @@ globs:
 │   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
 │   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
 │   │   ├── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
-│   │   └── [100K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
+│   │   └── [390K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 │   └── [2.2M]  history.txt
 ├── [3.3K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
-├── [ 23K]  README.md
-├── [6.4K]  TODO.md
+├── [ 20K]  README.md
+├── [7.0K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [6.3K]  debug_fetch.py
@@ -106,7 +106,7 @@ globs:
 │       ├── [2.5K]  __main__.py
 │       └── [ 416]  web
 │           ├── [1.8K]  __init__.py
-│           ├── [ 11K]  api.py
+│           ├── [ 12K]  api.py
 │           ├── [ 48K]  cli.py
 │           ├── [ 19K]  config.py
 │           ├── [2.8K]  engine_constants.py
@@ -174,7 +174,7 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [659K]  twat_search.txt
+├── [667K]  twat_search.txt
 └── [195K]  uv.lock
 
 26 directories, 148 files

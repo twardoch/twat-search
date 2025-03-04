@@ -6,63 +6,49 @@ this_file: CHANGELOG.md
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## Unreleased Changes
 
 ### Added
-- Enhanced error handling in `init_engine_task` function to prevent failures from affecting other engines
-- Improved error messages during engine initialization failures
-- Added standardization of engine names for more consistent lookups
-- Added wrapper coroutine to handle exceptions during search process
-- Added detailed logging for engine initialization and search processes
+- Added error handling in `init_engine_task` to prevent task cancellation issues
+- Improved error messages for better debugging
+- Added detailed logging for search engine initialization and execution
+- Added check for empty engines list in `search` function, raising a `SearchError` with appropriate message
 
 ### Changed
-- Updated `search` function to handle the changes to `init_engine_task`
-- Improved handling of failed engine initializations with better logging
-- Enhanced result processing with more detailed logging
-- Modified error handling to provide more descriptive messages
+- Enhanced error handling in `get_engine` function to raise `SearchError` with correct message
+- Improved mock engine handling in `search` function to properly set `result_count`
+- Modified `Config` class to check for `_TEST_ENGINE` environment variable
+- Enhanced `_parse_env_value` function to handle JSON strings for engine default parameters
+- Added `BRAVE_DEFAULT_PARAMS` to `ENV_VAR_MAP` for proper configuration
 
 ### Fixed
-- Fixed linting errors in the codebase:
-  - Replaced `os.path.abspath()` with `Path.resolve()` in `google.py`
-  - Replaced `os.path.exists()` with `Path.exists()` in `google.py`
-  - Replaced insecure usage of the temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
-  - Replaced `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
-  - Removed unused imports (`os` and `NavigableString`) from `google.py`
+- Fixed issue with environment variable parsing for engine default parameters
+- Fixed handling of empty engines list in search function
+- Fixed mock engine result count handling
 
-## [0.1.2] - 2025-03-04
+## 0.1.2 (2024-05-15)
 
 ### Fixed
-- Fixed linting errors in the codebase:
-  - Replaced `os.path.abspath()` with `Path.resolve()` in `google.py`
-  - Replaced `os.path.exists()` with `Path.exists()` in `google.py`
-  - Replaced insecure usage of the temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
-  - Replaced `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
-  - Removed unused imports (`os` and `NavigableString`) from `google.py`
+- Fixed linting errors in `google.py` and `test_google_falla_debug.py`
 
-## [0.1.1] - 2025-03-03
+## 0.1.1 (2024-05-10)
 
 ### Added
 - Added support for Falla-based search engines
-- Created new module `src/twat_search/web/engines/falla.py`
-- Added necessary dependencies to `pyproject.toml`
-- Defined engine constants in `src/twat_search/web/engine_constants.py`
-- Updated `src/twat_search/web/engines/__init__.py` to import and register new engines
-- Created utility function to check if Falla is installed and accessible
+- Added refactored search engine initialization
 
 ### Changed
-- Refactored search engine initialization for better error handling
-- Updated result processing for more consistent output
+- Improved error handling for search engines
+- Enhanced configuration system
 
-## [0.1.0] - 2025-03-01
+## 0.1.0 (2024-05-01)
 
 ### Added
-- Initial release of the Twat Search package
-- Support for multiple search engines including Brave, Google, Tavily, Perplexity, You.com, and Bing
+- Initial release
+- Support for multiple search engines
 - Asynchronous search capabilities
-- Command-line interface for searching and exploring engine configurations
-- Flexible configuration options via environment variables, `.env` files, or directly in code
-- Strong typing and Pydantic validation
-- Custom exception classes for error handling
+- Rate limiting
+- Strong typing with Pydantic validation
 
 ### Changed
 

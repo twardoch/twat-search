@@ -269,6 +269,7 @@ ENV_VAR_MAP: dict[str, str | list[str]] = {
     "PPLX_API_KEY": ["engines", PPLX, "api_key"],
     "CRITIQUE_API_KEY": ["engines", CRITIQUE, "api_key"],
     # Engine-specific config
+    "BRAVE_DEFAULT_PARAMS": ["engines", BRAVE, "default_params"],
 }
 
 # Additional environment variables that map to multiple paths

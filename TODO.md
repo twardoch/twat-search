@@ -2,7 +2,64 @@
 this_file: TODO.md
 --- 
 
-# TODO
+# TODO List
+
+## High Priority
+
+- [ ] Fix Falla-based search engines
+  - [ ] Resolve Playwright dependency issues
+  - [ ] Ensure proper error handling for browser automation
+  - [ ] Add retry mechanism for flaky browser interactions
+- [ ] Address type errors in the codebase
+  - [ ] Fix FBT001/FBT002 errors (Boolean-typed positional arguments)
+  - [ ] Fix unused argument warnings (ARG001/ARG002)
+  - [ ] Fix line length issues (E501)
+- [ ] Improve integration with Playwright
+  - [ ] Add proper browser context management
+  - [ ] Implement headless mode configuration
+  - [ ] Add proxy support for browser-based engines
+
+## Medium Priority
+
+- [ ] Improve code quality
+  - [ ] Refactor CLI module to reduce complexity
+  - [ ] Add more comprehensive docstrings
+  - [ ] Standardize error handling patterns across all engines
+- [ ] Enhance documentation
+  - [ ] Create detailed API documentation
+  - [ ] Add examples for each search engine
+  - [ ] Document configuration options comprehensively
+- [ ] Standardize JSON output formats
+  - [ ] Ensure consistent field names across all engines
+  - [ ] Add schema validation for engine outputs
+  - [ ] Implement proper JSON serialization for all models
+
+## Low Priority
+
+- [ ] Add more search engines
+  - [ ] Add support for Kagi search
+  - [ ] Integrate with more specialized search APIs
+- [ ] Implement caching mechanism
+  - [ ] Add Redis-based result caching
+  - [ ] Implement TTL for cached results
+- [ ] Performance optimizations
+  - [ ] Profile and optimize slow code paths
+  - [ ] Reduce memory usage for large result sets
+
+## Completed
+
+- [x] Set up Falla module
+- [x] Create base search engine class
+- [x] Implement Brave search engine
+- [x] Implement Google search via SerpAPI
+- [x] Implement Falla-based engines (Google, Bing, etc.)
+- [x] Fix linting errors in google.py and test_google_falla_debug.py
+- [x] Improve error handling in get_engine function
+- [x] Fix handling of empty engines list in search function
+- [x] Fix mock engine result count handling
+- [x] Fix environment variable parsing for engine default parameters
+- [x] Add BRAVE_DEFAULT_PARAMS to ENV_VAR_MAP
+- [x] Modify Config class to check for _TEST_ENGINE environment variable
 
 Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
 
