@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 import httpx
 
-from twat_search.web.exceptions import EngineError
+from twat_search.web.exceptions import EngineError, SearchError
 
 if TYPE_CHECKING:
     from twat_search.web.config import EngineConfig
@@ -387,7 +387,7 @@ def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchE
         An instance of the requested search engine
 
     Raises:
-        EngineError: If the engine is not found, disabled, or fails to initialize
+        SearchError: If the engine is not found
     """
     # Get the registry of engines
     engines = get_registered_engines()
@@ -409,7 +409,7 @@ def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchE
         available_engines = ", ".join(sorted(engines.keys()))
         msg = f"Engine '{engine_name}' not found. Available engines: {available_engines}"
         logger.error(msg)
-        raise EngineError(engine_name, msg)
+        raise SearchError(f"Unknown search engine '{engine_name}'")
 
     try:
         # Check if the engine is enabled in the configuration

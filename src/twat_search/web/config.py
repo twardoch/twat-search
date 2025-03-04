@@ -434,7 +434,11 @@ class Config(BaseModel):
             **data: Configuration override values
         """
         # Start with default configuration
-        config_data = json.loads(json.dumps(DEFAULT_CONFIG))  # Deep copy
+        config_data = {}
+
+        # Only load default configuration if not in test mode
+        if "_TEST_ENGINE" not in os.environ:
+            config_data = json.loads(json.dumps(DEFAULT_CONFIG))  # Deep copy
 
         # Load from config file if it exists
         config_path = self.get_config_path()
@@ -540,6 +544,14 @@ def _apply_env_overrides(config_data: dict[str, Any]) -> None:
 
 def _parse_env_value(env_value: str) -> Any:
     """Parse environment variable value with type conversion."""
+    # Try to parse as JSON first (for default_params and other complex values)
+    if env_value.startswith("{") and env_value.endswith("}"):
+        try:
+            return json.loads(env_value)
+        except json.JSONDecodeError:
+            # Not valid JSON, continue with other parsing methods
+            pass
+
     if env_value.lower() in ("true", "yes", "1"):
         return True
     if env_value.lower() in ("false", "no", "0"):
