@@ -7,17 +7,26 @@ this_file: TODO.md
 ## High Priority
 
 - [ ] Fix Falla-based search engines
-  - [ ] Resolve Playwright dependency issues
+  - [ ] Resolve Playwright dependency issues (ModuleNotFoundError: No module named 'playwright')
   - [ ] Ensure proper error handling for browser automation
   - [ ] Add retry mechanism for flaky browser interactions
+  - [ ] Update selectors in search engine implementations to match current page structures
+  - [ ] Implement proper handling of CAPTCHA challenges and consent pages
+
 - [ ] Address type errors in the codebase
+  - [ ] Fix type error in `wait_for_selector` where `self.wait_for_selector` could be `None`
+  - [ ] Fix type error in `find_all` where `attrs` parameter has incompatible type
+  - [ ] Fix type error in `get_title`, `get_link`, and `get_snippet` where `elem` parameter has incompatible type
+  - [ ] Fix type error in `elem.find` where `PageElement` has no attribute `find`
   - [ ] Fix FBT001/FBT002 errors (Boolean-typed positional arguments)
   - [ ] Fix unused argument warnings (ARG001/ARG002)
   - [ ] Fix line length issues (E501)
+
 - [ ] Improve integration with Playwright
   - [ ] Add proper browser context management
   - [ ] Implement headless mode configuration
   - [ ] Add proxy support for browser-based engines
+  - [ ] Implement specific exception handling for common Playwright errors
 
 ## Medium Priority
 
@@ -25,26 +34,61 @@ this_file: TODO.md
   - [ ] Refactor CLI module to reduce complexity
   - [ ] Add more comprehensive docstrings
   - [ ] Standardize error handling patterns across all engines
+  - [ ] Add try-except blocks for all external API calls
+  - [ ] Create custom exception classes for different error scenarios
+  - [ ] Add graceful fallbacks for common error cases
+
 - [ ] Enhance documentation
   - [ ] Create detailed API documentation
   - [ ] Add examples for each search engine
   - [ ] Document configuration options comprehensively
+  - [ ] Add detailed docstrings to all classes and methods
+
 - [ ] Standardize JSON output formats
   - [ ] Ensure consistent field names across all engines
   - [ ] Add schema validation for engine outputs
   - [ ] Implement proper JSON serialization for all models
+  - [ ] Utilize the existing `SearchResult` model consistently
+  - [ ] Remove utility functions like `_process_results` and `_display_json_results`
+  - [ ] Remove `CustomJSONEncoder` class
+  - [ ] Update engine `search` methods to return list of `SearchResult` objects
+
+- [ ] Improve test coverage
+  - [ ] Add unit tests for all search engine implementations
+  - [ ] Add integration tests for the entire search pipeline
+  - [ ] Implement mock responses for external API calls in tests
+  - [ ] Add performance benchmarks for search operations
 
 ## Low Priority
 
 - [ ] Add more search engines
   - [ ] Add support for Kagi search
+  - [ ] Implement Ecosia search
+  - [ ] Implement Startpage search
+  - [ ] Implement Qwant AI engine using the QwantAI package
   - [ ] Integrate with more specialized search APIs
+
 - [ ] Implement caching mechanism
   - [ ] Add Redis-based result caching
   - [ ] Implement TTL for cached results
+  - [ ] Add result deduplication across engines
+
 - [ ] Performance optimizations
   - [ ] Profile and optimize slow code paths
   - [ ] Reduce memory usage for large result sets
+  - [ ] Optimize concurrent search operations
+  - [ ] Implement timeout handling for slow search engines
+
+- [ ] Enhance result processing
+  - [ ] Add result ranking based on relevance
+  - [ ] Implement result filtering options
+  - [ ] Add support for different result formats (HTML, Markdown, etc.)
+
+- [ ] Improve CLI functionality
+  - [ ] Add interactive mode for search operations
+  - [ ] Implement result pagination in CLI output
+  - [ ] Add support for saving search results to file
+  - [ ] Implement search history functionality
 
 ## Completed
 
@@ -60,6 +104,19 @@ this_file: TODO.md
 - [x] Fix environment variable parsing for engine default parameters
 - [x] Add BRAVE_DEFAULT_PARAMS to ENV_VAR_MAP
 - [x] Modify Config class to check for _TEST_ENGINE environment variable
+- [x] Replace `os.path.abspath()` with `Path.resolve()` in `google.py`
+- [x] Replace `os.path.exists()` with `Path.exists()` in `google.py`
+- [x] Replace insecure usage of temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
+- [x] Replace `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
+- [x] Remove unused imports (`os` and `NavigableString`) from `google.py`
+- [x] Add descriptive error messages when engines are not found or disabled
+- [x] Handle engine initialization failures gracefully
+- [x] Improve error handling in `init_engine_task` function
+- [x] Update `search` function to handle the changes to `init_engine_task`
+- [x] Add standardization of engine names for more consistent lookups
+- [x] Add wrapper coroutine to handle exceptions during search process
+- [x] Add detailed logging for engine initialization and search processes
+- [x] Return empty results on failure instead of raising exceptions
 
 Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
 

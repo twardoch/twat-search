@@ -265,13 +265,13 @@ globs:
 │   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
 │   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
 │   │   ├── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
-│   │   └── [390K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
+│   │   └── [488K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 │   └── [2.2M]  history.txt
-├── [3.3K]  CHANGELOG.md
+├── [2.1K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 20K]  README.md
-├── [7.0K]  TODO.md
+├── [9.2K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [6.3K]  debug_fetch.py
@@ -377,7 +377,7 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [667K]  twat_search.txt
+├── [666K]  twat_search.txt
 └── [195K]  uv.lock
 
 26 directories, 148 files
@@ -10901,63 +10901,49 @@ this_file: CHANGELOG.md
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## Unreleased Changes
 
 ### Added
-- Enhanced error handling in `init_engine_task` function to prevent failures from affecting other engines
-- Improved error messages during engine initialization failures
-- Added standardization of engine names for more consistent lookups
-- Added wrapper coroutine to handle exceptions during search process
-- Added detailed logging for engine initialization and search processes
+- Added error handling in `init_engine_task` to prevent task cancellation issues
+- Improved error messages for better debugging
+- Added detailed logging for search engine initialization and execution
+- Added check for empty engines list in `search` function, raising a `SearchError` with appropriate message
 
 ### Changed
-- Updated `search` function to handle the changes to `init_engine_task`
-- Improved handling of failed engine initializations with better logging
-- Enhanced result processing with more detailed logging
-- Modified error handling to provide more descriptive messages
+- Enhanced error handling in `get_engine` function to raise `SearchError` with correct message
+- Improved mock engine handling in `search` function to properly set `result_count`
+- Modified `Config` class to check for `_TEST_ENGINE` environment variable
+- Enhanced `_parse_env_value` function to handle JSON strings for engine default parameters
+- Added `BRAVE_DEFAULT_PARAMS` to `ENV_VAR_MAP` for proper configuration
 
 ### Fixed
-- Fixed linting errors in the codebase:
-  - Replaced `os.path.abspath()` with `Path.resolve()` in `google.py`
-  - Replaced `os.path.exists()` with `Path.exists()` in `google.py`
-  - Replaced insecure usage of the temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
-  - Replaced `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
-  - Removed unused imports (`os` and `NavigableString`) from `google.py`
+- Fixed issue with environment variable parsing for engine default parameters
+- Fixed handling of empty engines list in search function
+- Fixed mock engine result count handling
 
-## [0.1.2] - 2025-03-04
+## 0.1.2 (2024-05-15)
 
 ### Fixed
-- Fixed linting errors in the codebase:
-  - Replaced `os.path.abspath()` with `Path.resolve()` in `google.py`
-  - Replaced `os.path.exists()` with `Path.exists()` in `google.py`
-  - Replaced insecure usage of the temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
-  - Replaced `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
-  - Removed unused imports (`os` and `NavigableString`) from `google.py`
+- Fixed linting errors in `google.py` and `test_google_falla_debug.py`
 
-## [0.1.1] - 2025-03-03
+## 0.1.1 (2024-05-10)
 
 ### Added
 - Added support for Falla-based search engines
-- Created new module `src/twat_search/web/engines/falla.py`
-- Added necessary dependencies to `pyproject.toml`
-- Defined engine constants in `src/twat_search/web/engine_constants.py`
-- Updated `src/twat_search/web/engines/__init__.py` to import and register new engines
-- Created utility function to check if Falla is installed and accessible
+- Added refactored search engine initialization
 
 ### Changed
-- Refactored search engine initialization for better error handling
-- Updated result processing for more consistent output
+- Improved error handling for search engines
+- Enhanced configuration system
 
-## [0.1.0] - 2025-03-01
+## 0.1.0 (2024-05-01)
 
 ### Added
-- Initial release of the Twat Search package
-- Support for multiple search engines including Brave, Google, Tavily, Perplexity, You.com, and Bing
+- Initial release
+- Support for multiple search engines
 - Asynchronous search capabilities
-- Command-line interface for searching and exploring engine configurations
-- Flexible configuration options via environment variables, `.env` files, or directly in code
-- Strong typing and Pydantic validation
-- Custom exception classes for error handling
+- Rate limiting
+- Strong typing with Pydantic validation
 
 ### Changed
 
@@ -11563,66 +11549,129 @@ File: README.md
 this_file: README.md
 ---
 
-# Twat Search: multi-engine web search aggregator
+# Twat Search
 
-## Executive summary
+A multi-engine web search aggregator that provides a unified interface for searching across various search engines.
 
-Twat Search is a powerful, asynchronous Python package that provides a unified interface to query multiple search engines simultaneously. It facilitates efficient information retrieval by aggregating, normalizing, and processing results from various search providers through a consistent API. This comprehensive documentation serves as a definitive guide for both CLI and Python usage of the package.
+## Features
 
-## Key features
+- **Multi-engine search**: Search across various providers including Brave, Google (via SerpAPI), Bing, and more
+- **Asynchronous operation**: Uses `asyncio` for efficient concurrent searches
+- **Rate limiting**: Built-in rate limiting to prevent API throttling
+- **Strong typing**: Pydantic validation for all data models
+- **Robust error handling**: Graceful handling of engine failures
+- **Flexible configuration**: Configure via environment variables, `.env` files, or directly in code
+- **CLI interface**: Interactive command-line interface with rich output formatting
+- **JSON output**: Standardized JSON output format for all search results
+- **Modern path handling**: Uses `pathlib` for cross-platform path operations
+- **Secure temp files**: Uses `tempfile` for secure temporary file operations
 
-- **Multi-Engine Search**: A single query can simultaneously search across multiple providers including Brave, Google (via SerpAPI/HasData), Tavily, Perplexity, You.com, Bing (via web scraping), and more
-- **Asynchronous Operation**: Leverages `asyncio` for concurrent searches, maximizing speed and efficiency
-- **Rate Limiting**: Built-in mechanisms to prevent exceeding API limits of individual search providers
-- **Strong Typing**: Full type annotations and Pydantic validation for improved code reliability and maintainability
-- **Robust Error Handling**: Custom exception classes for graceful error management, with improved engine initialization and search process error handling
-- **Flexible Configuration**: Configure search engines via environment variables, `.env` files, or directly in code
-- **Extensible Architecture**: Designed for easy addition of new search engines
-- **Command-Line Interface**: Rich, interactive CLI for searching and exploring engine configurations
-- **JSON Output**: Supports JSON output for easy integration with other tools
-- **Modern Path Handling**: Uses `pathlib.Path` for robust and platform-independent file operations
-- **Secure Temporary File Operations**: Implements secure temporary file handling using the standard library's `tempfile` module
+## Recent Improvements
 
-## Recent improvements
+- Enhanced error handling for search engines, including proper handling of empty engine lists
+- Standardized engine names for more consistent lookups
+- Detailed logging for search engine initialization and execution
+- Improved environment variable handling for engine configuration
+- Fixed issues with mock engine result count handling
+- Added proper JSON string parsing for engine default parameters
 
-- **Enhanced Error Handling**: Improved error handling in engine initialization and search processes to prevent failures in one engine from affecting others
-- **Standardized Engine Names**: Added standardization of engine names for more consistent lookups and better backward compatibility
-- **Detailed Logging**: Added comprehensive logging throughout the search process for better debugging and monitoring
-- **Graceful Fallbacks**: Implemented graceful fallbacks when specific engines fail to initialize or return results
-
-## Installation options
-
-### Full installation
+## Installation
 
 ```bash
-uv pip install --system twat-search[all]
+pip install twat-search
 ```
 
-or 
+## Usage
+
+### Basic Usage
+
+```python
+import asyncio
+from twat_search.web.api import search
+
+async def main():
+    results = await search("Python programming", engines=["brave", "google"])
+    for result in results:
+        print(f"Title: {result.title}")
+        print(f"URL: {result.url}")
+        print(f"Description: {result.description}")
+        print("---")
+
+asyncio.run(main())
+```
+
+### Configuration
+
+You can configure the search engines using environment variables:
 
 ```bash
-uv pip install --system twat-search[all]
+# Enable/disable engines
+export BRAVE_ENABLED=true
+export GOOGLE_ENABLED=false
+
+# Set API keys
+export SERPAPI_API_KEY=your_api_key
+export TAVILY_API_KEY=your_api_key
+
+# Configure engine parameters
+export BRAVE_DEFAULT_PARAMS='{"count": 10, "country": "US"}'
 ```
 
+Or directly in code:
 
-### Selective installation
+```python
+from twat_search.web.config import Config
 
-Install only specific engine dependencies:
+config = Config(
+    brave={"enabled": True, "default_params": {"count": 10}},
+    google={"enabled": False}
+)
+```
+
+### Command Line Interface
 
 ```bash
-# Example: install only brave and duckduckgo dependencies
-pip install "twat-search[brave,duckduckgo]"
+# Basic search
+twat-search "Python programming"
 
-# Example: install duckduckgo and bing scraper
-pip install "twat-search[duckduckgo,bing_scraper]"
+# Specify engines
+twat-search "Python programming" --engines brave google
+
+# Get JSON output
+twat-search "Python programming" --json
+
+# List available engines
+twat-search --list-engines
 ```
 
-After installation, both `Twat Search` and `Twat Search-web` commands should be available in your PATH. Alternatively, you can run:
+## Error Handling
 
-```bash
-python -m twat_search.__main__
-python -m twat_search.web.cli
+The package provides robust error handling with custom exception classes:
+
+- `SearchError`: Base exception for all search-related errors
+- `EngineError`: Raised when there's an issue with a specific engine
+
+Example:
+
+```python
+from twat_search.web.api import search
+from twat_search.web.exceptions import SearchError, EngineError
+
+try:
+    results = await search("Python programming")
+except EngineError as e:
+    print(f"Engine error: {e}")
+except SearchError as e:
+    print(f"Search error: {e}")
 ```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Project Documentation
 
@@ -12307,7 +12356,64 @@ File: TODO.md
 this_file: TODO.md
 --- 
 
-# TODO
+# TODO List
+
+## High Priority
+
+- [ ] Fix Falla-based search engines
+  - [ ] Resolve Playwright dependency issues
+  - [ ] Ensure proper error handling for browser automation
+  - [ ] Add retry mechanism for flaky browser interactions
+- [ ] Address type errors in the codebase
+  - [ ] Fix FBT001/FBT002 errors (Boolean-typed positional arguments)
+  - [ ] Fix unused argument warnings (ARG001/ARG002)
+  - [ ] Fix line length issues (E501)
+- [ ] Improve integration with Playwright
+  - [ ] Add proper browser context management
+  - [ ] Implement headless mode configuration
+  - [ ] Add proxy support for browser-based engines
+
+## Medium Priority
+
+- [ ] Improve code quality
+  - [ ] Refactor CLI module to reduce complexity
+  - [ ] Add more comprehensive docstrings
+  - [ ] Standardize error handling patterns across all engines
+- [ ] Enhance documentation
+  - [ ] Create detailed API documentation
+  - [ ] Add examples for each search engine
+  - [ ] Document configuration options comprehensively
+- [ ] Standardize JSON output formats
+  - [ ] Ensure consistent field names across all engines
+  - [ ] Add schema validation for engine outputs
+  - [ ] Implement proper JSON serialization for all models
+
+## Low Priority
+
+- [ ] Add more search engines
+  - [ ] Add support for Kagi search
+  - [ ] Integrate with more specialized search APIs
+- [ ] Implement caching mechanism
+  - [ ] Add Redis-based result caching
+  - [ ] Implement TTL for cached results
+- [ ] Performance optimizations
+  - [ ] Profile and optimize slow code paths
+  - [ ] Reduce memory usage for large result sets
+
+## Completed
+
+- [x] Set up Falla module
+- [x] Create base search engine class
+- [x] Implement Brave search engine
+- [x] Implement Google search via SerpAPI
+- [x] Implement Falla-based engines (Google, Bing, etc.)
+- [x] Fix linting errors in google.py and test_google_falla_debug.py
+- [x] Improve error handling in get_engine function
+- [x] Fix handling of empty engines list in search function
+- [x] Fix mock engine result count handling
+- [x] Fix environment variable parsing for engine default parameters
+- [x] Add BRAVE_DEFAULT_PARAMS to ENV_VAR_MAP
+- [x] Modify Config class to check for _TEST_ENGINE environment variable
 
 Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
 

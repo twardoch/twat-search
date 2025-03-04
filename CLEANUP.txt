@@ -1,6 +1,6 @@
-2025-03-04 07:04:25 - 
+2025-03-04 07:20:15 - 
 === PROJECT STATEMENT ===
-2025-03-04 07:04:25 - ---
+2025-03-04 07:20:15 - ---
 description: About this project
 globs: 
 alwaysApply: false
@@ -15,10 +15,10 @@ alwaysApply: false
 - Clear provider protocol for adding new search backends
 - Strong typing and runtime checks throughout
 
-2025-03-04 07:04:25 - 
+2025-03-04 07:20:15 - 
 === Current Status ===
-2025-03-04 07:04:25 - Error: LOG.md is missing
-2025-03-04 07:04:25 - [1.3K]  .
+2025-03-04 07:20:15 - Error: LOG.md is missing
+2025-03-04 07:20:15 - [1.3K]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 192]  rules
@@ -78,13 +78,13 @@ alwaysApply: false
 │   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
 │   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
 │   │   ├── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
-│   │   └── [390K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
+│   │   └── [488K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 │   └── [2.2M]  history.txt
-├── [3.3K]  CHANGELOG.md
+├── [2.1K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 20K]  README.md
-├── [7.0K]  TODO.md
+├── [9.2K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [6.3K]  debug_fetch.py
@@ -190,14 +190,14 @@ alwaysApply: false
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [667K]  twat_search.txt
+├── [666K]  twat_search.txt
 └── [195K]  uv.lock
 
 26 directories, 148 files
 
-2025-03-04 07:04:25 - 
+2025-03-04 07:20:15 - 
 Project structure:
-2025-03-04 07:04:25 - [1.3K]  .
+2025-03-04 07:20:15 - [1.3K]  .
 ├── [  64]  .benchmarks
 ├── [  96]  .cursor
 │   └── [ 192]  rules
@@ -257,13 +257,13 @@ Project structure:
 │   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
 │   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
 │   │   ├── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
-│   │   └── [390K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
+│   │   └── [488K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 │   └── [2.2M]  history.txt
-├── [3.3K]  CHANGELOG.md
+├── [2.1K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 20K]  README.md
-├── [7.0K]  TODO.md
+├── [9.2K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [6.3K]  debug_fetch.py
@@ -369,12 +369,12 @@ Project structure:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [667K]  twat_search.txt
+├── [666K]  twat_search.txt
 └── [195K]  uv.lock
 
 26 directories, 148 files
 
-2025-03-04 07:04:25 - On branch main
+2025-03-04 07:20:15 - On branch main
 Your branch is up to date with 'origin/main'.
 
 Changes not staged for commit:
@@ -383,11 +383,12 @@ Changes not staged for commit:
 	modified:   .cursor/rules/filetree.mdc
 	modified:   .specstory/history/2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 	modified:   CLEANUP.txt
-	modified:   src/twat_search/web/config.py
+	modified:   src/twat_search/web/engines/lib_falla/core/falla.py
+	modified:   twat_search.txt
 
 no changes added to commit (use "git add" and/or "git commit -a")
 
-2025-03-04 07:04:25 - On branch main
+2025-03-04 07:20:15 - On branch main
 Your branch is up to date with 'origin/main'.
 
 Changes not staged for commit:
@@ -396,21 +397,22 @@ Changes not staged for commit:
 	modified:   .cursor/rules/filetree.mdc
 	modified:   .specstory/history/2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 	modified:   CLEANUP.txt
-	modified:   src/twat_search/web/config.py
+	modified:   src/twat_search/web/engines/lib_falla/core/falla.py
+	modified:   twat_search.txt
 
 no changes added to commit (use "git add" and/or "git commit -a")
 
-2025-03-04 07:04:25 - 
+2025-03-04 07:20:15 - 
 === Environment Status ===
-2025-03-04 07:04:25 - Setting up virtual environment
-2025-03-04 07:04:26 - Virtual environment created and activated
-2025-03-04 07:04:26 - Installing package with all extras
-2025-03-04 07:04:26 - Setting up virtual environment
-2025-03-04 07:04:26 - Virtual environment created and activated
-2025-03-04 07:04:28 - Package installed successfully
-2025-03-04 07:04:28 - Running code quality checks
-2025-03-04 07:04:28 - >>> Running code fixes...
-2025-03-04 07:04:28 - src/twat_search/__init__.py:24:29: F401 `twat_search.web` imported but unused; consider using `importlib.util.find_spec` to test for availability
+2025-03-04 07:20:15 - Setting up virtual environment
+2025-03-04 07:20:16 - Virtual environment created and activated
+2025-03-04 07:20:16 - Installing package with all extras
+2025-03-04 07:20:16 - Setting up virtual environment
+2025-03-04 07:20:16 - Virtual environment created and activated
+2025-03-04 07:20:17 - Package installed successfully
+2025-03-04 07:20:17 - Running code quality checks
+2025-03-04 07:20:17 - >>> Running code fixes...
+2025-03-04 07:20:17 - src/twat_search/__init__.py:24:29: F401 `twat_search.web` imported but unused; consider using `importlib.util.find_spec` to test for availability
    |
 22 | # Import submodules if available
 23 | try:
@@ -2883,12 +2885,12 @@ tests/web/test_bing_scraper.py:257:48: N803 Argument name `mock_BingScraper` sho
 259 |         # Setup mock to return results with missing attributes
     |
 
-Found 248 errors (2 fixed, 246 remaining).
+Found 246 errors.
 
-2025-03-04 07:04:28 - 56 files left unchanged
+2025-03-04 07:20:18 - 56 files left unchanged
 
-2025-03-04 07:04:28 - >>>Running type checks...
-2025-03-04 07:05:11 - src/twat_search/web/engines/lib_falla/core/fetch_page.py:15: error: Cannot find implementation or library stub for module named "playwright.async_api"  [import-not-found]
+2025-03-04 07:20:18 - >>>Running type checks...
+2025-03-04 07:20:53 - src/twat_search/web/engines/lib_falla/core/fetch_page.py:15: error: Cannot find implementation or library stub for module named "playwright.async_api"  [import-not-found]
 src/twat_search/web/engines/lib_falla/core/falla.py:19: error: Library stubs not installed for "requests"  [import-untyped]
 src/twat_search/web/engines/lib_falla/core/falla.py:19: note: Hint: "python3 -m pip install types-requests"
 src/twat_search/web/engines/lib_falla/core/falla.py:19: note: (or run "mypy --install-types" to install all missing stub packages)
@@ -2909,8 +2911,8 @@ src/twat_search/web/cli.py:21: error: Skipping analyzing "fire.core": module is 
 src/twat_search/web/cli.py:21: error: Skipping analyzing "fire": module is installed, but missing library stubs or py.typed marker  [import-untyped]
 Found 13 errors in 9 files (checked 57 source files)
 
-2025-03-04 07:05:11 - >>> Running tests...
-2025-03-04 07:05:19 - ============================= test session starts ==============================
+2025-03-04 07:20:53 - >>> Running tests...
+2025-03-04 07:21:01 - ============================= test session starts ==============================
 platform darwin -- Python 3.12.8, pytest-8.3.5, pluggy-1.5.0 -- /Users/adam/Developer/vcs/github.twardoch/pub/twat-packages/_good/twat/plugins/repos/twat_search/.venv/bin/python
 cachedir: .pytest_cache
 benchmark: 5.1.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
@@ -2973,8 +2975,8 @@ tests/web/test_bing_scraper.py::TestBingScraperEngine::test_invalid_result_forma
 =================================== FAILURES ===================================
 _________ TestBingScraperEngine.test_bing_scraper_convenience_function _________
 
-self = <test_bing_scraper.TestBingScraperEngine object at 0x10b9e2960>
-mock_search = <AsyncMock name='search' id='4490317408'>
+self = <test_bing_scraper.TestBingScraperEngine object at 0x10e50aa20>
+mock_search = <AsyncMock name='search' id='4535554016'>
 
     @patch("twat_search.web.api.search")
     @pytest.mark.asyncio
@@ -3014,16 +3016,73 @@ E         - ]
 tests/web/test_bing_scraper.py:189: AssertionError
 =========================== short test summary info ============================
 FAILED tests/web/test_bing_scraper.py::TestBingScraperEngine::test_bing_scraper_convenience_function
-========================= 1 failed, 48 passed in 4.76s =========================
+========================= 1 failed, 48 passed in 3.94s =========================
 
-2025-03-04 07:05:19 - All checks completed
-2025-03-04 07:05:19 - 
+2025-03-04 07:21:01 - All checks completed
+2025-03-04 07:21:01 - 
 === TODO.md ===
-2025-03-04 07:05:19 - --- 
+2025-03-04 07:21:01 - --- 
 this_file: TODO.md
 --- 
 
-# TODO
+# TODO List
+
+## High Priority
+
+- [ ] Fix Falla-based search engines
+  - [ ] Resolve Playwright dependency issues
+  - [ ] Ensure proper error handling for browser automation
+  - [ ] Add retry mechanism for flaky browser interactions
+- [ ] Address type errors in the codebase
+  - [ ] Fix FBT001/FBT002 errors (Boolean-typed positional arguments)
+  - [ ] Fix unused argument warnings (ARG001/ARG002)
+  - [ ] Fix line length issues (E501)
+- [ ] Improve integration with Playwright
+  - [ ] Add proper browser context management
+  - [ ] Implement headless mode configuration
+  - [ ] Add proxy support for browser-based engines
+
+## Medium Priority
+
+- [ ] Improve code quality
+  - [ ] Refactor CLI module to reduce complexity
+  - [ ] Add more comprehensive docstrings
+  - [ ] Standardize error handling patterns across all engines
+- [ ] Enhance documentation
+  - [ ] Create detailed API documentation
+  - [ ] Add examples for each search engine
+  - [ ] Document configuration options comprehensively
+- [ ] Standardize JSON output formats
+  - [ ] Ensure consistent field names across all engines
+  - [ ] Add schema validation for engine outputs
+  - [ ] Implement proper JSON serialization for all models
+
+## Low Priority
+
+- [ ] Add more search engines
+  - [ ] Add support for Kagi search
+  - [ ] Integrate with more specialized search APIs
+- [ ] Implement caching mechanism
+  - [ ] Add Redis-based result caching
+  - [ ] Implement TTL for cached results
+- [ ] Performance optimizations
+  - [ ] Profile and optimize slow code paths
+  - [ ] Reduce memory usage for large result sets
+
+## Completed
+
+- [x] Set up Falla module
+- [x] Create base search engine class
+- [x] Implement Brave search engine
+- [x] Implement Google search via SerpAPI
+- [x] Implement Falla-based engines (Google, Bing, etc.)
+- [x] Fix linting errors in google.py and test_google_falla_debug.py
+- [x] Improve error handling in get_engine function
+- [x] Fix handling of empty engines list in search function
+- [x] Fix mock engine result count handling
+- [x] Fix environment variable parsing for engine default parameters
+- [x] Add BRAVE_DEFAULT_PARAMS to ENV_VAR_MAP
+- [x] Modify Config class to check for _TEST_ENGINE environment variable
 
 Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
 
@@ -3186,7 +3245,7 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
   - [x] Return empty results on failure instead of raising exceptions
 
 
-2025-03-04 07:05:27 - 
+2025-03-04 07:21:09 - 
 📦 Repomix v0.2.29
 
 No custom config found at repomix.config.json or global config at /Users/adam/.config/repomix/repomix.config.json.
@@ -3195,7 +3254,7 @@ You can add a config file for additional settings. Please check https://github.c
 [2K[1A[2K[G⠹ Collecting files...
 [2K[1A[2K[G⠸ Collecting files...
 [2K[1A[2K[G⠼ Collecting files...
-[2K[1A[2K[G⠴ Collect file... (2/99) .cursor/rules/cleanup.mdc
+[2K[1A[2K[G⠴ Collecting files...
 [2K[1A[2K[G⠦ Collect file... (5/99) .github/workflows/release.yml
 [2K[1A[2K[G⠧ Collect file... (5/99) .github/workflows/release.yml
 [2K[1A[2K[G⠇ Collect file... (5/99) .github/workflows/release.yml
@@ -3226,49 +3285,53 @@ You can add a config file for additional settings. Please check https://github.c
 [2K[1A[2K[G⠸ Collect file... (5/99) .github/workflows/release.yml
 [2K[1A[2K[G⠼ Collect file... (5/99) .github/workflows/release.yml
 [2K[1A[2K[G⠴ Collect file... (5/99) .github/workflows/release.yml
-[2K[1A[2K[G⠦ Collect file... (6/99) .specstory/history.txt
-[2K[1A[2K[G⠧ Collect file... (12/99) debug_output/yahoo_screenshot.png
-[2K[1A[2K[G⠇ Collect file... (15/99) resources/brave/brave_video.md
-[2K[1A[2K[G⠏ Collect file... (20/99) resources/you/you_news.txt
-[2K[1A[2K[G⠋ Collect file... (47/99) src/twat_search/web/engines/bing_scraper.py
-[2K[1A[2K[G⠙ Collect file... (93/99) test_async_falla.py
-[2K[1A[2K[G⠹ Running security check...
-[2K[1A[2K[G⠸ Running security check...
-[2K[1A[2K[G⠼ Running security check... (5/97) .github/workflows/release.yml
-[2K[1A[2K[G⠴ Running security check... (5/97) .github/workflows/release.yml
-[2K[1A[2K[G⠦ Running security check... (5/97) .github/workflows/release.yml
-[2K[1A[2K[G⠧ Running security check... (5/97) .github/workflows/release.yml
-[2K[1A[2K[G⠇ Running security check... (26/97) src/twat_search/web/engines/lib_falla/core/d
-ogpile.py
-[2K[1A[2K[1A[2K[G⠏ Processing files...
-[2K[1A[2K[G⠋ Processing files...
-[2K[1A[2K[G⠙ Processing files...
-[2K[1A[2K[G⠹ Processing file... (20/96) resources/pricing.md
-[2K[1A[2K[G⠸ Processing file... (25/96) src/twat_search/web/engines/lib_falla/core/dogpile.
-py
-[2K[1A[2K[1A[2K[G⠼ Processing file... (42/96) src/twat_search/web/engines/__init__.py
-[2K[1A[2K[G⠴ Processing file... (52/96) src/twat_search/web/engines/serpapi.py
-[2K[1A[2K[G⠦ Processing file... (56/96) src/twat_search/web/api.py
-[2K[1A[2K[G⠧ Processing file... (78/96) .gitignore
-[2K[1A[2K[G⠇ Writing output file...
-[2K[1A[2K[G⠏ Calculating metrics...
-[2K[1A[2K[G⠋ Calculating metrics...
-[2K[1A[2K[G⠙ Calculating metrics...
-[2K[1A[2K[G⠹ Calculating metrics...
+[2K[1A[2K[G⠦ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠧ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠇ Collect file... (5/99) .github/workflows/release.yml
+[2K[1A[2K[G⠏ Collect file... (7/99) debug_output/qwant_analysis.txt
+[2K[1A[2K[G⠋ Collect file... (12/99) debug_output/yahoo_screenshot.png
+[2K[1A[2K[G⠙ Collect file... (17/99) resources/pplx/pplx_urls.txt
+[2K[1A[2K[G⠹ Collect file... (22/99) resources/you/you.txt
+[2K[1A[2K[G⠸ Collect file... (59/99) src/twat_search/web/api.py
+[2K[1A[2K[G⠼ Collect file... (86/99) falla_search.py
+[2K[1A[2K[G⠴ Running security check...
+[2K[1A[2K[G⠦ Running security check...
+[2K[1A[2K[G⠧ Running security check... (3/97) .cursor/rules/filetree.mdc
+[2K[1A[2K[G⠇ Running security check... (5/97) .github/workflows/release.yml
+[2K[1A[2K[G⠏ Running security check... (5/97) .github/workflows/release.yml
+[2K[1A[2K[G⠋ Running security check... (11/97) resources/brave/brave_image.md
+[2K[1A[2K[G⠙ Running security check... (56/97) src/twat_search/web/__init__.py
+[2K[1A[2K[G⠹ Processing files...
+[2K[1A[2K[G⠸ Processing files...
+[2K[1A[2K[G⠼ Processing files...
+[2K[1A[2K[G⠴ Processing files...
+[2K[1A[2K[G⠦ Processing file... (11/96) resources/brave/brave_news.md
+[2K[1A[2K[G⠧ Processing file... (21/96) src/twat_search/web/engines/lib_falla/core/__init__
+.py
+[2K[1A[2K[1A[2K[G⠇ Processing file... (31/96) src/twat_search/web/engines/lib_falla/core/mojeek.p
+y
+[2K[1A[2K[1A[2K[G⠏ Processing file... (47/96) src/twat_search/web/engines/duckduckgo.py
+[2K[1A[2K[G⠋ Processing file... (56/96) src/twat_search/web/api.py
+[2K[1A[2K[G⠙ Processing file... (75/96) tests/web/test_bing_scraper.py
+[2K[1A[2K[G⠹ Writing output file...
 [2K[1A[2K[G⠸ Calculating metrics...
 [2K[1A[2K[G⠼ Calculating metrics...
 [2K[1A[2K[G⠴ Calculating metrics...
 [2K[1A[2K[G⠦ Calculating metrics...
 [2K[1A[2K[G⠧ Calculating metrics...
-[2K[1A[2K[G⠇ Calculating metrics... (6/96) debug_output/qwant_analysis.txt
-[2K[1A[2K[G⠏ Calculating metrics... (8/96) debug_output/yahoo_analysis.txt
-[2K[1A[2K[G⠋ Calculating metrics... (8/96) debug_output/yahoo_analysis.txt
-[2K[1A[2K[G⠙ Calculating metrics... (12/96) resources/brave/brave_video.md
-[2K[1A[2K[G⠹ Calculating metrics... (15/96) resources/pplx/pplx.md
-[2K[1A[2K[G⠸ Calculating metrics... (15/96) resources/pplx/pplx.md
-[2K[1A[2K[G⠼ Calculating metrics... (19/96) resources/you/you.txt
-[2K[1A[2K[G⠴ Calculating metrics... (61/96) src/twat_search/web/models.py
-[2K[1A[2K[G⠦ Calculating metrics... (83/96) falla_search.py
+[2K[1A[2K[G⠇ Calculating metrics...
+[2K[1A[2K[G⠏ Calculating metrics...
+[2K[1A[2K[G⠋ Calculating metrics...
+[2K[1A[2K[G⠙ Calculating metrics... (2/96) .cursor/rules/cleanup.mdc
+[2K[1A[2K[G⠹ Calculating metrics... (6/96) debug_output/qwant_analysis.txt
+[2K[1A[2K[G⠸ Calculating metrics... (8/96) debug_output/yahoo_analysis.txt
+[2K[1A[2K[G⠼ Calculating metrics... (10/96) resources/brave/brave_image.md
+[2K[1A[2K[G⠴ Calculating metrics... (13/96) resources/brave/brave.md
+[2K[1A[2K[G⠦ Calculating metrics... (15/96) resources/pplx/pplx.md
+[2K[1A[2K[G⠧ Calculating metrics... (23/96) src/twat_search/web/engines/lib_falla/core/ask.
+py
+[2K[1A[2K[1A[2K[G⠇ Calculating metrics... (56/96) src/twat_search/web/api.py
+[2K[1A[2K[G⠏ Calculating metrics... (87/96) pyproject.toml
 [2K[1A[2K[G✔ Packing completed successfully!
 
 📈 Top 5 Files by Character Count and Token Count:
@@ -3291,8 +3354,8 @@ Please review these files for potential sensitive information.
 📊 Pack Summary:
 ────────────────
   Total Files: 96 files
-  Total Chars: 677,022 chars
- Total Tokens: 190,409 tokens
+  Total Chars: 678,332 chars
+ Total Tokens: 190,756 tokens
        Output: twat_search.txt
      Security: 1 suspicious file(s) detected and excluded
 
@@ -3301,4 +3364,4 @@ Your repository has been successfully packed.
 
 💡 Repomix is now available in your browser! Try it at https://repomix.com
 
-2025-03-04 07:05:27 - Repository content mixed into twat_search.txt
+2025-03-04 07:21:09 - Repository content mixed into twat_search.txt

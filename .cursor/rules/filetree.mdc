@@ -62,13 +62,13 @@ globs:
 │   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
 │   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
 │   │   ├── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
-│   │   └── [390K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
+│   │   └── [488K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
 │   └── [2.2M]  history.txt
-├── [3.3K]  CHANGELOG.md
+├── [2.1K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 20K]  README.md
-├── [7.0K]  TODO.md
+├── [9.2K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 12K]  cleanup.py
 ├── [6.3K]  debug_fetch.py
@@ -174,7 +174,7 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [667K]  twat_search.txt
+├── [666K]  twat_search.txt
 └── [195K]  uv.lock
 
 26 directories, 148 files
