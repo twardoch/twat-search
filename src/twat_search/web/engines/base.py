@@ -375,40 +375,72 @@ def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchE
     """
     Get an instance of a search engine by name.
 
+    This function looks up the engine class by name, then instantiates it
+    with the provided configuration and parameters.
+
     Args:
-        engine_name: The name of the engine to get.
-        config: Engine configuration.
-        **kwargs: Additional engine-specific parameters.
+        engine_name: Name of the engine to instantiate
+        config: Engine configuration
+        **kwargs: Additional engine-specific parameters
 
     Returns:
-        An instance of the requested search engine.
+        An instance of the requested search engine
 
     Raises:
-        EngineError: If the engine is not found or disabled.
+        EngineError: If the engine is not found, disabled, or fails to initialize
     """
-    engine_class = _engine_registry.get(engine_name)
+    # Get the registry of engines
+    engines = get_registered_engines()
+
+    # Standardize the engine name for lookup
+    from twat_search.web.engines import standardize_engine_name
+
+    std_engine_name = standardize_engine_name(engine_name)
+
+    # Try to find the engine class
+    engine_class = engines.get(std_engine_name)
+
+    # If not found with standardized name, try original name (for backward compatibility)
     if engine_class is None:
-        available_engines = ", ".join(sorted(_engine_registry.keys()))
-        msg = f"Unknown search engine: '{engine_name}'. Available engines: {available_engines}"
+        engine_class = engines.get(engine_name)
+
+    # If still not found, provide a helpful error message
+    if engine_class is None:
+        available_engines = ", ".join(sorted(engines.keys()))
+        msg = f"Engine '{engine_name}' not found. Available engines: {available_engines}"
+        logger.error(msg)
         raise EngineError(engine_name, msg)
 
-    # Check if the engine requires an API key
-    if hasattr(engine_class, "env_api_key_names") and engine_class.env_api_key_names:
-        # If no API key is provided in config, check environment variables
-        if not config.api_key:
-            logger.debug(f"No API key in config for {engine_name}, checking environment variables")
-            for env_var in engine_class.env_api_key_names:
-                env_value = os.environ.get(env_var)
-                if env_value:
-                    logger.debug(f"Found API key in environment variable {env_var}")
-                    # Update the config with the API key from environment
-                    config.api_key = env_value
-                    break
-
     try:
-        return engine_class(config, **kwargs)
+        # Check if the engine is enabled in the configuration
+        if not config.enabled:
+            msg = (
+                f"Engine '{engine_name}' is disabled in configuration. "
+                f"Enable it by setting the appropriate environment variable "
+                f"or updating the configuration."
+            )
+            logger.warning(msg)
+            raise EngineError(engine_name, msg)
+
+        # Try to instantiate the engine
+        engine_instance = engine_class(config, **kwargs)
+        logger.debug(f"Successfully initialized engine: {engine_name}")
+        return engine_instance
+    except EngineError as e:
+        # Re-raise EngineError with more context if needed
+        if "API key" in str(e):
+            # Provide more helpful information for API key errors
+            env_vars = getattr(engine_class, "env_api_key_names", [])
+            env_vars_str = ", ".join(env_vars) if env_vars else "No environment variables defined"
+            msg = f"{e!s} Environment variables for this engine: {env_vars_str}"
+            logger.error(msg)
+            raise EngineError(engine_name, msg) from e
+        # For other EngineError types, just re-raise
+        raise
     except Exception as e:
+        # For any other exception, wrap it in an EngineError with context
         msg = f"Failed to initialize engine '{engine_name}': {e}"
+        logger.error(msg)
         raise EngineError(engine_name, msg) from e
 
 

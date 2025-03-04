@@ -8,11 +8,15 @@ This module provides the Google search engine implementation for the Falla searc
 import logging
 import urllib.parse
 from pathlib import Path
-from typing import cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
-from bs4.element import Tag
+from bs4 import BeautifulSoup
+from bs4.element import ResultSet, Tag
 
 from twat_search.web.engines.lib_falla.core.falla import Falla
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -63,7 +67,7 @@ class Google(Falla):
             Title string
         """
         title_elem = elm.find("h3")
-        if title_elem:
+        if title_elem and isinstance(title_elem, Tag):
             return title_elem.get_text().strip()
         return ""
 
@@ -99,11 +103,11 @@ class Google(Falla):
         """
         # Try various snippet element selectors that Google might use
         snippet_elem = elm.find("div", {"class": "VwiC3b"})
-        if not snippet_elem:
+        if not snippet_elem or not isinstance(snippet_elem, Tag):
             snippet_elem = elm.find("span", {"class": "aCOpRe"})
-        if not snippet_elem:
+        if not snippet_elem or not isinstance(snippet_elem, Tag):
             snippet_elem = elm.find("div", {"class": "BNeawe s3v9rd AP7Wnd"})
-        if not snippet_elem:
+        if not snippet_elem or not isinstance(snippet_elem, Tag):
             # Try to find any text container that might hold a snippet
             text_containers = elm.find_all(["div", "span", "p"], class_=True)
             for container in text_containers:
@@ -119,6 +123,42 @@ class Google(Falla):
         if snippet_elem and isinstance(snippet_elem, Tag):
             return snippet_elem.get_text().strip()
         return ""
+
+    def get_each_elements(self, elements: ResultSet) -> list[dict[str, str]]:
+        """
+        Process a list of BeautifulSoup elements into search results.
+
+        Args:
+            elements: List of BeautifulSoup elements
+
+        Returns:
+            List of dictionaries containing search results
+        """
+        elements_list: list[dict[str, str]] = []
+
+        for elm in elements:
+            if not isinstance(elm, Tag):
+                continue
+
+            try:
+                title = self.get_title(elm)
+                link = self.get_link(elm)
+                snippet = self.get_snippet(elm)
+
+                # Only add if we have at least a title or link
+                if title or link:
+                    elements_list.append(
+                        {
+                            "title": title,
+                            "link": link,
+                            "snippet": snippet,
+                        },
+                    )
+            except Exception as e:
+                logger.debug(f"Error processing element: {e}")
+                continue
+
+        return elements_list
 
     async def search_async(self, query: str, pages: str = "") -> list[dict[str, str]]:
         """
@@ -155,16 +195,32 @@ class Google(Falla):
                 logger.info("Page loaded, waiting for selector...")
                 # Wait for selector
                 try:
-                    await page.wait_for_selector(self.wait_for_selector, timeout=10000)
-                    logger.info(f"Selector '{self.wait_for_selector}' found")
+                    if self.wait_for_selector:
+                        await page.wait_for_selector(self.wait_for_selector, timeout=10000)
+                        logger.info(f"Selector '{self.wait_for_selector}' found")
                 except Exception as e:
                     logger.warning(f"Timeout waiting for selector: {e}")
+
+                # Check for CAPTCHA
+                try:
+                    captcha_selector = 'form[action*="sorry/index"]'
+                    captcha_exists = await page.evaluate(f"""() => {{
+                        return !!document.querySelector('{captcha_selector}');
+                    }}""")
+
+                    if captcha_exists:
+                        logger.warning("CAPTCHA detected on Google search page")
+                        # Take a screenshot for debugging
+                        await page.screenshot(path="google_captcha.png")
+                        return []
+                except Exception as e:
+                    logger.error(f"Error checking for CAPTCHA: {e}")
 
                 # Get the page content
                 html_content = await page.content()
                 logger.info(f"Retrieved HTML content, length: {len(html_content)}")
 
-                # Save to file
+                # Save to file for debugging
                 debug_file = f"google_debug_{query.replace(' ', '_')}.html"
                 with open(debug_file, "w", encoding="utf-8") as f:
                     f.write(html_content)
@@ -208,8 +264,6 @@ class Google(Falla):
                 logger.warning("No results found with standard method, trying alternate parsing")
 
                 # Parse the saved HTML file
-                from bs4 import BeautifulSoup
-
                 if Path(debug_file).exists():
                     with open(debug_file, encoding="utf-8") as f:
                         html_content = f.read()
@@ -217,7 +271,7 @@ class Google(Falla):
                     soup = BeautifulSoup(html_content, "html.parser")
 
                     # Try various selectors
-                    alt_container_selectors = [
+                    alt_container_selectors: list[tuple[str, Mapping[str, Any]]] = [
                         ("div", {"class": "g"}),
                         ("div", {"class": "Gx5Zad"}),
                         ("div", {"class": "tF2Cxc"}),
@@ -237,6 +291,9 @@ class Google(Falla):
                             # Try to extract results with this selector
                             manual_results = []
                             for elem in elements[:10]:
+                                if not isinstance(elem, Tag):
+                                    continue
+
                                 title = self.get_title(elem) or ""
                                 link = self.get_link(elem) or ""
                                 snippet = self.get_snippet(elem) or ""
@@ -252,13 +309,13 @@ class Google(Falla):
                                     )
 
                             if manual_results:
-                                logger.info(f"Returning {len(manual_results)} manually parsed results")
+                                logger.info(f"Found {len(manual_results)} results with alternate parsing")
                                 return manual_results
 
             return results
-        finally:
-            # Clean up resources
-            await self._close_browser()
+        except Exception as e:
+            logger.error(f"Search failed: {e}", exc_info=True)
+            return []
 
     def search(self, query: str, pages: str = "") -> list[dict[str, str]]:
         """
@@ -274,54 +331,6 @@ class Google(Falla):
         url = self.get_url(query)
         if pages:
             url += f"&{pages}"
-
-        # Debug: Get raw HTML content and log key information
-        html_parser = self.parse_entry_point(url)
-        if html_parser:
-            # Log the HTML structure for debugging
-            html_content = str(html_parser)
-            logger.debug(f"Google search HTML content length: {len(html_content)}")
-            logger.debug(f"HTML Preview: {html_content[:500]}...")
-
-            # Debug: Try different selectors and log what we find
-            logger.debug("Testing various selectors:")
-
-            # Try the standard container selector
-            elements = html_parser.find_all(self.container_element[0], attrs=self.container_element[1])
-            logger.debug(f"Found {len(elements)} results with selector: div.g")
-
-            # Try alternative selectors
-            alt_selectors = [
-                ("div", {"class": "Gx5Zad"}),
-                ("div", {"class": "tF2Cxc"}),
-                ("div", {"jscontroller": "SC7lYd"}),
-                ("div", {"class": "yuRUbf"}),
-                ("div", {"class": "g"}),
-                ("div", {"class": "eKjLze"}),
-            ]
-
-            for selector_type, selector_attrs in alt_selectors:
-                alt_elements = html_parser.find_all(selector_type, attrs=selector_attrs)
-                attr_str = ", ".join([f"{k}={v}" for k, v in selector_attrs.items()])
-                logger.debug(f"Found {len(alt_elements)} results with selector: {selector_type}[{attr_str}]")
-
-                # If we found elements, check for titles and links
-                if alt_elements:
-                    for i, elem in enumerate(alt_elements[:3]):
-                        h3 = elem.find("h3")
-                        a = elem.find("a", href=True)
-                        logger.debug(f"Element {i}: h3={h3 is not None}, a={a is not None}")
-
-            # Create a debug file with the full HTML
-            try:
-                debug_file = f"google_debug_{query.replace(' ', '_')}_sync.html"
-                with open(debug_file, "w", encoding="utf-8") as f:
-                    f.write(html_content)
-                logger.info(f"Saved Google HTML content to: {debug_file}")
-            except Exception as e:
-                logger.error(f"Failed to save debug HTML: {e}")
-
-        # Continue with normal search process
         return self.fetch(url)
 
 

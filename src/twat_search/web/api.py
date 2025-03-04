@@ -52,9 +52,22 @@ def init_engine_task(
     query: str,
     config: Config,
     **kwargs: Any,
-) -> tuple[str, Coroutine[Any, Any, list[SearchResult]]]:
+) -> tuple[str, Coroutine[Any, Any, list[SearchResult]]] | None:
     """
     Initialize a search engine and create a task for searching.
+
+    This function handles the initialization of a search engine and creates
+    a coroutine for performing the search. It includes robust error handling
+    to prevent failures from affecting other engines.
+
+    Args:
+        engine_name: Name of the engine to initialize
+        query: Search query
+        config: Configuration object
+        **kwargs: Additional parameters for the engine
+
+    Returns:
+        A tuple of (engine_name, search_coroutine) or None if initialization fails
     """
     # Standardize engine name for lookups
     std_engine_name = standardize_engine_name(engine_name)
@@ -65,7 +78,7 @@ def init_engine_task(
         # Fallback to non-standardized name for backward compatibility
         engine_config = config.engines.get(engine_name)
         if not engine_config:
-            logger.warning(f"Engine '{engine_name}' not configured.")
+            logger.warning(f"Engine '{engine_name}' not configured, using default configuration.")
             engine_config = EngineConfig(enabled=True)
 
     # Extract the num_results from the kwargs if present
@@ -90,13 +103,34 @@ def init_engine_task(
         )
 
         logger.info(f"🔍 Querying engine: {engine_name}")
-        return engine_name, engine_instance.search(query)
+
+        # Create a wrapper coroutine that handles exceptions
+        async def search_with_error_handling() -> list[SearchResult]:
+            try:
+                return await engine_instance.search(query)
+            except Exception as e:
+                logger.error(f"Search with engine '{engine_name}' failed: {e}")
+                # Return empty results on failure instead of raising
+                return []
+
+        return engine_name, search_with_error_handling()
     except Exception as e:
-        logger.warning(
-            f"Failed to initialize engine '{engine_name}': {type(e).__name__}",
-        )
-        logger.error(f"Error initializing engine '{engine_name}': {e}")
-        raise
+        error_type = type(e).__name__
+        error_msg = str(e)
+
+        # Provide more specific error messages based on error type
+        if "API key" in error_msg:
+            logger.error(
+                f"Failed to initialize engine '{engine_name}': Missing or invalid API key. "
+                f"Check your environment variables or configuration.",
+            )
+        elif "disabled" in error_msg:
+            logger.warning(f"Engine '{engine_name}' is disabled. Enable it in your configuration to use it.")
+        else:
+            logger.error(f"Failed to initialize engine '{engine_name}': {error_type}: {error_msg}")
+
+        # Return None to indicate initialization failure
+        return None
 
 
 async def search(
@@ -171,7 +205,7 @@ async def search(
         for engine_name in engines_to_try:
             try:
                 # Pass all parameters including kwargs to init_engine_task
-                task = init_engine_task(
+                task_result = init_engine_task(
                     engine_name,
                     query,
                     config,
@@ -180,11 +214,16 @@ async def search(
                     num_results=num_results,
                     **kwargs,
                 )
-                if task is not None:
-                    engine_names.append(task[0])
-                    tasks.append(task[1])
+
+                # Check if initialization was successful
+                if task_result is not None:
+                    engine_names.append(task_result[0])
+                    tasks.append(task_result[1])
+                else:
+                    # Engine initialization failed
+                    failed_engines.append(engine_name)
             except Exception as e:
-                logger.warning(f"Failed to initialize engine '{engine_name}': {e}")
+                logger.warning(f"Unexpected error initializing engine '{engine_name}': {e}")
                 failed_engines.append(engine_name)
                 continue  # Log the exception and continue
 
@@ -207,7 +246,7 @@ async def search(
             for engine_name in get_registered_engines():
                 try:
                     # Pass all parameters including kwargs to init_engine_task
-                    task = init_engine_task(
+                    task_result = init_engine_task(
                         engine_name,
                         query,
                         config,
@@ -216,12 +255,15 @@ async def search(
                         num_results=num_results,
                         **kwargs,
                     )
-                    if task is not None:
-                        engine_names.append(task[0])
-                        tasks.append(task[1])
+
+                    # Check if initialization was successful
+                    if task_result is not None:
+                        engine_names.append(task_result[0])
+                        tasks.append(task_result[1])
+                        logger.info(f"Successfully fell back to engine: {engine_name}")
                         break
                 except Exception as e:
-                    logger.debug(f"Failed to initialize engine {engine_name}: {e}")
+                    logger.debug(f"Failed to initialize fallback engine {engine_name}: {e}")
                     continue
 
             if not tasks:
@@ -229,6 +271,7 @@ async def search(
                 logger.error(msg)
                 raise SearchError(msg)
 
+        # Execute all search tasks concurrently
         results = await asyncio.gather(*tasks, return_exceptions=True)
 
         for engine_name, result in zip(engine_names, results, strict=False):
@@ -237,16 +280,24 @@ async def search(
                     f"Search with engine '{engine_name}' failed: {result}",
                 )
             elif isinstance(result, list):
-                logger.info(
-                    f"✅ Engine '{engine_name}' returned {len(result)} results",
-                )
-                flattened_results.extend(result)
+                result_count = len(result)
+                if result_count > 0:
+                    logger.info(
+                        f"✅ Engine '{engine_name}' returned {result_count} results",
+                    )
+                    flattened_results.extend(result)
+                else:
+                    logger.info(
+                        f"⚠️ Engine '{engine_name}' returned no results",
+                    )
             else:
-                logger.info(
-                    f"⚠️ Engine '{engine_name}' returned no results or unexpected type: {type(result)}",
+                logger.warning(
+                    f"⚠️ Engine '{engine_name}' returned unexpected type: {type(result)}",
                 )
     except Exception as e:
         logger.error(f"Search failed: {e}")
         raise
 
+    # Log the total number of results found
+    logger.info(f"Total results found across all engines: {len(flattened_results)}")
     return flattened_results

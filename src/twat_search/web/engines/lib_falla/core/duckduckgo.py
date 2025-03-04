@@ -1,6 +1,7 @@
 # Falla-DuckDuckGo
 # Sanix-darker
 
+import asyncio
 import logging
 import urllib.parse
 
@@ -20,7 +21,7 @@ class DuckDuckGo(Falla):
         self.use_method = "playwright"
         # Use the HTML version of DuckDuckGo which is more reliable for scraping
         self.container_element = ("div", {"class": "result"})
-        self.wait_for_selector = "body"
+        self.wait_for_selector = ".results"
         # Increase timeout for DuckDuckGo which can be slow to load
         self.max_retries = 5
 
@@ -38,9 +39,84 @@ class DuckDuckGo(Falla):
         base_url = "https://html.duckduckgo.com/html/"
         params = {
             "q": query,
+            "kl": "us-en",  # Region and language
         }
         query_string = urllib.parse.urlencode(params)
         return f"{base_url}?{query_string}"
+
+    async def _fetch_page(self, url: str) -> str:
+        """
+        Override _fetch_page to handle DuckDuckGo challenges.
+
+        Args:
+            url: URL to fetch
+
+        Returns:
+            HTML content as string
+        """
+        page = None
+        try:
+            await self._initialize_browser()
+            if not self.browser_context:
+                logger.error("Browser context not initialized")
+                return ""
+
+            page = await self.browser_context.new_page()
+
+            # Set timeout for navigation to prevent hanging
+            await page.goto(url, timeout=30000, wait_until="domcontentloaded")
+
+            # Check for and handle CAPTCHA or challenge page
+            try:
+                # Look for common challenge indicators
+                challenge_selectors = [
+                    'form[action*="challenge"]',
+                    'input[name="g-recaptcha-response"]',
+                    ".challenge-form",
+                    'div[class*="captcha"]',
+                ]
+
+                for selector in challenge_selectors:
+                    challenge_exists = await page.evaluate(f"""() => {{
+                        return !!document.querySelector('{selector}');
+                    }}""")
+
+                    if challenge_exists:
+                        logger.warning(f"Challenge detected on DuckDuckGo using selector: {selector}")
+                        # Take a screenshot for debugging
+                        await page.screenshot(path="duckduckgo_challenge.png")
+                        # Try to save the HTML content for analysis
+                        html_content = await page.content()
+                        with open("duckduckgo_challenge.html", "w", encoding="utf-8") as f:
+                            f.write(html_content)
+                        logger.info("Saved challenge page content for debugging")
+                        break
+            except Exception as e:
+                logger.debug(f"Error checking for challenges: {e}")
+
+            # Wait for results to load
+            try:
+                if self.wait_for_selector:
+                    logger.info(f"Waiting for selector: {self.wait_for_selector}")
+                    await page.wait_for_selector(self.wait_for_selector, timeout=5000)
+                else:
+                    await asyncio.sleep(2)
+            except Exception as e:
+                logger.warning(f"Timeout waiting for selector in {self.name}: {e}")
+
+            # Get the page content
+            return await page.content()
+        except Exception as e:
+            logger.error(f"Error fetching page with Playwright: {e}")
+            self.current_retry += 1
+            if self.current_retry < self.max_retries:
+                # Wait before retrying
+                await asyncio.sleep(2)
+                return await self._fetch_page(url)
+            return ""
+        finally:
+            if page:
+                await page.close()
 
     def get_title(self, elm: Tag) -> str:
         """
