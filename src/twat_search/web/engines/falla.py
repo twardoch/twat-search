@@ -14,6 +14,7 @@ import logging
 from typing import Any, ClassVar, cast
 
 from pydantic import HttpUrl
+from twat_cache import ucache
 
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.engines.lib_falla.core import (
@@ -114,6 +115,7 @@ class FallaSearchEngine(SearchEngine):
         # that handles initialization without explicit parameters
         return self._falla_engine_class()
 
+    @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
     async def search(self, query: str, **_kwargs: Any) -> list[SearchResult]:
         """
         Perform a search using the Falla engine.

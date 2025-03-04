@@ -4,6 +4,7 @@ from typing import Any, ClassVar
 
 import httpx
 from pydantic import BaseModel, HttpUrl, ValidationError
+from twat_cache import ucache
 
 from twat_search.web.config import EngineConfig
 from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
@@ -53,6 +54,7 @@ class BaseBraveEngine(SearchEngine):
             language=language,
             safe_search=safe_search,
             time_frame=time_frame,
+            **kwargs,
         )
         # Maximum allowed results from Brave Search API is 20
         self.max_brave_results = 20
@@ -70,6 +72,7 @@ class BaseBraveEngine(SearchEngine):
             "X-Subscription-Token": self.config.api_key,
         }
 
+    @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
     async def search(self, query: str) -> list[SearchResult]:
         # Request at most 20 (API limit), respect the requested number exactly
         count_param = min(self.max_brave_results, self.num_results)
@@ -80,10 +83,10 @@ class BaseBraveEngine(SearchEngine):
             params["search_lang"] = self.search_lang
         if self.ui_lang:
             params["ui_lang"] = self.ui_lang
-        if self.safe_search:
-            params["safe_search"] = self.safe_search
         if self.freshness:
             params["freshness"] = self.freshness
+        if self.safe_search is not None:
+            params["safe_search"] = str(self.safe_search).lower()
 
         # Add debug logging to see the exact params we're sending
 

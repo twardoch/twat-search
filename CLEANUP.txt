@@ -9396,7 +9396,6 @@ o.py
 ──────────────────
 1 suspicious file(s) detected and excluded from the output:
 1. .specstory/history.txt
-   - found OpenAI API token: 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
 
 These files have been excluded from the output for security reasons.
 Please review these files for potential sensitive information.

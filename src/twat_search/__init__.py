@@ -19,6 +19,17 @@ except ImportError:
     __version__ = "0.1.0"  # Fallback version
     __all__.append("__version__")
 
+# Configure twat_cache if available
+try:
+    import twat_cache
+
+    from twat_search.paths import get_cache_dir
+
+    # Configure twat_cache to use the paths from twat_os
+    twat_cache.utils.get_cache_path = lambda *args, **kwargs: get_cache_dir()
+except ImportError:
+    pass  # twat_cache is not installed, no configuration needed
+
 # Import submodules if available
 try:
     from twat_search import web

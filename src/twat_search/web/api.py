@@ -4,6 +4,8 @@ import asyncio
 import logging
 from typing import TYPE_CHECKING, Any
 
+from twat_cache import ucache
+
 from twat_search.web.config import Config, EngineConfig
 from twat_search.web.engines import standardize_engine_name
 from twat_search.web.engines.base import SearchEngine, get_engine, get_registered_engines
@@ -133,6 +135,7 @@ def init_engine_task(
         return None
 
 
+@ucache(maxsize=1000, ttl=3600)  # Cache 1000 searches for 1 hour
 async def search(
     query: str,
     engines: list[str] | None = None,
