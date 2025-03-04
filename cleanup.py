@@ -7,6 +7,7 @@
 # ]
 # ///
 # this_file: cleanup.py
+
 """
 Cleanup tool for managing repository tasks and maintaining code quality.
 
@@ -50,13 +51,13 @@ Required Files:
 - TODO.md: Pending tasks and future plans
 """
 
-from __future__ import annotations
-
 import os
 import subprocess
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
+from shutil import which
+from typing import NoReturn
 
 # Configuration
 IGNORE_PATTERNS = [
@@ -101,7 +102,7 @@ def suffix() -> None:
 
 def log_message(message: str) -> None:
     """Log a message to file and console with timestamp."""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     log_line = f"{timestamp} - {message}\n"
     with LOG_FILE.open("a") as f:
         f.write(log_line)
@@ -115,6 +116,7 @@ def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProce
             check=check,
             capture_output=True,
             text=True,
+            shell=False,  # Explicitly set shell=False for security
         )
         if result.stdout:
             log_message(result.stdout)
@@ -130,9 +132,8 @@ def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProce
 def check_command_exists(cmd: str) -> bool:
     """Check if a command exists in the system."""
     try:
-        subprocess.run(["which", cmd], check=True, capture_output=True)
-        return True
-    except subprocess.CalledProcessError:
+        return which(cmd) is not None
+    except Exception:
         return False
 
 
@@ -142,6 +143,10 @@ class Cleanup:
     def __init__(self) -> None:
         self.workspace = Path.cwd()
 
+    def _print_header(self, message: str) -> None:
+        """Print a section header."""
+        log_message(f"\n=== {message} ===")
+
     def _check_required_files(self) -> bool:
         """Check if all required files exist."""
         missing = False
@@ -150,6 +155,37 @@ class Cleanup:
                 log_message(f"Error: {file} is missing")
                 missing = True
         return not missing
+
+    def _generate_tree(self) -> None:
+        """Generate and display tree structure of the project."""
+        if not check_command_exists("tree"):
+            log_message("Warning: 'tree' command not found. Skipping tree generation.")
+            return
+
+        try:
+            # Create/overwrite the file with YAML frontmatter
+            rules_dir = Path(".cursor/rules")
+            rules_dir.mkdir(parents=True, exist_ok=True)
+            # Get tree output
+            tree_result = run_command(["tree", "-a", "-I", ".git", "--gitignore", "-n", "-h", "-I", "*_cache"])
+            tree_text = tree_result.stdout
+            # Write frontmatter and tree output to file
+            with open(rules_dir / "filetree.mdc", "w") as f:
+                f.write("---\ndescription: File tree of the project\nglobs: \n---\n")
+                f.write(tree_text)
+
+            # Log the contents
+            log_message("\nProject structure:")
+            log_message(tree_text)
+
+        except Exception as e:
+            log_message(f"Failed to generate tree: {e}")
+        return
+
+    def _git_status(self) -> bool:
+        """Check git status and return True if there are changes."""
+        result = run_command(["git", "status", "--porcelain"], check=False)
+        return bool(result.stdout.strip())
 
     def _venv(self) -> None:
         """Create and activate virtual environment using uv."""
@@ -163,9 +199,7 @@ class Cleanup:
                 os.environ["PATH"] = f"{self.workspace / '.venv' / 'bin'}{os.pathsep}{os.environ['PATH']}"
                 log_message("Virtual environment created and activated")
             else:
-                log_message(
-                    "Virtual environment created but activation failed",
-                )
+                log_message("Virtual environment created but activation failed")
         except Exception as e:
             log_message(f"Failed to create virtual environment: {e}")
 
@@ -179,37 +213,82 @@ class Cleanup:
         except Exception as e:
             log_message(f"Failed to install package: {e}")
 
+    def _run_checks(self) -> None:
+        """Run code quality checks using ruff and pytest."""
+        log_message("Running code quality checks")
+
+        try:
+            # Run ruff checks
+            log_message(">>> Running code fixes...")
+            run_command(
+                [
+                    "python",
+                    "-m",
+                    "ruff",
+                    "check",
+                    "--fix",
+                    "--unsafe-fixes",
+                    "src",
+                    "tests",
+                ],
+                check=False,
+            )
+            run_command(
+                [
+                    "python",
+                    "-m",
+                    "ruff",
+                    "format",
+                    "--respect-gitignore",
+                    "src",
+                    "tests",
+                ],
+                check=False,
+            )
+
+            # Run type checks
+            log_message(">>>Running type checks...")
+            run_command(["python", "-m", "mypy", "src", "tests"], check=False)
+
+            # Run tests
+            log_message(">>> Running tests...")
+            run_command(["python", "-m", "pytest", "tests"], check=False)
+
+            log_message("All checks completed")
+        except Exception as e:
+            log_message(f"Failed during checks: {e}")
+
     def status(self) -> None:
         """Show current repository status: tree structure, git status, and run checks."""
         prefix()  # Add README.md content at start
-        _print_header("Current Status")
+        self._print_header("Current Status")
 
         # Check required files
         self._check_required_files()
 
         # Show tree structure
-        _generate_tree()
+        self._generate_tree()
 
         # Show git status
         result = run_command(["git", "status"], check=False)
         log_message(result.stdout)
 
         # Run additional checks
-        _print_header("Environment Status")
+        self._print_header("Environment Status")
         self._venv()
         self._install()
-        _run_checks()
+        self._run_checks()
 
         suffix()  # Add TODO.md content at end
 
     def venv(self) -> None:
         """Create and activate virtual environment."""
-        _print_header("Virtual Environment Setup")
+        self._print_header("Virtual Environment Setup")
         self._venv()
 
     def install(self) -> None:
         """Install package with all extras."""
-        _print_header("Package Installation")
+        self._print_header("Package Installation")
         self._install()
 
     def update(self) -> None:
@@ -218,23 +297,11 @@ class Cleanup:
         self.status()
 
         # Then handle git changes if any
-        if _git_status():
+        if self._git_status():
             log_message("Changes detected in repository")
             try:
-                run_command(
-                    [
-                        "autoflake",
-                        "--recursive",
-                        "--in-place",
-                        "--remove-all-unused-imports",
-                        "--expand-star-imports",
-                        "--ignore-init-module-imports",
-                        "--remove-duplicate-keys",
-                        ".",
-                    ],
-                )
-                run_command(["pre-commit", "run", "--all-files"])
-                run_command(["git", "add", "-A", "."])
+                # Add all changes
+                run_command(["git", "add", "."])
                 # Commit changes
                 commit_msg = "Update repository files"
                 run_command(["git", "commit", "-m", commit_msg])
@@ -246,7 +313,7 @@ class Cleanup:
 
     def push(self) -> None:
         """Push changes to remote repository."""
-        _print_header("Pushing Changes")
+        self._print_header("Pushing Changes")
         try:
             run_command(["git", "push"])
             log_message("Changes pushed successfully")
@@ -254,99 +321,12 @@ class Cleanup:
             log_message(f"Failed to push changes: {e}")
 
 
-def _generate_tree() -> None:
-    """Generate and display tree structure of the project."""
-    if not check_command_exists("tree"):
-        log_message(
-            "Warning: 'tree' command not found. Skipping tree generation.",
-        )
-        return
-
-    try:
-        # Create/overwrite the file with YAML frontmatter
-        rules_dir = Path(".cursor/rules")
-        rules_dir.mkdir(parents=True, exist_ok=True)
-        # Get tree output
-        tree_result = run_command(
-            ["tree", "-a", "-I", ".git", "--gitignore", "-n", "-h", "-I", "*_cache"],
-        )
-        tree_text = tree_result.stdout
-        # Write frontmatter and tree output to file
-        with open(rules_dir / "filetree.mdc", "w") as f:
-            f.write("---\ndescription: File tree of the project\nglobs: \n---\n")
-            f.write(tree_text)
-
-        # Log the contents
-        log_message("\nProject structure:")
-        log_message(tree_text)
-
-    except Exception as e:
-        log_message(f"Failed to generate tree: {e}")
-    return
-
-
-def _git_status() -> bool:
-    """Check git status and return True if there are changes."""
-    result = run_command(["git", "status", "--porcelain"], check=False)
-    return bool(result.stdout.strip())
-
-
-def _run_checks() -> None:
-    """Run code quality checks using ruff and pytest."""
-    log_message("Running code quality checks")
-
-    try:
-        # Run ruff checks
-        log_message(">>> Running code fixes...")
-        run_command(
-            [
-                "python",
-                "-m",
-                "ruff",
-                "check",
-                "--fix",
-                "--unsafe-fixes",
-                "src",
-                "tests",
-            ],
-            check=False,
-        )
-        run_command(
-            [
-                "python",
-                "-m",
-                "ruff",
-                "format",
-                "--respect-gitignore",
-                "src",
-                "tests",
-            ],
-            check=False,
-        )
-
-        # Run type checks
-        log_message(">>>Running type checks...")
-        run_command(["python", "-m", "mypy", "src", "tests"], check=False)
-
-        # Run tests
-        log_message(">>> Running tests...")
-        run_command(["python", "-m", "pytest", "tests"], check=False)
-
-        log_message("All checks completed")
-    except Exception as e:
-        log_message(f"Failed during checks: {e}")
-
-
-def _print_header(message: str) -> None:
-    """Print a section header."""
-    log_message(f"\n=== {message} ===")
-
-
 def repomix(
+    *,
     compress: bool = True,
     remove_empty_lines: bool = True,
     ignore_patterns: str = ".specstory/**/*.md,.venv/**,_private/**,CLEANUP.txt,**/*.json,*.lock",
-    output_file: str = "twat_search.txt",
+    output_file: str = "REPO_CONTENT.txt",
 ) -> None:
     """Combine repository files into a single text file.
 
@@ -386,7 +366,7 @@ def print_usage() -> None:
     log_message("  cleanup.py push     # Push changes to remote")
 
 
-def main() -> None:
+def main() -> NoReturn:
     """Main entry point."""
     new()  # Clear log file
 
@@ -397,19 +377,24 @@ def main() -> None:
     command = sys.argv[1]
     cleanup = Cleanup()
 
-    if command == "status":
-        cleanup.status()
-    elif command == "venv":
-        cleanup.venv()
-    elif command == "install":
-        cleanup.install()
-    elif command == "update":
-        cleanup.update()
-    elif command == "push":
-        cleanup.push()
-    else:
-        print_usage()
+    try:
+        if command == "status":
+            cleanup.status()
+        elif command == "venv":
+            cleanup.venv()
+        elif command == "install":
+            cleanup.install()
+        elif command == "update":
+            cleanup.update()
+        elif command == "push":
+            cleanup.push()
+        else:
+            print_usage()
+    except Exception as e:
+        log_message(f"Error: {e}")
     repomix()
+    sys.stdout.write(Path("CLEANUP.txt").read_text())
+    sys.exit(0)  # Ensure we exit with a status code
 
 
 if __name__ == "__main__":

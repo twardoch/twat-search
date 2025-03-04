@@ -2,9 +2,12 @@
 this_file: TODO.md
 --- 
 
-# TODO List
+# TODO
 
-## High Priority
+Tip: Periodically run `./cleanup.py status` to see results of lints and tests. Use `uv pip ...` not `pip ...`
+
+
+## Phase 1
 
 - [ ] Fix Falla-based search engines
   - [ ] Resolve Playwright dependency issues (ModuleNotFoundError: No module named 'playwright')
@@ -28,7 +31,7 @@ this_file: TODO.md
   - [ ] Add proxy support for browser-based engines
   - [ ] Implement specific exception handling for common Playwright errors
 
-## Medium Priority
+## Phase 2
 
 - [ ] Improve code quality
   - [ ] Refactor CLI module to reduce complexity

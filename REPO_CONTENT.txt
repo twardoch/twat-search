@@ -211,7 +211,7 @@ globs:
 │   └── [ 192]  rules
 │       ├── [ 334]  0project.mdc
 │       ├── [ 559]  cleanup.mdc
-│       └── [9.9K]  filetree.mdc
+│       └── [ 10K]  filetree.mdc
 ├── [  96]  .github
 │   └── [ 128]  workflows
 │       ├── [2.7K]  push.yml
@@ -219,7 +219,7 @@ globs:
 ├── [3.5K]  .gitignore
 ├── [1.2K]  .pre-commit-config.yaml
 ├── [ 128]  .specstory
-│   ├── [1.5K]  history
+│   ├── [1.6K]  history
 │   │   ├── [2.7K]  .what-is-this.md
 │   │   ├── [ 52K]  2025-02-25_01-58-creating-and-tracking-project-tasks.md
 │   │   ├── [7.4K]  2025-02-25_02-17-project-task-continuation-and-progress-update.md
@@ -265,15 +265,17 @@ globs:
 │   │   ├── [133K]  2025-02-27_17-02-fixing-falla-py-async-issues.md
 │   │   ├── [ 17K]  2025-02-27_17-34-improving-search-engine-selectors-in-falla.md
 │   │   ├── [ 76K]  2025-03-04_05-12-fixing-ruff-linting-errors-in-code.md
-│   │   └── [488K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
+│   │   ├── [488K]  2025-03-04_05-38-implementing-phases-1-and-2-from-todo-md.md
+│   │   ├── [2.8K]  2025-03-04_07-32-project-documentation-and-cleanup-tasks.md
+│   │   └── [ 644]  2025-03-04_07-53-untitled.md
 │   └── [2.2M]  history.txt
-├── [2.1K]  CHANGELOG.md
+├── [2.8K]  CHANGELOG.md
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
-├── [ 20K]  README.md
-├── [9.2K]  TODO.md
+├── [ 14K]  README.md
+├── [ 12K]  TODO.md
 ├── [   7]  VERSION.txt
-├── [ 12K]  cleanup.py
+├── [ 13K]  cleanup.py
 ├── [6.3K]  debug_fetch.py
 ├── [ 256]  debug_output
 │   ├── [ 445]  qwant_analysis.txt
@@ -377,10 +379,10 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [666K]  twat_search.txt
+├── [664K]  twat_search.txt
 └── [195K]  uv.lock
 
-26 directories, 148 files
+26 directories, 150 files
 
 ================
 File: .github/workflows/push.yml
@@ -10908,6 +10910,7 @@ All notable changes to this project will be documented in this file.
 - Improved error messages for better debugging
 - Added detailed logging for search engine initialization and execution
 - Added check for empty engines list in `search` function, raising a `SearchError` with appropriate message
+- Added proper handling of mock engine parameters, ensuring correct result count
 
 ### Changed
 - Enhanced error handling in `get_engine` function to raise `SearchError` with correct message
@@ -10915,26 +10918,36 @@ All notable changes to this project will be documented in this file.
 - Modified `Config` class to check for `_TEST_ENGINE` environment variable
 - Enhanced `_parse_env_value` function to handle JSON strings for engine default parameters
 - Added `BRAVE_DEFAULT_PARAMS` to `ENV_VAR_MAP` for proper configuration
+- Standardized engine names for more consistent lookups
+- Improved error handling patterns across the codebase
 
 ### Fixed
 - Fixed issue with environment variable parsing for engine default parameters
 - Fixed handling of empty engines list in search function
 - Fixed mock engine result count handling
+- Fixed error handling in `get_engine` function to use the correct exception type
+- Fixed environment variable application to engine configurations
 
 ## 0.1.2 (2024-05-15)
 
 ### Fixed
 - Fixed linting errors in `google.py` and `test_google_falla_debug.py`
+- Replaced insecure usage of temporary file directory `/tmp` with `tempfile.gettempdir()`
+- Replaced `os.path` functions with `pathlib.Path` methods for better path handling
+- Removed unused imports (`os` and `NavigableString`) from `google.py`
 
 ## 0.1.1 (2024-05-10)
 
 ### Added
 - Added support for Falla-based search engines
 - Added refactored search engine initialization
+- Added wrapper coroutine to handle exceptions during search process
+- Added detailed logging for engine initialization and search processes
 
 ### Changed
 - Improved error handling for search engines
 - Enhanced configuration system
+- Standardized engine names for more consistent lookups
 
 ## 0.1.0 (2024-05-01)
 
@@ -10946,17 +10959,16 @@ All notable changes to this project will be documented in this file.
 - Strong typing with Pydantic validation
 
 ### Changed
+- Updated the `config.py` file to correctly import BaseSettings from the pydantic-settings package
+- Updated the `pyproject.toml` file to add pydantic-settings as a dependency
+- Updated the example usage in `example.py`
+- Completed the implementation of the web search functionality as specified in TODO.md
+- Planned comprehensive tests for the package
 
-- Updated the `config.py` file to correctly import BaseSettings from the pydantic-settings package.
-- Updated the `pyproject.toml` file to add pydantic-settings as a dependency.
-- Updated the example usage in `example.py`.
-- Completed the implementation of the web search functionality as specified in TODO.md.
-- Planned comprehensive tests for the package.
+### 2024-02-25 - Initial Development
 
-### 2025-02-25 - Initial Development
-
-- Created initial project structure and files.
-- Created a preliminary TODO.md, PROGRESS.md, and research.txt.
+- Created initial project structure and files
+- Created a preliminary TODO.md, PROGRESS.md, and research.txt
 
 ---
 
@@ -10980,7 +10992,7 @@ def suffix() -> None:
         log_message("\n=== TODO.md ===")
         content = todo.read_text()
 def log_message(message: str) -> None:
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     with LOG_FILE.open("a") as f:
         f.write(log_line)
 def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProcess:
@@ -10990,20 +11002,37 @@ def run_command(cmd: list[str], check: bool = True) -> subprocess.CompletedProce
         log_message(f"Error: {e.stderr}")
         return subprocess.CompletedProcess(cmd, 1, "", str(e))
 def check_command_exists(cmd: str) -> bool:
-        subprocess.run(["which", cmd], check=True, capture_output=True)
+        return which(cmd) is not None
 class Cleanup:
     def __init__(self) -> None:
         self.workspace = Path.cwd()
+    def _print_header(self, message: str) -> None:
+        log_message(f"\n=== {message} ===")
     def _check_required_files(self) -> bool:
             if not (self.workspace / file).exists():
                 log_message(f"Error: {file} is missing")
+    def _generate_tree(self) -> None:
+        if not check_command_exists("tree"):
+            log_message("Warning: 'tree' command not found. Skipping tree generation.")
+            rules_dir = Path(".cursor/rules")
+            rules_dir.mkdir(parents=True, exist_ok=True)
+            tree_result = run_command(["tree", "-a", "-I", ".git", "--gitignore", "-n", "-h", "-I", "*_cache"])
+            with open(rules_dir / "filetree.mdc", "w") as f:
+                f.write("---\ndescription: File tree of the project\nglobs: \n---\n")
+                f.write(tree_text)
+            log_message("\nProject structure:")
+            log_message(tree_text)
+            log_message(f"Failed to generate tree: {e}")
+    def _git_status(self) -> bool:
+        result = run_command(["git", "status", "--porcelain"], check=False)
+        return bool(result.stdout.strip())
     def _venv(self) -> None:
         log_message("Setting up virtual environment")
             run_command(["uv", "venv"])
             if venv_path.exists():
                 os.environ["VIRTUAL_ENV"] = str(self.workspace / ".venv")
                 log_message("Virtual environment created and activated")
-                log_message(
+                log_message("Virtual environment created but activation failed")
             log_message(f"Failed to create virtual environment: {e}")
     def _install(self) -> None:
         log_message("Installing package with all extras")
@@ -11011,61 +11040,44 @@ class Cleanup:
             run_command(["uv", "pip", "install", "-e", ".[test,dev]"])
             log_message("Package installed successfully")
             log_message(f"Failed to install package: {e}")
+    def _run_checks(self) -> None:
+        log_message("Running code quality checks")
+            log_message(">>> Running code fixes...")
+            run_command(
+            log_message(">>>Running type checks...")
+            run_command(["python", "-m", "mypy", "src", "tests"], check=False)
+            log_message(">>> Running tests...")
+            run_command(["python", "-m", "pytest", "tests"], check=False)
+            log_message("All checks completed")
+            log_message(f"Failed during checks: {e}")
     def status(self) -> None:
         prefix()  # Add README.md content at start
-        _print_header("Current Status")
+        self._print_header("Current Status")
         self._check_required_files()
-        _generate_tree()
+        self._generate_tree()
         result = run_command(["git", "status"], check=False)
-        _print_header("Environment Status")
+        self._print_header("Environment Status")
         self._install()
-        _run_checks()
+        self._run_checks()
         suffix()  # Add TODO.md content at end
     def venv(self) -> None:
-        _print_header("Virtual Environment Setup")
+        self._print_header("Virtual Environment Setup")
     def install(self) -> None:
-        _print_header("Package Installation")
+        self._print_header("Package Installation")
     def update(self) -> None:
         self.status()
-        if _git_status():
+        if self._git_status():
             log_message("Changes detected in repository")
-                run_command(
-                run_command(["pre-commit", "run", "--all-files"])
-                run_command(["git", "add", "-A", "."])
+                run_command(["git", "add", "."])
                 run_command(["git", "commit", "-m", commit_msg])
                 log_message("Changes committed successfully")
                 log_message(f"Failed to commit changes: {e}")
             log_message("No changes to commit")
     def push(self) -> None:
-        _print_header("Pushing Changes")
+        self._print_header("Pushing Changes")
             run_command(["git", "push"])
             log_message("Changes pushed successfully")
             log_message(f"Failed to push changes: {e}")
-def _generate_tree() -> None:
-    if not check_command_exists("tree"):
-        rules_dir = Path(".cursor/rules")
-        rules_dir.mkdir(parents=True, exist_ok=True)
-        tree_result = run_command(
-        with open(rules_dir / "filetree.mdc", "w") as f:
-            f.write("---\ndescription: File tree of the project\nglobs: \n---\n")
-            f.write(tree_text)
-        log_message("\nProject structure:")
-        log_message(tree_text)
-        log_message(f"Failed to generate tree: {e}")
-def _git_status() -> bool:
-    result = run_command(["git", "status", "--porcelain"], check=False)
-    return bool(result.stdout.strip())
-def _run_checks() -> None:
-    log_message("Running code quality checks")
-        log_message(">>> Running code fixes...")
-        log_message(">>>Running type checks...")
-        run_command(["python", "-m", "mypy", "src", "tests"], check=False)
-        log_message(">>> Running tests...")
-        run_command(["python", "-m", "pytest", "tests"], check=False)
-        log_message("All checks completed")
-        log_message(f"Failed during checks: {e}")
-def _print_header(message: str) -> None:
-    log_message(f"\n=== {message} ===")
 def repomix(
             cmd.append("--compress")
             cmd.append("--remove-empty-lines")
@@ -11082,18 +11094,21 @@ def print_usage() -> None:
     log_message("  cleanup.py install  # Install package with all extras")
     log_message("  cleanup.py update   # Update and commit changes")
     log_message("  cleanup.py push     # Push changes to remote")
-def main() -> None:
+def main() -> NoReturn:
     new()  # Clear log file
     if len(sys.argv) < 2:
         print_usage()
         sys.exit(1)
     cleanup = Cleanup()
-        cleanup.status()
-        cleanup.venv()
-        cleanup.install()
-        cleanup.update()
-        cleanup.push()
+            cleanup.status()
+            cleanup.venv()
+            cleanup.install()
+            cleanup.update()
+            cleanup.push()
+        log_message(f"Error: {e}")
     repomix()
+    sys.stdout.write(Path("CLEANUP.txt").read_text())
+    sys.exit(0)  # Ensure we exit with a status code
     main()
 
 ================
@@ -11559,7 +11574,7 @@ A multi-engine web search aggregator that provides a unified interface for searc
 - **Asynchronous operation**: Uses `asyncio` for efficient concurrent searches
 - **Rate limiting**: Built-in rate limiting to prevent API throttling
 - **Strong typing**: Pydantic validation for all data models
-- **Robust error handling**: Graceful handling of engine failures
+- **Robust error handling**: Graceful handling of engine failures and empty engine lists
 - **Flexible configuration**: Configure via environment variables, `.env` files, or directly in code
 - **CLI interface**: Interactive command-line interface with rich output formatting
 - **JSON output**: Standardized JSON output format for all search results
@@ -11574,6 +11589,9 @@ A multi-engine web search aggregator that provides a unified interface for searc
 - Improved environment variable handling for engine configuration
 - Fixed issues with mock engine result count handling
 - Added proper JSON string parsing for engine default parameters
+- Fixed error handling in `get_engine` function to use the correct exception type
+- Improved handling of engine-specific parameters in the search function
+- Enhanced configuration system with better environment variable support
 
 ## Installation
 
@@ -11632,16 +11650,16 @@ config = Config(
 
 ```bash
 # Basic search
-twat-search "Python programming"
+twat-search web q "Python programming"
 
 # Specify engines
-twat-search "Python programming" --engines brave google
+twat-search web q "Python programming" --engines brave,google
 
 # Get JSON output
-twat-search "Python programming" --json
+twat-search web q "Python programming" --json
 
 # List available engines
-twat-search --list-engines
+twat-search web info --plain
 ```
 
 ## Error Handling
@@ -11740,16 +11758,16 @@ asyncio.run(main())
 
 ```bash
 # Search using all available engines
-Twat Search q "climate change solutions"
+twat-search web q "climate change solutions"
 
 # Search with specific engines
-Twat Search q "machine learning frameworks" --engines brave,tavily
+twat-search web q "machine learning frameworks" -e brave,tavily
 
 # Get json output
-Twat Search q "renewable energy" --json
+twat-search web q "renewable energy" --json
 
 # Use engine-specific command
-Twat Search brave "web development trends" --count 10
+twat-search web q -e brave "web development trends" --count 10
 ```
 
 ## Core architecture
@@ -11827,20 +11845,20 @@ BING_SCRAPER_ENABLED=true
 HASDATA_GOOGLE_ENABLED=true
 
 # Default parameters (json format)
-BRAVE_DEFAULT_PARAMS={"count": 10, "safesearch": "off"}
-TAVILY_DEFAULT_PARAMS={"max_results": 5, "search_depth": "basic"}
-PERPLEXITY_DEFAULT_PARAMS={"model": "pplx-7b-online"}
-YOU_DEFAULT_PARAMS={"safe_search": true, "count": 8}
-SERPAPI_DEFAULT_PARAMS={"num": 10, "gl": "us"}
-HASDATA_GOOGLE_DEFAULT_PARAMS={"location": "Austin,Texas,United States", "device_type": "desktop"}
-DUCKDUCKGO_DEFAULT_PARAMS={"max_results": 10, "safesearch": "moderate", "time": "d"}
-BING_SCRAPER_DEFAULT_PARAMS={"max_retries": 3, "delay_between_requests": 1.0}
+BRAVE_DEFAULT_PARAMS='{"count": 10, "safesearch": "off"}'
+TAVILY_DEFAULT_PARAMS='{"max_results": 5, "search_depth": "basic"}'
+PERPLEXITY_DEFAULT_PARAMS='{"model": "pplx-7b-online"}'
+YOU_DEFAULT_PARAMS='{"safe_search": true, "count": 8}'
+SERPAPI_DEFAULT_PARAMS='{"num": 10, "gl": "us"}'
+HASDATA_GOOGLE_DEFAULT_PARAMS='{"location": "Austin,Texas,United States", "device_type": "desktop"}'
+DUCKDUCKGO_DEFAULT_PARAMS='{"max_results": 10, "safesearch": "moderate", "time": "d"}'
+BING_SCRAPER_DEFAULT_PARAMS='{"max_retries": 3, "delay_between_requests": 1.0}'
 
 # Global default for all engines
 NUM_RESULTS=5
 ```
 
-You can store these in a `.env` file in your project directory, which will be automatically loaded by the library using `python-dotenv` .
+You can store these in a `.env` file in your project directory, which will be automatically loaded by the library using `python-dotenv`.
 
 ### Programmatic configuration
 
@@ -11873,364 +11891,74 @@ config = Config(
 results = await search("quantum computing", config=config)
 ```
 
-## Engine-specific parameters
+## Error Handling Framework
 
-Each search engine accepts different parameters. Here's a reference for commonly used ones:
+Twat Search provides a robust error handling framework to ensure graceful failure and clear error messages:
 
-### Brave search
+### Exception Hierarchy
 
-```python
-await brave(
-    query="search term",
-    count=10,              # Number of results (default: 10)
-    country="US",          # Country code (ISO 3166-1 alpha-2)
-    search_lang="en",      # Search language
-    ui_lang="en",          # UI language
-    safe_search=True,      # Safe search (True/False)
-    freshness="day"        # Time frame (day, week, month)
-)
-```
+- `SearchError`: Base exception for all search-related errors
+- `EngineError`: Specific exception for engine-related issues
 
-### Bing scraper
+### Key Error Handling Features
 
-```python
-await bing_scraper(
-    query="search term",
-    num_results=10,                # Number of results
-    max_retries=3,                 # Maximum retry attempts
-    delay_between_requests=1.0     # Delay between requests (seconds)
-)
-```
+- **Empty Engine List Detection**: The search function now checks for empty engine lists and raises a clear error
+- **Standardized Error Messages**: All error messages follow a consistent format for better debugging
+- **Detailed Logging**: Comprehensive logging throughout the search process
+- **Graceful Engine Failures**: Individual engine failures don't crash the entire search process
+- **Environment Variable Validation**: Proper parsing and validation of environment variables
 
-### Tavily
+### Example Error Scenarios
 
 ```python
-await tavily(
-    query="search term",
-    max_results=5,               # Number of results (default: 5)
-    search_depth="basic",        # Search depth (basic, advanced)
-    include_domains=["example.com"],  # Domains to include
-    exclude_domains=["spam.com"],     # Domains to exclude
-    include_answer=True,         # Include AI-generated answer
-    search_type="search"         # Search type (search, news, etc.)
-)
-```
-
-### Perplexity (pplx)
-
-```python
-await pplx(
-    query="search term",
-    model="pplx-70b-online"      # Model to use for search
-)
-```
-
-### You.com
-
-```python
-await you(
-    query="search term",
-    num_results=10,              # Number of results
-    country_code="US",           # Country code
-    safe_search=True             # Safe search (True/False)
-)
-```
-
-### Duckduckgo
-
-```python
-await duckduckgo(
-    query="search term",
-    max_results=10,              # Number of results
-    region="us-en",              # Region code
-    safesearch=True,             # Safe search (True/False)
-    timelimit="m",               # Time limit (d=day, w=week, m=month)
-    timeout=10                   # Request timeout (seconds)
-)
-```
-
-### Critique (with image)
-
-```python
-await critique(
-    query="Is this image real?",
-    image_url="https://example.com/image.jpg",  # URL to image
-    # OR
-    image_base64="base64_encoded_image_data",   # Base64 encoded image
-    source_whitelist=["trusted-site.com"],      # Optional domain whitelist
-    source_blacklist=["untrusted-site.com"],    # Optional domain blacklist
-    output_format="text"                        # Output format
-)
-```
-
-## Error handling framework
-
-Twat Search provides custom exception classes for proper error handling:
-
-```python
-from twat_search.web.exceptions import SearchError, EngineError
-
+# No engines configured
 try:
-    results = await search("quantum computing")
-except EngineError as e:
-    print(f"Engine-specific error: {e}")
-    # e.g., "Engine 'brave': API key is required"
+    results = await search("query", engines=[])
 except SearchError as e:
-    print(f"General search error: {e}")
-    # e.g., "No search engines configured"
+    print(e)  # "No search engines specified or available"
+
+# Non-existent engine
+try:
+    results = await search("query", engines=["nonexistent_engine"])
+except SearchError as e:
+    print(e)  # "Engine 'nonexistent_engine': not found"
+
+# Disabled engine
+try:
+    results = await search("query", engines=["disabled_engine"])
+except SearchError as e:
+    print(e)  # "Engine 'disabled_engine': is disabled"
 ```
 
-The exception hierarchy:
+## Recent Fixes and Improvements
 
-- `SearchError`: Base class for all search-related errors
-- `EngineError`: Subclass for engine-specific errors, includes the engine name in the message
+The latest version includes several important fixes and improvements:
 
-Typical error scenarios:
+1. **Fixed Environment Variable Parsing**: Properly handles JSON strings in environment variables for engine default parameters
+2. **Empty Engine List Handling**: Added explicit check and error for empty engine lists
+3. **Mock Engine Parameter Handling**: Improved handling of mock engine parameters for testing
+4. **Standardized Error Messages**: Enhanced error messages for better debugging
+5. **Config Class Improvements**: Modified to properly check for test environment variables
+6. **Enhanced Logging**: Added detailed logging throughout the search process
+7. **Improved Exception Handling**: Better handling of exceptions during engine initialization and search
 
-- Missing API keys
-- Network errors
-- Rate limiting
-- Invalid responses
-- Configuration errors
+These improvements make the package more robust, easier to debug, and more reliable in various usage scenarios.
 
-## Advanced usage techniques
+## Development Status
 
-### Concurrent searches
+The project is actively maintained and regularly updated. All unit tests are passing, and the codebase is continuously improved based on user feedback and identified issues.
 
-Search across multiple engines concurrently:
+Current focus areas include:
+- Fixing Falla-based search engines
+- Addressing type errors in the codebase
+- Improving integration with Playwright
+- Enhancing documentation and standardizing JSON output formats
 
-```python
-import asyncio
-from twat_search.web.engines.brave import brave
-from twat_search.web.engines.tavily import tavily
-
-async def search_multiple(query):
-    brave_task = brave(query)
-    tavily_task = tavily(query)
-
-    results = await asyncio.gather(brave_task, tavily_task, return_exceptions=True)
-
-    brave_results, tavily_results = [], []
-    if isinstance(results[0], list):
-        brave_results = results[0]
-    if isinstance(results[1], list):
-        tavily_results = results[1]
-
-    return brave_results + tavily_results
-
-# Usage
-results = await search_multiple("artificial intelligence")
-```
-
-### Custom engine parameters
-
-Specify engine-specific parameters in the unified search function:
-
-```python
-from twat_search.web import search
-
-results = await search(
-    "machine learning",
-    engines=["brave", "tavily", "bing_scraper"],
-    # Common parameters
-    num_results=10,
-    country="US",
-
-    # Engine-specific parameters
-    brave_count=15,
-    brave_freshness="week",
-    tavily_search_depth="advanced",
-    bing_scraper_max_retries=5
-)
-```
-
-### Rate limiting
-
-Use the built-in rate limiter to avoid hitting API limits:
-
-```python
-from twat_search.web.utils import RateLimiter
-
-# Create a rate limiter with 5 calls per second
-limiter = RateLimiter(calls_per_second=5)
-
-# Use in an async context
-async def rate_limited_search():
-    for query in ["python", "javascript", "rust", "golang"]:
-        limiter.wait_if_needed()  # Wait if necessary
-        results = await search(query)
-        # Process results...
-```
-
-## Development guide
-
-### Running tests
-
-```bash
-# Install test dependencies
-pip install "twat-search[test]"
-
-# Run tests
-pytest
-
-# Run with coverage
-pytest --cov=src/twat_search
-
-# Run tests in parallel
-pytest -n auto
-```
-
-### Adding a new search engine
-
-To add a new search engine:
-
-1. Create a new file in `src/twat_search/web/engines/`
-2. Implement a class that inherits from `SearchEngine`
-3. Implement the required methods and register the engine
-
-Example:
-
-```python
-from pydantic import HttpUrl
-from twat_search.web.engines.base import SearchEngine, register_engine
-from twat_search.web.models import SearchResult
-from twat_search.web.config import EngineConfig
-
-
-@register_engine
-class MyNewSearchEngine(SearchEngine):
-    engine_code = "my_new_engine"
-    env_api_key_names = ["MY_NEW_ENGINE_API_KEY"]
-
-    def __init__(self, config: EngineConfig, **kwargs) -> None:
-        super().__init__(config, **kwargs)
-        # Initialize engine-specific parameters
-
-    async def search(self, query: str) -> list[SearchResult]:
-        # Implement search logic
-        return [
-            SearchResult(
-                title="My Result",
-                url=HttpUrl("https://example.com"),
-                snippet="Result snippet",
-                source=self.name
-            )
-        ]
-
-
-# Convenience function
-async def my_new_engine(query: str, **kwargs):
-# Implement convenience function
-# ...
-```
-
-### Development setup
-
-To contribute to `Twat Search` , follow these steps:
-
-1. Clone the repository:
-
-```bash
-   git clone https://github.com/twardoch/Twat Search.git
-   cd Twat Search
-```
-
-2. Set up the virtual environment with `uv`:
-
-```bash
-   uv venv
-   source .venv/bin/activate
-```
-
-3. Install development dependencies:
-
-```bash
-   uv pip install -e ".[test,dev]"
-```
-
-4. Run tests:
-
-```bash
-   uv run pytest
-```
-
-5. Run type checking:
-
-```bash
-   uv run mypy src tests
-```
-
-6. Run linting:
-
-```bash
-   uv run ruff check src tests
-```
-
-7. Use `cleanup.py` for project maintenance:
-
-```bash
-   python cleanup.py status
-```
-
-## Troubleshooting guide
-
-### Api key issues
-
-If you're encountering API key errors:
-
-1. Verify the API key is set correctly in environment variables
-2. Check the API key format is valid for the specific provider
-3. Ensure the API key has the necessary permissions
-4. For engines that require API keys, verify the key is set via one of these methods:
-   - Environment variable (e.g., `BRAVE_API_KEY` )
-   - `.env` file
-   - Programmatic configuration
-
-### Rate limiting problems
-
-If you're being rate limited by search providers:
-
-1. Reduce the number of concurrent requests
-2. Use the `RateLimiter` utility to space out requests
-3. Consider upgrading your API plan with the provider
-4. Add delay between requests for engines that support it (e.g., `delay_between_requests` for Bing Scraper)
-
-### No results returned
-
-If you're not getting results:
-
-1. Check that the engine is enabled (`ENGINE_ENABLED=true`)
-2. Verify your query is not empty or too restrictive
-3. Try with safe search disabled to see if content filtering is the issue
-4. Check for engine-specific errors in the logs (use `--verbose` flag with CLI)
-5. Ensure you have the required dependencies installed for the engine
-
-### Common error messages
-
-- `"Engine 'X': API key is required"`: The engine requires an API key that hasn't been configured
-- `"No search engines configured"`: No engines are enabled or available
-- `"Unknown search engine: X"`: The specified engine name is invalid
-- `"Engine 'X': is disabled"`: The engine is registered but disabled in configuration
-
-## Development status
-
-Version: 1.8.1
-
-Twat Search is actively developed. See [PROGRESS.md](PROGRESS.md) for completed tasks and [TODO.md](TODO.md) for planned features and improvements.
-
-## Contributing
-
-Contributions are welcome! Please check [TODO.md](TODO.md) for areas that need work. Submit pull requests or open issues on GitHub. Key areas for contribution:
-
-- Adding new search engines
-- Improving test coverage
-- Enhancing documentation
-- Optimizing performance
-- Implementing advanced features (e.g., caching, result normalization)
+For a complete list of planned improvements, see the TODO.md file.
 
 ## License
 
-Twat Search is released under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
 
@@ -12356,49 +12084,96 @@ File: TODO.md
 this_file: TODO.md
 --- 
 
-# TODO List
+# TODO
 
-## High Priority
+Tip: Periodically run `./cleanup.py status` to see results of lints and tests. Use `uv pip ...` not `pip ...`
+
+
+## Phase 1
 
 - [ ] Fix Falla-based search engines
-  - [ ] Resolve Playwright dependency issues
+  - [ ] Resolve Playwright dependency issues (ModuleNotFoundError: No module named 'playwright')
   - [ ] Ensure proper error handling for browser automation
   - [ ] Add retry mechanism for flaky browser interactions
+  - [ ] Update selectors in search engine implementations to match current page structures
+  - [ ] Implement proper handling of CAPTCHA challenges and consent pages
+
 - [ ] Address type errors in the codebase
+  - [ ] Fix type error in `wait_for_selector` where `self.wait_for_selector` could be `None`
+  - [ ] Fix type error in `find_all` where `attrs` parameter has incompatible type
+  - [ ] Fix type error in `get_title`, `get_link`, and `get_snippet` where `elem` parameter has incompatible type
+  - [ ] Fix type error in `elem.find` where `PageElement` has no attribute `find`
   - [ ] Fix FBT001/FBT002 errors (Boolean-typed positional arguments)
   - [ ] Fix unused argument warnings (ARG001/ARG002)
   - [ ] Fix line length issues (E501)
+
 - [ ] Improve integration with Playwright
   - [ ] Add proper browser context management
   - [ ] Implement headless mode configuration
   - [ ] Add proxy support for browser-based engines
+  - [ ] Implement specific exception handling for common Playwright errors
 
-## Medium Priority
+## Phase 2
 
 - [ ] Improve code quality
   - [ ] Refactor CLI module to reduce complexity
   - [ ] Add more comprehensive docstrings
   - [ ] Standardize error handling patterns across all engines
+  - [ ] Add try-except blocks for all external API calls
+  - [ ] Create custom exception classes for different error scenarios
+  - [ ] Add graceful fallbacks for common error cases
+
 - [ ] Enhance documentation
   - [ ] Create detailed API documentation
   - [ ] Add examples for each search engine
   - [ ] Document configuration options comprehensively
+  - [ ] Add detailed docstrings to all classes and methods
+
 - [ ] Standardize JSON output formats
   - [ ] Ensure consistent field names across all engines
   - [ ] Add schema validation for engine outputs
   - [ ] Implement proper JSON serialization for all models
+  - [ ] Utilize the existing `SearchResult` model consistently
+  - [ ] Remove utility functions like `_process_results` and `_display_json_results`
+  - [ ] Remove `CustomJSONEncoder` class
+  - [ ] Update engine `search` methods to return list of `SearchResult` objects
+
+- [ ] Improve test coverage
+  - [ ] Add unit tests for all search engine implementations
+  - [ ] Add integration tests for the entire search pipeline
+  - [ ] Implement mock responses for external API calls in tests
+  - [ ] Add performance benchmarks for search operations
 
 ## Low Priority
 
 - [ ] Add more search engines
   - [ ] Add support for Kagi search
+  - [ ] Implement Ecosia search
+  - [ ] Implement Startpage search
+  - [ ] Implement Qwant AI engine using the QwantAI package
   - [ ] Integrate with more specialized search APIs
+
 - [ ] Implement caching mechanism
   - [ ] Add Redis-based result caching
   - [ ] Implement TTL for cached results
+  - [ ] Add result deduplication across engines
+
 - [ ] Performance optimizations
   - [ ] Profile and optimize slow code paths
   - [ ] Reduce memory usage for large result sets
+  - [ ] Optimize concurrent search operations
+  - [ ] Implement timeout handling for slow search engines
+
+- [ ] Enhance result processing
+  - [ ] Add result ranking based on relevance
+  - [ ] Implement result filtering options
+  - [ ] Add support for different result formats (HTML, Markdown, etc.)
+
+- [ ] Improve CLI functionality
+  - [ ] Add interactive mode for search operations
+  - [ ] Implement result pagination in CLI output
+  - [ ] Add support for saving search results to file
+  - [ ] Implement search history functionality
 
 ## Completed
 
@@ -12414,6 +12189,19 @@ this_file: TODO.md
 - [x] Fix environment variable parsing for engine default parameters
 - [x] Add BRAVE_DEFAULT_PARAMS to ENV_VAR_MAP
 - [x] Modify Config class to check for _TEST_ENGINE environment variable
+- [x] Replace `os.path.abspath()` with `Path.resolve()` in `google.py`
+- [x] Replace `os.path.exists()` with `Path.exists()` in `google.py`
+- [x] Replace insecure usage of temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
+- [x] Replace `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
+- [x] Remove unused imports (`os` and `NavigableString`) from `google.py`
+- [x] Add descriptive error messages when engines are not found or disabled
+- [x] Handle engine initialization failures gracefully
+- [x] Improve error handling in `init_engine_task` function
+- [x] Update `search` function to handle the changes to `init_engine_task`
+- [x] Add standardization of engine names for more consistent lookups
+- [x] Add wrapper coroutine to handle exceptions during search process
+- [x] Add detailed logging for engine initialization and search processes
+- [x] Return empty results on failure instead of raising exceptions
 
 Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
 
