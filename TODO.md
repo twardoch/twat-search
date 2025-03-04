@@ -14,7 +14,7 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
 
 ## High Priority
 
-### Fix Falla-based Search Engines
+### Phase 1: Fix Falla-based Search Engines
 
 - [ ] Fix Yahoo and Qwant search engines
   - [ ] Update selectors in Yahoo implementation to match current page structure
@@ -41,7 +41,7 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
   - [ ] Add comprehensive type hinting throughout the codebase
   - [ ] Improve method docstrings for better code documentation
 
-### Fix Critical Engine Failures
+### Phase 2: Fix Critical Engine Failures
 
 - [ ] Improve `get_engine` function and error handling
   - [ ] Add descriptive error messages when engines are not found or disabled
