@@ -45,8 +45,7 @@ classifiers = [
 ]
 dependencies = [
     # Base twat framework
-    'twat>=2.7.0', # Keep base dependency as is, update if newer twat version is required
-    'twat-cache[all]>=2.6.7', # Keep twat-cache as is, update if newer twat-cache version is required
+    'twat>=1.8.1', # Keep base dependency as is, update if newer twat version is required
     # Data validation and settings
     'pydantic>=2.10.6', # Keep pydantic as is, update if newer pydantic version is required
     'pydantic-settings>=2.8.1', # Keep pydantic-settings as is, update if newer pydantic-settings version is required
@@ -90,17 +89,17 @@ search = 'twat_search'
 [project.optional-dependencies]
 # Testing tools and frameworks
 test = [
-    'pytest>=8.3.5', # Testing framework - Keep pytest as is, update if newer pytest version is required
+    'pytest>=8.3.4', # Testing framework - Keep pytest as is, update if newer pytest version is required
     'pytest-cov>=6.0.0', # Coverage plugin for pytest - Keep pytest-cov as is, update if newer pytest-cov version is required
     'pytest-xdist>=3.6.1', # Parallel test execution - Keep pytest-xdist as is, update if newer pytest-xdist version is required
     'pytest-benchmark[histogram]>=5.1.0', # Benchmarking plugin - Keep pytest-benchmark as is, update if newer pytest-benchmark version is required
     'pytest-asyncio>=0.25.3', # Async test support - Keep pytest-asyncio as is, update if newer pytest-asyncio version is required
-    'coverage[toml]>=7.6.12',
+
 ]
 # Development tools
 dev = [
     'pre-commit>=4.1.0', # Pre-commit hook manager - Keep pre-commit as is, update if newer pre-commit version is required
-    'ruff>=0.9.9', # Linting and formatting - Keep ruff as is, update if newer ruff version is required
+    'ruff>=0.9.7', # Linting and formatting - Keep ruff as is, update if newer ruff version is required
     'mypy>=1.15.0', # Type checking - Keep mypy as is, update if newer mypy version is required
     'absolufy-imports>=0.3.1', # Convert relative imports to absolute - Keep absolufy-imports as is, update if newer absolufy-imports version is required
     'pyupgrade>=3.19.1', # Upgrade Python syntax - Keep pyupgrade as is, update if newer pyupgrade version is required
@@ -134,20 +133,22 @@ google_scraper = [
 ] # Google search scraping - Keep googlesearch-python as is, update if newer googlesearch-python version is required
 # All search backends combined
 all = [
+    'twat',
     'duckduckgo-search>=7.5.0',
+    'scrape-bing>=0.1.2.1',
+    'tavily-python>=0.5.1',
+    'serpapi>=0.1.5',
     'googlesearch-python>=1.3.0',
+    'beautifulsoup4>=4.13.0',
     'lxml>=5.3.1',
     'playwright>=1.50.0',
-    'scrape-bing>=0.1.2.1',
-    'serpapi>=0.1.5',
-    'tavily-python>=0.5.1',
 ]
 # Add documentation tools
 docs = [
-    "sphinx>=8.3.0",
-    "sphinx-rtd-theme>=3.0.2",
-    "sphinx-autodoc-typehints>=3.1.0",
-    "myst-parser>=4.0.1", # Markdown support in Sphinx
+    "sphinx>=7.2.6",
+    "sphinx-rtd-theme>=2.0.0",
+    "sphinx-autodoc-typehints>=2.0.0",
+    "myst-parser>=3.0.0", # Markdown support in Sphinx
 
 ]
 
@@ -171,7 +172,6 @@ twat-search-web = 'twat_search.web.cli:main' # Web interface CLI
 requires = [
     'hatchling>=1.27.0', # Keep hatchling as is, update if newer hatchling version is required
     'hatch-vcs>=0.4.0', # Keep hatch-vcs as is, update if newer hatch-vcs version is required
-    "hatch-sphinx>=0.0.2",
 ]
 build-backend = 'hatchling.build' # Specifies Hatchling as the build backend
 
@@ -194,14 +194,6 @@ exclude = ["**/__pycache__", "**/.pytest_cache", "**/.mypy_cache"]
 packages = ['src/twat_search'] # Includes src/twat_search directory in the wheel
 reproducible = true # Enables reproducible builds
 
-[[tool.hatch.build.targets.wheel.hooks.sphinx.tools]]
-tool = "apidoc"
-doc_dir = "."
-source = "src/twat_search"
-out_dir = "docs/"
-depth = 4
-header = "twat-search API Documentation"
-
 # Version control system hook configuration
 # Automatically updates the version file from git tags
 [tool.hatch.build.hooks.vcs]
@@ -223,8 +215,7 @@ allow-direct-references = true # Allow direct references in metadata (useful for
 
 # Default development environment with basic tools
 [tool.hatch.envs.default]
-features = ['dev', 'test', 'all']
-
+features = ['dev', 'test']
 
 # Commands available in the default environment
 [tool.hatch.envs.default.scripts]
@@ -249,10 +240,17 @@ python = ['3.10', '3.11', '3.12'] # Test with Python 3.10, 3.11, and 3.12
 # Additional environments for specific development tasks.
 #------------------------------------------------------------------------------
 
+# Dependency groups for better organization
+[tool.hatch.envs.dev-dependencies]
+dependencies = ['.[dev]']
+
+[tool.hatch.envs.test-dependencies]
+dependencies = ['.[test]']
+
 # Dedicated environment for linting and code quality checks
 [tool.hatch.envs.lint]
 detached = true # Create a separate, isolated environment
-features = ['dev'] # Use dev extras dependencies 
+dependencies = ['.[dev]'] # Use dev extras dependencies 
 
 # Linting environment commands
 [tool.hatch.envs.lint.scripts]
@@ -269,7 +267,7 @@ all = ["style", "typing", "fix"]
 
 # Dedicated environment for testing
 [tool.hatch.envs.test]
-features = ['test'] # Use test extras as dependencies
+dependencies = ['.[test]'] # Use test extras as dependencies
 
 # Testing environment commands
 [tool.hatch.envs.test.scripts]
@@ -284,7 +282,7 @@ bench-save = 'python -m pytest -v -p no:briefcase tests/test_benchmark.py --benc
 
 # Documentation environment
 [tool.hatch.envs.docs]
-features = ['docs']
+dependencies = [".[docs]"]
 
 # Documentation environment commands
 [tool.hatch.envs.docs.scripts]
@@ -292,19 +290,21 @@ build = "sphinx-build -b html docs/source docs/build"
 
 # GitHub Actions workflow configuration
 [tool.hatch.envs.ci]
-features = ['test']
+dependencies = [".[test]", "coverage[toml]>=7.4.0"]
 
 [tool.hatch.envs.ci.scripts]
 test = "pytest --cov=src/twat_search --cov-report=xml"
 
 
 [tool.hatch.envs.search-backends]
-features = ['duckduckgo', 'bing_scraper', 'tavily', 'serpapi', 'falla', 'google_scraper']
+dependencies = ['.[duckduckgo]', '.[bing_scraper]', '.[tavily]', '.[serpapi]', '.[falla]', '.[google_scraper]']
 
 #------------------------------------------------------------------------------
 # CODE QUALITY TOOLS
 # Configuration for linting, formatting, and code quality enforcement.
 #------------------------------------------------------------------------------
+
+
 
 #------------------------------------------------------------------------------
 # COVERAGE CONFIGURATION

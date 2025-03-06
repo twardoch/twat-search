@@ -70,6 +70,7 @@ globs:
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 14K]  README.md
+├── [665K]  REPO_CONTENT.txt
 ├── [ 12K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 13K]  cleanup.py
@@ -103,9 +104,10 @@ globs:
 │       ├── [ 58K]  you_news.md
 │       └── [  98]  you_news.txt
 ├── [ 128]  src
-│   └── [ 256]  twat_search
-│       ├── [ 613]  __init__.py
+│   └── [ 288]  twat_search
+│       ├── [ 947]  __init__.py
 │       ├── [2.5K]  __main__.py
+│       ├── [1.9K]  paths.py
 │       └── [ 416]  web
 │           ├── [1.8K]  __init__.py
 │           ├── [ 12K]  api.py
@@ -119,7 +121,7 @@ globs:
 │           │   ├── [ 15K]  brave.py
 │           │   ├── [9.2K]  critique.py
 │           │   ├── [7.8K]  duckduckgo.py
-│           │   ├── [ 12K]  falla.py
+│           │   ├── [ 13K]  falla.py
 │           │   ├── [ 12K]  google_scraper.py
 │           │   ├── [7.9K]  hasdata.py
 │           │   ├── [ 288]  lib_falla
@@ -176,7 +178,6 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [664K]  twat_search.txt
 └── [195K]  uv.lock
 
-26 directories, 150 files
+26 directories, 151 files

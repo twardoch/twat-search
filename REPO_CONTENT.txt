@@ -126,6 +126,7 @@ src/
       utils.py
     __init__.py
     __main__.py
+    paths.py
 tests/
   unit/
     web/
@@ -273,6 +274,7 @@ globs:
 ├── [ 499]  CLEANUP.txt
 ├── [1.0K]  LICENSE
 ├── [ 14K]  README.md
+├── [665K]  REPO_CONTENT.txt
 ├── [ 12K]  TODO.md
 ├── [   7]  VERSION.txt
 ├── [ 13K]  cleanup.py
@@ -306,9 +308,10 @@ globs:
 │       ├── [ 58K]  you_news.md
 │       └── [  98]  you_news.txt
 ├── [ 128]  src
-│   └── [ 256]  twat_search
-│       ├── [ 613]  __init__.py
+│   └── [ 288]  twat_search
+│       ├── [ 947]  __init__.py
 │       ├── [2.5K]  __main__.py
+│       ├── [1.9K]  paths.py
 │       └── [ 416]  web
 │           ├── [1.8K]  __init__.py
 │           ├── [ 12K]  api.py
@@ -322,7 +325,7 @@ globs:
 │           │   ├── [ 15K]  brave.py
 │           │   ├── [9.2K]  critique.py
 │           │   ├── [7.8K]  duckduckgo.py
-│           │   ├── [ 12K]  falla.py
+│           │   ├── [ 13K]  falla.py
 │           │   ├── [ 12K]  google_scraper.py
 │           │   ├── [7.9K]  hasdata.py
 │           │   ├── [ 288]  lib_falla
@@ -379,10 +382,9 @@ globs:
 │   │       └── [3.5K]  test_utils.py
 │   └── [ 160]  web
 │       └── [ 10K]  test_bing_scraper.py
-├── [664K]  twat_search.txt
 └── [195K]  uv.lock
 
-26 directories, 150 files
+26 directories, 151 files
 
 ================
 File: .github/workflows/push.yml
@@ -9352,8 +9354,10 @@ class BaseBraveEngine(SearchEngine):
     def __init__(
         super().__init__(
             raise EngineError(self.engine_code, "API key is required")
+    @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
     async def search(self, query: str) -> list[SearchResult]:
         count_param = min(self.max_brave_results, self.num_results)
+            params["safe_search"] = str(self.safe_search).lower()
         async with httpx.AsyncClient() as client:
                 response = await client.get(
                 response.raise_for_status()
@@ -9514,6 +9518,7 @@ class FallaSearchEngine(SearchEngine):
         self._falla_engine = self._create_engine_instance()
     def _create_engine_instance(self) -> Falla:
         return self._falla_engine_class()
+    @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
     async def search(self, query: str, **_kwargs: Any) -> list[SearchResult]:
             raw_results = cast(list[dict[str, str]], await self._falla_engine.search_async(query=query))
             for i, item in enumerate(raw_results):
@@ -9585,6 +9590,7 @@ class GoogleScraperEngine(SearchEngine):
                     "url": str(result.url),
             logger.warning(f"Validation error for result: {exc}")
             logger.warning(f"Unexpected error converting result: {exc}")
+    @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
     async def search(self, query: str) -> list[SearchResult]:
             raise EngineError(self.engine_code, "Search query cannot be empty")
         logger.info(f"Searching Google with query: '{query}'")
@@ -9854,6 +9860,7 @@ def init_engine_task(
             logger.error(
             logger.warning(f"Engine '{engine_name}' is disabled. Enable it in your configuration to use it.")
             logger.error(f"Failed to initialize engine '{engine_name}': {error_type}: {error_msg}")
+@ucache(maxsize=1000, ttl=3600)  # Cache 1000 searches for 1 hour
 async def search(
         config = config or Config()
         if engines is not None and len(engines) == 0:
@@ -10226,6 +10233,7 @@ def extract_query_param(url: str, param: str) -> str | None:
 File: src/twat_search/__init__.py
 ================
     __all__.append("__version__")
+    twat_cache.utils.get_cache_path = lambda *args, **kwargs: get_cache_dir()
     __all__.append("web")
 
 ================
@@ -10252,6 +10260,19 @@ def main() -> None:
         console.print(Group(*map(ansi_decoder.decode_line, lines)))
     fire.Fire(TwatSearchCLI, name="twat-search")
     main()
+
+================
+File: src/twat_search/paths.py
+================
+def get_path_manager() -> Optional["PathManager"]:
+    return PathManager.for_package("twat_search")
+def get_cache_dir() -> Path:
+    path_manager = get_path_manager()
+    return Path(platformdirs.user_cache_dir()) / "twat" / "search"
+def get_config_dir() -> Path:
+    return Path(platformdirs.user_config_dir()) / "twat" / "search"
+def get_data_dir() -> Path:
+    return Path(platformdirs.user_data_dir()) / "twat" / "search"
 
 ================
 File: tests/unit/web/engines/__init__.py
@@ -12366,7 +12387,7 @@ for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $e
 ================
 File: VERSION.txt
 ================
-v2.5.3
+v2.6.2
 
 
 
