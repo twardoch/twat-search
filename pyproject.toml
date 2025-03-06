@@ -171,7 +171,6 @@ twat-search-web = 'twat_search.web.cli:main' # Web interface CLI
 requires = [
     'hatchling>=1.27.0', # Keep hatchling as is, update if newer hatchling version is required
     'hatch-vcs>=0.4.0', # Keep hatch-vcs as is, update if newer hatch-vcs version is required
-    "hatch-sphinx>=0.0.2",
 ]
 build-backend = 'hatchling.build' # Specifies Hatchling as the build backend
 
@@ -194,13 +193,6 @@ exclude = ["**/__pycache__", "**/.pytest_cache", "**/.mypy_cache"]
 packages = ['src/twat_search'] # Includes src/twat_search directory in the wheel
 reproducible = true # Enables reproducible builds
 
-[[tool.hatch.build.targets.wheel.hooks.sphinx.tools]]
-tool = "apidoc"
-doc_dir = "."
-source = "src/twat_search"
-out_dir = "docs/"
-depth = 4
-header = "twat-search API Documentation"
 
 # Version control system hook configuration
 # Automatically updates the version file from git tags
