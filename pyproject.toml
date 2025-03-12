@@ -1,10 +1,12 @@
 # this_file: pyproject.toml
+# this_project: twat_search
 #==============================================================================
 # TWAT-SEARCH PACKAGE CONFIGURATION
 # This pyproject.toml defines the package metadata, dependencies, build system,
 # and development environment for the twat-search package, which provides web
 # search capabilities as a plugin for the twat framework.
 #==============================================================================
+
 #------------------------------------------------------------------------------
 # PROJECT METADATA
 # Core package information used by PyPI and package managers.
@@ -27,8 +29,9 @@ keywords = [
     'web-scraper',
     'web-scraper-api',
     'web-scraper-api-client',
-] # Keywords for PyPI search (none specified)
+] # Keywords for PyPI search
 dynamic = ["version"] # Fields set dynamically at build time
+
 # PyPI classifiers for package categorization
 classifiers = [
     'Development Status :: 4 - Beta', # Package maturity level
@@ -43,24 +46,30 @@ classifiers = [
     'Intended Audience :: Developers',
     'Topic :: Internet :: WWW/HTTP :: Indexing/Search',
 ]
+
+# Runtime dependencies with comments explaining their purpose
 dependencies = [
     # Base twat framework
-    'twat>=2.7.0', # Keep base dependency as is, update if newer twat version is required
-    'twat-cache[all]>=2.6.7', # Keep twat-cache as is, update if newer twat-cache version is required
+    'twat>=2.7.0', # Core framework for plugin system
+    'twat-cache[all]>=2.6.7', # Caching utilities for search results
+    
     # Data validation and settings
-    'pydantic>=2.10.6', # Keep pydantic as is, update if newer pydantic version is required
-    'pydantic-settings>=2.8.1', # Keep pydantic-settings as is, update if newer pydantic-settings version is required
+    'pydantic>=2.10.6', # Data validation using type annotations
+    'pydantic-settings>=2.8.1', # Settings management with environment variables
+    
     # HTTP clients
-    'httpx>=0.28.1', # Modern async HTTP client - Keep httpx as is, update if newer httpx version is required
-    'requests>=2.32.3', # Traditional HTTP client - Keep requests as is, update if newer requests version is required
+    'httpx>=0.28.1', # Modern async HTTP client
+    'requests>=2.32.3', # Traditional HTTP client
+    
     # CLI and display tools
-    'fire>=0.7.0', # Automatic CLI generation - Keep fire as is, update if newer fire version is required
-    'rich>=13.9.4', # Rich text and formatting in terminal - Keep rich as is, update if newer rich version is required
+    'fire>=0.7.0', # Automatic CLI generation
+    'rich>=13.9.4', # Rich text and formatting in terminal
+    
     # Environment configuration
-    'python-dotenv>=1.0.1', # Load environment variables from .env files - Keep python-dotenv as is, update if newer python-dotenv version is required
+    'python-dotenv>=1.0.1', # Load environment variables from .env files
+    
     # HTML parsing
-    'beautifulsoup4>=4.13.0', # HTML parser for web scraping - Keep beautifulsoup4 as is, update if newer beautifulsoup4 version is required
-
+    'beautifulsoup4>=4.13.0', # HTML parser for web scraping
 ]
 
 # Author information
@@ -90,48 +99,57 @@ search = 'twat_search'
 [project.optional-dependencies]
 # Testing tools and frameworks
 test = [
-    'pytest>=8.3.5', # Testing framework - Keep pytest as is, update if newer pytest version is required
-    'pytest-cov>=6.0.0', # Coverage plugin for pytest - Keep pytest-cov as is, update if newer pytest-cov version is required
-    'pytest-xdist>=3.6.1', # Parallel test execution - Keep pytest-xdist as is, update if newer pytest-xdist version is required
-    'pytest-benchmark[histogram]>=5.1.0', # Benchmarking plugin - Keep pytest-benchmark as is, update if newer pytest-benchmark version is required
-    'pytest-asyncio>=0.25.3', # Async test support - Keep pytest-asyncio as is, update if newer pytest-asyncio version is required
-    'coverage[toml]>=7.6.12',
+    'pytest>=8.3.5', # Testing framework
+    'pytest-cov>=6.0.0', # Coverage plugin for pytest
+    'pytest-xdist>=3.6.1', # Parallel test execution
+    'pytest-benchmark[histogram]>=5.1.0', # Benchmarking plugin
+    'pytest-asyncio>=0.25.3', # Async test support
+    'coverage[toml]>=7.6.12', # Test coverage measurement
 ]
+
 # Development tools
 dev = [
-    'pre-commit>=4.1.0', # Pre-commit hook manager - Keep pre-commit as is, update if newer pre-commit version is required
-    'ruff>=0.9.9', # Linting and formatting - Keep ruff as is, update if newer ruff version is required
-    'mypy>=1.15.0', # Type checking - Keep mypy as is, update if newer mypy version is required
-    'absolufy-imports>=0.3.1', # Convert relative imports to absolute - Keep absolufy-imports as is, update if newer absolufy-imports version is required
-    'pyupgrade>=3.19.1', # Upgrade Python syntax - Keep pyupgrade as is, update if newer pyupgrade version is required
-    'isort>=6.0.1', # Sort imports - Keep isort as is, update if newer isort version is required
-
+    'pre-commit>=4.1.0', # Pre-commit hook manager
+    'ruff>=0.9.9', # Linting and formatting
+    'mypy>=1.15.0', # Type checking
+    'absolufy-imports>=0.3.1', # Convert relative imports to absolute
+    'pyupgrade>=3.19.1', # Upgrade Python syntax
+    'isort>=6.0.1', # Sort imports
 ]
+
+# Documentation tools
+docs = [
+    "sphinx>=8.3.0", # Documentation generator
+    "sphinx-rtd-theme>=3.0.2", # Read the Docs theme
+    "sphinx-autodoc-typehints>=3.1.0", # Type hints support in docs
+    "myst-parser>=4.0.1", # Markdown support in Sphinx
+]
+
 # Optional search backends, organized by provider
 brave = [] # Placeholder for Brave search integration
 duckduckgo = [
-    'duckduckgo-search>=7.5.0'
-] # DuckDuckGo search integration - Keep duckduckgo-search as is, update if newer duckduckgo-search version is required
+    'duckduckgo-search>=7.5.0' # DuckDuckGo search integration
+]
 bing_scraper = [
-    'scrape-bing>=0.1.2.1'
-] # Bing search scraping - Keep scrape-bing as is, update if newer scrape-bing version is required
+    'scrape-bing>=0.1.2.1' # Bing search scraping
+]
 tavily = [
-    'tavily-python>=0.5.1'
-] # Tavily search API - Keep tavily-python as is, update if newer tavily-python version is required
+    'tavily-python>=0.5.1' # Tavily search API
+]
 pplx = [] # Placeholder for Perplexity search
 serpapi = [
-    'serpapi>=0.1.5'
-] # SerpAPI integration - Keep serpapi as is, update if newer serpapi version is required
+    'serpapi>=0.1.5' # SerpAPI integration
+]
 hasdata = [] # Placeholder for HasData integration
 falla = [
     # Falla search integration
-    "lxml>=5.3.1", # XML/HTML parsing library - Keep lxml as is, update if newer lxml version is required
-    "playwright>=1.50.0", # Browser automation - Keep playwright as is, update if newer playwright version is required
-
+    "lxml>=5.3.1", # XML/HTML parsing library
+    "playwright>=1.50.0", # Browser automation
 ]
 google_scraper = [
-    'googlesearch-python>=1.3.0'
-] # Google search scraping - Keep googlesearch-python as is, update if newer googlesearch-python version is required
+    'googlesearch-python>=1.3.0' # Google search scraping
+]
+
 # All search backends combined
 all = [
     'duckduckgo-search>=7.5.0',
@@ -141,14 +159,6 @@ all = [
     'scrape-bing>=0.1.2.1',
     'serpapi>=0.1.5',
     'tavily-python>=0.5.1',
-]
-# Add documentation tools
-docs = [
-    "sphinx>=8.3.0",
-    "sphinx-rtd-theme>=3.0.2",
-    "sphinx-autodoc-typehints>=3.1.0",
-    "myst-parser>=4.0.1", # Markdown support in Sphinx
-
 ]
 
 #------------------------------------------------------------------------------
@@ -169,11 +179,10 @@ twat-search-web = 'twat_search.web.cli:main' # Web interface CLI
 # Hatchling is a modern build backend for Python packaging
 # hatch-vcs integrates with version control systems for versioning
 requires = [
-    'hatchling>=1.27.0', # Keep hatchling as is, update if newer hatchling version is required
-    'hatch-vcs>=0.4.0', # Keep hatch-vcs as is, update if newer hatch-vcs version is required
+    'hatchling>=1.27.0', # Modern build backend
+    'hatch-vcs>=0.4.0', # Version control system integration
 ]
 build-backend = 'hatchling.build' # Specifies Hatchling as the build backend
-
 
 #------------------------------------------------------------------------------
 # HATCH BUILD CONFIGURATION
@@ -185,14 +194,12 @@ build-backend = 'hatchling.build' # Specifies Hatchling as the build backend
 include = [
     "src/twat_search/py.typed", # For better type checking support
     "src/twat_search/data/**/*", # Include data files if any
-
 ]
 exclude = ["**/__pycache__", "**/.pytest_cache", "**/.mypy_cache"]
 
 [tool.hatch.build.targets.wheel]
 packages = ['src/twat_search'] # Includes src/twat_search directory in the wheel
 reproducible = true # Enables reproducible builds
-
 
 # Version control system hook configuration
 # Automatically updates the version file from git tags
@@ -212,11 +219,14 @@ allow-direct-references = true # Allow direct references in metadata (useful for
 # Configures different environments for development, testing, and linting,
 # each with specific dependencies and commands.
 #------------------------------------------------------------------------------
+[tool.hatch.env]
+requires = ["hatch-pip-compile"] # Use pip-compile for environment management
 
 # Default development environment with basic tools
 [tool.hatch.envs.default]
 features = ['dev', 'test', 'all']
-
+type = "pip-compile"
+pip-compile-resolver = "uv"
 
 # Commands available in the default environment
 [tool.hatch.envs.default.scripts]
@@ -229,8 +239,14 @@ type-check = 'mypy src/twat_search tests'
 # Run linting and formatting
 lint = ['ruff check src/twat_search tests', 'ruff format src/twat_search tests']
 # Format and fix style issues
-fmt = ["ruff format --respect-gitignore src/twat_search tests", "ruff check --fix src/twat_search tests"]
-fix = ["ruff check --fix --unsafe-fixes src/twat_search tests", "ruff format --respect-gitignore src/twat_search tests"]
+fmt = [
+    "ruff format --respect-gitignore src/twat_search tests",
+    "ruff check --fix src/twat_search tests"
+]
+fix = [
+    "ruff check --fix --unsafe-fixes src/twat_search tests",
+    "ruff format --respect-gitignore src/twat_search tests"
+]
 
 # Matrix configuration to test across multiple Python versions
 [[tool.hatch.envs.all.matrix]]
@@ -240,11 +256,10 @@ python = ['3.10', '3.11', '3.12'] # Test with Python 3.10, 3.11, and 3.12
 # SPECIALIZED ENVIRONMENTS
 # Additional environments for specific development tasks.
 #------------------------------------------------------------------------------
-
 # Dedicated environment for linting and code quality checks
 [tool.hatch.envs.lint]
 detached = true # Create a separate, isolated environment
-features = ['dev'] # Use dev extras dependencies 
+features = ['dev'] # Use dev extras dependencies
 
 # Linting environment commands
 [tool.hatch.envs.lint.scripts]
@@ -254,17 +269,18 @@ typing = 'mypy --install-types --non-interactive {args:src/twat_search tests}'
 style = ['ruff check {args:.}', 'ruff format {args:.}']
 # Format and fix style issues
 fmt = ['ruff format {args:.}', 'ruff check --fix {args:.}']
-fix = ["ruff check --fix --unsafe-fixes {args:.}", "ruff format --respect-gitignore {args:.}"]
+fix = [
+    "ruff check --fix --unsafe-fixes {args:.}",
+    "ruff format --respect-gitignore {args:.}"
+]
 # Run all ops
 all = ["style", "typing", "fix"]
-
 
 # Dedicated environment for testing
 [tool.hatch.envs.test]
 features = ['test'] # Use test extras as dependencies
 
 # Testing environment commands
-[tool.hatch.envs.test.scripts]
 # Run tests in parallel
 test = 'python -m pytest -n auto {args:tests}'
 # Run tests with coverage in parallel
@@ -279,7 +295,6 @@ bench-save = 'python -m pytest -v -p no:briefcase tests/test_benchmark.py --benc
 features = ['docs']
 
 # Documentation environment commands
-[tool.hatch.envs.docs.scripts]
 build = "sphinx-build -b html docs/source docs/build"
 
 # GitHub Actions workflow configuration
@@ -289,27 +304,31 @@ features = ['test']
 [tool.hatch.envs.ci.scripts]
 test = "pytest --cov=src/twat_search --cov-report=xml"
 
-
+# Search backends environment
 [tool.hatch.envs.search-backends]
-features = ['duckduckgo', 'bing_scraper', 'tavily', 'serpapi', 'falla', 'google_scraper']
+features = [
+    'duckduckgo',
+    'bing_scraper',
+    'tavily',
+    'serpapi',
+    'falla',
+    'google_scraper'
+]
 
 #------------------------------------------------------------------------------
 # CODE QUALITY TOOLS
 # Configuration for linting, formatting, and code quality enforcement.
 #------------------------------------------------------------------------------
-
 #------------------------------------------------------------------------------
 # COVERAGE CONFIGURATION
 # Settings for test coverage measurement and reporting.
 #------------------------------------------------------------------------------
-
 # Path mapping for coverage in different environments
 [tool.coverage.paths]
 twat_search = ['src/twat_search', '*/twat-search/src/twat_search']
 tests = ['tests', '*/twat-search/tests']
 
 # Coverage report configuration
-[tool.coverage.report]
 # Lines to exclude from coverage reporting
 exclude_lines = [
     'no cov', # Custom marker to skip coverage
@@ -322,7 +341,6 @@ exclude_lines = [
     'except KeyError', # Common error handling
     'except AttributeError', # Common error handling
     'except NotImplementedError', # Common error handling
-
 ]
 
 [tool.coverage.run]
@@ -335,7 +353,6 @@ omit = ['src/twat_search/__about__.py'] # Files to exclude from coverage
 # MYPY CONFIGURATION
 # Configuration for mypy, including type checking options and overrides.
 #------------------------------------------------------------------------------
-
 [tool.mypy]
 python_version = "3.10" # Match your requires-python
 check_untyped_defs = true
@@ -360,7 +377,6 @@ disallow_incomplete_defs = false
 # PYTEST CONFIGURATION
 # Configuration for pytest, including markers, options, and benchmark settings.
 #------------------------------------------------------------------------------
-
 [tool.pytest.ini_options]
 addopts = "-v --durations=10 -p no:briefcase"
 asyncio_mode = "auto"
@@ -373,14 +389,14 @@ markers = [
     "benchmark: marks tests as benchmarks (select with '-m benchmark')",
     "unit: mark a test as a unit test",
     "integration: mark a test as an integration test",
-    "permutation: tests for permutation functionality", 
+    "permutation: tests for permutation functionality",
     "parameter: tests for parameter parsing",
     "prompt: tests for prompt parsing",
 ]
 norecursedirs = [
     ".*",
     "build",
-    "dist", 
+    "dist",
     "venv",
     "__pycache__",
     "*.egg-info",
@@ -406,16 +422,12 @@ compare = [
     "iqr", # Inter-quartile range
     "ops", # Operations per second
     "rounds", # Number of rounds
-
 ]
-
-
 
 #------------------------------------------------------------------------------
 # RUFF CONFIGURATION
 # Configuration for Ruff, including linter and formatter settings.
-#------------------------------------------------------------------------------ 
-
+#------------------------------------------------------------------------------
 # Ruff linter and formatter configuration
 [tool.ruff]
 target-version = 'py310' # Target Python version for syntax compatibility
@@ -459,8 +471,8 @@ select = [
     'UP', # pyupgrade: checks for opportunities to use newer Python features
     'W', # pycodestyle warnings: PEP 8 style guide warnings
     'YTT', # flake8-2020: checks for misuse of sys.version or sys.version_info
-
 ]
+
 # Rules to ignore (with reasons)
 ignore = [
     'B027', # Empty method in abstract base class - sometimes needed for interfaces
@@ -479,13 +491,12 @@ ignore = [
     'S106', # Possible hardcoded password - often false positives
     'S107', # Possible hardcoded password - often false positives
     'S110', # try-except-pass - sometimes valid for suppressing exceptions
-    'SIM102'
-    # Nested if statements - sometimes more readable than combined conditions
+    'SIM102', # Nested if statements - sometimes more readable than combined conditions
 ]
+
 # Rules that should not be automatically fixed
 unfixable = [
     'F401', # Don't automatically remove unused imports - may be needed later
-
 ]
 
 # isort configuration within Ruff
@@ -502,6 +513,5 @@ ban-relative-imports = 'all' # Ban all relative imports for consistency
 'tests/**/*' = [
     'PLR2004', # Allow magic values in tests for readability
     'S101', # Allow assertions in tests
-    'TID252'
-    # Allow relative imports in tests for convenience
+    'TID252', # Allow relative imports in tests for convenience
 ]
