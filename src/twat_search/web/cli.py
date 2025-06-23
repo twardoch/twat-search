@@ -13,6 +13,7 @@ displays the results in a formatted table.
 from __future__ import annotations
 
 import asyncio
+import importlib
 import json as json_lib
 import logging
 import os
@@ -24,10 +25,11 @@ from rich.logging import RichHandler
 from rich.table import Table
 
 from twat_search.web.api import search
-from twat_search.web.config import Config
+from twat_search.web.config import Config # Already here, but good to note
 from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import (
     ALL_POSSIBLE_ENGINES,
+    get_registered_engines, # Added this
     ENGINE_FRIENDLY_NAMES,
     get_available_engines,
     get_engine_function,
@@ -233,8 +235,6 @@ class SearchCLI:
 
         # Try to get friendly name from the engine class first, then fall back to the dictionary
         try:
-            from twat_search.web.engines.base import get_registered_engines
-
             registered_engines = get_registered_engines()
             engine_class = registered_engines.get(engine)
             friendly = engine_class.friendly_engine_name if engine_class else ENGINE_FRIENDLY_NAMES.get(engine, engine)
@@ -393,8 +393,6 @@ class SearchCLI:
             plain: Whether to output in plain text format
         """
         try:
-            from twat_search.web.config import Config
-
             config = Config()
             if json:
                 self._display_engines_json(engine, config)
@@ -432,8 +430,6 @@ class SearchCLI:
         table.add_column("Enabled", style="magenta")
         table.add_column("API Key Required", style="yellow")
         try:
-            from twat_search.web.engines.base import get_registered_engines
-
             registered_engines = get_registered_engines()
         except ImportError:
             registered_engines = {}
@@ -475,8 +471,6 @@ class SearchCLI:
         engine_config = config.engines[engine_name]
         api_key_required = hasattr(engine_config, "api_key") and engine_config.api_key is not None
         try:
-            from twat_search.web.engines.base import get_registered_engines
-
             registered_engines = get_registered_engines()
             engine_class = registered_engines.get(engine_name)
             if not api_key_required and engine_class and hasattr(engine_class, "env_api_key_names"):
@@ -514,8 +508,6 @@ class SearchCLI:
             try:
                 base_engine = engine_name.split("-")[0]
                 module_name = f"twat_search.web.engines.{base_engine}"
-                import importlib
-
                 engine_module = importlib.import_module(module_name)
                 function_name = engine_name.replace("-", "_")
                 if hasattr(engine_module, function_name):
@@ -549,8 +541,6 @@ class SearchCLI:
             )
 
     def _display_engines_json(self, engine: str | None, config: Config) -> None:
-        from twat_search.web.engines.base import get_registered_engines
-
         try:
             registered_engines = get_registered_engines()
         except ImportError:

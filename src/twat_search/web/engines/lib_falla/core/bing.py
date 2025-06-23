@@ -70,7 +70,7 @@ class Bing(Falla):
         """
         link_elem = elm.find("a")
         if link_elem and isinstance(link_elem, Tag) and "href" in link_elem.attrs:
-            return cast(str, link_elem.attrs["href"])
+            return cast("str", link_elem.attrs["href"])
         return ""
 
     def get_snippet(self, elm: Tag) -> str:

@@ -83,7 +83,7 @@ class Google(Falla):
         """
         link_elem = elm.find("a")
         if link_elem and isinstance(link_elem, Tag) and "href" in link_elem.attrs:
-            href = cast(str, link_elem.attrs["href"])
+            href = cast("str", link_elem.attrs["href"])
             # Google prepends URLs with "/url?q=" and adds tracking parameters
             if href.startswith("/url?"):
                 href = href.split("&")[0].replace("/url?q=", "")

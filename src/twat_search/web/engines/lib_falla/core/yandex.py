@@ -65,7 +65,7 @@ class Yandex(Falla):
         """
         link_elem = elm.select_one("a.link")
         if link_elem and "href" in link_elem.attrs:
-            return cast(str, link_elem.attrs["href"])
+            return cast("str", link_elem.attrs["href"])
         return ""
 
     def get_snippet(self, elm: Tag) -> str:

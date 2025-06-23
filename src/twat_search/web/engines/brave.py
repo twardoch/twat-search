@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, ClassVar
 
 import httpx
-from pydantic import BaseModel, HttpUrl, ValidationError
+from pydantic import BaseModel, HttpUrl, ValidationError # HttpUrl is already here
 from twat_cache import ucache
 
 from twat_search.web.config import EngineConfig
@@ -148,8 +148,6 @@ class BaseBraveEngine(SearchEngine):
         url = getattr(parsed, "url", None)
         if not url:
             # Fallback to prevent errors
-            from pydantic import HttpUrl
-
             url = HttpUrl("https://brave.com")
 
         return SearchResult(
