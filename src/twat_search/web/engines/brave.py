@@ -72,7 +72,7 @@ class BaseBraveEngine(SearchEngine):
             "X-Subscription-Token": self.config.api_key,
         }
 
-    @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
+    # @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
     async def search(self, query: str) -> list[SearchResult]:
         # Request at most 20 (API limit), respect the requested number exactly
         count_param = min(self.max_brave_results, self.num_results)

@@ -135,7 +135,7 @@ def init_engine_task(
         return None
 
 
-@ucache(maxsize=1000, ttl=3600)  # Cache 1000 searches for 1 hour
+# @ucache(maxsize=1000, ttl=3600)  # Cache 1000 searches for 1 hour
 async def search(
     query: str,
     engines: list[str] | None = None,
