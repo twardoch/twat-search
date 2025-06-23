@@ -17,6 +17,8 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 import httpx
 
+from twat_search.web.engine_constants import ENGINE_FRIENDLY_NAMES
+from twat_search.web.engines import standardize_engine_name
 from twat_search.web.exceptions import EngineError, SearchError
 
 if TYPE_CHECKING:
@@ -356,8 +358,6 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
         # Set friendly_name if not defined
         if not engine_class.friendly_engine_name:
             try:
-                from twat_search.web.engine_constants import ENGINE_FRIENDLY_NAMES
-
                 engine_class.friendly_engine_name = ENGINE_FRIENDLY_NAMES.get(
                     engine_class.engine_code,
                     engine_class.engine_code,
@@ -393,8 +393,6 @@ def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchE
     engines = get_registered_engines()
 
     # Standardize the engine name for lookup
-    from twat_search.web.engines import standardize_engine_name
-
     std_engine_name = standardize_engine_name(engine_name)
 
     # Try to find the engine class

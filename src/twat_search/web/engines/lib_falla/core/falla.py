@@ -17,11 +17,9 @@ from typing import Any, ClassVar, Optional, Union, cast
 
 import bs4
 import requests
-from typing import cast
 from bs4 import BeautifulSoup
-from playwright.async_api import Browser, BrowserContext
+from playwright.async_api import Browser, BrowserContext, async_playwright
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
-from playwright.async_api import async_playwright
 
 from twat_search.web.engines.lib_falla.settings import SPLASH_SCRAP_URL
 
@@ -119,7 +117,7 @@ class Falla:
                 logger.warning(f"Timeout waiting for selector in {self.name}")
 
             # Get the page content
-            return cast(str, await page.content())
+            return cast("str", await page.content())
         except Exception as e:
             logger.error(f"Error fetching page with Playwright: {e}")
             self.current_retry += 1
@@ -294,7 +292,7 @@ class Falla:
                     else:
                         logger.warning("Received empty content")
 
-                    return cast(str, content)
+                    return cast("str", content)
                 finally:
                     await browser.close()
         except Exception as e:
@@ -374,7 +372,7 @@ class Falla:
             }
             response = requests.get(url, headers=headers, timeout=15)
             response.raise_for_status()  # Raise an exception for 4XX/5XX responses
-            return cast(str, response.text)
+            return cast("str", response.text)
         except Exception as e:
             logger.error(f"Error getting HTML content: {e}")
             return ""

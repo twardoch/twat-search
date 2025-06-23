@@ -288,7 +288,7 @@ class GoogleScraperEngine(SearchEngine):
         # Convert and filter results in a single comprehension
         results: list[SearchResult] = [
             search_result
-            for search_result in (self._convert_result(cast(GoogleSearchResult, result)) for result in raw_results)
+            for search_result in (self._convert_result(cast("GoogleSearchResult", result)) for result in raw_results)
             if search_result is not None
         ]
 

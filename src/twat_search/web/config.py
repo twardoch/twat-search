@@ -44,6 +44,7 @@ from twat_search.web.engine_constants import (
     YOU,
     YOU_NEWS,
 )
+from twat_search.web.engines.base import get_registered_engines # Added import
 
 # Load environment variables from .env file if present
 load_dotenv()
@@ -322,8 +323,6 @@ class EngineConfig(BaseModel):
         if self.api_key is None and self.engine_code:
             logger.debug(f"No API key provided for {self.engine_code}, checking environment variables")
             try:
-                from twat_search.web.engines.base import get_registered_engines
-
                 engine_class = get_registered_engines().get(self.engine_code)
                 if engine_class and hasattr(engine_class, "env_api_key_names") and engine_class.env_api_key_names:
                     logger.debug(
@@ -358,8 +357,6 @@ class EngineConfig(BaseModel):
             # We have an engine code but no API key - we'll check in the registry
             # if this engine requires an API key
             try:
-                from twat_search.web.engines.base import get_registered_engines
-
                 engine_class = get_registered_engines().get(engine_code)
                 logger.debug(f"Found engine class for '{engine_code}': {engine_class is not None}")
 

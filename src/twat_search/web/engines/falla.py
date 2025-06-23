@@ -16,6 +16,7 @@ from typing import Any, ClassVar, cast
 from pydantic import HttpUrl
 from twat_cache import ucache
 
+from twat_search.web.api import search as api_search # Alias to avoid conflict with local search method
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.engines.lib_falla.core import (
     Aol,
@@ -134,7 +135,7 @@ class FallaSearchEngine(SearchEngine):
             # Perform the search using the async method
             # Falla engines return a list[dict[str, str]] as documented in their search_async method
             # Cast return value to ensure type safety
-            raw_results = cast(list[dict[str, str]], await self._falla_engine.search_async(query=query))
+            raw_results = cast("list[dict[str, str]]", await self._falla_engine.search_async(query=query))
 
             # Convert to SearchResult objects
             results = []
@@ -282,9 +283,7 @@ async def google_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
+    return await api_search(
         query,
         engines=["google_falla"],
         **kwargs,
@@ -302,9 +301,7 @@ async def bing_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
+    return await api_search(
         query,
         engines=["bing_falla"],
         **kwargs,
@@ -322,9 +319,7 @@ async def duckduckgo_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
+    return await api_search(
         query,
         engines=["duckduckgo_falla"],
         **kwargs,
@@ -342,9 +337,7 @@ async def yahoo_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
+    return await api_search(
         query,
         engines=["yahoo_falla"],
         **kwargs,
@@ -362,9 +355,7 @@ async def ask_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
+    return await api_search(
         query,
         engines=["ask_falla"],
         **kwargs,
@@ -382,9 +373,7 @@ async def aol_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
+    return await api_search(
         query,
         engines=["aol_falla"],
         **kwargs,
@@ -402,9 +391,7 @@ async def dogpile_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
+    return await api_search(
         query,
         engines=["dogpile_falla"],
         **kwargs,
@@ -422,9 +409,7 @@ async def gibiru_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
+    return await api_search(
         query,
         engines=["gibiru_falla"],
         **kwargs,

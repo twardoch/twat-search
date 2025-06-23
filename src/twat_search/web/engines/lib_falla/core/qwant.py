@@ -4,9 +4,9 @@
 import asyncio
 import logging
 import urllib.parse
+from typing import cast
 
 from bs4.element import Tag
-from typing import cast
 
 from twat_search.web.engines.lib_falla.core.falla import Falla
 
@@ -89,7 +89,7 @@ class Qwant(Falla):
                 logger.warning(f"Timeout waiting for selector in {self.name}: {e}")
 
             # Get the page content
-            return cast(str, await page.content())
+            return cast("str", await page.content())
         except Exception as e:
             logger.error(f"Error fetching page with Playwright: {e}")
             self.current_retry += 1

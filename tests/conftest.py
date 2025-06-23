@@ -11,8 +11,8 @@ from __future__ import annotations
 # Configure twat-cache to use DummyCache for tests to avoid AioCacheEngine instantiation errors
 # and to ensure tests are isolated from caching effects.
 try:
+    from aiocache import Cache  # type: ignore[attr-defined]
     from twat_cache import settings as cache_settings
-    from aiocache import Cache # type: ignore[attr-defined]
 
     # Check if already configured to avoid re-configuration issues if src/__init__.py runs first
     # in some contexts (though for pytest collection, conftest is usually early).
@@ -23,7 +23,7 @@ try:
         cache_settings.configure_cache(
             {
                 "default": {
-                    "cache": Cache.DUMMY, # Use aiocache.DummyCache
+                    "cache": Cache.DUMMY,  # Use aiocache.DummyCache
                 }
             }
         )
