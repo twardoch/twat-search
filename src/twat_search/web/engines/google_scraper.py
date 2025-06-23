@@ -215,7 +215,7 @@ class GoogleScraperEngine(SearchEngine):
             logger.warning(f"Unexpected error converting result: {exc}")
             return None
 
-    @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
+    # @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
     async def search(self, query: str) -> list[SearchResult]:
         """
         Perform a search using the Google Scraper.

@@ -8,6 +8,33 @@ This module provides fixtures and configuration for pytest.
 
 from __future__ import annotations
 
+# Configure twat-cache to use DummyCache for tests to avoid AioCacheEngine instantiation errors
+# and to ensure tests are isolated from caching effects.
+try:
+    from twat_cache import settings as cache_settings
+    from aiocache import Cache # type: ignore[attr-defined]
+
+    # Check if already configured to avoid re-configuration issues if src/__init__.py runs first
+    # in some contexts (though for pytest collection, conftest is usually early).
+    # Using .get("default", {}) to avoid KeyError if "default" is not present.
+    current_cache_type = cache_settings.CACHE_CONFIG.get("default", {}).get("cache")
+
+    if current_cache_type != Cache.DUMMY:
+        cache_settings.configure_cache(
+            {
+                "default": {
+                    "cache": Cache.DUMMY, # Use aiocache.DummyCache
+                }
+            }
+        )
+        print("tests/conftest.py: Configured twat-cache to use DummyCache for tests.")
+    else:
+        print("tests/conftest.py: twat-cache already configured to use DummyCache.")
+
+except ImportError:
+    print("tests/conftest.py: twat-cache or aiocache not found, skipping cache configuration for tests.")
+    pass
+
 import os
 import sys
 from pathlib import Path

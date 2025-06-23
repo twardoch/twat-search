@@ -17,6 +17,7 @@ from typing import Any, ClassVar, Optional, Union, cast
 
 import bs4
 import requests
+from typing import cast
 from bs4 import BeautifulSoup
 from playwright.async_api import Browser, BrowserContext
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
@@ -47,7 +48,7 @@ class Falla:
         self.name = name
         self.results: list[dict[str, str]] = []
         self.use_method = "requests"  # Default to requests, can be "requests", "playwright", or "splash"
-        self.container_element: tuple[str, dict[str, Any]] = ("div", {})
+        self.container_element: tuple[str, Mapping[str, Any]] = ("div", {})
 
         # Playwright-specific attributes
         self.browser: Browser | None = None
@@ -118,7 +119,7 @@ class Falla:
                 logger.warning(f"Timeout waiting for selector in {self.name}")
 
             # Get the page content
-            return await page.content()
+            return cast(str, await page.content())
         except Exception as e:
             logger.error(f"Error fetching page with Playwright: {e}")
             self.current_retry += 1
@@ -293,7 +294,7 @@ class Falla:
                     else:
                         logger.warning("Received empty content")
 
-                    return content
+                    return cast(str, content)
                 finally:
                     await browser.close()
         except Exception as e:
@@ -373,7 +374,7 @@ class Falla:
             }
             response = requests.get(url, headers=headers, timeout=15)
             response.raise_for_status()  # Raise an exception for 4XX/5XX responses
-            return response.text
+            return cast(str, response.text)
         except Exception as e:
             logger.error(f"Error getting HTML content: {e}")
             return ""
@@ -432,7 +433,6 @@ class Falla:
         """
         msg = "Subclasses must implement get_url"
         raise NotImplementedError(msg)
-        return ""  # This line is never reached, added to satisfy linter
 
     def get_title(self, elm: bs4.element.Tag) -> str:
         """
@@ -446,6 +446,7 @@ class Falla:
         """
         msg = "Subclasses must implement get_title"
         raise NotImplementedError(msg)
+        # Unreachable code removed
 
     def get_link(self, elm: bs4.element.Tag) -> str:
         """
@@ -459,6 +460,7 @@ class Falla:
         """
         msg = "Subclasses must implement get_link"
         raise NotImplementedError(msg)
+        # Unreachable code removed
 
     def get_snippet(self, elm: bs4.element.Tag) -> str:
         """
@@ -472,6 +474,7 @@ class Falla:
         """
         msg = "Subclasses must implement get_snippet"
         raise NotImplementedError(msg)
+        # Unreachable code removed
 
     def search(self, query: str, pages: str = "") -> list[dict[str, str]]:
         """
