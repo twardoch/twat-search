@@ -11,17 +11,20 @@ import os
 import re
 import subprocess
 import sys
-from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, ClassVar, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
 
 import bs4
 import requests
 from bs4 import BeautifulSoup
-from playwright.async_api import Browser, BrowserContext, async_playwright
+from playwright.async_api import Browser, BrowserContext
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
+from playwright.async_api import async_playwright
 
 from twat_search.web.engines.lib_falla.settings import SPLASH_SCRAP_URL
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 # Set up logger
 logger = logging.getLogger(__name__)

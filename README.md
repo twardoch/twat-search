@@ -629,6 +629,114 @@ This section is primarily for project maintainers.
     6.  The `release.yml` GitHub Actions workflow should automatically trigger, build the package, and publish it to PyPI.
     7.  Verify the new version on PyPI. Create a GitHub Release from the tag with release notes based on the changelog.
 
+### Enhanced Development Workflow
+
+The project now includes comprehensive local development scripts for improved developer experience:
+
+#### Local Development Scripts
+
+*   **Build Script** (`scripts/build.sh`):
+    ```bash
+    # Full build pipeline
+    ./scripts/build.sh
+    
+    # Only code quality checks
+    ./scripts/build.sh --quality
+    
+    # Only run tests
+    ./scripts/build.sh --test
+    
+    # Only build package
+    ./scripts/build.sh --build
+    
+    # Build without tests
+    ./scripts/build.sh --skip-tests
+    ```
+
+*   **Test Script** (`scripts/test.sh`):
+    ```bash
+    # Run all tests
+    ./scripts/test.sh
+    
+    # Run unit tests only
+    ./scripts/test.sh --unit
+    
+    # Run integration tests only
+    ./scripts/test.sh --integration
+    
+    # Run specific test pattern
+    ./scripts/test.sh --pattern "search"
+    
+    # Run tests with specific marker
+    ./scripts/test.sh --marker "unit"
+    
+    # Generate comprehensive test report
+    ./scripts/test.sh --report
+    
+    # Run in watch mode for continuous testing
+    ./scripts/test.sh --watch
+    ```
+
+*   **Release Script** (`scripts/release.sh`):
+    ```bash
+    # Release a new version
+    ./scripts/release.sh 1.0.0
+    
+    # Show current version
+    ./scripts/release.sh --current
+    
+    # Suggest next version
+    ./scripts/release.sh --major   # Next major version
+    ./scripts/release.sh --minor   # Next minor version
+    ./scripts/release.sh --patch   # Next patch version
+    
+    # Dry run (show what would be done)
+    ./scripts/release.sh --dry-run 1.0.0
+    
+    # Create release and push tags
+    ./scripts/release.sh --push-tags 1.0.0
+    ```
+
+#### CI/CD Pipeline
+
+The project includes a comprehensive CI/CD pipeline with the following features:
+
+*   **Multiplatform Testing**: Tests run on Ubuntu, Windows, and macOS
+*   **Python Version Matrix**: Tests against Python 3.10, 3.11, and 3.12
+*   **Code Quality Checks**: Automated linting, formatting, and type checking
+*   **Binary Builds**: Generates standalone binaries for all platforms
+*   **Coverage Reporting**: Comprehensive test coverage analysis
+*   **Semver Validation**: Automatic validation of semantic versioning
+*   **Automated Releases**: Full release automation with PyPI publishing
+*   **Pre-release Support**: Manual pre-release workflow for testing
+
+#### Release Process
+
+1.  **Regular Releases**:
+    - Push a git tag following semantic versioning (e.g., `v1.0.0`)
+    - GitHub Actions automatically validates, tests, builds, and publishes
+    - Creates GitHub release with binaries and release notes
+
+2.  **Pre-releases**:
+    - Use the manual pre-release workflow in GitHub Actions
+    - Publishes to Test PyPI for validation
+    - Creates GitHub pre-release for testing
+
+3.  **Installation Options**:
+    - **PyPI**: `pip install twat-search`
+    - **Binary Downloads**: Platform-specific executables from GitHub releases
+    - **Development**: `pip install -e .` from source
+
+#### Binary Distributions
+
+The CI/CD pipeline generates standalone binaries for easy installation:
+
+*   **Linux**: `twat-search-VERSION-ubuntu-latest`
+*   **Windows**: `twat-search-VERSION-windows-latest.exe`
+*   **macOS**: `twat-search-VERSION-macos-latest`
+
+These binaries are available in GitHub releases and require no Python installation.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

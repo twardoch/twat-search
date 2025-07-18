@@ -1,0 +1,249 @@
+name: Pre-Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to pre-release (e.g., 1.0.0-alpha.1)'
+        required: true
+        type: string
+      create-tag:
+        description: 'Create and push git tag'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  id-token: write
+
+env:
+  FORCE_COLOR: "1"
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  validate-input:
+    name: Validate Input
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
+      is-prerelease: ${{ steps.validate.outputs.is-prerelease }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version input
+        id: validate
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          
+          # Remove 'v' prefix if present
+          VERSION="${VERSION#v}"
+          
+          # Validate semantic version format
+          if ! echo "$VERSION" | grep -E "^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?$"; then
+            echo "::error::Invalid semantic version format: $VERSION"
+            exit 1
+          fi
+          
+          # Check if this is a prerelease
+          if echo "$VERSION" | grep -q "-"; then
+            echo "is-prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is-prerelease=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Valid version: $VERSION"
+
+  run-tests:
+    name: Run Tests
+    needs: validate-input
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install test dependencies
+        run: |
+          uv pip install --system ".[test,all]"
+
+      - name: Run tests
+        run: |
+          pytest tests/test_twat_search.py tests/unit/ -v --cov=src/twat_search --cov-report=xml --cov-report=term-missing
+
+  build-and-test:
+    name: Build and Test Package
+    needs: [validate-input, run-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install build tools
+        run: |
+          uv pip install --system build hatchling hatch-vcs twine
+
+      - name: Create temporary tag for build
+        run: |
+          git tag "v${{ needs.validate-input.outputs.version }}"
+
+      - name: Build distributions
+        run: |
+          python -m build --outdir dist
+
+      - name: Verify distributions
+        run: |
+          ls -la dist/
+          twine check dist/*
+
+      - name: Remove temporary tag
+        run: |
+          git tag -d "v${{ needs.validate-input.outputs.version }}"
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-release-dist
+          path: dist/
+          retention-days: 7
+
+  create-tag:
+    name: Create Git Tag
+    needs: [validate-input, build-and-test]
+    runs-on: ubuntu-latest
+    if: github.event.inputs.create-tag == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push tag
+        run: |
+          VERSION="${{ needs.validate-input.outputs.version }}"
+          git tag -a "v$VERSION" -m "Pre-release $VERSION"
+          git push origin "v$VERSION"
+          echo "Created and pushed tag: v$VERSION"
+
+  publish-test-pypi:
+    name: Publish to Test PyPI
+    needs: [validate-input, build-and-test]
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/twat-search
+    steps:
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pre-release-dist
+          path: dist/
+
+      - name: Publish to Test PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+
+  create-pre-release:
+    name: Create GitHub Pre-Release
+    needs: [validate-input, build-and-test, publish-test-pypi]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pre-release-dist
+          path: dist/
+
+      - name: Generate release notes
+        run: |
+          VERSION=${{ needs.validate-input.outputs.version }}
+          
+          cat > release-notes.md << EOF
+          # Pre-Release $VERSION
+          
+          This is a pre-release version for testing purposes.
+          
+          ## Installation
+          
+          ### Test PyPI
+          \`\`\`bash
+          pip install --index-url https://test.pypi.org/simple/ twat-search==$VERSION
+          \`\`\`
+          
+          ### From Source
+          \`\`\`bash
+          git clone https://github.com/${{ github.repository }}.git
+          cd twat-search
+          git checkout v$VERSION
+          pip install -e .
+          \`\`\`
+          
+          ## Testing
+          
+          Please test this pre-release and report any issues.
+          
+          ## Notes
+          
+          - This version may contain experimental features
+          - Not recommended for production use
+          - Feedback is welcome via GitHub issues
+          EOF
+
+      - name: Create GitHub Pre-Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.validate-input.outputs.version }}
+          files: dist/*
+          body_path: release-notes.md
+          prerelease: true
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "Pre-release ${{ needs.validate-input.outputs.version }} created successfully!"
+          echo "Test PyPI: https://test.pypi.org/project/twat-search/${{ needs.validate-input.outputs.version }}/"
+          echo "GitHub: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.validate-input.outputs.version }}"

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, ClassVar
 
 import httpx
-from pydantic import BaseModel, HttpUrl, ValidationError # HttpUrl is already here
+from pydantic import BaseModel, HttpUrl, ValidationError  # HttpUrl is already here
 from twat_cache import ucache
 
 from twat_search.web.config import EngineConfig

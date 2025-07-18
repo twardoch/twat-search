@@ -20,7 +20,7 @@ from rich.theme import Theme
 from rich.traceback import install
 
 from twat_search import web  # Keep for potential use, handle import error at usage
-from twat_search.__version__ import version as project_version # Alias to avoid conflict
+from twat_search.__version__ import version as project_version  # Alias to avoid conflict
 
 # Set up logging with rich
 logging.basicConfig(
@@ -45,7 +45,8 @@ class TwatSearchCLI:
             if web and hasattr(web, "cli") and hasattr(web.cli, "SearchCLI"):
                 self.web: Any = web.cli.SearchCLI()
             else:
-                raise AttributeError("SearchCLI not found in twat_search.web.cli")
+                msg = "SearchCLI not found in twat_search.web.cli"
+                raise AttributeError(msg)
         except (ImportError, AttributeError) as e:
             # Create a placeholder if the web CLI is not available
             logger.error(f"Web CLI not available: {e!s}")
@@ -82,7 +83,6 @@ def main() -> None:
     # Alternatively, pass console instance around or make Theme global.
     global console
     console = Console(theme=Theme({"prompt": "cyan", "question": "bold cyan"}))
-
 
     def display(lines, out):
         # Ensure this console is the themed one if that's intended for fire output

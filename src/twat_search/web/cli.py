@@ -25,20 +25,17 @@ from rich.logging import RichHandler
 from rich.table import Table
 
 from twat_search.web.api import search
-from twat_search.web.config import Config # Already here, but good to note
+from twat_search.web.config import Config  # Already here, but good to note
 from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
+from twat_search.web.engines import get_registered_engines  # Added this
 from twat_search.web.engines import (
     ALL_POSSIBLE_ENGINES,
-    get_registered_engines, # Added this
     ENGINE_FRIENDLY_NAMES,
     get_available_engines,
     get_engine_function,
     is_engine_available,
     standardize_engine_name,
 )
-
-if TYPE_CHECKING:
-    from twat_search.web.config import Config
 
 
 # Custom JSON encoder that handles non-serializable objects
@@ -189,7 +186,12 @@ class SearchCLI:
             self.logger.debug(f"Attempting to search with engines: {engines}")
 
         try:
-            results = await search(query=query, engines=engines, strict_mode=True, **kwargs)
+            results = await search(
+                query=query,
+                engines=engines,
+                strict_mode=True,
+                **kwargs,
+            )
             return _process_results(results)
         except Exception as e:
             self.logger.error(f"Search failed: {e}")
@@ -308,7 +310,9 @@ class SearchCLI:
 
         # If n is provided in kwargs, use it to override num_results
         if "n" in kwargs and kwargs["n"] is not None:
-            self.logger.debug(f"Overriding num_results={num_results} with n={kwargs['n']}")
+            self.logger.debug(
+                f"Overriding num_results={num_results} with n={kwargs['n']}",
+            )
             num_results = kwargs["n"]
 
         # Log the arguments for debugging
@@ -892,7 +896,9 @@ class SearchCLI:
         # Check environment variables directly
         for env_var in ["PERPLEXITYAI_API_KEY", "PERPLEXITY_API_KEY"]:
             env_value = os.environ.get(env_var)
-            self.logger.debug(f"CLI pplx method - Environment variable {env_var}: {env_value is not None}")
+            self.logger.debug(
+                f"CLI pplx method - Environment variable {env_var}: {env_value is not None}",
+            )
 
         params: dict[str, Any] = {
             "num_results": num_results,

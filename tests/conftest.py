@@ -24,15 +24,13 @@ try:
             {
                 "default": {
                     "cache": Cache.DUMMY,  # Use aiocache.DummyCache
-                }
-            }
+                },
+            },
         )
-        print("tests/conftest.py: Configured twat-cache to use DummyCache for tests.")
     else:
-        print("tests/conftest.py: twat-cache already configured to use DummyCache.")
+        pass
 
 except ImportError:
-    print("tests/conftest.py: twat-cache or aiocache not found, skipping cache configuration for tests.")
     pass
 
 import os

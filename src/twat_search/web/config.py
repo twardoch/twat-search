@@ -44,7 +44,7 @@ from twat_search.web.engine_constants import (
     YOU,
     YOU_NEWS,
 )
-from twat_search.web.engines.base import get_registered_engines # Added import
+from twat_search.web.engines.base import get_registered_engines  # Added import
 
 # Load environment variables from .env file if present
 load_dotenv()

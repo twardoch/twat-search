@@ -16,7 +16,7 @@ from typing import Any, ClassVar, cast
 from pydantic import HttpUrl
 from twat_cache import ucache
 
-from twat_search.web.api import search as api_search # Alias to avoid conflict with local search method
+from twat_search.web.api import search as api_search  # Alias to avoid conflict with local search method
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.engines.lib_falla.core import (
     Aol,

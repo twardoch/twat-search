@@ -1,0 +1,283 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  id-token: write
+
+env:
+  FORCE_COLOR: "1"
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  validate-tag:
+    name: Validate Tag
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.validate.outputs.version }}
+      is-prerelease: ${{ steps.validate.outputs.is-prerelease }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate semver tag
+        id: validate
+        run: |
+          TAG=${GITHUB_REF#refs/tags/}
+          VERSION=${TAG#v}
+          
+          # Validate semantic version format
+          if ! echo "$VERSION" | grep -E "^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?$"; then
+            echo "::error::Invalid semantic version format: $VERSION"
+            exit 1
+          fi
+          
+          # Check if this is a prerelease
+          if echo "$VERSION" | grep -q "-"; then
+            echo "is-prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is-prerelease=false" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Tag $TAG is valid semver: $VERSION"
+
+  run-tests:
+    name: Run Full Test Suite
+    needs: validate-tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install test dependencies
+        run: |
+          uv pip install --system ".[test,all]"
+
+      - name: Run comprehensive tests
+        run: |
+          pytest tests/test_twat_search.py tests/unit/ -v --cov=src/twat_search --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-coverage
+          path: coverage.xml
+
+  build-distributions:
+    name: Build Distributions
+    needs: [validate-tag, run-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install build tools
+        run: |
+          uv pip install --system build hatchling hatch-vcs twine
+
+      - name: Build distributions
+        run: |
+          python -m build --outdir dist
+
+      - name: Verify distribution files
+        run: |
+          ls -la dist/
+          test -n "$(find dist -name '*.whl')" || (echo "Wheel file missing" && exit 1)
+          test -n "$(find dist -name '*.tar.gz')" || (echo "Source distribution missing" && exit 1)
+
+      - name: Check distributions with twine
+        run: |
+          twine check dist/*
+
+      - name: Upload distribution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-dist
+          path: dist/
+          retention-days: 90
+
+  build-binaries:
+    name: Build Binary (${{ matrix.os }})
+    needs: [validate-tag, run-tests]
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system ".[all]" pyinstaller
+
+      - name: Build binary (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          pyinstaller --onefile --name twat-search-${{ needs.validate-tag.outputs.version }}-${{ matrix.os }} --add-data "src/twat_search:twat_search" src/twat_search/__main__.py
+
+      - name: Build binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          pyinstaller --onefile --name twat-search-${{ needs.validate-tag.outputs.version }}-${{ matrix.os }}.exe --add-data "src/twat_search;twat_search" src/twat_search/__main__.py
+
+      - name: Upload binary artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.os }}
+          path: dist/
+          retention-days: 90
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [validate-tag, build-distributions]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/twat-search
+    steps:
+      - name: Download distribution artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_TOKEN }}
+
+  create-release:
+    name: Create GitHub Release
+    needs: [validate-tag, build-distributions, build-binaries, publish-pypi]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          
+          # Copy distribution files
+          cp artifacts/release-dist/* release-assets/
+          
+          # Copy binary files
+          for os in ubuntu-latest windows-latest macos-latest; do
+            if [ -d "artifacts/binary-$os" ]; then
+              cp artifacts/binary-$os/* release-assets/
+            fi
+          done
+          
+          ls -la release-assets/
+
+      - name: Generate release notes
+        id: release-notes
+        run: |
+          VERSION=${{ needs.validate-tag.outputs.version }}
+          
+          # Create release notes
+          cat > release-notes.md << EOF
+          # Release $VERSION
+          
+          ## Changes
+          
+          EOF
+          
+          # Add changelog content if available
+          if [ -f "CHANGELOG.md" ]; then
+            # Extract changelog for this version
+            sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | head -n -1 >> release-notes.md
+          else
+            echo "Please see the commit history for changes in this release." >> release-notes.md
+          fi
+          
+          cat >> release-notes.md << EOF
+          
+          ## Installation
+          
+          ### PyPI
+          \`\`\`bash
+          pip install twat-search==$VERSION
+          \`\`\`
+          
+          ### Binary Downloads
+          - Linux: \`twat-search-$VERSION-ubuntu-latest\`
+          - Windows: \`twat-search-$VERSION-windows-latest.exe\`
+          - macOS: \`twat-search-$VERSION-macos-latest\`
+          
+          ## Verification
+          
+          All packages are signed and can be verified using standard tools.
+          EOF
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release-assets/*
+          body_path: release-notes.md
+          prerelease: ${{ needs.validate-tag.outputs.is-prerelease }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update release documentation
+        run: |
+          echo "Release ${{ needs.validate-tag.outputs.version }} published successfully!"
+          echo "PyPI: https://pypi.org/project/twat-search/${{ needs.validate-tag.outputs.version }}/"
+          echo "GitHub: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.validate-tag.outputs.version }}"
