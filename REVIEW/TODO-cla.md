@@ -66,7 +66,8 @@ python -m playwright install chromium
 # Standardize result processing in api.py
 
 # Example fix for brave.py:
-async def search(self, query: str) -> list[SearchResult]:
+from typing import List
+async def search(self, query: str) -> List[SearchResult]:
     # ... existing code ...
     results = []
     for item in response_data.get("web", {}).get("results", []):
