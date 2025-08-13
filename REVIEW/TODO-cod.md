@@ -24,6 +24,11 @@ This plan outlines targeted, concrete improvements to the repository. It is exam
   - Add a thin logging wrapper with Loguru, default INFO, `--verbose`/`--quiet` flags in CLI mapped to levels.
   - Emit per-engine structured context (engine, params, duration, result_count) and collapse errors to human-friendly messages.
   - Surface a `TWAT_SEARCH_LOG_LEVEL` env override.
+- Migration and Compatibility:
+  - The new Loguru-based logging wrapper will be introduced alongside the existing `logging` module usage.
+  - Existing code using `logging` will continue to function; implementers should gradually migrate logging calls to use the new wrapper.
+  - For backward compatibility, a compatibility layer may be provided to route `logging` calls through Loguru, or both systems may coexist during the transition.
+  - Document any changes in logging configuration, log level mapping, and handler setup to ensure a smooth migration.
 - Example (concept sketch):
   ```python
   # src/twat_search/web/utils_logging.py
