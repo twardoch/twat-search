@@ -26,7 +26,9 @@ python -m playwright install chromium
 1. **Update type annotations** in `src/twat_search/web/engines/lib_falla/core/google.py`:
    ```python
    # Fix Optional types
-   wait_for_selector: str | None = None
+   from typing import Optional
+   # Fix Optional types
+   wait_for_selector: Optional[str] = None
    
    # Fix BeautifulSoup element types
    from typing import Optional
