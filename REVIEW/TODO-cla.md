@@ -401,7 +401,8 @@ async def search(self, query: str) -> list[SearchResult]:
 
 3. **Implement image and news search**:
    ```python
-   async def search_images(query: str, engines: list[str]) -> list[ImageResult]:
+   from typing import List
+   async def search_images(query: str, engines: List[str]) -> List[ImageResult]:
        # Implementation for image search
        pass
    ```
