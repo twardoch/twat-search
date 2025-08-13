@@ -395,7 +395,11 @@ async def search(self, query: str) -> list[SearchResult]:
    class SearchFilters(BaseModel):
        date_range: tuple[datetime, datetime] | None = None
        language: str | None = None
-       region: str | None = None
+   from typing import Optional
+   class SearchFilters(BaseModel):
+       date_range: tuple[datetime, datetime] | None = None
+       region: Optional[str] = None
+       language: str | None = None
    from typing import Optional
    class SearchFilters(BaseModel):
        date_range: tuple[datetime, datetime] | None = None
