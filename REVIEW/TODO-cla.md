@@ -29,7 +29,12 @@ python -m playwright install chromium
    wait_for_selector: str | None = None
    
    # Fix BeautifulSoup element types
-   def get_title(self, elem: Tag | None) -> str:
+   from typing import Optional
+   # Fix Optional types
+   wait_for_selector: Optional[str] = None
+   
+   # Fix BeautifulSoup element types
+   def get_title(self, elem: Optional[Tag]) -> str:
        if elem is None:
            return ""
        title_elem = elem.find("h3")
