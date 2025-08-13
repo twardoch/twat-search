@@ -244,7 +244,7 @@ This document contains a complete dump of the repository tree and a concise desc
 
 ## Notes
 
-- The `.github/workflows/` directory contains CI workflows (push/release templates and active push/release) to test, build, and publish the package. They integrate UV, pytest, coverage, and release steps.
+- The `.github/workflows/` directory contains CI workflows (push/release templates and active push/release) to test, build, and publish the package. They integrate UV, pytest, coverage, and release steps. **Note:** This directory is referenced here but is not included in the filesystem tree listing above.
 - Top-level `test_*.py` files appear to be legacy/debug tests focused on Falla engines; the canonical tests live under `tests/`.
 - `resources/` stores human-readable references for external engine APIs and behaviors used by the code in `src/twat_search/web/engines/`.
 
