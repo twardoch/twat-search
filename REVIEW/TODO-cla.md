@@ -12,7 +12,7 @@ This document outlines specific, actionable improvement proposals for the twat-s
 **Specific Actions**:
 ```bash
 # Install missing Playwright dependencies
-uv add playwright
+uv add --group dev playwright
 python -m playwright install chromium
 
 # Fix type errors in google.py:
