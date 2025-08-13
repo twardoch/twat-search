@@ -60,7 +60,8 @@ This plan outlines targeted, concrete improvements to the repository. It is exam
 3) Extras Alignment and Packaging
 - Rationale: README lists extras; ensure `pyproject.toml` matches and CI tests each extra set.
 - Actions:
-  - Verify extras groups: `all`, `brave`, `duckduckgo`, `serpapi`, `hasdata`, `falla`, `bing_scraper`, `pplx`, `tavily`, `you`.
+  - Verify extras groups: `all`, `brave`, `duckduckgo`, `serpapi`, `hasdata`, `falla`, `bing_scraper`, `pplx`, `tavily`, `you` (as defined in `pyproject.toml`).
+  - [EXTRAS LIST VERIFIED: See `[project.optional-dependencies]` in `pyproject.toml` for authoritative list.]
   - Add a CI matrix job that installs each extra set and runs a narrow smoke test for its engines.
   - Remove duplicate dependency declarations between `requirements.txt` and `pyproject.toml` or clearly scope `requirements.txt` to dev only.
 - Example (CI step):
