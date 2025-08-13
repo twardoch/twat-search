@@ -130,7 +130,8 @@ async def search(self, query: str) -> List[SearchResult]:
 3. **Implement graceful degradation**:
    ```python
    # In api.py
-   async def search_with_fallback(engines: list[str], query: str) -> list[SearchResult]:
+   from typing import List
+   async def search_with_fallback(engines: List[str], query: str) -> List[SearchResult]:
        results = []
        for engine_name in engines:
            try:
