@@ -125,7 +125,7 @@ This plan outlines targeted, concrete improvements to the repository. It is exam
 - Rationale: Reduce duplication and ensure discoverability.
 - Actions:
   - Ensure all markdown files include YAML frontmatter `this_file` as per repo standards.
-  - Consider replacing `VERSION.txt` with dynamic version via `hatch-vcs` (already present) or keep `VERSION.txt` as single source of truth and wire into `pyproject.toml`.
+  - Consider replacing `VERSION.txt` with dynamic version via `hatch-vcs` (currently configured in `pyproject.toml` under `[tool.hatch.version]`, if present; otherwise, plan future integration) or keep `VERSION.txt` as single source of truth and wire into `pyproject.toml`.
   - Ensure `.pre-commit-config.yaml` runs ruff/format consistently with CI.
 
 10) CI Enhancements
