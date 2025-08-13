@@ -104,7 +104,8 @@ async def search(self, query: str) -> list[SearchResult]:
 2. **Add retry mechanism with exponential backoff**:
    ```python
    # In base.py
-   async def search_with_retry(self, query: str, max_retries: int = 3) -> list[SearchResult]:
+   from typing import List
+   async def search_with_retry(self, query: str, max_retries: int = 3) -> List[SearchResult]:
        for attempt in range(max_retries):
            try:
                return await self.search(query)
