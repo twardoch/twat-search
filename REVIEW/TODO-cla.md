@@ -200,7 +200,11 @@ async def search(self, query: str) -> List[SearchResult]:
    
    class EngineConfig(BaseModel):
        enabled: bool = Field(default=True)
-       api_key: str | None = Field(default=None, validation_alias='API_KEY')
+   from typing import Optional
+   
+   class EngineConfig(BaseModel):
+       enabled: bool = Field(default=True)
+       api_key: Optional[str] = Field(default=None, validation_alias='API_KEY')
    from typing import Dict, Any
    
    class EngineConfig(BaseModel):
