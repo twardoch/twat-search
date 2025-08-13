@@ -396,7 +396,12 @@ async def search(self, query: str) -> list[SearchResult]:
        date_range: tuple[datetime, datetime] | None = None
        language: str | None = None
        region: str | None = None
-       content_type: str | None = None
+   from typing import Optional
+   class SearchFilters(BaseModel):
+       date_range: tuple[datetime, datetime] | None = None
+       language: Optional[str] = None
+       region: Optional[str] = None
+       content_type: Optional[str] = None
    ```
 
 3. **Implement image and news search**:
