@@ -192,7 +192,12 @@ async def search(self, query: str) -> list[SearchResult]:
    class EngineConfig(BaseModel):
        enabled: bool = Field(default=True)
        api_key: str | None = Field(default=None, validation_alias='API_KEY')
-       default_params: dict[str, Any] = Field(default_factory=dict)
+   from typing import Dict, Any
+   
+   class EngineConfig(BaseModel):
+       enabled: bool = Field(default=True)
+       default_params: Dict[str, Any] = Field(default_factory=dict)
+       api_key: str | None = Field(default=None, validation_alias='API_KEY')
        
        @computed_field
        @property
