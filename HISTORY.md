@@ -2,264 +2,280 @@
 this_file: HISTORY.md
 ---
 
-# The Twat-Search Chronicles: A Tale of Human-LLM Collaboration
+# The Chronicles of `twat-search`: A Tale of Engines, APIs, and Async Adventures
 
-*Or: How Adam Twardoch and His AI Assistant Army Built a Multi-Engine Search Aggregator That Actually Works*
+*Or: How a Human and AI Built a Multi-Engine Search Aggregator That Actually Works (Most of the Time)*
 
-## Prologue: The Birth of an Idea
+## The Genesis (February 13th, 2025)
 
-In the grand tradition of developers everywhere, Adam Twardoch looked at the search landscape and thought, "I can do this better." But unlike most such proclamations made at 2 AM while debugging CSS, Adam actually meant it. And so began the journey that would become `twat-search` – a multi-engine web search aggregator that would eventually grow to support everything from Brave and DuckDuckGo to obscure engines most developers have never heard of.
-
-The name? Part of the `twat` (Tools for Web Analysis and Text) collection – because apparently Adam has a sense of humor about naming conventions. Or perhaps he just wanted to make sure his project would never be forgotten.
-
-## Act I: The Genesis (Initial Commit - v0.0.1)
+It was a cold Thursday evening when the first line of code was committed. The initial commit on `d7c6417` was deceptively modest—just a skeleton with dreams:
 
 ```bash
-d7c6417 Initial commit
-edb4baf v0.0.1
+Initial commit
+ .github/workflows/push.yml    | 112 +++++++++++++++
+ .gitignore                    | 315 ++++++++++++++++++++++++++++++++++++++++++
+ pyproject.toml                | 263 +++++++++++++++++++++++++++++++++++
+ src/twat_search/__init__.py   |   5 +
+ tests/test_package.py         |   6 +
 ```
 
-Like all great software journeys, it started with an empty repository and big dreams. The initial commit contained the DNA of what would become a sophisticated search aggregation system. Adam knew from day one what he was building: a Python package that could query multiple search engines simultaneously and return unified results.
+At this point, `twat-search` was just a glimmer in Adam Twardoch's eye—a plugin for the greater `twat` framework that would eventually wrangle the wild west of web search engines into submission. The initial `pyproject.toml` already hinted at grand ambitions with its carefully categorized optional dependencies and comprehensive CI/CD setup.
 
-The early architecture decisions were already evident:
-- **Pydantic** for data validation (because type safety is sexy)
-- **asyncio** for concurrent searches (because waiting is for humans, not machines) 
-- **httpx** for HTTP requests (because `requests` is so 2019)
+## The Great Engine Awakening (Early 2025)
 
-```python
-# The humble beginnings - a simple search result model
-from pydantic import BaseModel
-from datetime import datetime
+What followed was a flurry of activity that would make any search engine jealous. Over the next few weeks, the repository exploded into life with **106 commits** in a remarkably short timespan—a testament to the power of human-AI collaboration.
 
-class SearchResult(BaseModel):
-    query: str
-    source_engine: str
-    title: str
-    url: str
-    snippet: str | None = None
-    timestamp: datetime
-```
+### The First Engines Rise
 
-## Act II: The Great Expansion (v1.7.13 - v2.0.0)
-
-The version numbers tell a story of rapid iteration. Between v1.7.13 and v2.0.0, something magical happened – the project found its legs. Adam wasn't just building another search wrapper; he was crafting a proper abstraction layer that could handle the quirks of dozens of different search providers.
-
-The breakthrough came with the `SearchEngine` base class:
+The early commits tell a story of methodical expansion. First came the infrastructure:
 
 ```python
-class SearchEngine(abc.ABC):
-    """
-    Abstract base class for all search engines.
-    All search engine implementations must subclass this and implement
-    the search method.
-    """
+# src/twat_search/web/engines/base.py - The Foundation
+class SearchEngine(ABC):
+    """Base class for all search engines"""
     
-    engine_code: ClassVar[str] = ""
-    env_api_key_names: ClassVar[list[str]] = []
-    
-    @abc.abstractmethod
+    @abstractmethod
     async def search(self, query: str) -> list[SearchResult]:
-        """The magic happens here"""
+        """Every engine must implement this sacred method"""
+        pass
 ```
 
-This wasn't just code – it was a philosophy. Every search engine, from the most buttoned-up API to the scrappiest web scraper, would play by the same rules. The result? A system where adding a new search engine became as simple as implementing a single `async def search()` method.
+Then, one by one, the engines came online:
 
-## Act III: Enter the Bots (The Jules Era)
-
-Then something interesting happened. Around commit time, we see the appearance of `google-labs-jules[bot]` in the contributor list. This marked the beginning of the human-LLM collaboration era that would define the project's mature development phase.
-
-```bash
-3 google-labs-jules[bot] 161369871+google-labs-jules[bot]@users.noreply.github.com
+**Brave Search** (`brave.py`) - The API-powered heavyweight:
+```python
+async def search(self, query: str) -> list[SearchResult]:
+    # Because who doesn't love a search engine with an attitude?
+    url = f"{self.base_url}/web/search"
+    params = {"q": query, "count": self.num_results}
 ```
 
-Jules wasn't just fixing typos. The bot was making substantial contributions:
-- **Import modernization**: Moving imports to top-level for better organization
-- **Type error fixes**: Solving the eternal struggle between Python's dynamic nature and static typing
-- **Test setup improvements**: Because even AI knows testing is important
-
-The collaboration pattern that emerged was fascinating. Adam would push the creative boundaries and architectural decisions, while Jules would come in with the meticulous cleanup, type safety improvements, and best practices enforcement. It was like having a very patient, very detail-oriented pair programmer who never needed coffee breaks.
-
-## Act IV: The Great Refactor (v2.1.3 - v2.7.7)
-
-By v2.1.3, the project had grown complex enough to need serious organization. This is where we see Adam's software engineering chops really shine. The codebase was restructured with surgical precision:
-
-```
-src/twat_search/
-├── __init__.py              # Clean entry point
-├── web/
-│   ├── api.py              # Core search orchestration  
-│   ├── cli.py              # Rich CLI interface
-│   ├── config.py           # Pydantic-powered configuration
-│   ├── engines/            # The heart of the system
-│   │   ├── base.py         # Abstract base class
-│   │   ├── brave.py        # API-based engines
-│   │   ├── duckduckgo.py   # Scraping engines
-│   │   └── lib_falla/      # Browser automation engines
-│   ├── exceptions.py       # Proper error handling
-│   └── models.py          # Data structures
+**DuckDuckGo** (`duckduckgo.py`) - The privacy-conscious alternative:
+```python
+# The engine that doesn't track you (but we track its results)
+from duckduckgo_search import DDGS
 ```
 
-This wasn't just a refactor – it was an evolution. The project had grown from a simple search wrapper to a proper framework. Each engine lived in its own module, configuration was centralized and type-safe, and the CLI was built with Rich for beautiful terminal output.
+**The Falla Collection** (`falla.py`) - The browser-automated cavalry:
+```python
+# When APIs fail, we scrape. When scraping fails, we automate browsers.
+# This is the way.
+```
 
-The `pyproject.toml` file became a masterpiece of modern Python packaging:
+## The Plugin Architecture Emerges
+
+One of the most elegant aspects of the project was its integration with the `twat` framework. The `pyproject.toml` reveals this beautifully:
 
 ```toml
-[project.optional-dependencies]
-# Optional search backends, organized by provider
-brave = []
-duckduckgo = ['duckduckgo-search>=7.5.0']
-falla = ["lxml>=5.3.1", "playwright>=1.50.0"]
-all = [
-    'duckduckgo-search>=7.5.0',
-    'googlesearch-python>=1.3.0',
-    'lxml>=5.3.1',
-    'playwright>=1.50.0',
-    # ... and many more
-]
+[project.entry-points."twat.plugins"]
+search = 'twat_search'
 ```
 
-## Act V: The Falla Revolution (The Browser Automation Era)
+This single line transforms `twat-search` from a standalone tool into a seamless plugin, demonstrating the power of well-designed extension systems.
 
-Then came the Falla engines – the moment when twat-search decided to take on the big players directly. Instead of relying on APIs that could be rate-limited or shut down, Adam integrated Playwright-based browser automation to scrape search results directly from Google, Bing, Yahoo, and others.
+## The Engine Zoo Expands
 
-This was audacious. This was the equivalent of saying, "You know what? I'll just automate a real browser and get the results the same way humans do."
+As the project matured, it became clear that no single search engine could rule them all. The solution? Support *all* of them:
+
+- **API-based engines**: Brave, Tavily, Perplexity, SerpAPI, HasData
+- **Scraping engines**: Bing Scraper, Google Scraper  
+- **Browser-automated engines**: The entire Falla collection (Google, Yahoo, Bing, DuckDuckGo, Ask, AOL, Dogpile, Gibiru, Mojeek, Qwant, Yandex)
+
+The engine discovery system in `engines/__init__.py` became a thing of beauty:
 
 ```python
-# lib_falla/core/google.py - The crown jewel
-class GoogleFalla(SearchEngine):
-    """
-    Google search using Playwright browser automation.
-    Because sometimes you need to fight fire with fire.
-    """
-    
-    async def search(self, query: str) -> list[SearchResult]:
-        # Launch a real browser
-        # Navigate to Google
-        # Type the query like a human would
-        # Extract results with surgical precision
-        # Return clean SearchResult objects
+# A self-aware import system that gracefully handles missing dependencies
+try:
+    from twat_search.web.engines.brave import BraveSearchEngine, brave
+    available_engine_functions["brave"] = brave
+except ImportError:
+    # No Brave API key? No problem. The show must go on.
+    pass
 ```
 
-The Falla engines represented a new level of sophistication. They handled:
-- **CAPTCHA challenges** (elegantly sidestepped)
-- **Consent pages** (automatically dismissed)
-- **Rate limiting** (defeated through realistic human behavior simulation)
-- **Changing CSS selectors** (monitored and updated)
+## The Configuration Conundrum
 
-## Act VI: The Quality Crusade (Recent Commits)
-
-The recent commit history reveals a project that has reached maturity. The focus shifted from feature addition to quality and reliability:
-
-```bash
-2426ae1 Merge pull request #6 from twardoch/terragon/create-review-folder-with-catalog
-a40ca2d Merge pull request #5 from twardoch/terragon/create-review-folder-catalog-plan
-```
-
-These commits show something remarkable: the introduction of automated code review and improvement planning. The `REVIEW/` folder contains comprehensive analysis documents that read like they were written by a senior software architect who had spent months studying the codebase.
-
-The `TODO-cla.md` file is particularly impressive – it's a 529-line document that breaks down every improvement needed in the codebase, organized by priority, with specific code examples and implementation timelines. This isn't just technical debt tracking; it's strategic planning.
-
-## The Technical Marvel: What Actually Got Built
-
-Let's pause to appreciate what 106 commits and 64 Python files actually accomplished:
-
-### Multi-Engine Architecture
-The system supports 12+ search engines out of the box:
-- **API-based engines**: Brave, SerpAPI, Tavily, Perplexity, You.com
-- **Scraping engines**: DuckDuckGo, Bing Scraper
-- **Browser automation engines**: Google Falla, Yahoo Falla, Qwant Falla
-
-### Bulletproof Configuration
-Using Pydantic and environment variables, configuration is both flexible and bulletproof:
+Managing configuration for dozens of search engines with varying requirements became an art form. The team solved this with a sophisticated system:
 
 ```python
-# Set in .env or environment
-BRAVE_API_KEY="your_brave_key"
+# Environment variables for the masses
+BRAVE_API_KEY="your_key_here"
 BRAVE_ENABLED=true
-BRAVE_DEFAULT_PARAMS='{"count": 10, "safesearch": "strict"}'
+BRAVE_DEFAULT_PARAMS='{"count": 10, "safesearch": "moderate"}'
 
-# Or configure programmatically
+# Programmatic configuration for the elite
 config = Config(
     engines={
         "brave": EngineConfig(
             enabled=True,
-            api_key="your_key",
+            api_key="runtime_override",
             default_params={"count": 5}
         )
     }
 )
 ```
 
-### Rich CLI Interface
-The command-line interface isn't just functional – it's beautiful:
+## The Async Revolution
 
-```bash
-# Search all engines
-twat-search web q "artificial intelligence"
+The decision to build everything async from the ground up was crucial. The main search function in `api.py` showcases this beautifully:
 
-# Use specific engines with JSON output
-twat-search web q -e brave,duckduckgo "Python programming" --json
-
-# List available engines
-twat-search web info --plain
+```python
+async def search(
+    query: str,
+    engines: list[str] | None = None,
+    num_results: int = 5,
+    **kwargs: Any,
+) -> list[SearchResult]:
+    # Launch all engines in parallel - because waiting is for synchronous peasants
+    results = await asyncio.gather(*tasks, return_exceptions=True)
 ```
 
-### Async-First Design
-Everything is built for performance. Multiple engines are queried concurrently, results are aggregated efficiently, and the whole system is designed to handle the inherent unpredictability of web scraping and API calls.
+This approach allows `twat-search` to query multiple engines simultaneously, dramatically reducing search times from sequential seconds to parallel milliseconds.
 
-## The Human-AI Collaboration Pattern
+## The Great Falla Integration
 
-What makes this project fascinating isn't just the technical achievement – it's the collaboration pattern that emerged. Looking at the commit history, we can see distinct phases:
+Perhaps the most ambitious feature was the integration with the Falla library for browser automation. The `lib_falla` subdirectory contains an entire ecosystem:
 
-1. **Human Creative Phase**: Adam lays the architectural foundation, makes design decisions, implements core features
-2. **AI Refinement Phase**: Jules cleans up code, fixes type errors, improves imports, adds tests
-3. **Human Strategic Phase**: Adam adds new features, refactors for scalability
-4. **AI Quality Phase**: Jules continues improvement, error handling, documentation
+```
+lib_falla/
+├── core/
+│   ├── google.py      # The crown jewel
+│   ├── bing.py        # Microsoft's offering
+│   ├── yahoo.py       # The has-been that still works
+│   └── ...           # An alphabet soup of search engines
+```
 
-This isn't human vs. AI or human + AI. It's human *orchestrated* AI – where the human drives strategy and creativity while the AI handles the detail work that humans find tedious but are critical for code quality.
+This allowed `twat-search` to scrape search engines that don't offer APIs, using Playwright to automate real browsers. It's like having a digital intern who never sleeps and never complains about captchas.
 
-## The Current State: A Living, Breathing System
+## Error Handling: The Art of Graceful Failure
 
-Today, twat-search stands as a testament to what's possible when human creativity meets AI assistance and engineering discipline. The current version can:
+One of the project's strengths is its robust error handling. When one engine fails, others carry on:
 
-- Query a dozen different search engines simultaneously
-- Handle API failures gracefully with fallbacks
-- Scrape modern websites that actively try to prevent scraping  
-- Return clean, structured JSON or beautiful terminal output
-- Scale from simple one-off queries to production use cases
+```python
+async def search_with_error_handling() -> list[SearchResult]:
+    try:
+        return await engine_instance.search(query)
+    except Exception as e:
+        logger.error(f"Search with engine '{engine_name}' failed: {e}")
+        # Return empty results on failure instead of raising
+        # Because the show must go on, even when Google has a bad day
+        return []
+```
 
-But perhaps more importantly, it's maintainable. The code is well-structured, properly typed, thoroughly documented, and has a clear path forward for future development.
+## The Testing Philosophy
 
-## The Statistics Tell a Story
+The project embraces a pragmatic testing approach. The `tests/` directory contains unit tests, integration tests, and even benchmark tests:
 
-- **106 commits** over multiple versions
-- **64 Python files** across a well-organized structure
-- **86 commits by Adam**, 11 by twardoch (probably different email), 3 by AI assistant
-- **3,399+ lines of code** in just the first 10 files sampled
-- Support for **12+ search engines** with a pluggable architecture
+```python
+@pytest.mark.benchmark(group="search")
+def test_search_performance(benchmark):
+    result = benchmark(run_sync_search, "python programming")
+    # Because knowing your search is fast is almost as important as it working
+```
 
-## Epilogue: The Road Ahead
+## The CLI Experience
 
-The `REVIEW/TODO-cla.md` file reads like a roadmap to search engine perfection. It's not just a todo list – it's a strategic plan that addresses:
+The command-line interface, powered by Python Fire, makes the tool accessible to humans:
 
-- **Critical fixes** (Playwright dependency issues, type errors)
-- **Quality improvements** (comprehensive error handling, test coverage)  
-- **Developer experience** (better documentation, development workflow)
-- **Feature enhancements** (new engines, advanced search features)
+```bash
+# Search across all configured engines
+twat-search web q "latest advancements in AI"
 
-The project has reached that magical point in software development where it's not just working – it's working *well*. The architecture is sound, the code is clean, and the path forward is clear.
+# Cherry-pick your engines like a connoisseur  
+twat-search web q "Python programming" -e brave,duckduckgo
 
-## The Moral of the Story
+# JSON output for the machines
+twat-search web q "future of tech" --json
+```
 
-twat-search proves that modern software development isn't about human vs. AI – it's about human-AI collaboration done right. Adam provided the vision, architectural thinking, and creative problem-solving. The AI assistants provided the tireless attention to detail, code quality improvements, and systematic cleanup that keeps complex projects maintainable.
+## The Caching Strategy
 
-The result? A search aggregation library that actually works in production, handles the real world's messiness gracefully, and serves as a model for how to build maintainable Python packages in the age of AI-assisted development.
+Using the `twat-cache` framework, searches can be cached to reduce API calls and improve response times:
 
-Not bad for something that started with an empty repository and a developer who thought he could build a better search tool.
+```python
+# @ucache(maxsize=1000, ttl=3600)  # Cache 1000 searches for 1 hour
+# Currently commented out, but ready for deployment
+```
 
-*— End of Chronicles —*
+## The Modern Python Stack
+
+The project showcases modern Python development practices:
+
+- **Pydantic v2** for data validation and settings management
+- **httpx** for async HTTP clients  
+- **Playwright** for browser automation
+- **Hatch** for build and project management
+- **Ruff** for lightning-fast linting and formatting
+- **uv** for dependency management
+
+## Recent Evolution: The Review Phase
+
+The recent commits show a project in reflection mode. The `REVIEW/` folder contains comprehensive analysis:
+
+- `FILES-cod.md` - A complete catalog of the codebase
+- `TODO-cla.md` - An improvement roadmap with surgical precision
+
+This self-awareness phase demonstrates the maturity of the human-AI collaboration, acknowledging technical debt while planning systematic improvements.
+
+## The Numbers Game
+
+By the commit count, the project reached **106 commits** in its active development phase, with version tags climbing from v2.3.3 to v2.7.7. The codebase spans:
+
+- **64 Python files** (according to the review documents)
+- **12 search engines** with various implementations
+- **Support for 3 Python versions** (3.10, 3.11, 3.12)
+- **Comprehensive CI/CD** with GitHub Actions
+
+## The Philosophy Behind the Code
+
+What makes `twat-search` special isn't just its technical capabilities, but its philosophical approach:
+
+1. **Graceful Degradation**: If one engine fails, others continue
+2. **Pluggable Architecture**: Easy to add new engines without touching core code
+3. **Configuration Flexibility**: Environment variables for ops teams, programmatic config for developers
+4. **Modern Async**: Built for the concurrent web from day one
+5. **Developer Experience**: Rich CLI, comprehensive documentation, battle-tested CI/CD
+
+## Lessons from the Trenches
+
+The development revealed several insights:
+
+- **API reliability varies wildly** - Hence the multi-engine approach
+- **Browser automation is complex but powerful** - The Falla integration proves this
+- **Configuration management is harder than it looks** - The elaborate env var system shows the pain
+- **Error handling makes or breaks user experience** - The graceful failure system is crucial
+- **Testing real web services is challenging** - Mock engines and careful integration tests are essential
+
+## The Road Ahead
+
+The comprehensive TODO list in `REVIEW/TODO-cla.md` outlines ambitious plans:
+
+- Fix Falla engine type issues
+- Enhance test coverage to 80%+
+- Implement Redis-based caching
+- Add new search engines (Kagi, Ecosia)
+- Performance optimizations
+- Advanced search features
+
+## The Human-AI Collaboration Story
+
+This project exemplifies effective human-AI collaboration:
+
+- **Human**: Provided vision, architecture decisions, and domain expertise
+- **AI**: Implemented detailed code, handled refactoring, and maintained consistency
+- **Together**: Created a production-ready tool with enterprise-grade CI/CD
+
+The commit messages tell this story—from initial architectural decisions to detailed implementations to comprehensive reviews. Each phase built on the previous, creating a sophisticated search aggregation tool that would be challenging for any single developer to create in such a short timeframe.
+
+## Conclusion: A Search Engine to Rule Them All
+
+`twat-search` stands as a testament to what's possible when human creativity meets AI implementation speed. It's not just a search aggregator—it's a platform for search innovation, a showcase of modern Python practices, and a proof of concept for the future of human-AI collaboration.
+
+In a world where search is increasingly fragmented across walled gardens and specialized engines, `twat-search` offers a unified interface that's both powerful for developers and accessible to users. It's the Swiss Army knife of search, ready for whatever query you throw at it.
+
+*And somewhere in the code, amidst all the async functions and error handlers, lies the simple truth: sometimes the best way to find what you're looking for is to ask everyone at once.*
 
 ---
 
-*"The best software is written by humans who know when to let the machines handle the boring parts."*  
-*— Adam Twardoch (probably)*
+*Built with ♥️ by Adam Twardoch and AI collaborators*  
+*"Making search searchable since 2025"*
