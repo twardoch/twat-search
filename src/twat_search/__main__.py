@@ -12,7 +12,7 @@ from __future__ import annotations
 import logging
 from typing import Any, TypeVar
 
-import fire  # type: ignore
+import fire
 from rich.ansi import AnsiDecoder
 from rich.console import Console, Group
 from rich.logging import RichHandler
@@ -84,7 +84,7 @@ def main() -> None:
     global console
     console = Console(theme=Theme({"prompt": "cyan", "question": "bold cyan"}))
 
-    def display(lines, out):
+    def display(lines: Any, out: Any) -> None:
         # Ensure this console is the themed one if that's intended for fire output
         console.print(Group(*map(ansi_decoder.decode_line, lines)))
 

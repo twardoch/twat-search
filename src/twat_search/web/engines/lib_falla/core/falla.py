@@ -12,7 +12,7 @@ import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union
 
 import bs4
 import requests
@@ -39,7 +39,7 @@ class Falla:
     It supports both synchronous and asynchronous operation.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str = "") -> None:
         """
         Initialize a new Falla search engine instance.
 
@@ -120,7 +120,7 @@ class Falla:
                 logger.warning(f"Timeout waiting for selector in {self.name}")
 
             # Get the page content
-            return cast("str", await page.content())
+            return await page.content()
         except Exception as e:
             logger.error(f"Error fetching page with Playwright: {e}")
             self.current_retry += 1
@@ -295,7 +295,7 @@ class Falla:
                     else:
                         logger.warning("Received empty content")
 
-                    return cast("str", content)
+                    return content
                 finally:
                     await browser.close()
         except Exception as e:
@@ -375,7 +375,7 @@ class Falla:
             }
             response = requests.get(url, headers=headers, timeout=15)
             response.raise_for_status()  # Raise an exception for 4XX/5XX responses
-            return cast("str", response.text)
+            return response.text
         except Exception as e:
             logger.error(f"Error getting HTML content: {e}")
             return ""
@@ -394,7 +394,7 @@ class Falla:
             html_parser = await self.parse_entry_point_async(entry_point)
             if html_parser:
                 # Use ** unpacking to handle various BeautifulSoup attribute types
-                elements = html_parser.find_all(self.container_element[0], attrs=self.container_element[1])
+                elements = html_parser.find_all(self.container_element[0], attrs=dict(self.container_element[1]))
                 return self.get_each_elements(elements)
             return []
         except Exception as e:
@@ -415,7 +415,7 @@ class Falla:
             html_parser = self.parse_entry_point(entry_point)
             if html_parser:
                 # Use ** unpacking to handle various BeautifulSoup attribute types
-                elements = html_parser.find_all(self.container_element[0], attrs=self.container_element[1])
+                elements = html_parser.find_all(self.container_element[0], attrs=dict(self.container_element[1]))
                 return self.get_each_elements(elements)
             return []
         except Exception as e:

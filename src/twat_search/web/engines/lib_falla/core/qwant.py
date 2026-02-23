@@ -89,7 +89,7 @@ class Qwant(Falla):
                 logger.warning(f"Timeout waiting for selector in {self.name}: {e}")
 
             # Get the page content
-            return cast("str", await page.content())
+            return await page.content()
         except Exception as e:
             logger.error(f"Error fetching page with Playwright: {e}")
             self.current_retry += 1

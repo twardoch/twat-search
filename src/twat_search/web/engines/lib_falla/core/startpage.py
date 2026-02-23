@@ -5,7 +5,7 @@ from twat_search.web.engines.lib_falla.core.falla import Falla
 
 
 class StartPage(Falla):
-    def __init__(self):
+    def __init__(self) -> None:
         self.try_it = 0
         self.max_retry = 3
         self.source = "StartPage"
@@ -16,7 +16,7 @@ class StartPage(Falla):
         self.title = {"tag": "a:w-gl__result-title", "child": {"tag": "h3", "type": "text"}}
         self.cite = {"tag": "p:w-gl__description", "type": "text", "child": {}}
 
-    def search(self, search_text, pages=""):
+    def search(self, search_text: str, pages: str = "") -> list[dict[str, str]]:
         url = "https://www.startpage.com/sp/search?q=" + search_text.replace(" ", "+") + pages
 
         return self.fetch(url)

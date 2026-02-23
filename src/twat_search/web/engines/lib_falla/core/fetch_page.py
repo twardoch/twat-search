@@ -63,7 +63,7 @@ async def fetch_page(url: str, wait_for_selector: str | None = None) -> str:
             await browser.close()
 
 
-async def main_async():
+async def main_async() -> None:
     """Main async function."""
     parser = argparse.ArgumentParser(description="Fetch a web page using Playwright")
     parser.add_argument("url", help="URL to fetch")
@@ -75,7 +75,7 @@ async def main_async():
     # Print the content to stdout for the parent process to capture
 
 
-def main():
+def main() -> None:
     """Main function."""
     asyncio.run(main_async())
 

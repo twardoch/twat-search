@@ -11,7 +11,7 @@ Falla library for scraping search engine results.
 """
 
 import logging
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar
 
 from pydantic import HttpUrl
 from twat_cache import ucache
@@ -114,7 +114,7 @@ class FallaSearchEngine(SearchEngine):
         """
         # Create a new instance - each subclass of Falla has its own __init__
         # that handles initialization without explicit parameters
-        return self._falla_engine_class()
+        return self._falla_engine_class()  # type: ignore[no-any-return]
 
     # @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
     async def search(self, query: str, **_kwargs: Any) -> list[SearchResult]:
@@ -135,7 +135,7 @@ class FallaSearchEngine(SearchEngine):
             # Perform the search using the async method
             # Falla engines return a list[dict[str, str]] as documented in their search_async method
             # Cast return value to ensure type safety
-            raw_results = cast("list[dict[str, str]]", await self._falla_engine.search_async(query=query))
+            raw_results: list[dict[str, str]] = await self._falla_engine.search_async(query=query)
 
             # Convert to SearchResult objects
             results = []

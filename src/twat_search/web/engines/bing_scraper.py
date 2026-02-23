@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 # Import the BingScraper class from scrape-bing package
 try:
-    from scrape_bing import BingScraper  # type: ignore
+    from scrape_bing import BingScraper
 except ImportError:
     # For type checking when scrape-bing is not installed
     class BingScraper:  # type: ignore

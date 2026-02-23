@@ -126,7 +126,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
         timeout = kwargs.get(
             "timeout",
         ) or config.default_params.get("timeout", 10)
-        return num_results, region, lang, timelimit, safesearch, proxy, timeout
+        return num_results, region, lang, timelimit, safesearch, proxy, timeout  # type: ignore[return-value]
 
     def _convert_result(self, raw: dict[str, Any]) -> SearchResult | None:
         """

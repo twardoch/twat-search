@@ -314,3 +314,20 @@ Thumbs.db
 __version__.py
 _private
 VERSION.txt
+
+
+# Generated / IDE / debug artifacts
+.mypy_cache/
+.specstory/
+.cursor/
+debug_output/
+CLEANUP.txt
+REFACTOR_FILELIST.txt
+REPO_CONTENT.txt
+cleanup.py
+debug_fetch.py
+falla_search.py
+google_debug_*.html
+pyproject_next.toml
+requirements.txt
+scripts/

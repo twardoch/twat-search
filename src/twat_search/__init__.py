@@ -1,23 +1,13 @@
-"""
-TwAT Search package - Tools for web search and information retrieval.
+"""twat-search: Tools for web search and information retrieval."""
 
-This package provides utilities for searching the web and retrieving information
-from various sources.
-"""
-
-# Initialize empty __all__ list
 from __future__ import annotations
 
-__all__ = []
+from importlib.metadata import PackageNotFoundError, version
 
-# Include version
 try:
-    from twat_search.__version__ import version as __version__
-
-    __all__.append("__version__")
-except ImportError:
-    __version__ = "0.1.0"  # Fallback version
-    __all__.append("__version__")
+    __version__ = version("twat-search")
+except PackageNotFoundError:
+    __version__ = "0.0.0-dev"
 
 # Configure twat_cache if available
 try:
@@ -30,6 +20,8 @@ try:
 except ImportError:
     pass  # twat_cache is not installed, no configuration needed
 
+__all__: list[str] = ["__version__"]
+
 # Import submodules if available
 try:
     from twat_search import web
@@ -37,3 +29,11 @@ try:
     __all__.append("web")
 except ImportError:
     pass
+
+
+def main() -> None:
+    """CLI entry point for twat-search."""
+    print(f"twat-search v{__version__}")
+
+
+__all__.append("main")

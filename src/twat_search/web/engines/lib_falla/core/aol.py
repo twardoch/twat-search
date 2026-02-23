@@ -5,7 +5,7 @@ from twat_search.web.engines.lib_falla.core.falla import Falla
 
 
 class Aol(Falla):
-    def __init__(self):
+    def __init__(self) -> None:
         self.try_it = 0
         self.max_retry = 3
         self.source = "Aol"
@@ -16,7 +16,7 @@ class Aol(Falla):
         self.title = {"tag": "a", "type": "text"}
         self.cite = {"tag": "div:compText", "child": {"tag": "p", "type": "text"}}
 
-    def search(self, search_text, pages=""):
+    def search(self, search_text: str, pages: str = "") -> list[dict[str, str]]:
         url = "https://search.aol.com/aol/search?q=" + search_text.replace(" ", "+") + pages
 
         return self.fetch(url)

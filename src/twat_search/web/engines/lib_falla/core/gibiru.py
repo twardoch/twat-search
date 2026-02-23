@@ -5,7 +5,7 @@ from twat_search.web.engines.lib_falla.core.falla import Falla
 
 
 class Gibiru(Falla):
-    def __init__(self):
+    def __init__(self) -> None:
         self.source = "Gibiru"
         self.mode = "splash_scrap"
         self.try_it = 0
@@ -16,7 +16,7 @@ class Gibiru(Falla):
         self.title = {"tag": "a:gs-title", "type": "text", "child": {}}
         self.cite = {"tag": "div:gs-snippet", "type": "text", "child": {}}
 
-    def search(self, search_text, pages=""):
+    def search(self, search_text: str, pages: str = "") -> list[dict[str, str]]:
         url = "https://gibiru.com/results.html?q=" + search_text.replace(" ", "+") + pages
 
         return self.fetch(url)

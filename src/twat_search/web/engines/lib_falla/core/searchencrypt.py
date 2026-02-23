@@ -5,7 +5,7 @@ from twat_search.web.engines.lib_falla.core.falla import Falla
 
 
 class SearchEncrypt(Falla):
-    def __init__(self):
+    def __init__(self) -> None:
         self.try_it = 0
         self.max_retry = 3
         self.source = "SearchEncrypt"
@@ -16,7 +16,7 @@ class SearchEncrypt(Falla):
         self.title = {"tag": "a:web-result__link", "type": "text", "child": {}}
         self.cite = {"tag": "p:web-result__description", "child": {"tag": "span", "type": "text"}}
 
-    def search(self, search_text, pages=""):
+    def search(self, search_text: str, pages: str = "") -> list[dict[str, str]]:
         url = "https://www.searchencrypt.com/search/?q=" + search_text.replace(" ", "+") + pages
 
         return self.fetch(url)

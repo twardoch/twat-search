@@ -282,7 +282,7 @@ class Google(Falla):
 
                     for selector_type, selector_attrs in alt_container_selectors:
                         logger.info(f"Trying alternate selector: {selector_type}.{selector_attrs}")
-                        elements = soup.find_all(selector_type, attrs=selector_attrs)
+                        elements = soup.find_all(selector_type, attrs=selector_attrs)  # type: ignore[call-overload]
                         logger.info(f"Found {len(elements)} elements")
 
                         if elements:

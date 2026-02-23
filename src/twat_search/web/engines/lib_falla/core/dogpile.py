@@ -5,7 +5,7 @@ from twat_search.web.engines.lib_falla.core.falla import Falla
 
 
 class DogPile(Falla):
-    def __init__(self):
+    def __init__(self) -> None:
         self.try_it = 0
         self.max_retry = 3
         self.source = "DogPile"
@@ -16,7 +16,7 @@ class DogPile(Falla):
         self.title = {"tag": "a:web-bing__title", "type": "text"}
         self.cite = {"tag": "span:web-bing__description", "type": "text"}
 
-    def search(self, search_text, pages=""):
+    def search(self, search_text: str, pages: str = "") -> list[dict[str, str]]:
         url = "https://www.dogpile.com/serp?q=" + search_text.replace(" ", "+") + pages
 
         return self.fetch(url)

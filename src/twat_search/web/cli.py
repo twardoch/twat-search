@@ -510,7 +510,7 @@ class SearchCLI:
             else:
                 self.console.print("  No default parameters specified")
             try:
-                base_engine = engine_name.split("-")[0]
+                base_engine = engine_name.split("-", maxsplit=1)[0]
                 module_name = f"twat_search.web.engines.{base_engine}"
                 engine_module = importlib.import_module(module_name)
                 function_name = engine_name.replace("-", "_")
