@@ -159,7 +159,7 @@ all = [
 # Entry points for command-line executables installed with the package.
 #------------------------------------------------------------------------------
 [project.scripts]
-twat-search = 'twat_search.__main__:main' # Main search CLI
+twat-search = 'twat_search:main' # Main search CLI
 twat-search-web = 'twat_search.web.cli:main' # Web interface CLI
 
 #------------------------------------------------------------------------------

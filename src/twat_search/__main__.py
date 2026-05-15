@@ -19,8 +19,8 @@ from rich.logging import RichHandler
 from rich.theme import Theme
 from rich.traceback import install
 
+from twat_search import __version__ as project_version
 from twat_search import web  # Keep for potential use, handle import error at usage
-from twat_search.__version__ import version as project_version  # Alias to avoid conflict
 
 # Set up logging with rich
 logging.basicConfig(
@@ -78,15 +78,10 @@ class TwatSearchCLI:
 def main() -> None:
     install(show_locals=True)
     ansi_decoder = AnsiDecoder()
-    # Use the module-level console instance, re-configure if necessary or use a new one
-    # For simplicity, re-assigning to the global console for this specific theme.
-    # Alternatively, pass console instance around or make Theme global.
-    global console
-    console = Console(theme=Theme({"prompt": "cyan", "question": "bold cyan"}))
+    themed_console = Console(theme=Theme({"prompt": "cyan", "question": "bold cyan"}))
 
     def display(lines: Any, out: Any) -> None:
-        # Ensure this console is the themed one if that's intended for fire output
-        console.print(Group(*map(ansi_decoder.decode_line, lines)))
+        themed_console.print(Group(*map(ansi_decoder.decode_line, lines)))
 
     fire.core.Display = display
 

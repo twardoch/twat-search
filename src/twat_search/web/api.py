@@ -1,3 +1,38 @@
+"""Multi-engine web search API for twat-search.
+
+This module is the main entry point for programmatic web searches.  The
+top-level :func:`search` coroutine fans a query out to multiple search engines
+concurrently and returns a unified list of :class:`~twat_search.web.models.SearchResult`
+objects.
+
+Supported engines (registered in ``twat_search/web/engines/``)
+---------------------------------------------------------------
+brave, bing_scraper, google_scraper, duckduckgo, tavily, you, pplx
+(Perplexity), serpapi, hasdata, falla, critique, and a ``mock`` engine for
+testing.
+
+Most engines require an API key in the environment.  Check each engine module's
+``PROVIDER_HELP`` dict for the exact variable name.
+
+Usage::
+
+    import asyncio
+    from twat_search.web.api import search
+
+    results = asyncio.run(search("open source LLMs", engines=["brave", "duckduckgo"]))
+    for r in results:
+        print(r.title, r.url)
+
+Passing ``engines=None`` tries all engines that are configured in the active
+:class:`~twat_search.web.config.Config`.  Results from every engine are
+merged into a single flat list; the order reflects the engine preference
+and the order results were returned.
+
+Engine-specific parameters can be passed as keyword arguments prefixed with
+the engine name, e.g. ``brave_country="GB"`` sets the ``country`` parameter
+only for the Brave engine.
+"""
+
 from __future__ import annotations
 
 import asyncio

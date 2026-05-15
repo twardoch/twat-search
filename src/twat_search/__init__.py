@@ -32,8 +32,10 @@ except ImportError:
 
 
 def main() -> None:
-    """CLI entry point for twat-search."""
-    print(f"twat-search v{__version__}")
+    """CLI entry point for twat-search and ``twat search`` dispatch."""
+    from twat_search.__main__ import main as cli_main
+
+    cli_main()
 
 
 __all__.append("main")

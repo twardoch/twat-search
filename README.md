@@ -72,17 +72,20 @@ You can find the list of available extras and the engines they enable in the `py
 ### Command-Line Interface (CLI)
 
 The CLI provides a quick way to perform searches directly from your terminal. The main command is `twat-search web`.
+When installed with the `twat` host package, the plugin entry point is `search`, so host-dispatched commands use `twat search web ...`.
 
 **Basic Search:**
 Query all configured and enabled engines:
 ```bash
 twat-search web q "latest advancements in AI"
+twat search web q "latest advancements in AI"
 ```
 
 **Specify Engines:**
 Search using only selected engines (e.g., `brave` and `duckduckgo`):
 ```bash
 twat-search web q "Python programming best practices" -e brave,duckduckgo
+twat search web q "Python programming best practices" -e brave,duckduckgo
 ```
 *Note: Engine names are typically lowercase. Use `twat-search web info --plain` to see available engine identifiers.*
 
@@ -96,6 +99,7 @@ twat-search web q "future of renewable energy" --json
 See a list of all search engines detected by the tool:
 ```bash
 twat-search web info --plain
+twat search web info --plain
 ```
 This will show their identifiers, whether they are enabled, and if API keys are found (if required).
 
@@ -234,6 +238,19 @@ This section provides a more detailed look into the inner workings of `twat-sear
 *   "-" in "Package Extra" means the dependencies are part of the core `twat-search` installation or not explicitly defined as an extra (this might need verification against `pyproject.toml`).
 *   Engine identifiers are used with the `-e` flag in the CLI (e.g., `twat-search web q "query" -e brave,duckduckgo`) and in programmatic configuration.
 *   Some engines might be disabled by default and require explicit enabling via environment variables (e.g., `ENGINE_NAME_ENABLED=true`) or programmatic configuration, in addition to API keys and optional dependencies.
+
+### Embedded Falla scraper boundary
+
+`twat_search.web.engines.lib_falla` is embedded scraper support used by the Falla engine wrappers. Treat it as an internal implementation detail, not as the public API for search integrations. User-facing code should call `twat_search.web.api.search`, the `twat-search web ...` CLI, or wrapper modules such as `twat_search.web.engines.falla`.
+
+Install Falla support with:
+
+```bash
+pip install 'twat-search[falla]'
+playwright install
+```
+
+The embedded scraper depends on browser automation and network conditions, so routine smoke tests should avoid live Falla calls unless explicitly marked as online/integration tests.
 
 ### Configuration Management (Detailed)
 
