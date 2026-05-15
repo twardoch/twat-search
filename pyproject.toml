@@ -215,13 +215,10 @@ allow-direct-references = true # Allow direct references in metadata (useful for
 # each with specific dependencies and commands.
 #------------------------------------------------------------------------------
 [tool.hatch.env]
-requires = ["hatch-pip-compile"] # Use pip-compile for environment management
 
 # Default development environment with basic tools
 [tool.hatch.envs.default]
 features = ['dev', 'test', 'all']
-type = "pip-compile"
-pip-compile-resolver = "uv"
 
 # Commands available in the default environment
 [tool.hatch.envs.default.scripts]

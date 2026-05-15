@@ -1,6 +1,7 @@
 """twat-search: Tools for web search and information retrieval."""
 
 from __future__ import annotations
+from .__version__ import __version__  # noqa: F401
 
 from twat_search.__version__ import __version__
 
