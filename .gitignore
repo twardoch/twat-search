@@ -331,3 +331,4 @@ google_debug_*.html
 pyproject_next.toml
 requirements.txt
 scripts/
+dist/

@@ -2,12 +2,7 @@
 
 from __future__ import annotations
 
-from importlib.metadata import PackageNotFoundError, version
-
-try:
-    __version__ = version("twat-search")
-except PackageNotFoundError:
-    __version__ = "0.0.0-dev"
+from twat_search.__version__ import __version__
 
 # Configure twat_cache if available
 try:
