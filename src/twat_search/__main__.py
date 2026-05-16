@@ -1,91 +1,70 @@
-#!/usr/bin/env -S uv run -s
-# /// script
-# dependencies = ["fire>=0.5.0", "rich>=13.6.0"]
-# ///
 # this_file: src/twat_search/__main__.py
-"""
-Main entry point for the Twat Search CLI.
-"""
+"""Fire CLI entry point for twat-search."""
 
 from __future__ import annotations
 
-import logging
-from typing import Any, TypeVar
-
 import fire
-from rich.ansi import AnsiDecoder
-from rich.console import Console, Group
-from rich.logging import RichHandler
-from rich.theme import Theme
-from rich.traceback import install
-
-from twat_search import __version__ as project_version
-from twat_search import web  # Keep for potential use, handle import error at usage
-
-# Set up logging with rich
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(message)s",
-    handlers=[RichHandler(rich_tracebacks=True)],
-)
-logger = logging.getLogger(__name__)
-console = Console()
-
-# Define types for the CLI components
-SearchCLIType = TypeVar("SearchCLIType")
 
 
-class TwatSearchCLI:
-    """Twat Search Command Line Interface."""
+def _version() -> str:
+    """Print the installed package version."""
+    from twat_search.__version__ import __version__  # noqa: PLC0415
 
-    def __init__(self) -> None:
-        """Initialize the Twat Search CLI."""
-        try:
-            # Access the cli attribute from the imported web module
-            if web and hasattr(web, "cli") and hasattr(web.cli, "SearchCLI"):
-                self.web: Any = web.cli.SearchCLI()
-            else:
-                msg = "SearchCLI not found in twat_search.web.cli"
-                raise AttributeError(msg)
-        except (ImportError, AttributeError) as e:
-            # Create a placeholder if the web CLI is not available
-            logger.error(f"Web CLI not available: {e!s}")
-            logger.error(
-                "Make sure twat_search.web.cli is properly installed and accessible.",
-            )
-            self.web = self._cli_error
+    return __version__
 
-    @staticmethod
-    def _cli_error(*args: Any, **kwargs: Any) -> int:
-        """Placeholder function when web CLI is not available.
 
-        Args are ignored but necessary to match any possible call signature.
-        """
-        # Use the module-level console instance
-        console.print(
-            "[bold red]Web CLI not available. Make sure twat_search.web.cli is properly installed.[/bold red]",
-        )
-        return 1
+def _list_engines() -> None:
+    """List all known search engines and their availability."""
+    from twat_search.web.cli import SearchCLI  # noqa: PLC0415
 
-    @staticmethod
-    def version() -> str:
-        """Display the version of the Twat Search tool."""
-        if project_version:
-            return f"Twat Search version {project_version}"
-        return "Twat Search (version not available)"
+    SearchCLI().info()
+
+
+def _make_commands() -> dict[str, object]:
+    """Build COMMANDS dict lazily so web imports don't run at module load time."""
+    from twat_search.web.cli import SearchCLI  # noqa: PLC0415
+
+    return {
+        "version": _version,
+        "list-engines": _list_engines,
+        "web": SearchCLI(),
+    }
+
+
+# Explicit allow-list per SPEC §6.
+# Populated lazily in main() to keep optional-dep imports deferred.
+COMMANDS: dict[str, object] = {
+    "version": _version,
+    "list-engines": _list_engines,
+    # 'web' group added at runtime in main() to avoid eager import of SearchCLI
+}
 
 
 def main() -> None:
-    install(show_locals=True)
-    ansi_decoder = AnsiDecoder()
-    themed_console = Console(theme=Theme({"prompt": "cyan", "question": "bold cyan"}))
+    """Top-level dispatcher: twat-search <subcommand> …"""
+    fire.Fire(_make_commands(), name="twat-search")
 
-    def display(lines: Any, out: Any) -> None:
-        themed_console.print(Group(*map(ansi_decoder.decode_line, lines)))
 
-    fire.core.Display = display
+# ---------------------------------------------------------------------------
+# Dashed-entry helpers — one per leaf and group (SPEC §4.2 / §4.3)
+# ---------------------------------------------------------------------------
 
-    fire.Fire(TwatSearchCLI, name="twat-search")
+
+def cmd_version() -> None:
+    """Entry point for twat-search-version."""
+    fire.Fire(_version, name="twat-search-version")
+
+
+def cmd_list_engines() -> None:
+    """Entry point for twat-search-list-engines."""
+    fire.Fire(_list_engines, name="twat-search-list-engines")
+
+
+def cmd_web() -> None:
+    """Entry point for twat-search-web (also used as the legacy twat-search-web script)."""
+    from twat_search.web.cli import main as web_main  # noqa: PLC0415
+
+    web_main()
 
 
 if __name__ == "__main__":

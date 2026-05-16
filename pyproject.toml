@@ -159,8 +159,13 @@ all = [
 # Entry points for command-line executables installed with the package.
 #------------------------------------------------------------------------------
 [project.scripts]
-twat-search = 'twat_search:main' # Main search CLI
-twat-search-web = 'twat_search.web.cli:main' # Web interface CLI
+# Top-level dispatcher
+twat-search             = 'twat_search.__main__:main'
+# Per-leaf dashed entries
+twat-search-version     = 'twat_search.__main__:cmd_version'
+twat-search-list-engines = 'twat_search.__main__:cmd_list_engines'
+# Per-group dashed entries (web group)
+twat-search-web         = 'twat_search.__main__:cmd_web'
 
 #------------------------------------------------------------------------------
 # BUILD SYSTEM CONFIGURATION
