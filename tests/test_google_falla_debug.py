@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# this_file: test_google_falla_debug.py
+# this_file: tests/test_google_falla_debug.py
 """
 Debug test script for Google Falla engine.
 
@@ -13,6 +13,8 @@ import sys
 import tempfile
 import traceback
 from pathlib import Path
+
+import pytest
 
 # Configure verbose logging
 logging.basicConfig(
@@ -31,9 +33,7 @@ try:
     # Import the search function
     from twat_search.web.engines.lib_falla.core.google import Google
 except ImportError as e:
-    logger.error(f"Failed to import Google engine: {e}")
-    logger.error("Make sure the path is correct and all dependencies are installed.")
-    sys.exit(1)
+    pytest.skip(f"Google Falla debug test requires optional Playwright dependencies: {e}", allow_module_level=True)
 
 
 async def main():

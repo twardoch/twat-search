@@ -1,283 +1,145 @@
---- 
+---
 this_file: TODO.md
---- 
+---
 
-# TODO
+# TODO: twat-search 2.0
 
-Tip: Periodically run `./cleanup.py status` to see results of lints and tests. Use `uv pip ...` not `pip ...`
+Goal: rebuild `twat-search` into a powerful, provider-neutral search package
+that can use APIs, scrapers, browser automation, rotating proxies, unofficial
+endpoints, and user-selected LLMs without preserving 0.x compatibility.
 
+## Phase 0: Current-State Cleanup
 
-## Phase 1
+- [x] Delete obsolete generated caches from the repo tree: `__pycache__`,
+  `.mypy_cache`, `.pytest_cache`, `.ruff_cache`, `dist/`, and local databases
+  unless deliberately kept outside version control.
+- [ ] Remove stale review artifacts that do not describe the 2.0 target:
+  `REVIEW/FILES-*`, `REVIEW/TODO-*`, and superseded Falla debug notes.
+- [ ] Replace Falla-first language in code comments and docs with provider
+  neutral terms: API engine, scraper engine, browser engine, LLM engine.
+- [ ] Audit every source file for the required `this_file` header and fix
+  missing or incorrect paths.
+- [ ] Run the baseline verification command and record failures in
+  `CHANGELOG.md`:
+  `uvx hatch test`.
 
-- [ ] Fix Falla-based search engines
-  - [ ] Resolve Playwright dependency issues (ModuleNotFoundError: No module named 'playwright')
-  - [ ] Ensure proper error handling for browser automation
-  - [ ] Add retry mechanism for flaky browser interactions
-  - [ ] Update selectors in search engine implementations to match current page structures
-  - [ ] Implement proper handling of CAPTCHA challenges and consent pages
+## Phase 1: Reference Research
 
-- [ ] Address type errors in the codebase
-  - [ ] Fix type error in `wait_for_selector` where `self.wait_for_selector` could be `None`
-  - [ ] Fix type error in `find_all` where `attrs` parameter has incompatible type
-  - [ ] Fix type error in `get_title`, `get_link`, and `get_snippet` where `elem` parameter has incompatible type
-  - [ ] Fix type error in `elem.find` where `PageElement` has no attribute `find`
-  - [ ] Fix FBT001/FBT002 errors (Boolean-typed positional arguments)
-  - [ ] Fix unused argument warnings (ARG001/ARG002)
-  - [ ] Fix line length issues (E501)
+- [ ] `private/ytrix`: extract Webshare proxy construction, proxy-enabled pacing,
+  retry timeout, and parallelism policy from `ytrix/info.py`.
+- [ ] `private/crapi`: inspect `private-tldr.txt` and targeted browser/proxy
+  projects for reusable browser lifecycle, stealth, session, and proxy manager
+  patterns.
+- [ ] `private/abersetz`: inspect provider catalog, OpenAI-compatible endpoint
+  selection, local discovery, and offline test patterns.
+- [ ] `private/flchimp`: inspect validation, dirty-data cleanup, CLI failure
+  messages, and public API docstring tests.
+- [ ] `private/TO_INTEGRATE.md`: review listed projects and record borrowable
+  ideas from qbittorrent search plugins, deep searchers, GitHub search, and
+  dork tooling.
+- [ ] `/Users/adam/.env.anon.txt`: classify available keys into API search,
+  browser/proxy, LLM, crawling/extraction, and unrelated services.
 
-- [ ] Improve integration with Playwright
-  - [ ] Add proper browser context management
-  - [ ] Implement headless mode configuration
-  - [ ] Add proxy support for browser-based engines
-  - [ ] Implement specific exception handling for common Playwright errors
+## Phase 2: 2.0 Core Refactor
 
-## Phase 2
+- [ ] Replace the current engine registry with typed provider metadata:
+  capabilities, auth variables, cost class, transport type, proxy support,
+  result types, and stability.
+- [ ] Introduce typed config sections for proxies, LLM routing, browser runtime,
+  API providers, request policy, and result processing.
+- [ ] Replace stringly engine params with parsed request objects:
+  `SearchRequest`, `EngineRequest`, `RoutePolicy`, and `SearchResponse`.
+- [ ] Make errors first-class result data: initialization failure, auth failure,
+  timeout, block/CAPTCHA, empty result, parse failure, and provider schema drift.
+- [ ] Remove backwards-compatibility branches that preserve old engine names or
+  Falla-specific call shapes unless they are useful aliases.
+- [ ] Split execution into API, scraper, browser, and LLM transport modules.
 
-- [ ] Improve code quality
-  - [ ] Refactor CLI module to reduce complexity
-  - [ ] Add more comprehensive docstrings
-  - [ ] Standardize error handling patterns across all engines
-  - [ ] Add try-except blocks for all external API calls
-  - [ ] Create custom exception classes for different error scenarios
-  - [ ] Add graceful fallbacks for common error cases
+## Phase 3: Provider Integrations
 
-- [ ] Enhance documentation
-  - [ ] Create detailed API documentation
-  - [ ] Add examples for each search engine
-  - [ ] Document configuration options comprehensively
-  - [ ] Add detailed docstrings to all classes and methods
+- [ ] Keep and harden current API engines: Brave, Brave News, Tavily, You.com,
+  You.com News, Perplexity, SerpAPI, HasData, and Critique.
+- [ ] Add API engines indicated by available keys: Google CSE, Serper, DataForSEO,
+  Exa, Firecrawl, Jina, Search1API, Gensearch, AISearch, and Apify.
+- [ ] Add proxy-aware scraper engines for DuckDuckGo, Bing, Google, Qwant, Yahoo,
+  Mojeek, and Yandex using shared request policy.
+- [ ] Add browser engines with Playwright contexts, proxy injection, block
+  detection, consent handling, screenshots on failure, and clear teardown.
+- [ ] Add GitHub/code search engines based on `github-search` and `github-dorks`
+  references.
+- [ ] Add plugin-style search adapters inspired by qbittorrent search plugins so
+  experimental engines can live outside the core package.
 
-- [ ] Standardize JSON output formats
-  - [ ] Ensure consistent field names across all engines
-  - [ ] Add schema validation for engine outputs
-  - [ ] Implement proper JSON serialization for all models
-  - [ ] Utilize the existing `SearchResult` model consistently
-  - [ ] Remove utility functions like `_process_results` and `_display_json_results`
-  - [ ] Remove `CustomJSONEncoder` class
-  - [ ] Update engine `search` methods to return list of `SearchResult` objects
+## Phase 4: LLM Search Layer
 
-- [ ] Improve test coverage
-  - [ ] Add unit tests for all search engine implementations
-  - [ ] Add integration tests for the entire search pipeline
-  - [ ] Implement mock responses for external API calls in tests
-  - [ ] Add performance benchmarks for search operations
+- [ ] Add LLM provider config for OpenAI-compatible endpoints, model names, API
+  keys, base URLs, and feature flags.
+- [ ] Implement optional query rewriting and decomposition before fan-out.
+- [ ] Implement result reranking with provenance showing model, prompt version,
+  input result IDs, and score rationale.
+- [ ] Implement answer synthesis that cites result URLs and never hides source
+  engine failures.
+- [ ] Add offline tests with fake LLM clients from the `abersetz` pattern.
 
-## Low Priority
+## Phase 5: CLI and API
 
-- [ ] Add more search engines
-  - [ ] Add support for Kagi search
-  - [ ] Implement Ecosia search
-  - [ ] Implement Startpage search
-  - [ ] Implement Qwant AI engine using the QwantAI package
-  - [ ] Integrate with more specialized search APIs
+- [ ] Replace the Fire CLI surface if needed with a smaller explicit command
+  layer: `q`, `info`, `providers`, `routes`, `doctor`, and `fetch`.
+- [ ] Add route presets: `fast`, `cheap`, `resilient`, `deep`, `browser`, and
+  `api-only`.
+- [ ] Support JSONL output for streaming multi-engine results.
+- [ ] Add `--explain` output that shows selected engines, skipped engines, proxy
+  use, retries, errors, and LLM steps.
+- [ ] Ensure `twat search ...` and `twat-search ...` expose the same behavior.
 
-- [ ] Implement caching mechanism
-  - [ ] Add Redis-based result caching
-  - [ ] Implement TTL for cached results
-  - [ ] Add result deduplication across engines
+## Phase 6: Verification
 
-- [ ] Performance optimizations
-  - [ ] Profile and optimize slow code paths
-  - [ ] Reduce memory usage for large result sets
-  - [ ] Optimize concurrent search operations
-  - [ ] Implement timeout handling for slow search engines
+- [ ] Unit-test config parsing, provider metadata, proxy URL creation, request
+  parsing, result normalization, error typing, and route selection.
+- [ ] Mock-test every API engine with captured responses or fixtures.
+- [ ] Add live tests gated by explicit environment variables so real keys are
+  never used accidentally.
+- [ ] Add browser tests with local HTML fixtures before live search pages.
+- [ ] Add one smoke command:
+  `twat-search web q -e brave "Adam Twardoch" -n 1 --json --verbose`.
+- [ ] Add a provider sweep command:
+  `for engine in $(twat-search web info --plain); do twat-search web q -e "$engine" "Adam Twardoch" -n 1 --json --verbose; done`.
 
-- [ ] Enhance result processing
-  - [ ] Add result ranking based on relevance
-  - [ ] Implement result filtering options
-  - [ ] Add support for different result formats (HTML, Markdown, etc.)
+## Implemented in This 2.0 Rewrite
 
-- [ ] Improve CLI functionality
-  - [ ] Add interactive mode for search operations
-  - [ ] Implement result pagination in CLI output
-  - [ ] Add support for saving search results to file
-  - [ ] Implement search history functionality
-
-## Completed
-
-- [x] Set up Falla module
-- [x] Create base search engine class
-- [x] Implement Brave search engine
-- [x] Implement Google search via SerpAPI
-- [x] Implement Falla-based engines (Google, Bing, etc.)
-- [x] Fix linting errors in google.py and test_google_falla_debug.py
-- [x] Improve error handling in get_engine function
-- [x] Fix handling of empty engines list in search function
-- [x] Fix mock engine result count handling
-- [x] Fix environment variable parsing for engine default parameters
-- [x] Add BRAVE_DEFAULT_PARAMS to ENV_VAR_MAP
-- [x] Modify Config class to check for _TEST_ENGINE environment variable
-- [x] Replace `os.path.abspath()` with `Path.resolve()` in `google.py`
-- [x] Replace `os.path.exists()` with `Path.exists()` in `google.py`
-- [x] Replace insecure usage of temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
-- [x] Replace `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
-- [x] Remove unused imports (`os` and `NavigableString`) from `google.py`
-- [x] Add descriptive error messages when engines are not found or disabled
-- [x] Handle engine initialization failures gracefully
-- [x] Improve error handling in `init_engine_task` function
-- [x] Update `search` function to handle the changes to `init_engine_task`
-- [x] Add standardization of engine names for more consistent lookups
-- [x] Add wrapper coroutine to handle exceptions during search process
-- [x] Add detailed logging for engine initialization and search processes
-- [x] Return empty results on failure instead of raising exceptions
-
-Tip: Periodically run `./cleanup.py status` to see results of lints and tests.
-
-This is the test command that we are targeting: 
-
-```bash
-for engine in $(twat-search web info --plain); do echo; echo; echo; echo ">>> $engine"; twat-search web q -e $engine "Adam Twardoch" -n 1 --json --verbose; done;
-```
-
-## High Priority
-
-### Phase 1: Fix Falla-based Search Engines
-
-- [ ] Fix Yahoo and Qwant search engines
-  - [ ] Update selectors in Yahoo implementation to match current page structure
-  - [ ] Update selectors in Qwant implementation to match current page structure
-  - [ ] Test with various search queries to ensure reliability
-  - [ ] Handle consent pages and other interactive elements
-
-- [ ] Fix Google and DuckDuckGo search engines
-  - [ ] Update selectors in Google implementation to match current page structure
-  - [ ] Update selectors in DuckDuckGo implementation to match current page structure
-  - [ ] Implement proper handling of CAPTCHA challenges
-  - [ ] Test with various search queries to ensure reliability
-
-- [ ] Fix type errors in `google.py`:
-  - [ ] Fix type error in `wait_for_selector` where `self.wait_for_selector` could be `None`
-  - [ ] Fix type error in `find_all` where `attrs` parameter has incompatible type
-  - [ ] Fix type error in `get_title`, `get_link`, and `get_snippet` where `elem` parameter has incompatible type
-  - [ ] Fix type error in `elem.find` where `PageElement` has no attribute `find`
-
-- [ ] Improve Falla integration with Playwright:
-  - [ ] Ensure proper browser and context management for efficient resource usage
-  - [ ] Implement specific exception handling for common Playwright errors
-  - [ ] Add comprehensive type hinting throughout the codebase
-  - [ ] Improve method docstrings for better code documentation
-
-### Phase 2: Address Remaining Engine Issues
-
-- [ ] Fix engines returning empty results
-  - [ ] Identify and address common failure patterns
-  - [ ] Add detailed logging for debugging
-  - [ ] Create test script to isolate issues
-
-- [ ] Fix linting errors in the codebase:
-  - [ ] Address FBT001/FBT002 errors in CLI functions (Boolean-typed positional arguments)
-  - [ ] Fix E501 line length issues in various files
-  - [ ] Address F401 unused import errors in `__init__.py` and other files
-  - [ ] Fix B904 exception handling issues (use `raise ... from err` pattern)
-  - [ ] Address PLR2004 magic value comparison issues
-
-## Medium Priority
-
-### Improve Code Quality
-
-- [ ] Implement comprehensive error handling:
-  - [ ] Add try-except blocks for all external API calls
-  - [ ] Create custom exception classes for different error scenarios
-  - [ ] Add graceful fallbacks for common error cases
-
-- [ ] Improve test coverage:
-  - [ ] Add unit tests for all search engine implementations
-  - [ ] Add integration tests for the entire search pipeline
-  - [ ] Implement mock responses for external API calls in tests
-  - [ ] Add performance benchmarks for search operations
-
-- [ ] Enhance documentation:
-  - [ ] Add detailed docstrings to all classes and methods
-  - [ ] Create comprehensive API documentation
-  - [ ] Add usage examples for all search engines
-  - [ ] Document configuration options and environment variables
-
-### Standardize JSON Output Format
-
-- [ ] Standardize JSON output across all engines
-  - [ ] Utilize the existing `SearchResult` model consistently
-  - [ ] Remove utility functions like `_process_results` and `_display_json_results`
-  - [ ] Remove `CustomJSONEncoder` class
-  - [ ] Update engine `search` methods to return list of `SearchResult` objects
-
-- [ ] Update API function return types
-  - [ ] Change return type to `list[SearchResult]`
-  - [ ] Ensure proper handling of results from engines
-
-- [ ] Update CLI display functions
-  - [ ] Use `model_dump` for JSON serialization
-  - [ ] Implement simplified result display
-
-## Low Priority
-
-### Feature Enhancements
-
-- [ ] Add support for additional search engines:
-  - [ ] Implement Ecosia search
-  - [ ] Implement Startpage search
-  - [ ] Implement other alternative search engines
-  - [ ] Implement Qwant AI engine using the QwantAI package (https://pypi.org/project/QwantAI/)
-
-- [ ] Enhance result processing:
-  - [ ] Implement result deduplication across engines
-  - [ ] Add result ranking based on relevance
-  - [ ] Implement result filtering options
-  - [ ] Add support for different result formats (HTML, Markdown, etc.)
-
-- [ ] Improve CLI functionality:
-  - [ ] Add interactive mode for search operations
-  - [ ] Implement result pagination in CLI output
-  - [ ] Add support for saving search results to file
-  - [ ] Implement search history functionality
-
-- [ ] Add advanced search features:
-  - [ ] Implement image search capabilities
-  - [ ] Add support for news search
-  - [ ] Implement video search functionality
-  - [ ] Add support for academic/scholarly search
-
-- [ ] Optimize performance:
-  - [ ] Implement caching for search results
-  - [ ] Optimize concurrent search operations
-  - [ ] Reduce memory usage during search operations
-  - [ ] Implement timeout handling for slow search engines
-
-## Completed Tasks
-
-- [x] Setup and dependencies
-  - [x] Create new module `src/twat_search/web/engines/falla.py`
-  - [x] Add necessary dependencies to `pyproject.toml`
-  - [x] Define engine constants in `src/twat_search/web/engine_constants.py`
-  - [x] Update `src/twat_search/web/engines/__init__.py` to import and register new engines
-  - [x] Create utility function to check if Falla is installed and accessible
-
-- [x] Create base `FallaSearchEngine` class
-  - [x] Inherit from `SearchEngine`
-  - [x] Implement `search` method with proper error handling and retries
-  - [x] Create fallback implementation for when Falla is not available
-
-- [x] Implement specific Falla-based engines
-  - [x] `google-falla`: Google search using Falla
-  - [x] `bing-falla`: Bing search using Falla
-  - [x] `duckduckgo-falla`: DuckDuckGo search using Falla
-  - [x] `yahoo-falla`: Yahoo search using Falla
-  - [x] `qwant-falla`: Qwant search using Falla
-  - [x] And other engines (Aol, Ask, Dogpile, Gibiru, Mojeek, Yandex)
-
-- [x] Fix linting errors in the codebase:
-  - [x] Replace `os.path.abspath()` with `Path.resolve()` in `google.py`
-  - [x] Replace `os.path.exists()` with `Path.exists()` in `google.py`
-  - [x] Replace insecure usage of temporary file directory `/tmp` with `tempfile.gettempdir()` in `test_google_falla_debug.py`
-  - [x] Replace `os.path.join()` with `Path` and the `/` operator in `test_google_falla_debug.py`
-  - [x] Remove unused imports (`os` and `NavigableString`) from `google.py`
-
-- [x] Improve `get_engine` function and error handling
-  - [x] Add descriptive error messages when engines are not found or disabled
-  - [x] Handle engine initialization failures gracefully
-  - [x] Improve error handling in `init_engine_task` function
-  - [x] Update `search` function to handle the changes to `init_engine_task`
-  - [x] Add standardization of engine names for more consistent lookups
-  - [x] Add wrapper coroutine to handle exceptions during search process
-  - [x] Add detailed logging for engine initialization and search processes
-  - [x] Return empty results on failure instead of raising exceptions
-
+- [x] Rewrote `README.md` as the intended 2.0 package contract.
+- [x] Replaced the legacy TODO with this actionable 2.0 plan.
+- [x] Added typed proxy configuration with Webshare-style env loading.
+- [x] Added typed LLM configuration for later model-assisted search stages.
+- [x] Passed configured HTTPX proxy URLs into engine request execution.
+- [x] Converted obsolete Falla/browser tests to skip cleanly when Playwright is absent.
+- [x] Fixed the Hatch test environment so async tests run under `pytest-asyncio`.
+- [x] Added a typed provider catalog for implemented and planned 2.0 providers.
+- [x] Rebased legacy engine constants and friendly names on provider metadata.
+- [x] Added provider transport/status/proxy/browser/rate metadata to CLI JSON engine info.
+- [x] Generated default engine config and engine env-var mappings from provider metadata.
+- [x] Replaced hard-coded CLI `free` and `best` presets with provider-catalog filters.
+- [x] Added catalog-backed route policies for `best`, `fast`, `cheap`, `resilient`, `deep`, `browser`, `api-only`, and `all`.
+- [x] Made `api.search(..., engines=None)` select implemented, enabled, available, credentialed route engines.
+- [x] Added typed request/response/outcome/failure models for detailed multi-engine search runs.
+- [x] Added `search_detailed()` so provider failures and empty responses are returned as first-class data.
+- [x] Removed generated Python/test/lint cache directories from the working tree.
+- [x] Promoted Serper from planned metadata to an implemented API engine using `SERPER_API_KEY`.
+- [x] Added mocked Serper tests for registration, request payloads, result conversion, auth failure, and parse failure.
+- [x] Promoted Google CSE from planned metadata to an implemented API engine using `GOOGLE_CSE_API_KEY` plus `GOOGLE_CSE_ID`/`GOOGLE_CSE_CX`.
+- [x] Added mocked Google CSE tests for registration, request params, result conversion, CSE ID failure, and parse failure.
+- [x] Promoted DataForSEO from planned metadata to an implemented live organic SERP engine using `DATAFORSEO_API_KEY`.
+- [x] Added mocked DataForSEO tests for registration, Basic auth, live payloads, result conversion, and task failure.
+- [x] Promoted Exa from planned metadata to an implemented search API engine using `EXAAI_API_KEY`/`EXA_API_KEY`.
+- [x] Added mocked Exa tests for registration, request payloads, result conversion, and parse failure.
+- [x] Added `klepto` to runtime dependencies for persistent caching backend utilities.
+- [x] Promoted Firecrawl from planned metadata to an implemented v2 search/extract API engine using `FIRECRAWL_API_KEY`/`FIRECRAWL_API_KEY_2`.
+- [x] Added mocked Firecrawl tests for registration, v2 payloads, result conversion, markdown snippets, and provider failure.
+- [x] Promoted Jina from planned metadata to an implemented search/reader API engine using `JINA_API_KEY`.
+- [x] Added mocked Jina tests for registration, URL encoding, result conversion, content fallback, and parse failure.
+- [x] Promoted Search1API from planned metadata to an implemented multi-service search API engine using `SEARCH1API_KEY`.
+- [x] Added mocked Search1API tests for registration, documented payload construction, result conversion, content fallback, and parse failure.
+- [x] Promoted AISearch from planned metadata to an implemented web-summary API engine using `AISEARCH_API_KEY`.
+- [x] Added mocked AISearch tests for registration, documented payload construction, context validation, source-backed result conversion, and parse failure.
+- [x] Promoted Apify from planned metadata to an implemented Google Search Scraper actor engine using `APIFY_API_KEY`.
+- [x] Added mocked Apify tests for registration, sync actor URLs, actor input payloads, nested organic results, flat dataset items, and parse failure.

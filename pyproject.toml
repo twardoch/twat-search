@@ -48,6 +48,7 @@ dependencies = [
     # Base twat framework
     'twat>=2.7.0', # Core framework for plugin system
     'twat-cache[all]>=2.6.7', # Caching utilities for search results
+    'klepto>=0.2.6', # Persistent caching backend utilities
     
     # Data validation and settings
     'pydantic>=2.10.6', # Data validation using type annotations
@@ -296,6 +297,11 @@ features = ['test']
 [tool.hatch.envs.ci.scripts]
 test = "pytest --cov=src/twat_search --cov-report=xml"
 
+[tool.hatch.envs.hatch-test]
+extra-dependencies = [
+    "pytest-asyncio>=0.25.3",
+]
+
 # Search backends environment
 [tool.hatch.envs.search-backends]
 features = [
@@ -485,4 +491,3 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101"]
-

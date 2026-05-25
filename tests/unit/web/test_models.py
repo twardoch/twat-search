@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 from pydantic import HttpUrl, ValidationError
 
-from twat_search.web.models import SearchResult
+from twat_search.web.models import EngineOutcome, SearchFailure, SearchRequest, SearchResponse, SearchResult
 
 
 def test_search_result_valid_data() -> None:
@@ -133,3 +133,31 @@ def test_search_result_deserialization() -> None:
     assert result.snippet == "This is a test result"
     assert result.source == "test_engine"
     assert result.rank == 1
+
+
+def test_search_request_rejects_empty_query() -> None:
+    """SearchRequest parses and rejects invalid user input at the boundary."""
+    with pytest.raises(ValidationError):
+        SearchRequest(query="   ")
+
+
+def test_search_response_serializes_engine_failures() -> None:
+    """Detailed responses carry results and first-class provider failures."""
+    failure = SearchFailure(
+        engine="mock",
+        kind="timeout",
+        message="request timed out",
+        exception_type="TimeoutError",
+        retryable=True,
+    )
+    response = SearchResponse(
+        request=SearchRequest(query="test"),
+        engines=[EngineOutcome(engine="mock", status="failed", failure=failure)],
+        failures=[failure],
+    )
+
+    data = response.model_dump()
+    assert data["request"]["query"] == "test"
+    assert data["engines"][0]["status"] == "failed"
+    assert data["failures"][0]["kind"] == "timeout"
+    assert data["failures"][0]["retryable"] is True

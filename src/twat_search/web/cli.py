@@ -36,6 +36,8 @@ from twat_search.web.engines import (
     is_engine_available,
     standardize_engine_name,
 )
+from twat_search.web.provider_catalog import get_provider_metadata, select_provider_codes
+from twat_search.web.routes import route_names, select_route_engines
 
 
 # Custom JSON encoder that handles non-serializable objects
@@ -100,7 +102,7 @@ class SearchCLI:
         logging.getLogger("twat_search.web.engines").setLevel(level)
         logging.getLogger("httpx").setLevel(level)
 
-    def _parse_engines(self, engines_arg: Any) -> list[str] | None:
+    def _parse_engines(self, engines_arg: Any, config: Config | None = None) -> list[str] | None:
         """Parse the engines argument into a list of engine names.
 
         Special strings:
@@ -117,26 +119,42 @@ class SearchCLI:
         if engines_arg is None:
             return None
 
+        config = config or Config()
+
         # Handle special strings
         if isinstance(engines_arg, str):
             if engines_arg.strip().lower() == "free":
-                # Engines that don't require an API key
-                engines = ["duckduckgo", "google_hasdata"]
+                engines = select_route_engines(
+                    config=config,
+                    route="cheap",
+                    available_engines=set(get_available_engines()),
+                )
+                if not engines:
+                    engines = [
+                        engine
+                        for engine in select_provider_codes(requires_api_key=False)
+                        if is_engine_available(engine)
+                    ]
                 self.logger.info(f"Using 'free' engines: {', '.join(engines)}")
                 return engines
-            if engines_arg.strip().lower() == "best":
-                # 3 recommended engines (placeholder for user to edit)
-                engines = ["brave", "duckduckgo", "google_serpapi"]
-                self.logger.info(f"Using 'best' engines: {', '.join(engines)}")
-                return engines
-            if engines_arg.strip().lower() == "all":
-                # Get all available engines programmatically
-                engines = get_available_engines()
+            if engines_arg.strip().lower() in route_names():
+                engines = select_route_engines(
+                    config=config,
+                    route=engines_arg.strip().lower(),
+                    available_engines=set(get_available_engines()),
+                )
+                if not engines and engines_arg.strip().lower() == "best":
+                    engines = [
+                        engine
+                        for engine in select_provider_codes(include_planned=False)
+                        if is_engine_available(engine)
+                        and (provider := get_provider_metadata(engine)) is not None
+                        and provider.stability in {"stable", "beta"}
+                    ][:3]
                 self.logger.info(
-                    f"Using 'all' available engines: {', '.join(engines)}",
+                    f"Using '{engines_arg.strip().lower()}' route engines: {', '.join(engines)}",
                 )
                 return engines
-
             # Normal case: comma-separated string
             engines = [e.strip() for e in engines_arg.split(",") if e.strip()]
             # Standardize engine names (replace hyphens with underscores)
@@ -270,6 +288,7 @@ class SearchCLI:
         language: str | None = None,
         safe_search: bool = True,
         time_frame: str | None = None,
+        route: str | None = None,
         verbose: bool = False,
         json: bool = False,
         plain: bool = False,
@@ -292,6 +311,7 @@ class SearchCLI:
             language: Language code for results
             safe_search: Whether to enable safe search filtering
             time_frame: Time frame for results (e.g., "day", "week", "month")
+            route: Route preset to use when engines are omitted
             verbose: Whether to display verbose output
             json: Whether to return results as JSON
             plain: Whether to display results in plain text format
@@ -323,12 +343,13 @@ class SearchCLI:
 
         # Use 'best' preset if no engines are specified
         if engines is None:
-            engines = "best"
+            engines = route or "best"
             self.logger.debug(
-                "No engines specified, using 'best' engines preset",
+                f"No engines specified, using '{engines}' route preset",
             )
 
-        engine_list = self._parse_engines(engines)
+        config = Config()
+        engine_list = self._parse_engines(engines, config=config)
 
         # Check if engine_list is empty but engines was specified (not None)
         # This would happen if all specified engines are invalid
@@ -516,9 +537,10 @@ class SearchCLI:
                 function_name = engine_name.replace("-", "_")
                 if hasattr(engine_module, function_name):
                     func = getattr(engine_module, function_name)
+                    doc_summary = func.__doc__.strip().split("\n")[0] if func.__doc__ else "No docstring"
                     self.console.print("\n[bold]Function Interface:[/bold]")
                     self.console.print(
-                        f"  [green]{function_name}()[/green] - {func.__doc__.strip().split('\\n')[0]}",
+                        f"  [green]{function_name}()[/green] - {doc_summary}",
                     )
                     self.console.print("\n[bold]Example Usage:[/bold]")
                     self.console.print(
@@ -567,7 +589,7 @@ class SearchCLI:
                     engine_config,
                     registered_engines,
                 )
-        # Print JSON output using the CustomJSONEncoder defined at the top of the file
+        self.console.print(json_lib.dumps(result, cls=CustomJSONEncoder, indent=2))
 
     async def critique(
         self,
@@ -1181,19 +1203,26 @@ def _get_engine_info(
     engine_config: Any,
     registered_engines: dict,
 ) -> dict:
+    provider = get_provider_metadata(engine_name)
     api_key_required = False
     api_key_set = False
-    env_vars = []
+    env_names = list(provider.env_api_key_names) if provider else []
     if hasattr(engine_config, "api_key") and engine_config.api_key is not None:
         api_key_required = True
         api_key_set = True
     if engine_name in registered_engines:
         engine_class = registered_engines.get(engine_name)
         if engine_class and hasattr(engine_class, "env_api_key_names"):
-            api_key_required = bool(engine_class.env_api_key_names)
-            env_vars = [
-                {"name": env_name, "set": bool(os.environ.get(env_name))} for env_name in engine_class.env_api_key_names
-            ]
+            for env_name in engine_class.env_api_key_names:
+                if env_name not in env_names:
+                    env_names.append(env_name)
+            api_key_required = bool(env_names)
+    elif provider:
+        api_key_required = provider.requires_api_key
+
+    env_vars = [{"name": env_name, "set": bool(os.environ.get(env_name))} for env_name in env_names]
+    api_key_set = api_key_set or any(env_var["set"] for env_var in env_vars)
+
     default_params = (
         engine_config.default_params
         if hasattr(
@@ -1208,6 +1237,18 @@ def _get_engine_info(
         "api_key_set": api_key_set,
         "env_vars": env_vars,
         "default_params": default_params,
+        "transport": provider.transport if provider else "unknown",
+        "status": provider.status if provider else "unknown",
+        "family": provider.family if provider else "unknown",
+        "aliases": list(provider.aliases) if provider else [],
+        "proxy_support": provider.proxy_support if provider else False,
+        "proxy_policy": provider.proxy_policy if provider else "none",
+        "proxy_transports": list(provider.proxy_transports) if provider else [],
+        "browser_required": provider.browser_required if provider else False,
+        "cost_class": provider.cost_class if provider else "unknown",
+        "stability": provider.stability if provider else "unknown",
+        "planned": provider.planned if provider else False,
+        "result_kinds": list(provider.result_kinds) if provider else ["web"],
     }
 
 

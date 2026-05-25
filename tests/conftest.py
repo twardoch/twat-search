@@ -34,11 +34,11 @@ except ImportError:
     pass
 
 import os
-import sys
-from pathlib import Path
 
 import pytest
 from pytest import MonkeyPatch
+from twat_search.web.engines.base import SearchEngine, register_engine
+from twat_search.web.provider_catalog import list_provider_metadata
 
 
 @pytest.fixture(autouse=True)
@@ -50,8 +50,16 @@ def isolate_env_vars(monkeypatch: MonkeyPatch) -> None:
     preventing real API keys or config from affecting test results.
     """
     # Clear all environment variables that might affect tests
+    provider_env_vars = {
+        env_var for provider in list_provider_metadata(include_planned=True) for env_var in provider.env_api_key_names
+    }
     for env_var in list(os.environ.keys()):
-        if any(env_var.endswith(suffix) for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"]):
+        if (
+            any(env_var.endswith(suffix) for suffix in ["_API_KEY", "_ENABLED", "_DEFAULT_PARAMS"])
+            or "_API_KEY_" in env_var
+            or env_var in provider_env_vars
+            or env_var.startswith(("TWAT_SEARCH_", "WEBSHARE_"))
+        ):
             monkeypatch.delenv(env_var, raising=False)
 
     # Add special marker for test environment to bypass auto-loading in Config
@@ -68,11 +76,9 @@ def env_vars_for_brave(monkeypatch: MonkeyPatch) -> None:
     """
     # Register fake engine in the SearchEngine registry
     try:
-        sys.path.insert(0, str(Path(__file__).parent.parent))
-        from twat_search.web.engines.base import SearchEngine, register_engine
 
         class MockBraveEngine(SearchEngine):
-            name = "brave"
+            engine_code = "brave"
 
         register_engine(MockBraveEngine)
     except ImportError:

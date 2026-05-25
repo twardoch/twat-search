@@ -13,38 +13,13 @@ import logging
 import os
 from pathlib import Path
 from typing import Any, ClassVar
+from urllib.parse import quote
 
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, field_validator
 
-from twat_search.web.engine_constants import (
-    AOL_FALLA,
-    ASK_FALLA,
-    BING_FALLA,
-    BING_SCRAPER,
-    BRAVE,
-    BRAVE_NEWS,
-    CRITIQUE,
-    DEFAULT_NUM_RESULTS,
-    DOGPILE_FALLA,
-    DUCKDUCKGO,
-    DUCKDUCKGO_FALLA,
-    GIBIRU_FALLA,
-    GOOGLE_FALLA,
-    GOOGLE_HASDATA,
-    GOOGLE_HASDATA_FULL,
-    GOOGLE_SCRAPER,
-    GOOGLE_SERPAPI,
-    MOJEEK_FALLA,
-    PPLX,
-    QWANT_FALLA,
-    TAVILY,
-    YAHOO_FALLA,
-    YANDEX_FALLA,
-    YOU,
-    YOU_NEWS,
-)
 from twat_search.web.engines.base import get_registered_engines  # Added import
+from twat_search.web.provider_catalog import list_provider_metadata
 
 # Load environment variables from .env file if present
 load_dotenv()
@@ -52,255 +27,138 @@ load_dotenv()
 # Initialize logger
 logger = logging.getLogger(__name__)
 
-# Default configuration data
-DEFAULT_CONFIG: dict[str, dict[str, Any]] = {
-    "engines": {
-        # DuckDuckGo
-        DUCKDUCKGO: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "region": "us-en",
-                "safesearch": "moderate",
-                "timelimit": "y",  # past year
-                "num_results": 20,
-            },
+
+def _build_default_config() -> dict[str, dict[str, Any]]:
+    """Build default config from implemented provider metadata."""
+    return {
+        "engines": {
+            provider.code: {
+                "enabled": provider.default_enabled,
+                "api_key": None,
+                "default_params": provider.default_params,
+                "engine_code": provider.code,
+            }
+            for provider in list_provider_metadata(include_planned=False)
         },
-        # Brave API-based
-        BRAVE: {
-            "enabled": True,
-            "api_key": None,  # BRAVE_API_KEY
-            "default_params": {
-                "country": "US",
-                "language": "en-US",
-                "safe_search": True,
-            },
-        },
-        # Tavily
-        TAVILY: {
-            "enabled": True,
-            "api_key": None,  # TAVILY_API_KEY
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-                "search_depth": "basic",  # or "advanced"
-                "include_domains": [],
-                "exclude_domains": [],
-                "include_answer": False,
-                "include_raw_content": False,
-                "include_images": False,
-            },
-        },
-        # You.com
-        YOU: {
-            "enabled": True,
-            "api_key": None,  # YOU_API_KEY
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-                "country_code": "us",
-                "safe_search": True,
-            },
-        },
-        # You.com News
-        YOU_NEWS: {
-            "enabled": True,
-            "api_key": None,  # YOU_API_KEY (same as You.com)
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-                "country_code": "us",
-                "safe_search": True,
-            },
-        },
-        # Perplexity
-        PPLX: {
-            "enabled": True,
-            "api_key": None,  # PPLX_API_KEY
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-                "focus": None,  # None, "research", "writing", "coding", "scholar", "wolfram", "youtube"
-            },
-        },
-        # Critique
-        CRITIQUE: {
-            "enabled": True,
-            "api_key": None,  # CRITIQUE_API_KEY
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-                "relevance_adjustment": 0.5,
-            },
-        },
-        # Brave News
-        BRAVE_NEWS: {
-            "enabled": True,
-            "api_key": None,  # BRAVE_API_KEY (same as Brave Search)
-            "default_params": {
-                "country": "US",
-                "language": "en-US",
-                "freshness": "last7days",
-            },
-        },
-        # Google HasData Light
-        GOOGLE_HASDATA: {
-            "enabled": True,
-            "api_key": None,  # HASDATA_API_KEY
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-                "language": "en",
-            },
-        },
-        # Google HasData Full
-        GOOGLE_HASDATA_FULL: {
-            "enabled": True,
-            "api_key": None,  # HASDATA_API_KEY (same as Google HasData)
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-                "language": "en",
-            },
-        },
-        # SerpAPI (Google)
-        GOOGLE_SERPAPI: {
-            "enabled": True,
-            "api_key": None,
-            "default_params": {
-                "country": "us",
-                "language": "en",
-                "safe_search": True,
-            },
-        },
-        # Google Scraper
-        GOOGLE_SCRAPER: {
-            "enabled": True,
-            "api_key": None,  # No API key required, it's a scraper
-            "default_params": {"num_results": DEFAULT_NUM_RESULTS, "language": "en", "safe": True},
-        },
-        # Bing Scraper
-        BING_SCRAPER: {
-            "enabled": True,
-            "api_key": None,  # No API key required, it's a scraper
-            "default_params": {"num_pages": 1, "delay": 0.5},
-        },
-        # Falla-based engines
-        GOOGLE_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-        BING_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-        DUCKDUCKGO_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-        YAHOO_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-        ASK_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-        AOL_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-        DOGPILE_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-        GIBIRU_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-        MOJEEK_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-        QWANT_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-        YANDEX_FALLA: {
-            "enabled": True,
-            "api_key": None,  # No API key required
-            "default_params": {
-                "num_results": DEFAULT_NUM_RESULTS,
-            },
-        },
-    },
-}
+    }
 
 
-# Environment variable mapping - simple mapping for single path assignments
-ENV_VAR_MAP: dict[str, str | list[str]] = {
+DEFAULT_CONFIG: dict[str, dict[str, Any]] = _build_default_config()
+
+
+BASE_ENV_VAR_MAP: dict[str, str | list[str]] = {
     # General
     "TWAT_SEARCH_LOG_LEVEL": "log_level",
-    # API keys for unique engines
-    "SERPAPI_API_KEY": ["engines", GOOGLE_SERPAPI, "api_key"],
-    "TAVILY_API_KEY": ["engines", TAVILY, "api_key"],
-    "PPLX_API_KEY": ["engines", PPLX, "api_key"],
-    "CRITIQUE_API_KEY": ["engines", CRITIQUE, "api_key"],
-    # Engine-specific config
-    "BRAVE_DEFAULT_PARAMS": ["engines", BRAVE, "default_params"],
+    # Shared proxy configuration
+    "TWAT_SEARCH_PROXY_ENABLED": ["proxies", "enabled"],
+    "TWAT_SEARCH_PROXY_URL": ["proxies", "url"],
+    "TWAT_SEARCH_PROXY_PROVIDER": ["proxies", "provider"],
+    "WEBSHARE_PROXY_USER": ["proxies", "username"],
+    "WEBSHARE_PROXY_PASS": ["proxies", "password"],
+    "WEBSHARE_DOMAIN_NAME": ["proxies", "host"],
+    "WEBSHARE_PROXY_PORT": ["proxies", "port"],
+    # Shared LLM routing configuration
+    "TWAT_SEARCH_LLM_PROVIDER": ["llm", "provider"],
+    "TWAT_SEARCH_LLM_MODEL": ["llm", "model"],
+    "TWAT_SEARCH_LLM_API_KEY": ["llm", "api_key"],
+    "TWAT_SEARCH_LLM_BASE_URL": ["llm", "base_url"],
+    "TWAT_SEARCH_LLM_ENABLED": ["llm", "enabled"],
 }
 
-# Additional environment variables that map to multiple paths
-# Each entry is a tuple of (env_var, list of config paths)
-MULTI_PATH_ENV_VARS = [
-    (
-        "BRAVE_API_KEY",
-        [
-            ["engines", BRAVE, "api_key"],
-            ["engines", BRAVE_NEWS, "api_key"],
-        ],
-    ),
-    (
-        "YOU_API_KEY",
-        [
-            ["engines", YOU, "api_key"],
-            ["engines", YOU_NEWS, "api_key"],
-        ],
-    ),
-    (
-        "HASDATA_API_KEY",
-        [
-            ["engines", GOOGLE_HASDATA, "api_key"],
-            ["engines", GOOGLE_HASDATA_FULL, "api_key"],
-        ],
-    ),
-]
+
+def _build_env_var_maps() -> tuple[dict[str, str | list[str]], list[tuple[str, list[list[str]]]]]:
+    """Build environment-variable mappings from provider metadata."""
+    env_var_map = dict(BASE_ENV_VAR_MAP)
+    multi_paths: dict[str, list[list[str]]] = {}
+
+    for provider in list_provider_metadata(include_planned=False):
+        prefix = provider.code.upper()
+        env_var_map[f"{prefix}_ENABLED"] = ["engines", provider.code, "enabled"]
+        env_var_map[f"{prefix}_DEFAULT_PARAMS"] = ["engines", provider.code, "default_params"]
+        for env_name in provider.env_api_key_names:
+            multi_paths.setdefault(env_name, []).append(["engines", provider.code, "api_key"])
+
+    simple_multi_paths = []
+    for env_name, paths in multi_paths.items():
+        if len(paths) == 1:
+            env_var_map[env_name] = paths[0]
+        else:
+            simple_multi_paths.append((env_name, paths))
+
+    return env_var_map, simple_multi_paths
+
+
+ENV_VAR_MAP, MULTI_PATH_ENV_VARS = _build_env_var_maps()
 
 
 # Type definitions
+class ProxyConfig(BaseModel):
+    """Configuration for shared HTTP and browser proxy usage."""
+
+    enabled: bool = False
+    provider: str = "webshare"
+    url: str | None = None
+    username: str | None = None
+    password: str | None = None
+    host: str | None = None
+    port: int | str | None = None
+    timeout: float = 30.0
+    retries: int = 3
+
+    def is_configured(self) -> bool:
+        """Return True when either a full URL or all proxy parts are present."""
+        return self.url is not None or all([self.username, self.password, self.host, self.port])
+
+    def build_url(self) -> str | None:
+        """Build an HTTP proxy URL from explicit URL or Webshare-style parts."""
+        if self.url:
+            return self.url
+        if not all([self.username, self.password, self.host, self.port]):
+            return None
+        user = quote(str(self.username), safe="")
+        password = quote(str(self.password), safe="")
+        return f"http://{user}:{password}@{self.host}:{self.port}"
+
+    def httpx_proxy_url(self) -> str | None:
+        """Return the proxy URL to pass to HTTPX clients."""
+        if not self.enabled:
+            return None
+        return self.build_url()
+
+    def playwright_proxy(self) -> dict[str, str] | None:
+        """Return Playwright's proxy dict shape without leaking credentials."""
+        if not self.enabled or not self.host or not self.port:
+            return None
+        proxy: dict[str, str] = {"server": f"http://{self.host}:{self.port}"}
+        if self.username:
+            proxy["username"] = self.username
+        if self.password:
+            proxy["password"] = self.password
+        return proxy
+
+    def redacted_url(self) -> str | None:
+        """Return a log-safe proxy URL."""
+        proxy_url = self.build_url()
+        if not proxy_url or not self.password:
+            return proxy_url
+        return proxy_url.replace(str(self.password), "****").replace(quote(str(self.password), safe=""), "****")
+
+
+class LLMConfig(BaseModel):
+    """Configuration for optional LLM-assisted search stages."""
+
+    enabled: bool = False
+    provider: str | None = None
+    model: str | None = None
+    api_key: str | None = None
+    base_url: str | None = None
+    timeout: float = 60.0
+
+    def is_configured(self) -> bool:
+        """Return True when enough data exists to call a model."""
+        return bool(self.enabled and self.model and self.api_key)
+
+
 class EngineConfig(BaseModel):
     """Configuration for a single search engine."""
 
@@ -391,6 +249,8 @@ class Config(BaseModel):
     """Main configuration model for the web search module."""
 
     engines: dict[str, EngineConfig] = Field(default_factory=dict)
+    proxies: ProxyConfig = Field(default_factory=ProxyConfig)
+    llm: LLMConfig = Field(default_factory=LLMConfig)
     config_path: ClassVar[str | None] = None
 
     @classmethod

@@ -8,9 +8,22 @@ in the web search API.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
-from pydantic import BaseModel, HttpUrl, field_validator
+from pydantic import BaseModel, Field, HttpUrl, field_validator
+
+FailureKind = Literal[
+    "initialization",
+    "auth",
+    "timeout",
+    "block",
+    "empty",
+    "parse",
+    "schema_drift",
+    "provider_error",
+    "unexpected",
+]
+OutcomeStatus = Literal["ok", "empty", "failed"]
 
 
 class SearchResult(BaseModel):
@@ -47,3 +60,65 @@ class SearchResult(BaseModel):
     def ensure_string(cls, v: str) -> str:
         """Ensure string fields are not None and convert to empty string if None."""
         return v.strip() if v and v.strip() else ""
+
+
+class SearchRequest(BaseModel):
+    """Parsed user search request shared by API, CLI, and future transports."""
+
+    query: str
+    engines: list[str] | None = None
+    route: str | None = "best"
+    num_results: int = 5
+    country: str | None = None
+    language: str | None = None
+    safe_search: bool = True
+    time_frame: str | None = None
+    strict_mode: bool = True
+    params: dict[str, Any] = Field(default_factory=dict)
+
+    @field_validator("query")
+    @classmethod
+    def validate_query(cls, v: str) -> str:
+        """Require a non-empty query at the request boundary."""
+        query = v.strip()
+        if not query:
+            msg = "Query cannot be empty"
+            raise ValueError(msg)
+        return query
+
+
+class EngineRequest(BaseModel):
+    """Concrete request sent to a single provider."""
+
+    engine: str
+    query: str
+    params: dict[str, Any] = Field(default_factory=dict)
+    route: str | None = None
+
+
+class SearchFailure(BaseModel):
+    """Structured failure for a provider attempt."""
+
+    engine: str
+    kind: FailureKind
+    message: str
+    exception_type: str | None = None
+    retryable: bool = False
+
+
+class EngineOutcome(BaseModel):
+    """Result or failure from one engine attempt."""
+
+    engine: str
+    status: OutcomeStatus
+    results: list[SearchResult] = Field(default_factory=list)
+    failure: SearchFailure | None = None
+
+
+class SearchResponse(BaseModel):
+    """Detailed multi-engine response with results and per-engine outcomes."""
+
+    request: SearchRequest
+    engines: list[EngineOutcome]
+    results: list[SearchResult] = Field(default_factory=list)
+    failures: list[SearchFailure] = Field(default_factory=list)

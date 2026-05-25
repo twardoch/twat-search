@@ -45,11 +45,12 @@ from twat_search.web.config import Config, EngineConfig
 from twat_search.web.engines import standardize_engine_name
 from twat_search.web.engines.base import SearchEngine, get_engine, get_registered_engines
 from twat_search.web.exceptions import SearchError
+from twat_search.web.routes import select_route_engines
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine
 
-    from twat_search.web.models import SearchResult
+from twat_search.web.models import EngineOutcome, SearchFailure, SearchRequest, SearchResponse, SearchResult
 
 logger = logging.getLogger(__name__)
 
@@ -84,12 +85,29 @@ def get_engine_params(
     return {**common_params, **engine_specific, **non_prefixed}
 
 
+def _classify_failure(error: Exception) -> tuple[str, bool]:
+    """Classify provider failures into first-class failure kinds."""
+    message = str(error).lower()
+    error_type = type(error).__name__.lower()
+    if "api key" in message or "unauthorized" in message or "forbidden" in message:
+        return "auth", False
+    if "timeout" in message or "timeout" in error_type:
+        return "timeout", True
+    if "captcha" in message or "blocked" in message or "rate limit" in message:
+        return "block", True
+    if "parse" in message or "json" in message:
+        return "parse", False
+    if "schema" in message or "field" in message:
+        return "schema_drift", False
+    return "provider_error", True
+
+
 def init_engine_task(
     engine_name: str,
     query: str,
     config: Config,
     **kwargs: Any,
-) -> tuple[str, Coroutine[Any, Any, list[SearchResult]]] | None:
+) -> tuple[str, Coroutine[Any, Any, EngineOutcome]] | EngineOutcome:
     """
     Initialize a search engine and create a task for searching.
 
@@ -104,7 +122,7 @@ def init_engine_task(
         **kwargs: Additional parameters for the engine
 
     Returns:
-        A tuple of (engine_name, search_coroutine) or None if initialization fails
+        A tuple of (engine_name, search_coroutine) or a failed outcome if initialization fails
     """
     # Standardize engine name for lookups
     std_engine_name = standardize_engine_name(engine_name)
@@ -142,13 +160,34 @@ def init_engine_task(
         logger.info(f"🔍 Querying engine: {engine_name}")
 
         # Create a wrapper coroutine that handles exceptions
-        async def search_with_error_handling() -> list[SearchResult]:
+        async def search_with_error_handling() -> EngineOutcome:
             try:
-                return await engine_instance.search(query)
+                results = await engine_instance.search(query)
+                if results:
+                    return EngineOutcome(engine=engine_name, status="ok", results=results)
+                return EngineOutcome(
+                    engine=engine_name,
+                    status="empty",
+                    failure=SearchFailure(
+                        engine=engine_name,
+                        kind="empty",
+                        message=f"Engine '{engine_name}' returned no results",
+                    ),
+                )
             except Exception as e:
                 logger.error(f"Search with engine '{engine_name}' failed: {e}")
-                # Return empty results on failure instead of raising
-                return []
+                kind, retryable = _classify_failure(e)
+                return EngineOutcome(
+                    engine=engine_name,
+                    status="failed",
+                    failure=SearchFailure(
+                        engine=engine_name,
+                        kind=kind,
+                        message=str(e),
+                        exception_type=type(e).__name__,
+                        retryable=retryable,
+                    ),
+                )
 
         return engine_name, search_with_error_handling()
     except Exception as e:
@@ -166,12 +205,21 @@ def init_engine_task(
         else:
             logger.error(f"Failed to initialize engine '{engine_name}': {error_type}: {error_msg}")
 
-        # Return None to indicate initialization failure
-        return None
+        return EngineOutcome(
+            engine=engine_name,
+            status="failed",
+            failure=SearchFailure(
+                engine=engine_name,
+                kind="initialization",
+                message=error_msg,
+                exception_type=error_type,
+                retryable=False,
+            ),
+        )
 
 
 # @ucache(maxsize=1000, ttl=3600)  # Cache 1000 searches for 1 hour
-async def search(
+async def search_detailed(
     query: str,
     engines: list[str] | None = None,
     num_results: int = 5,
@@ -180,11 +228,12 @@ async def search(
     safe_search: bool = True,
     time_frame: str | None = None,
     config: Config | None = None,
+    route: str | None = "best",
     strict_mode: bool = True,
     **kwargs: Any,
-) -> list[SearchResult]:
+) -> SearchResponse:
     """
-    Search across multiple engines.
+    Search across multiple engines and return structured per-engine outcomes.
 
     Args:
         query: The search query
@@ -195,16 +244,30 @@ async def search(
         safe_search: Whether to enable safe search (default: True)
         time_frame: Time frame for results (e.g., "day", "week", "month")
         config: Optional custom configuration
+        route: Route preset to use when engines is None
         strict_mode: If True (default), don't fall back to other engines when specific engines are requested
         **kwargs: Additional engine-specific parameters
 
     Returns:
-        Combined list of search results from all engines
+        Detailed response with flat results, outcomes, and failures
 
     Raises:
         SearchError: If no engines can be initialized or if no engines are specified
     """
+    request = SearchRequest(
+        query=query,
+        engines=engines,
+        route=route,
+        num_results=num_results,
+        country=country,
+        language=language,
+        safe_search=safe_search,
+        time_frame=time_frame,
+        strict_mode=strict_mode,
+        params=kwargs,
+    )
     flattened_results: list[SearchResult] = []
+    outcomes: list[EngineOutcome] = []
 
     try:
         # Initialize configuration if not provided
@@ -218,11 +281,19 @@ async def search(
 
         # Determine which engines to use
         explicit_engines_requested = engines is not None and len(engines) > 0
-        engines_to_try = engines or list(config.engines.keys())
+        if engines is None:
+            engines_to_try = select_route_engines(
+                config=config,
+                route=route,
+                available_engines=set(get_registered_engines()),
+            )
+        else:
+            engines_to_try = engines
 
         # Check if engines_to_try is empty and raise an error
         if not engines_to_try:
-            msg = "No search engines configured"
+            route_context = f" for route '{route}'" if engines is None else ""
+            msg = f"No search engines configured{route_context}"
             logger.error(msg)
             raise SearchError(msg)
 
@@ -239,11 +310,12 @@ async def search(
             "language": language,
             "safe_search": safe_search,
             "time_frame": time_frame,
+            "proxy_url": config.proxies.httpx_proxy_url(),
         }
 
         # First attempt with specific engines or all enabled engines
         engine_names: list[str] = []
-        tasks: list[Coroutine[Any, Any, list[SearchResult]]] = []
+        tasks: list[Coroutine[Any, Any, EngineOutcome]] = []
         failed_engines: list[str] = []
 
         # Prepare all engine tasks
@@ -274,12 +346,12 @@ async def search(
                 )
 
                 # Check if initialization was successful
-                if task_result is not None:
+                if isinstance(task_result, EngineOutcome):
+                    outcomes.append(task_result)
+                    failed_engines.append(engine_name)
+                else:
                     engine_names.append(task_result[0])
                     tasks.append(task_result[1])
-                else:
-                    # Engine initialization failed
-                    failed_engines.append(engine_name)
             except Exception as e:
                 logger.warning(f"Unexpected error initializing engine '{engine_name}': {e}")
                 failed_engines.append(engine_name)
@@ -290,8 +362,8 @@ async def search(
             failed_engines_str = ", ".join(failed_engines)
             logger.warning(f"Failed to initialize engines: {failed_engines_str}")
 
-        # If no engines could be initialized
-        if not tasks:
+        # If no engines could be initialized and no structured failures exist.
+        if not tasks and not outcomes:
             if strict_mode or explicit_engines_requested:
                 # In strict mode or when engines were explicitly requested, don't fall back
                 # This is important to prevent unintended fallbacks
@@ -315,7 +387,10 @@ async def search(
                     )
 
                     # Check if initialization was successful
-                    if task_result is not None:
+                    if isinstance(task_result, EngineOutcome):
+                        outcomes.append(task_result)
+                        failed_engines.append(engine_name)
+                    else:
                         engine_names.append(task_result[0])
                         tasks.append(task_result[1])
                         logger.info(f"Successfully fell back to engine: {engine_name}")
@@ -330,20 +405,35 @@ async def search(
                 raise SearchError(msg)
 
         # Execute all search tasks concurrently
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        results = await asyncio.gather(*tasks, return_exceptions=True) if tasks else []
 
         for engine_name, result in zip(engine_names, results, strict=False):
             if isinstance(result, Exception):
                 logger.error(
                     f"Search with engine '{engine_name}' failed: {result}",
                 )
-            elif isinstance(result, list):
-                result_count = len(result)
+                kind, retryable = _classify_failure(result)
+                outcomes.append(
+                    EngineOutcome(
+                        engine=engine_name,
+                        status="failed",
+                        failure=SearchFailure(
+                            engine=engine_name,
+                            kind=kind,
+                            message=str(result),
+                            exception_type=type(result).__name__,
+                            retryable=retryable,
+                        ),
+                    ),
+                )
+            elif isinstance(result, EngineOutcome):
+                outcomes.append(result)
+                result_count = len(result.results)
                 if result_count > 0:
                     logger.info(
                         f"✅ Engine '{engine_name}' returned {result_count} results",
                     )
-                    flattened_results.extend(result)
+                    flattened_results.extend(result.results)
                 else:
                     logger.info(
                         f"⚠️ Engine '{engine_name}' returned no results",
@@ -358,4 +448,52 @@ async def search(
 
     # Log the total number of results found
     logger.info(f"Total results found across all engines: {len(flattened_results)}")
-    return flattened_results
+    failures = [outcome.failure for outcome in outcomes if outcome.failure is not None]
+    return SearchResponse(
+        request=request,
+        engines=outcomes,
+        results=flattened_results,
+        failures=failures,
+    )
+
+
+async def search(
+    query: str,
+    engines: list[str] | None = None,
+    num_results: int = 5,
+    country: str | None = None,
+    language: str | None = None,
+    safe_search: bool = True,
+    time_frame: str | None = None,
+    config: Config | None = None,
+    route: str | None = "best",
+    strict_mode: bool = True,
+    **kwargs: Any,
+) -> list[SearchResult]:
+    """Search across multiple engines and return a flat result list."""
+    response = await search_detailed(
+        query=query,
+        engines=engines,
+        num_results=num_results,
+        country=country,
+        language=language,
+        safe_search=safe_search,
+        time_frame=time_frame,
+        config=config,
+        route=route,
+        strict_mode=strict_mode,
+        **kwargs,
+    )
+
+    init_failure_kinds = {"initialization", "auth"}
+    only_initialization_failures = bool(response.engines) and all(
+        outcome.status == "failed" and outcome.failure is not None and outcome.failure.kind in init_failure_kinds
+        for outcome in response.engines
+    )
+    if (strict_mode or engines) and only_initialization_failures:
+        engine_names = engines or [outcome.engine for outcome in response.engines]
+        msg = f"No search engines could be initialized from requested engines: {', '.join(engine_names)}"
+        logger.error(msg)
+        raise SearchError(msg)
+
+    return response.results

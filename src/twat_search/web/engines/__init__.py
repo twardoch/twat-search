@@ -15,25 +15,34 @@ from loguru import logger
 from twat_search.web.engine_constants import (
     ALL_POSSIBLE_ENGINES,
     AOL_FALLA,
+    AISEARCH,
+    APIFY,
     ASK_FALLA,
     BING_FALLA,
     BING_SCRAPER,
     BRAVE,
     BRAVE_NEWS,
     CRITIQUE,
+    DATAFORSEO,
     DOGPILE_FALLA,
     DUCKDUCKGO,
     DUCKDUCKGO_FALLA,
     ENGINE_FRIENDLY_NAMES,
+    EXA,
+    FIRECRAWL,
     GIBIRU_FALLA,
     GOOGLE_FALLA,
+    GOOGLE_CSE,
     GOOGLE_HASDATA,
     GOOGLE_HASDATA_FULL,
     GOOGLE_SCRAPER,
     GOOGLE_SERPAPI,
+    JINA,
     MOJEEK_FALLA,
     PPLX,
     QWANT_FALLA,
+    SEARCH1API,
+    SERPER,
     TAVILY,
     YAHOO_FALLA,
     YANDEX_FALLA,
@@ -52,8 +61,10 @@ if TYPE_CHECKING:
 # Initialize __all__ list with engine name constants
 __all__ = [
     # Helper functions
+    "AISEARCH",
     "ALL_POSSIBLE_ENGINES",
     "AOL_FALLA",
+    "APIFY",
     "ASK_FALLA",
     "BING_FALLA",
     # Engine name constants
@@ -61,20 +72,27 @@ __all__ = [
     "BRAVE",
     "BRAVE_NEWS",
     "CRITIQUE",
+    "DATAFORSEO",
     "DOGPILE_FALLA",
     "DUCKDUCKGO",
     "DUCKDUCKGO_FALLA",
     "ENGINE_FRIENDLY_NAMES",
+    "EXA",
+    "FIRECRAWL",
     "GIBIRU_FALLA",
+    "GOOGLE_CSE",
     # Falla-based engines
     "GOOGLE_FALLA",
     "GOOGLE_HASDATA",
     "GOOGLE_HASDATA_FULL",
     "GOOGLE_SCRAPER",
     "GOOGLE_SERPAPI",
+    "JINA",
     "MOJEEK_FALLA",
     "PPLX",
     "QWANT_FALLA",
+    "SEARCH1API",
+    "SERPER",
     "TAVILY",
     "YAHOO_FALLA",
     "YANDEX_FALLA",
@@ -101,6 +119,22 @@ except ImportError:
     pass
 
 # Import each engine module and add its components to __all__ if successful
+try:
+    from twat_search.web.engines.aisearch import AISearchEngine, aisearch
+
+    available_engine_functions["aisearch"] = aisearch
+    __all__.extend(["AISearchEngine", "aisearch"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines.apify import ApifySearchEngine, apify
+
+    available_engine_functions["apify"] = apify
+    __all__.extend(["ApifySearchEngine", "apify"])
+except ImportError:
+    pass
+
 try:
     from twat_search.web.engines.brave import BraveNewsSearchEngine, BraveSearchEngine, brave, brave_news
 
@@ -130,6 +164,14 @@ except ImportError:
     pass
 
 try:
+    from twat_search.web.engines.serper import SerperSearchEngine, serper
+
+    available_engine_functions["serper"] = serper
+    __all__.extend(["SerperSearchEngine", "serper"])
+except ImportError:
+    pass
+
+try:
     from twat_search.web.engines.you import YouNewsSearchEngine, YouSearchEngine, you, you_news
 
     available_engine_functions["you"] = you
@@ -149,10 +191,34 @@ except ImportError:
     pass
 
 try:
+    from twat_search.web.engines.dataforseo import DataForSeoSearchEngine, dataforseo
+
+    available_engine_functions["dataforseo"] = dataforseo
+    __all__.extend(["DataForSeoSearchEngine", "dataforseo"])
+except ImportError:
+    pass
+
+try:
     from twat_search.web.engines.duckduckgo import DuckDuckGoSearchEngine, duckduckgo
 
     available_engine_functions["duckduckgo"] = duckduckgo
     __all__.extend(["DuckDuckGoSearchEngine", "duckduckgo"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines.exa import ExaSearchEngine, exa
+
+    available_engine_functions["exa"] = exa
+    __all__.extend(["ExaSearchEngine", "exa"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines.firecrawl import FirecrawlSearchEngine, firecrawl
+
+    available_engine_functions["firecrawl"] = firecrawl
+    __all__.extend(["FirecrawlSearchEngine", "firecrawl"])
 except ImportError:
     pass
 
@@ -184,6 +250,30 @@ try:
             "hasdata_google_full",
         ],
     )
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines.google_cse import GoogleCseSearchEngine, google_cse
+
+    available_engine_functions["google_cse"] = google_cse
+    __all__.extend(["GoogleCseSearchEngine", "google_cse"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines.jina import JinaSearchEngine, jina
+
+    available_engine_functions["jina"] = jina
+    __all__.extend(["JinaSearchEngine", "jina"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines.search1api import Search1ApiSearchEngine, search1api
+
+    available_engine_functions["search1api"] = search1api
+    __all__.extend(["Search1ApiSearchEngine", "search1api"])
 except ImportError:
     pass
 

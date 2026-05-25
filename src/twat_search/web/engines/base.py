@@ -20,6 +20,7 @@ import httpx
 from twat_search.web.engine_constants import ENGINE_FRIENDLY_NAMES
 from twat_search.web.engines import standardize_engine_name
 from twat_search.web.exceptions import EngineError, SearchError
+from twat_search.web.provider_catalog import get_api_key_env_names
 
 if TYPE_CHECKING:
     from twat_search.web.config import EngineConfig
@@ -83,6 +84,7 @@ class SearchEngine(abc.ABC):
         self.retries = kwargs.get("retries", 2)
         self.retry_delay = kwargs.get("retry_delay", 1.0)
         self.use_random_user_agent = kwargs.get("use_random_user_agent", True)
+        self.proxy_url = kwargs.get("proxy_url")
 
         if not config.enabled:
             msg = f"Engine '{self.engine_code}' is disabled."
@@ -258,7 +260,11 @@ class SearchEngine(abc.ABC):
         # Try the request multiple times
         for attempt in range(1, actual_retries + 2):  # +2 because we want actual_retries+1 attempts
             try:
-                async with httpx.AsyncClient(timeout=actual_timeout) as client:
+                client_kwargs: dict[str, Any] = {"timeout": actual_timeout}
+                if self.proxy_url:
+                    client_kwargs["proxy"] = self.proxy_url
+
+                async with httpx.AsyncClient(**client_kwargs) as client:
                     response = await client.request(
                         method=method,
                         url=url,
@@ -351,6 +357,10 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
         if not hasattr(engine_class, "env_api_key_names"):
             error_msg = "Engine must define a 'env_api_key_names' attribute."
             raise AttributeError(error_msg)
+
+        for env_name in get_api_key_env_names(engine_class.engine_code):
+            if env_name not in engine_class.env_api_key_names:
+                engine_class.env_api_key_names.append(env_name)
 
         # Register the engine
         _engine_registry[engine_class.engine_code] = engine_class

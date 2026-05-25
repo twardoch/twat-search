@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
+# this_file: tests/test_simple.py
 import asyncio
 import logging
 
+import pytest
+
+pytest.importorskip("playwright.async_api", reason="Browser smoke test requires optional Playwright")
 from playwright.async_api import async_playwright
 
 # Set up logging

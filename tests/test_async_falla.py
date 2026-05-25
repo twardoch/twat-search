@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
+# this_file: tests/test_async_falla.py
 import asyncio
-import sys
 
+import pytest
+
+pytest.importorskip("playwright.async_api", reason="Falla browser tests require optional Playwright")
 from twat_search.web.engines.lib_falla.core.duckduckgo import DuckDuckGo
 
 
@@ -14,11 +17,4 @@ async def test_async():
 
 
 if __name__ == "__main__":
-    try:
-        results = asyncio.run(test_async())
-        if results:
-            pass
-        else:
-            pass
-    except Exception:
-        pass
+    asyncio.run(test_async())

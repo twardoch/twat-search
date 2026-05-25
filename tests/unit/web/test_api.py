@@ -19,7 +19,7 @@ import pytest
 from pydantic import HttpUrl
 from pytest import MonkeyPatch
 
-from twat_search.web.api import search
+from twat_search.web.api import search, search_detailed
 from twat_search.web.config import Config, EngineConfig
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import SearchError
@@ -164,6 +164,55 @@ async def test_search_with_failing_engine(
 
 
 @pytest.mark.asyncio
+async def test_search_detailed_returns_engine_outcomes(
+    mock_config: Config,
+    setup_teardown: None,
+) -> None:
+    """Detailed search keeps flat results and per-engine outcome data."""
+    response = await search_detailed("test query", engines=["mock"], config=mock_config)
+
+    assert response.request.query == "test query"
+    assert response.results == response.engines[0].results
+    assert response.engines[0].engine == "mock"
+    assert response.engines[0].status == "ok"
+    assert response.failures == []
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_records_provider_failure(
+    mock_config: Config,
+    setup_teardown: None,
+) -> None:
+    """Provider search exceptions become structured failure data."""
+    response = await search_detailed(
+        "test query",
+        engines=["mock"],
+        config=mock_config,
+        should_fail=True,
+    )
+
+    assert response.results == []
+    assert response.engines[0].status == "failed"
+    assert response.failures[0].engine == "mock"
+    assert response.failures[0].kind == "provider_error"
+    assert response.failures[0].exception_type == "Exception"
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_records_initialization_failure(
+    mock_config: Config,
+    setup_teardown: None,
+) -> None:
+    """Initialization failures are visible without flattening away context."""
+    response = await search_detailed("test query", engines=["nonexistent"], config=mock_config)
+
+    assert response.results == []
+    assert response.engines[0].engine == "nonexistent"
+    assert response.engines[0].status == "failed"
+    assert response.failures[0].kind == "initialization"
+
+
+@pytest.mark.asyncio
 async def test_search_with_nonexistent_engine(
     mock_config: Config,
     setup_teardown: None,
@@ -185,3 +234,18 @@ async def test_search_with_disabled_engine(
 
     with pytest.raises(SearchError, match="No search engines could be initialized"):
         await search("test query", engines=["mock"], config=mock_config)
+
+
+@pytest.mark.asyncio
+async def test_search_without_engines_uses_catalog_route(setup_teardown: None) -> None:
+    """Search with engines=None selects configured catalog-backed route engines."""
+    config = Config(
+        engines={
+            "mock": EngineConfig(enabled=True, default_params={"result_count": 1}),
+            "duckduckgo": EngineConfig(enabled=False),
+            "brave": EngineConfig(enabled=True, api_key=None),
+        },
+    )
+
+    with pytest.raises(SearchError, match="No search engines configured for route 'best'"):
+        await search("test query", config=config)

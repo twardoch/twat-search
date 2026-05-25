@@ -9,18 +9,29 @@ This module is separate to avoid circular dependencies between engines and confi
 # These constants should be used instead of string literals
 from __future__ import annotations
 
+from twat_search.web.provider_catalog import get_friendly_name, list_known_provider_codes
+
 DEFAULT_NUM_RESULTS = 5
 
 BING_SCRAPER = "bing_scraper"
+AISEARCH = "aisearch"
+APIFY = "apify"
 BRAVE = "brave"
 BRAVE_NEWS = "brave_news"
 CRITIQUE = "critique"
+DATAFORSEO = "dataforseo"
 DUCKDUCKGO = "duckduckgo"
+EXA = "exa"
+FIRECRAWL = "firecrawl"
 GOOGLE_HASDATA = "google_hasdata"
 GOOGLE_HASDATA_FULL = "google_hasdata_full"
+GOOGLE_CSE = "google_cse"
 GOOGLE_SCRAPER = "google_scraper"
 GOOGLE_SERPAPI = "google_serpapi"
+JINA = "jina"
 PPLX = "pplx"
+SEARCH1API = "search1api"
+SERPER = "serper"
 TAVILY = "tavily"
 YOU = "you"
 YOU_NEWS = "you_news"
@@ -39,63 +50,11 @@ YAHOO_FALLA = "yahoo_falla"
 YANDEX_FALLA = "yandex_falla"
 
 
-# Complete list of all possible engines
-ALL_POSSIBLE_ENGINES = [
-    BING_SCRAPER,
-    BRAVE_NEWS,
-    BRAVE,
-    CRITIQUE,
-    DUCKDUCKGO,
-    GOOGLE_HASDATA_FULL,
-    GOOGLE_HASDATA,
-    GOOGLE_SCRAPER,
-    GOOGLE_SERPAPI,
-    PPLX,
-    TAVILY,
-    YOU_NEWS,
-    YOU,
-    # Falla-based engines
-    GOOGLE_FALLA,
-    BING_FALLA,
-    DUCKDUCKGO_FALLA,
-    AOL_FALLA,
-    ASK_FALLA,
-    DOGPILE_FALLA,
-    GIBIRU_FALLA,
-    MOJEEK_FALLA,
-    QWANT_FALLA,
-    YAHOO_FALLA,
-    YANDEX_FALLA,
-]
+# Complete list of all known engines and planned 2.0 providers.
+ALL_POSSIBLE_ENGINES = list_known_provider_codes(include_planned=True)
 
-# Dictionary of friendly names for engines
-ENGINE_FRIENDLY_NAMES = {
-    BING_SCRAPER: "Bing scaper",
-    BRAVE_NEWS: "Brave News with API key",
-    BRAVE: "Brave with API key",
-    CRITIQUE: "Critique Labs with API key",
-    DUCKDUCKGO: "DuckDuckGo",
-    GOOGLE_HASDATA_FULL: "Full Google scraper via HasData with API key",
-    GOOGLE_HASDATA: "Light Google scraper via HasData with API key",
-    GOOGLE_SCRAPER: "Google scraper",
-    GOOGLE_SERPAPI: "Google via SerpAPI with API key",
-    PPLX: "Perplexity with API key",
-    TAVILY: "Tavily with API key",
-    YOU_NEWS: "You.com News with API key",
-    YOU: "You.com with API key",
-    # Falla-based engines
-    GOOGLE_FALLA: "Google (Falla)",
-    BING_FALLA: "Bing (Falla)",
-    DUCKDUCKGO_FALLA: "DuckDuckGo (Falla)",
-    AOL_FALLA: "AOL (Falla)",
-    ASK_FALLA: "Ask.com (Falla)",
-    DOGPILE_FALLA: "DogPile (Falla)",
-    GIBIRU_FALLA: "Gibiru (Falla)",
-    MOJEEK_FALLA: "Mojeek (Falla)",
-    QWANT_FALLA: "Qwant (Falla)",
-    YAHOO_FALLA: "Yahoo (Falla)",
-    YANDEX_FALLA: "Yandex (Falla)",
-}
+# Dictionary of friendly names for engines.
+ENGINE_FRIENDLY_NAMES = {engine_code: get_friendly_name(engine_code) for engine_code in ALL_POSSIBLE_ENGINES}
 
 
 def standardize_engine_name(engine_name: str) -> str:

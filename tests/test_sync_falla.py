@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
-import sys
+# this_file: tests/test_sync_falla.py
 
+import pytest
+
+pytest.importorskip("playwright.async_api", reason="Falla browser tests require optional Playwright")
 from twat_search.web.engines.lib_falla.core.duckduckgo import DuckDuckGo
 
 

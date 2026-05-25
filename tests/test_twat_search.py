@@ -41,5 +41,6 @@ def test_python_module_help_smoke() -> None:
         text=True,
     )
     assert result.returncode == 0
-    assert "twat-search" in result.stdout
-    assert "version" in result.stdout
+    help_text = result.stdout + result.stderr
+    assert "twat-search" in help_text
+    assert "version" in help_text

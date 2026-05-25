@@ -9,17 +9,22 @@ Each test runs a subprocess to verify that:
 
 from __future__ import annotations
 
+import json
+import os
 import re
 import subprocess
 import sys
 
 
 def _run(*args: str) -> subprocess.CompletedProcess[str]:
+    env = os.environ.copy()
+    env.pop("_TEST_ENGINE", None)
     return subprocess.run(
         [sys.executable, "-m", "twat_search", *args],
         capture_output=True,
         text=True,
         check=False,
+        env=env,
     )
 
 
@@ -95,6 +100,26 @@ def test_web_help_lists_subcommands() -> None:
     assert any(sub in combined for sub in ("q", "info", "brave", "duckduckgo")), (
         f"Expected web subcommands in help output.\nOutput: {combined}"
     )
+
+
+def test_web_info_json_outputs_engine_metadata() -> None:
+    """twat-search web info --json should emit machine-readable provider metadata."""
+    result = _run("web", "info", "--json")
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstderr: {result.stderr}"
+
+    data = json.loads(result.stdout)
+    assert data["brave"]["transport"] == "api"
+    assert data["brave"]["status"] == "implemented"
+    assert data["brave"]["proxy_policy"] == "none"
+
+
+def test_web_q_free_preset_uses_catalog_filter() -> None:
+    """The free preset should not expand to API-key-only providers."""
+    result = _run("web", "q", "catalog smoke", "-e", "free", "--json")
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstderr: {result.stderr}"
+
+    combined = result.stdout + result.stderr
+    assert "API key is required" not in combined
 
 
 # ---------------------------------------------------------------------------

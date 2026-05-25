@@ -18,11 +18,23 @@ __all__ = []
 
 # Import core functionality first
 try:
-    from twat_search.web.api import search
+    from twat_search.web.api import search, search_detailed
     from twat_search.web.config import Config, EngineConfig
-    from twat_search.web.models import SearchResult
+    from twat_search.web.models import EngineOutcome, SearchFailure, SearchRequest, SearchResponse, SearchResult
 
-    __all__.extend(["Config", "EngineConfig", "SearchResult", "search"])
+    __all__.extend(
+        [
+            "Config",
+            "EngineConfig",
+            "EngineOutcome",
+            "SearchFailure",
+            "SearchRequest",
+            "SearchResponse",
+            "SearchResult",
+            "search",
+            "search_detailed",
+        ],
+    )
 except ImportError:
     pass
 
@@ -64,9 +76,30 @@ except ImportError:
     pass
 
 try:
+    from twat_search.web.engines import dataforseo
+
+    __all__.extend(["dataforseo"])
+except ImportError:
+    pass
+
+try:
     from twat_search.web.engines import duckduckgo
 
     __all__.extend(["duckduckgo"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines import exa
+
+    __all__.extend(["exa"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines import firecrawl
+
+    __all__.extend(["firecrawl"])
 except ImportError:
     pass
 
@@ -81,5 +114,26 @@ try:
     from twat_search.web.engines import serpapi
 
     __all__.extend(["serpapi"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines import google_cse
+
+    __all__.extend(["google_cse"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines import jina
+
+    __all__.extend(["jina"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines import serper
+
+    __all__.extend(["serper"])
 except ImportError:
     pass
