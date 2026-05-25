@@ -31,6 +31,8 @@ from twat_search.web.engine_constants import (
     EXA,
     FIRECRAWL,
     GIBIRU_FALLA,
+    GENSEE,
+    GITHUB_SEARCH,
     GOOGLE_FALLA,
     GOOGLE_CSE,
     GOOGLE_HASDATA,
@@ -38,10 +40,13 @@ from twat_search.web.engine_constants import (
     GOOGLE_SCRAPER,
     GOOGLE_SERPAPI,
     JINA,
+    LANGSEARCH,
+    MAPLESERP,
     MOJEEK_FALLA,
     PPLX,
     QWANT_FALLA,
     SEARCH1API,
+    SEARCH_CANS,
     SERPER,
     TAVILY,
     YAHOO_FALLA,
@@ -79,7 +84,9 @@ __all__ = [
     "ENGINE_FRIENDLY_NAMES",
     "EXA",
     "FIRECRAWL",
+    "GENSEE",
     "GIBIRU_FALLA",
+    "GITHUB_SEARCH",
     "GOOGLE_CSE",
     # Falla-based engines
     "GOOGLE_FALLA",
@@ -88,10 +95,13 @@ __all__ = [
     "GOOGLE_SCRAPER",
     "GOOGLE_SERPAPI",
     "JINA",
+    "LANGSEARCH",
+    "MAPLESERP",
     "MOJEEK_FALLA",
     "PPLX",
     "QWANT_FALLA",
     "SEARCH1API",
+    "SEARCH_CANS",
     "SERPER",
     "TAVILY",
     "YAHOO_FALLA",
@@ -254,6 +264,22 @@ except ImportError:
     pass
 
 try:
+    from twat_search.web.engines.gensee import GenseeSearchEngine, gensee
+
+    available_engine_functions["gensee"] = gensee
+    __all__.extend(["GenseeSearchEngine", "gensee"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines.github_search import GitHubSearchEngine, github_search
+
+    available_engine_functions["github_search"] = github_search
+    __all__.extend(["GitHubSearchEngine", "github_search"])
+except ImportError:
+    pass
+
+try:
     from twat_search.web.engines.google_cse import GoogleCseSearchEngine, google_cse
 
     available_engine_functions["google_cse"] = google_cse
@@ -270,10 +296,34 @@ except ImportError:
     pass
 
 try:
+    from twat_search.web.engines.langsearch import LangSearchEngine, langsearch
+
+    available_engine_functions["langsearch"] = langsearch
+    __all__.extend(["LangSearchEngine", "langsearch"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines.mapleserp import MapleSerpSearchEngine, mapleserp
+
+    available_engine_functions["mapleserp"] = mapleserp
+    __all__.extend(["MapleSerpSearchEngine", "mapleserp"])
+except ImportError:
+    pass
+
+try:
     from twat_search.web.engines.search1api import Search1ApiSearchEngine, search1api
 
     available_engine_functions["search1api"] = search1api
     __all__.extend(["Search1ApiSearchEngine", "search1api"])
+except ImportError:
+    pass
+
+try:
+    from twat_search.web.engines.search_cans import SearchCansSearchEngine, search_cans
+
+    available_engine_functions["search_cans"] = search_cans
+    __all__.extend(["SearchCansSearchEngine", "search_cans"])
 except ImportError:
     pass
 

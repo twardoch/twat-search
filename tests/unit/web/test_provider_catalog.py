@@ -24,6 +24,9 @@ def test_catalog_contains_current_and_planned_providers() -> None:
     assert "serper" in codes
     assert "dataforseo" in codes
     assert "github_search" in codes
+    assert "langsearch" in codes
+    assert "mapleserp" in codes
+    assert "brightdata" in codes
 
 
 def test_catalog_can_filter_planned_providers() -> None:
@@ -35,10 +38,14 @@ def test_catalog_can_filter_planned_providers() -> None:
     assert "dataforseo" in implemented
     assert "exa" in implemented
     assert "firecrawl" in implemented
+    assert "github_search" in implemented
     assert "jina" in implemented
+    assert "langsearch" in implemented
+    assert "mapleserp" in implemented
     assert "search1api" in implemented
+    assert "search_cans" in implemented
+    assert "gensee" in implemented
     assert "apify" in implemented
-    assert "gensee" not in implemented
 
 
 def test_provider_metadata_captures_transport_and_proxy_support() -> None:
@@ -96,13 +103,31 @@ def test_provider_status_replaces_boolean_source_of_truth() -> None:
     """Planned providers use status while preserving the planned property."""
     serper = get_provider_metadata("serper")
     gensee = get_provider_metadata("gensee")
+    brightdata = get_provider_metadata("brightdata")
+    langsearch = get_provider_metadata("langsearch")
+    mapleserp = get_provider_metadata("mapleserp")
+    search_cans = get_provider_metadata("search_cans")
 
     assert serper is not None
     assert serper.status == "implemented"
     assert serper.planned is False
     assert gensee is not None
-    assert gensee.status == "planned"
-    assert gensee.planned is True
+    assert gensee.status == "implemented"
+    assert gensee.planned is False
+    assert gensee.env_api_key_names == ("GENSEE_SEARCH_API_KEY",)
+    assert brightdata is not None
+    assert brightdata.status == "planned"
+    assert brightdata.proxy_policy == "recommended"
+    assert brightdata.proxy_transports == ("httpx", "playwright")
+    assert langsearch is not None
+    assert langsearch.status == "implemented"
+    assert langsearch.env_api_key_names == ("LANGSEARCH_API_KEY",)
+    assert mapleserp is not None
+    assert mapleserp.status == "implemented"
+    assert mapleserp.env_api_key_names == ("MAPLESERP_API_KEY",)
+    assert search_cans is not None
+    assert search_cans.status == "implemented"
+    assert search_cans.env_api_key_names == ("SEARCH_CANS_API_KEY",)
 
 
 def test_select_provider_codes_filters_catalog() -> None:

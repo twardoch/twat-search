@@ -80,6 +80,7 @@ def test_default_config_is_catalog_backed() -> None:
     assert "dataforseo" in DEFAULT_CONFIG["engines"]
     assert "exa" in DEFAULT_CONFIG["engines"]
     assert "firecrawl" in DEFAULT_CONFIG["engines"]
+    assert "github_search" in DEFAULT_CONFIG["engines"]
     assert "jina" in DEFAULT_CONFIG["engines"]
     assert "search1api" in DEFAULT_CONFIG["engines"]
     assert (
@@ -112,9 +113,24 @@ def test_env_var_map_is_catalog_backed() -> None:
     assert ENV_VAR_MAP["DATAFORSEO_API_KEY"] == ["engines", "dataforseo", "api_key"]
     assert ENV_VAR_MAP["EXAAI_API_KEY"] == ["engines", "exa", "api_key"]
     assert ENV_VAR_MAP["FIRECRAWL_API_KEY"] == ["engines", "firecrawl", "api_key"]
+    assert ENV_VAR_MAP["GENSEE_SEARCH_API_KEY"] == ["engines", "gensee", "api_key"]
+    assert ENV_VAR_MAP["GITHUB_API_TOKEN"] == ["engines", "github_search", "api_key"]
     assert ENV_VAR_MAP["JINA_API_KEY"] == ["engines", "jina", "api_key"]
+    assert ENV_VAR_MAP["LANGSEARCH_API_KEY"] == ["engines", "langsearch", "api_key"]
+    assert ENV_VAR_MAP["MAPLESERP_API_KEY"] == ["engines", "mapleserp", "api_key"]
     assert ENV_VAR_MAP["SEARCH1API_KEY"] == ["engines", "search1api", "api_key"]
+    assert ENV_VAR_MAP["SEARCH_CANS_API_KEY"] == ["engines", "search_cans", "api_key"]
     assert ENV_VAR_MAP["SERPER_API_KEY"] == ["engines", "serper", "api_key"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_LLM_QUERY_REWRITE"] == ["llm", "query_rewrite"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_LLM_QUERY_DECOMPOSITION"] == ["llm", "query_decomposition"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_LLM_DECOMPOSITION_MAX_QUERIES"] == ["llm", "decomposition_max_queries"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_LLM_RESULT_RERANK"] == ["llm", "result_rerank"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_LLM_RERANK_TOP_N"] == ["llm", "rerank_top_n"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_LLM_ANSWER_SYNTHESIS"] == ["llm", "answer_synthesis"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_LLM_SYNTHESIS_TOP_N"] == ["llm", "synthesis_top_n"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_LLM_TEMPERATURE"] == ["llm", "temperature"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_LLM_MAX_TOKENS"] == ["llm", "max_tokens"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_LLM_SYSTEM_PROMPT"] == ["llm", "system_prompt"]
 
 
 def test_config_with_direct_initialization() -> None:
@@ -155,6 +171,13 @@ def test_proxy_config_builds_webshare_url() -> None:
     assert config.is_configured() is True
     assert config.httpx_proxy_url() == "http://user%20name:p%40ss%20word@p.webshare.io:80"
     assert config.redacted_url() == "http://user%20name:****@p.webshare.io:80"
+    assert config.http_request_kwargs() == {
+        "proxy_url": "http://user%20name:p%40ss%20word@p.webshare.io:80",
+        "timeout": 30.0,
+        "retries": 3,
+        "retry_delay": 0.5,
+        "min_delay": 0.1,
+    }
 
 
 def test_proxy_config_builds_playwright_shape() -> None:
@@ -182,15 +205,76 @@ def test_config_loads_proxy_env(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("WEBSHARE_PROXY_PASS", "pass")
     monkeypatch.setenv("WEBSHARE_DOMAIN_NAME", "p.webshare.io")
     monkeypatch.setenv("WEBSHARE_PROXY_PORT", "80")
+    monkeypatch.setenv("TWAT_SEARCH_PROXY_TIMEOUT", "45")
+    monkeypatch.setenv("TWAT_SEARCH_PROXY_RETRIES", "4")
+    monkeypatch.setenv("TWAT_SEARCH_PROXY_RETRY_DELAY", "0.25")
+    monkeypatch.setenv("TWAT_SEARCH_PROXY_MIN_DELAY", "0.05")
+    monkeypatch.setenv("TWAT_SEARCH_PROXY_MAX_PARALLELISM", "8")
 
     config = Config()
 
     assert config.proxies.enabled is True
     assert config.proxies.httpx_proxy_url() == "http://user:pass@p.webshare.io:80"
+    assert config.proxies.timeout == 45
+    assert config.proxies.retries == 4
+    assert config.proxies.retry_delay == 0.25
+    assert config.proxies.min_delay == 0.05
+    assert config.proxies.max_parallelism == 8
 
 
 def test_llm_config_requires_enabled_model_and_key() -> None:
     """Test LLM config readiness guard."""
-    assert LLMConfig(enabled=True, model="gpt-5-mini", api_key="key").is_configured() is True
-    assert LLMConfig(enabled=False, model="gpt-5-mini", api_key="key").is_configured() is False
-    assert LLMConfig(enabled=True, model=None, api_key="key").is_configured() is False
+    assert (
+        LLMConfig(
+            enabled=True,
+            model="gpt-5-mini",
+            api_key="key",
+            base_url="https://llm.example/v1",
+        ).is_configured()
+        is True
+    )
+    assert (
+        LLMConfig(
+            enabled=False,
+            model="gpt-5-mini",
+            api_key="key",
+            base_url="https://llm.example/v1",
+        ).is_configured()
+        is False
+    )
+    assert LLMConfig(enabled=True, model=None, api_key="key", base_url="https://llm.example/v1").is_configured() is False
+    assert LLMConfig(enabled=True, model="gpt-5-mini", api_key="key", base_url=None).is_configured() is False
+
+
+def test_config_loads_llm_env(monkeypatch: MonkeyPatch) -> None:
+    """Test Config loads optional LLM search-stage settings from environment variables."""
+    monkeypatch.delenv("_TEST_ENGINE", raising=False)
+    monkeypatch.setenv("TWAT_SEARCH_LLM_ENABLED", "true")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_QUERY_REWRITE", "true")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_RESULT_RERANK", "true")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_RERANK_TOP_N", "12")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_ANSWER_SYNTHESIS", "true")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_SYNTHESIS_TOP_N", "5")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_PROVIDER", "openai-compatible")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_MODEL", "gpt-test")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_API_KEY", "llm-key")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_BASE_URL", "https://llm.example/v1")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_TEMPERATURE", "0.1")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_MAX_TOKENS", "96")
+    monkeypatch.setenv("TWAT_SEARCH_LLM_SYSTEM_PROMPT", "Rewrite only.")
+
+    config = Config()
+
+    assert config.llm.enabled is True
+    assert config.llm.query_rewrite is True
+    assert config.llm.result_rerank is True
+    assert config.llm.rerank_top_n == 12
+    assert config.llm.answer_synthesis is True
+    assert config.llm.synthesis_top_n == 5
+    assert config.llm.provider == "openai-compatible"
+    assert config.llm.model == "gpt-test"
+    assert config.llm.api_key == "llm-key"
+    assert config.llm.base_url == "https://llm.example/v1"
+    assert config.llm.temperature == 0.1
+    assert config.llm.max_tokens == 96
+    assert config.llm.system_prompt == "Rewrite only."

@@ -57,12 +57,27 @@ BASE_ENV_VAR_MAP: dict[str, str | list[str]] = {
     "WEBSHARE_PROXY_PASS": ["proxies", "password"],
     "WEBSHARE_DOMAIN_NAME": ["proxies", "host"],
     "WEBSHARE_PROXY_PORT": ["proxies", "port"],
+    "TWAT_SEARCH_PROXY_TIMEOUT": ["proxies", "timeout"],
+    "TWAT_SEARCH_PROXY_RETRIES": ["proxies", "retries"],
+    "TWAT_SEARCH_PROXY_RETRY_DELAY": ["proxies", "retry_delay"],
+    "TWAT_SEARCH_PROXY_MIN_DELAY": ["proxies", "min_delay"],
+    "TWAT_SEARCH_PROXY_MAX_PARALLELISM": ["proxies", "max_parallelism"],
     # Shared LLM routing configuration
     "TWAT_SEARCH_LLM_PROVIDER": ["llm", "provider"],
     "TWAT_SEARCH_LLM_MODEL": ["llm", "model"],
     "TWAT_SEARCH_LLM_API_KEY": ["llm", "api_key"],
     "TWAT_SEARCH_LLM_BASE_URL": ["llm", "base_url"],
     "TWAT_SEARCH_LLM_ENABLED": ["llm", "enabled"],
+    "TWAT_SEARCH_LLM_QUERY_REWRITE": ["llm", "query_rewrite"],
+    "TWAT_SEARCH_LLM_QUERY_DECOMPOSITION": ["llm", "query_decomposition"],
+    "TWAT_SEARCH_LLM_DECOMPOSITION_MAX_QUERIES": ["llm", "decomposition_max_queries"],
+    "TWAT_SEARCH_LLM_RESULT_RERANK": ["llm", "result_rerank"],
+    "TWAT_SEARCH_LLM_RERANK_TOP_N": ["llm", "rerank_top_n"],
+    "TWAT_SEARCH_LLM_ANSWER_SYNTHESIS": ["llm", "answer_synthesis"],
+    "TWAT_SEARCH_LLM_SYNTHESIS_TOP_N": ["llm", "synthesis_top_n"],
+    "TWAT_SEARCH_LLM_TEMPERATURE": ["llm", "temperature"],
+    "TWAT_SEARCH_LLM_MAX_TOKENS": ["llm", "max_tokens"],
+    "TWAT_SEARCH_LLM_SYSTEM_PROMPT": ["llm", "system_prompt"],
 }
 
 
@@ -104,6 +119,9 @@ class ProxyConfig(BaseModel):
     port: int | str | None = None
     timeout: float = 30.0
     retries: int = 3
+    retry_delay: float = 0.5
+    min_delay: float = 0.1
+    max_parallelism: int = 6
 
     def is_configured(self) -> bool:
         """Return True when either a full URL or all proxy parts are present."""
@@ -124,6 +142,19 @@ class ProxyConfig(BaseModel):
         if not self.enabled:
             return None
         return self.build_url()
+
+    def http_request_kwargs(self) -> dict[str, float | int | str]:
+        """Return proxy-aware HTTP request overrides for shared engines."""
+        proxy_url = self.httpx_proxy_url()
+        if not proxy_url:
+            return {}
+        return {
+            "proxy_url": proxy_url,
+            "timeout": self.timeout,
+            "retries": self.retries,
+            "retry_delay": self.retry_delay,
+            "min_delay": self.min_delay,
+        }
 
     def playwright_proxy(self) -> dict[str, str] | None:
         """Return Playwright's proxy dict shape without leaking credentials."""
@@ -148,15 +179,25 @@ class LLMConfig(BaseModel):
     """Configuration for optional LLM-assisted search stages."""
 
     enabled: bool = False
+    query_rewrite: bool = False
+    query_decomposition: bool = False
+    decomposition_max_queries: int = 4
+    result_rerank: bool = False
+    rerank_top_n: int = 20
+    answer_synthesis: bool = False
+    synthesis_top_n: int = 8
     provider: str | None = None
     model: str | None = None
     api_key: str | None = None
     base_url: str | None = None
     timeout: float = 60.0
+    temperature: float = 0.0
+    max_tokens: int = 128
+    system_prompt: str | None = None
 
     def is_configured(self) -> bool:
         """Return True when enough data exists to call a model."""
-        return bool(self.enabled and self.model and self.api_key)
+        return bool(self.enabled and self.model and self.api_key and self.base_url)
 
 
 class EngineConfig(BaseModel):

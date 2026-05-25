@@ -25,7 +25,7 @@ endpoints, and user-selected LLMs without preserving 0.x compatibility.
 
 ## Phase 1: Reference Research
 
-- [ ] `private/ytrix`: extract Webshare proxy construction, proxy-enabled pacing,
+- [x] `private/ytrix`: extract Webshare proxy construction, proxy-enabled pacing,
   retry timeout, and parallelism policy from `ytrix/info.py`.
 - [ ] `private/crapi`: inspect `private-tldr.txt` and targeted browser/proxy
   projects for reusable browser lifecycle, stealth, session, and proxy manager
@@ -37,7 +37,7 @@ endpoints, and user-selected LLMs without preserving 0.x compatibility.
 - [ ] `private/TO_INTEGRATE.md`: review listed projects and record borrowable
   ideas from qbittorrent search plugins, deep searchers, GitHub search, and
   dork tooling.
-- [ ] `/Users/adam/.env.anon.txt`: classify available keys into API search,
+- [x] `/Users/adam/.env.anon.txt`: classify available keys into API search,
   browser/proxy, LLM, crawling/extraction, and unrelated services.
 
 ## Phase 2: 2.0 Core Refactor
@@ -60,7 +60,7 @@ endpoints, and user-selected LLMs without preserving 0.x compatibility.
 - [ ] Keep and harden current API engines: Brave, Brave News, Tavily, You.com,
   You.com News, Perplexity, SerpAPI, HasData, and Critique.
 - [ ] Add API engines indicated by available keys: Google CSE, Serper, DataForSEO,
-  Exa, Firecrawl, Jina, Search1API, Gensearch, AISearch, and Apify.
+  Exa, Firecrawl, Jina, Search1API, AISearch, Apify, and Gensee.
 - [ ] Add proxy-aware scraper engines for DuckDuckGo, Bing, Google, Qwant, Yahoo,
   Mojeek, and Yandex using shared request policy.
 - [ ] Add browser engines with Playwright contexts, proxy injection, block
@@ -72,12 +72,12 @@ endpoints, and user-selected LLMs without preserving 0.x compatibility.
 
 ## Phase 4: LLM Search Layer
 
-- [ ] Add LLM provider config for OpenAI-compatible endpoints, model names, API
+- [x] Add LLM provider config for OpenAI-compatible endpoints, model names, API
   keys, base URLs, and feature flags.
-- [ ] Implement optional query rewriting and decomposition before fan-out.
-- [ ] Implement result reranking with provenance showing model, prompt version,
+- [x] Implement optional query rewriting and decomposition before fan-out.
+- [x] Implement result reranking with provenance showing model, prompt version,
   input result IDs, and score rationale.
-- [ ] Implement answer synthesis that cites result URLs and never hides source
+- [x] Implement answer synthesis that cites result URLs and never hides source
   engine failures.
 - [ ] Add offline tests with fake LLM clients from the `abersetz` pattern.
 
@@ -88,7 +88,7 @@ endpoints, and user-selected LLMs without preserving 0.x compatibility.
 - [ ] Add route presets: `fast`, `cheap`, `resilient`, `deep`, `browser`, and
   `api-only`.
 - [ ] Support JSONL output for streaming multi-engine results.
-- [ ] Add `--explain` output that shows selected engines, skipped engines, proxy
+- [x] Add `--explain` output that shows selected engines, skipped engines, proxy
   use, retries, errors, and LLM steps.
 - [ ] Ensure `twat search ...` and `twat-search ...` expose the same behavior.
 
@@ -138,8 +138,29 @@ endpoints, and user-selected LLMs without preserving 0.x compatibility.
 - [x] Promoted Jina from planned metadata to an implemented search/reader API engine using `JINA_API_KEY`.
 - [x] Added mocked Jina tests for registration, URL encoding, result conversion, content fallback, and parse failure.
 - [x] Promoted Search1API from planned metadata to an implemented multi-service search API engine using `SEARCH1API_KEY`.
+- [x] Added OpenAI-compatible LLM client helpers for opt-in query rewriting.
+- [x] Wired optional query rewriting before provider fan-out while preserving the original query and rewrite provenance.
+- [x] Wired optional query decomposition before provider fan-out with subquery provenance on results.
+- [x] Added offline fake-client tests for LLM request shape, response parsing, fallback behavior, and search API rewrite wiring.
+- [x] Added optional LLM result reranking with per-result model, prompt-version, input-result, score, and rationale provenance.
+- [x] Added optional LLM answer synthesis with URL citations and explicit source-failure preservation.
+- [x] Classified `/Users/adam/.env.anon.txt` search-adjacent keys: implemented API/search keys include Brave, Critique, DataForSEO, Exa, Firecrawl, GitHub, Google CSE, HasData, Jina, LangSearch, MapleSERP, Perplexity, Search1API, SearchCans, SerpAPI, Serper, Tavily, AISearch, and Apify; planned API/search candidates include Gensee, Bright Data, Browse AI, Browser Use, CaptureKit, and Decodo; proxy/browser infrastructure includes Webshare, Bright Data, Decodo, Browser Use, Browse AI, CaptureKit, and Cliproxy; LLM endpoint keys are numerous OpenAI-compatible providers and are covered by the provider-neutral LLM config.
+- [x] Added planned provider metadata for env-discovered LangSearch, MapleSERP, Search Cans, Bright Data, Browse AI, CaptureKit, and Decodo.
+- [x] Promoted LangSearch from planned metadata to an implemented Web Search API engine using `LANGSEARCH_API_KEY`.
+- [x] Added mocked LangSearch tests for registration, documented payload construction, result conversion, provider errors, and parse failure.
+- [x] Promoted MapleSERP from planned metadata to an implemented SERP API engine using `MAPLESERP_API_KEY`.
+- [x] Added mocked MapleSERP tests for registration, documented GET params, result conversion, auth failure, and parse failure.
+- [x] Promoted SearchCans from planned metadata to an implemented SERP API engine using `SEARCH_CANS_API_KEY`.
+- [x] Added mocked SearchCans tests for registration, documented payload construction, result conversion, provider errors, and parse failure.
+- [x] Promoted Gensee from planned metadata to an implemented Search Agent API engine using `GENSEE_SEARCH_API_KEY`.
+- [x] Added mocked Gensee tests for registration, documented GET params, result conversion, auth failure, and parse failure.
 - [x] Added mocked Search1API tests for registration, documented payload construction, result conversion, content fallback, and parse failure.
 - [x] Promoted AISearch from planned metadata to an implemented web-summary API engine using `AISEARCH_API_KEY`.
 - [x] Added mocked AISearch tests for registration, documented payload construction, context validation, source-backed result conversion, and parse failure.
 - [x] Promoted Apify from planned metadata to an implemented Google Search Scraper actor engine using `APIFY_API_KEY`.
 - [x] Added mocked Apify tests for registration, sync actor URLs, actor input payloads, nested organic results, flat dataset items, and parse failure.
+- [x] Promoted GitHub search from planned metadata to an implemented REST API engine using `GITHUB_API_TOKEN`/`GITHUB_TOKEN`-style credentials.
+- [x] Added mocked GitHub search tests for registration, repository/code/issue endpoint selection, request headers, result conversion, and parse failure.
+- [x] Borrowed `private/ytrix` Webshare pacing ideas into shared HTTP request policy: proxy-specific timeout, retries, retry delay, jittered minimum request delay, and max-parallelism configuration.
+- [x] Fixed provider-registry credential leakage so catalog API-key env vars cannot bleed from one registered engine class into another.
+- [x] Added CLI `--explain` metadata for selected/skipped engines, proxy policy, retries, provider errors, and LLM steps.

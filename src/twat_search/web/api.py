@@ -45,6 +45,7 @@ from twat_search.web.config import Config, EngineConfig
 from twat_search.web.engines import standardize_engine_name
 from twat_search.web.engines.base import SearchEngine, get_engine, get_registered_engines
 from twat_search.web.exceptions import SearchError
+from twat_search.web.llm import decompose_search_query, rerank_search_results, rewrite_search_query, synthesize_search_answer
 from twat_search.web.routes import select_route_engines
 
 if TYPE_CHECKING:
@@ -254,6 +255,19 @@ async def search_detailed(
     Raises:
         SearchError: If no engines can be initialized or if no engines are specified
     """
+    rewrite_query_override = kwargs.pop("rewrite_query", None)
+    decompose_query_override = kwargs.pop("decompose_query", None)
+    rerank_results_override = kwargs.pop("rerank_results", None)
+    synthesize_answer_override = kwargs.pop("synthesize_answer", None)
+    request_params = dict(kwargs)
+    if rewrite_query_override is not None:
+        request_params["rewrite_query"] = bool(rewrite_query_override)
+    if decompose_query_override is not None:
+        request_params["decompose_query"] = bool(decompose_query_override)
+    if rerank_results_override is not None:
+        request_params["rerank_results"] = bool(rerank_results_override)
+    if synthesize_answer_override is not None:
+        request_params["synthesize_answer"] = bool(synthesize_answer_override)
     request = SearchRequest(
         query=query,
         engines=engines,
@@ -264,7 +278,7 @@ async def search_detailed(
         safe_search=safe_search,
         time_frame=time_frame,
         strict_mode=strict_mode,
-        params=kwargs,
+        params=request_params,
     )
     flattened_results: list[SearchResult] = []
     outcomes: list[EngineOutcome] = []
@@ -272,6 +286,57 @@ async def search_detailed(
     try:
         # Initialize configuration if not provided
         config = config or Config()
+        search_query = query
+        search_queries = [query]
+        should_rewrite_query = config.llm.query_rewrite if rewrite_query_override is None else bool(rewrite_query_override)
+        should_decompose_query = (
+            config.llm.query_decomposition if decompose_query_override is None else bool(decompose_query_override)
+        )
+        should_rerank_results = config.llm.result_rerank if rerank_results_override is None else bool(rerank_results_override)
+        should_synthesize_answer = (
+            config.llm.answer_synthesis if synthesize_answer_override is None else bool(synthesize_answer_override)
+        )
+        if should_rewrite_query:
+            try:
+                llm_config = (
+                    config.llm
+                    if rewrite_query_override is None
+                    else config.llm.model_copy(update={"query_rewrite": bool(rewrite_query_override)})
+                )
+                search_query = await rewrite_search_query(query, llm_config)
+                request.params["llm_rewritten_query"] = search_query
+            except Exception as e:
+                logger.warning(f"LLM query rewrite failed; using original query: {e}")
+                request.params["llm_rewrite_error"] = str(e)
+        decompose_config = (
+            config.llm
+            if decompose_query_override is None
+            else config.llm.model_copy(update={"query_decomposition": bool(decompose_query_override)})
+        )
+        search_queries = [search_query]
+        if should_decompose_query:
+            try:
+                search_queries = await decompose_search_query(search_query, decompose_config)
+                request.params["llm_search_queries"] = search_queries
+                request.params["llm_decomposition"] = {
+                    "model": decompose_config.model,
+                    "prompt_version": "twat-search-decomposition-v1",
+                    "query_count": len(search_queries),
+                }
+            except Exception as e:
+                logger.warning(f"LLM query decomposition failed; using single query: {e}")
+                request.params["llm_decomposition_error"] = str(e)
+                search_queries = [search_query]
+        rerank_config = (
+            config.llm
+            if rerank_results_override is None
+            else config.llm.model_copy(update={"result_rerank": bool(rerank_results_override)})
+        )
+        synthesis_config = (
+            config.llm
+            if synthesize_answer_override is None
+            else config.llm.model_copy(update={"answer_synthesis": bool(synthesize_answer_override)})
+        )
 
         # Check if engines is an empty list (explicitly passed as [])
         if engines is not None and len(engines) == 0:
@@ -310,12 +375,13 @@ async def search_detailed(
             "language": language,
             "safe_search": safe_search,
             "time_frame": time_frame,
-            "proxy_url": config.proxies.httpx_proxy_url(),
+            **config.proxies.http_request_kwargs(),
         }
 
         # First attempt with specific engines or all enabled engines
         engine_names: list[str] = []
         tasks: list[Coroutine[Any, Any, EngineOutcome]] = []
+        task_queries: list[tuple[str, int, str]] = []
         failed_engines: list[str] = []
 
         # Prepare all engine tasks
@@ -335,23 +401,25 @@ async def search_detailed(
                                 kwargs["result_count"] = default_result_count
 
                 # Pass all parameters including kwargs to init_engine_task
-                task_result = init_engine_task(
-                    engine_name,
-                    query,
-                    config,
-                    engines=engines_to_try,
-                    common_params=common_params,
-                    num_results=num_results,
-                    **kwargs,
-                )
+                for query_index, current_query in enumerate(search_queries):
+                    task_result = init_engine_task(
+                        engine_name,
+                        current_query,
+                        config,
+                        engines=engines_to_try,
+                        common_params=common_params,
+                        num_results=num_results,
+                        **kwargs,
+                    )
 
-                # Check if initialization was successful
-                if isinstance(task_result, EngineOutcome):
-                    outcomes.append(task_result)
-                    failed_engines.append(engine_name)
-                else:
-                    engine_names.append(task_result[0])
-                    tasks.append(task_result[1])
+                    # Check if initialization was successful
+                    if isinstance(task_result, EngineOutcome):
+                        outcomes.append(task_result)
+                        failed_engines.append(engine_name)
+                    else:
+                        engine_names.append(task_result[0])
+                        tasks.append(task_result[1])
+                        task_queries.append((engine_name, query_index, current_query))
             except Exception as e:
                 logger.warning(f"Unexpected error initializing engine '{engine_name}': {e}")
                 failed_engines.append(engine_name)
@@ -378,7 +446,7 @@ async def search_detailed(
                     # Pass all parameters including kwargs to init_engine_task
                     task_result = init_engine_task(
                         engine_name,
-                        query,
+                        search_query,
                         config,
                         engines=[engine_name],
                         common_params=common_params,
@@ -393,6 +461,7 @@ async def search_detailed(
                     else:
                         engine_names.append(task_result[0])
                         tasks.append(task_result[1])
+                        task_queries.append((task_result[0], 0, search_query))
                         logger.info(f"Successfully fell back to engine: {engine_name}")
                         break
                 except Exception as e:
@@ -407,7 +476,7 @@ async def search_detailed(
         # Execute all search tasks concurrently
         results = await asyncio.gather(*tasks, return_exceptions=True) if tasks else []
 
-        for engine_name, result in zip(engine_names, results, strict=False):
+        for (engine_name, query_index, current_query), result in zip(task_queries, results, strict=False):
             if isinstance(result, Exception):
                 logger.error(
                     f"Search with engine '{engine_name}' failed: {result}",
@@ -433,6 +502,16 @@ async def search_detailed(
                     logger.info(
                         f"✅ Engine '{engine_name}' returned {result_count} results",
                     )
+                    enriched_results = []
+                    for provider_result in result.results:
+                        raw = dict(provider_result.raw or {})
+                        raw["query_fanout"] = {
+                            "query": current_query,
+                            "query_index": query_index,
+                            "query_count": len(search_queries),
+                        }
+                        enriched_results.append(provider_result.model_copy(update={"raw": raw}))
+                    result.results = enriched_results
                     flattened_results.extend(result.results)
                 else:
                     logger.info(
@@ -447,13 +526,39 @@ async def search_detailed(
         raise
 
     # Log the total number of results found
+    if flattened_results and "should_rerank_results" in locals() and should_rerank_results:
+        try:
+            flattened_results = await rerank_search_results(query, flattened_results, rerank_config)
+            request.params["llm_rerank"] = {
+                "model": rerank_config.model,
+                "result_count": len(flattened_results),
+            }
+        except Exception as e:
+            logger.warning(f"LLM result rerank failed; using provider order: {e}")
+            request.params["llm_rerank_error"] = str(e)
+
     logger.info(f"Total results found across all engines: {len(flattened_results)}")
     failures = [outcome.failure for outcome in outcomes if outcome.failure is not None]
+    answer = None
+    if flattened_results and "should_synthesize_answer" in locals() and should_synthesize_answer:
+        try:
+            answer = await synthesize_search_answer(query, flattened_results, failures, synthesis_config)
+            if answer is not None:
+                request.params["llm_answer"] = {
+                    "model": synthesis_config.model,
+                    "cited_url_count": len(answer.cited_urls),
+                    "source_failure_count": len(answer.source_failures),
+                }
+        except Exception as e:
+            logger.warning(f"LLM answer synthesis failed; returning results without answer: {e}")
+            request.params["llm_answer_error"] = str(e)
+
     return SearchResponse(
         request=request,
         engines=outcomes,
         results=flattened_results,
         failures=failures,
+        answer=answer,
     )
 
 

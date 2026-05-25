@@ -20,10 +20,10 @@ from pydantic import HttpUrl
 from pytest import MonkeyPatch
 
 from twat_search.web.api import search, search_detailed
-from twat_search.web.config import Config, EngineConfig
+from twat_search.web.config import Config, EngineConfig, LLMConfig
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import SearchError
-from twat_search.web.models import SearchResult
+from twat_search.web.models import SearchAnswer, SearchFailure, SearchResult
 
 # Setup logging for tests
 logging.basicConfig(level=logging.DEBUG)
@@ -196,6 +196,422 @@ async def test_search_detailed_records_provider_failure(
     assert response.failures[0].engine == "mock"
     assert response.failures[0].kind == "provider_error"
     assert response.failures[0].exception_type == "Exception"
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_uses_llm_rewritten_query(
+    mock_config: Config,
+    monkeypatch: MonkeyPatch,
+    setup_teardown: None,
+) -> None:
+    """LLM query rewriting happens before provider fan-out and keeps provenance."""
+    mock_config.llm = LLMConfig(
+        enabled=True,
+        query_rewrite=True,
+        model="gpt-test",
+        api_key="key",
+        base_url="https://llm.example/v1",
+    )
+
+    async def fake_rewrite(query: str, config: LLMConfig) -> str:
+        assert query == "test query"
+        assert config.model == "gpt-test"
+        return "rewritten query"
+
+    monkeypatch.setattr("twat_search.web.api.rewrite_search_query", fake_rewrite)
+
+    response = await search_detailed("test query", engines=["mock"], config=mock_config)
+
+    assert response.request.query == "test query"
+    assert response.request.params["llm_rewritten_query"] == "rewritten query"
+    assert all("rewritten query" in result.title for result in response.results)
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_uses_llm_decomposed_queries(
+    mock_config: Config,
+    monkeypatch: MonkeyPatch,
+    setup_teardown: None,
+) -> None:
+    """LLM query decomposition fans providers out across subqueries with provenance."""
+    mock_config.llm = LLMConfig(
+        enabled=True,
+        query_decomposition=True,
+        model="gpt-test",
+        api_key="key",
+        base_url="https://llm.example/v1",
+    )
+
+    async def fake_decompose(query: str, config: LLMConfig) -> list[str]:
+        assert query == "test query"
+        assert config.model == "gpt-test"
+        return ["test query", "focused query"]
+
+    monkeypatch.setattr("twat_search.web.api.decompose_search_query", fake_decompose)
+
+    response = await search_detailed("test query", engines=["mock"], config=mock_config, result_count=1)
+
+    assert response.request.params["llm_search_queries"] == ["test query", "focused query"]
+    assert response.request.params["llm_decomposition"] == {
+        "model": "gpt-test",
+        "prompt_version": "twat-search-decomposition-v1",
+        "query_count": 2,
+    }
+    assert [result.title for result in response.results] == [
+        "Mock Result 1 for test query",
+        "Mock Result 1 for focused query",
+    ]
+    assert response.results[1].raw is not None
+    assert response.results[1].raw["query_fanout"] == {
+        "query": "focused query",
+        "query_index": 1,
+        "query_count": 2,
+    }
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_records_decomposition_error_and_uses_single_query(
+    mock_config: Config,
+    setup_teardown: None,
+) -> None:
+    """Decomposition failures are provenance, not whole-search failures."""
+    mock_config.llm = LLMConfig(enabled=True, query_decomposition=True, model="gpt-test", api_key="key")
+
+    response = await search_detailed("test query", engines=["mock"], config=mock_config)
+
+    assert "base_url" in response.request.params["llm_decomposition_error"]
+    assert all("test query" in result.title for result in response.results)
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_decompose_query_override_disables_configured_decomposition(
+    mock_config: Config,
+    monkeypatch: MonkeyPatch,
+    setup_teardown: None,
+) -> None:
+    """Call-level decompose_query=False prevents configured query fan-out."""
+    mock_config.llm = LLMConfig(
+        enabled=True,
+        query_decomposition=True,
+        model="gpt-test",
+        api_key="key",
+        base_url="https://llm.example/v1",
+    )
+
+    async def fake_decompose(query: str, config: LLMConfig) -> list[str]:
+        msg = "decompose should not be called"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr("twat_search.web.api.decompose_search_query", fake_decompose)
+
+    response = await search_detailed(
+        "test query",
+        engines=["mock"],
+        config=mock_config,
+        decompose_query=False,
+    )
+
+    assert response.request.params["decompose_query"] is False
+    assert "llm_search_queries" not in response.request.params
+    assert all("test query" in result.title for result in response.results)
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_rewrite_query_override_disables_configured_rewrite(
+    mock_config: Config,
+    monkeypatch: MonkeyPatch,
+    setup_teardown: None,
+) -> None:
+    """Call-level rewrite_query=False prevents LLM rewrite kwargs leaking to engines."""
+    mock_config.llm = LLMConfig(
+        enabled=True,
+        query_rewrite=True,
+        model="gpt-test",
+        api_key="key",
+        base_url="https://llm.example/v1",
+    )
+
+    async def fake_rewrite(query: str, config: LLMConfig) -> str:
+        msg = "rewrite should not be called"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr("twat_search.web.api.rewrite_search_query", fake_rewrite)
+
+    response = await search_detailed(
+        "test query",
+        engines=["mock"],
+        config=mock_config,
+        rewrite_query=False,
+    )
+
+    assert response.request.params["rewrite_query"] is False
+    assert "llm_rewritten_query" not in response.request.params
+    assert all("test query" in result.title for result in response.results)
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_rewrite_query_override_enables_configured_client(
+    mock_config: Config,
+    monkeypatch: MonkeyPatch,
+    setup_teardown: None,
+) -> None:
+    """Call-level rewrite_query=True enables an otherwise disabled rewrite flag."""
+    mock_config.llm = LLMConfig(
+        enabled=True,
+        query_rewrite=False,
+        model="gpt-test",
+        api_key="key",
+        base_url="https://llm.example/v1",
+    )
+
+    async def fake_rewrite(query: str, config: LLMConfig) -> str:
+        assert query == "test query"
+        assert config.query_rewrite is True
+        return "forced rewrite"
+
+    monkeypatch.setattr("twat_search.web.api.rewrite_search_query", fake_rewrite)
+
+    response = await search_detailed(
+        "test query",
+        engines=["mock"],
+        config=mock_config,
+        rewrite_query=True,
+    )
+
+    assert response.request.params["rewrite_query"] is True
+    assert response.request.params["llm_rewritten_query"] == "forced rewrite"
+    assert all("forced rewrite" in result.title for result in response.results)
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_records_rewrite_error_and_uses_original_query(
+    mock_config: Config,
+    setup_teardown: None,
+) -> None:
+    """Rewrite failures are provenance, not whole-search failures."""
+    mock_config.llm = LLMConfig(enabled=True, query_rewrite=True, model="gpt-test", api_key="key")
+
+    response = await search_detailed("test query", engines=["mock"], config=mock_config)
+
+    assert "base_url" in response.request.params["llm_rewrite_error"]
+    assert all("test query" in result.title for result in response.results)
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_uses_llm_reranked_results(
+    mock_config: Config,
+    monkeypatch: MonkeyPatch,
+    setup_teardown: None,
+) -> None:
+    """LLM reranking happens after fan-out and keeps provenance."""
+    mock_config.llm = LLMConfig(
+        enabled=True,
+        result_rerank=True,
+        model="gpt-test",
+        api_key="key",
+        base_url="https://llm.example/v1",
+    )
+
+    async def fake_rerank(query: str, results: list[SearchResult], config: LLMConfig) -> list[SearchResult]:
+        assert query == "test query"
+        assert config.model == "gpt-test"
+        return list(reversed(results))
+
+    monkeypatch.setattr("twat_search.web.api.rerank_search_results", fake_rerank)
+
+    response = await search_detailed("test query", engines=["mock"], config=mock_config)
+
+    assert response.request.params["llm_rerank"] == {"model": "gpt-test", "result_count": 2}
+    assert response.results[0].title == "Mock Result 2 for test query"
+    assert response.results[1].title == "Mock Result 1 for test query"
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_rerank_results_override_disables_configured_rerank(
+    mock_config: Config,
+    monkeypatch: MonkeyPatch,
+    setup_teardown: None,
+) -> None:
+    """Call-level rerank_results=False prevents configured result reranking."""
+    mock_config.llm = LLMConfig(
+        enabled=True,
+        result_rerank=True,
+        model="gpt-test",
+        api_key="key",
+        base_url="https://llm.example/v1",
+    )
+
+    async def fake_rerank(query: str, results: list[SearchResult], config: LLMConfig) -> list[SearchResult]:
+        msg = "rerank should not be called"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr("twat_search.web.api.rerank_search_results", fake_rerank)
+
+    response = await search_detailed(
+        "test query",
+        engines=["mock"],
+        config=mock_config,
+        rerank_results=False,
+    )
+
+    assert response.request.params["rerank_results"] is False
+    assert "llm_rerank" not in response.request.params
+    assert response.results[0].title == "Mock Result 1 for test query"
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_records_rerank_error_and_uses_provider_order(
+    mock_config: Config,
+    setup_teardown: None,
+) -> None:
+    """Rerank failures are provenance, not whole-search failures."""
+    mock_config.llm = LLMConfig(enabled=True, result_rerank=True, model="gpt-test", api_key="key")
+
+    response = await search_detailed("test query", engines=["mock"], config=mock_config)
+
+    assert "base_url" in response.request.params["llm_rerank_error"]
+    assert response.results[0].title == "Mock Result 1 for test query"
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_uses_llm_answer_synthesis(
+    mock_config: Config,
+    monkeypatch: MonkeyPatch,
+    setup_teardown: None,
+) -> None:
+    """LLM answer synthesis runs after fan-out and records answer provenance."""
+    mock_config.llm = LLMConfig(
+        enabled=True,
+        answer_synthesis=True,
+        model="gpt-test",
+        api_key="key",
+        base_url="https://llm.example/v1",
+    )
+
+    async def fake_synthesis(
+        query: str,
+        results: list[SearchResult],
+        failures: list[SearchFailure],
+        config: LLMConfig,
+    ) -> SearchAnswer:
+        assert query == "test query"
+        assert len(results) == 2
+        assert failures == []
+        assert config.model == "gpt-test"
+        return SearchAnswer(
+            text="Synthesized answer.",
+            cited_urls=[str(results[0].url)],
+            model="gpt-test",
+            prompt_version="twat-search-synthesis-v1",
+            input_result_count=len(results),
+            source_failures=failures,
+        )
+
+    monkeypatch.setattr("twat_search.web.api.synthesize_search_answer", fake_synthesis)
+
+    response = await search_detailed("test query", engines=["mock"], config=mock_config)
+
+    assert response.answer is not None
+    assert response.answer.text == "Synthesized answer."
+    assert response.request.params["llm_answer"] == {
+        "model": "gpt-test",
+        "cited_url_count": 1,
+        "source_failure_count": 0,
+    }
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_answer_synthesis_preserves_failures(
+    mock_config: Config,
+    monkeypatch: MonkeyPatch,
+    setup_teardown: None,
+) -> None:
+    """Synthesis receives and returns provider failures instead of hiding them."""
+    mock_config.llm = LLMConfig(
+        enabled=True,
+        answer_synthesis=True,
+        model="gpt-test",
+        api_key="key",
+        base_url="https://llm.example/v1",
+    )
+
+    async def fake_synthesis(
+        query: str,
+        results: list[SearchResult],
+        failures: list[SearchFailure],
+        config: LLMConfig,
+    ) -> SearchAnswer:
+        assert failures
+        return SearchAnswer(
+            text="Partial answer; one source failed.",
+            cited_urls=[str(results[0].url)],
+            model=str(config.model),
+            prompt_version="twat-search-synthesis-v1",
+            input_result_count=len(results),
+            source_failures=failures,
+        )
+
+    monkeypatch.setattr("twat_search.web.api.synthesize_search_answer", fake_synthesis)
+
+    response = await search_detailed("test query", engines=["mock", "nonexistent"], config=mock_config)
+
+    assert response.failures
+    assert response.answer is not None
+    assert response.answer.source_failures == response.failures
+    assert response.request.params["llm_answer"]["source_failure_count"] == len(response.failures)
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_synthesize_answer_override_disables_configured_synthesis(
+    mock_config: Config,
+    monkeypatch: MonkeyPatch,
+    setup_teardown: None,
+) -> None:
+    """Call-level synthesize_answer=False prevents configured answer synthesis."""
+    mock_config.llm = LLMConfig(
+        enabled=True,
+        answer_synthesis=True,
+        model="gpt-test",
+        api_key="key",
+        base_url="https://llm.example/v1",
+    )
+
+    async def fake_synthesis(
+        query: str,
+        results: list[SearchResult],
+        failures: list[SearchFailure],
+        config: LLMConfig,
+    ) -> SearchAnswer:
+        msg = "synthesis should not be called"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr("twat_search.web.api.synthesize_search_answer", fake_synthesis)
+
+    response = await search_detailed(
+        "test query",
+        engines=["mock"],
+        config=mock_config,
+        synthesize_answer=False,
+    )
+
+    assert response.answer is None
+    assert response.request.params["synthesize_answer"] is False
+    assert "llm_answer" not in response.request.params
+
+
+@pytest.mark.asyncio
+async def test_search_detailed_records_answer_synthesis_error(
+    mock_config: Config,
+    setup_teardown: None,
+) -> None:
+    """Synthesis failures are provenance, not whole-search failures."""
+    mock_config.llm = LLMConfig(enabled=True, answer_synthesis=True, model="gpt-test", api_key="key")
+
+    response = await search_detailed("test query", engines=["mock"], config=mock_config)
+
+    assert response.answer is None
+    assert "base_url" in response.request.params["llm_answer_error"]
+    assert response.results
 
 
 @pytest.mark.asyncio

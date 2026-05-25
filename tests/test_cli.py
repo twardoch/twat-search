@@ -122,6 +122,19 @@ def test_web_q_free_preset_uses_catalog_filter() -> None:
     assert "API key is required" not in combined
 
 
+def test_web_q_explain_json_outputs_search_metadata() -> None:
+    """twat-search web q --explain --json should include explain metadata."""
+    result = _run("web", "q", "catalog smoke", "-e", "free", "--explain", "--json")
+    assert result.returncode == 0, f"Expected exit 0, got {result.returncode}\nstderr: {result.stderr}"
+
+    data = json.loads(result.stdout)
+    assert "explain" in data
+    assert "results" in data
+    assert "selected_engines" in data["explain"]
+    assert "proxy" in data["explain"]
+    assert "llm_steps" in data["explain"]
+
+
 # ---------------------------------------------------------------------------
 # Dashed-entry cmd_* functions (via python -c invocation)
 # ---------------------------------------------------------------------------

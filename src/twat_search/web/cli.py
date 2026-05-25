@@ -24,7 +24,7 @@ from rich.console import Console
 from rich.logging import RichHandler
 from rich.table import Table
 
-from twat_search.web.api import search
+from twat_search.web.api import search, search_detailed
 from twat_search.web.config import Config  # Already here, but good to note
 from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
 from twat_search.web.engines import get_registered_engines  # Added this
@@ -38,6 +38,9 @@ from twat_search.web.engines import (
 )
 from twat_search.web.provider_catalog import get_provider_metadata, select_provider_codes
 from twat_search.web.routes import route_names, select_route_engines
+
+if TYPE_CHECKING:
+    from twat_search.web.models import SearchResponse
 
 
 # Custom JSON encoder that handles non-serializable objects
@@ -292,6 +295,7 @@ class SearchCLI:
         verbose: bool = False,
         json: bool = False,
         plain: bool = False,
+        explain: bool = False,
         **kwargs: Any,
     ) -> list[dict[str, Any]]:
         """
@@ -315,6 +319,7 @@ class SearchCLI:
             verbose: Whether to display verbose output
             json: Whether to return results as JSON
             plain: Whether to display results in plain text format
+            explain: Whether to display route, proxy, failure, and LLM-step metadata
             **kwargs: Additional engine-specific parameters
 
         Returns:
@@ -371,7 +376,36 @@ class SearchCLI:
         # Add a debug statement to verify the num_results value is correct
         self.logger.debug(f"Right before executing search, num_results={num_results}")
 
-        if json or plain:
+        if explain:
+            try:
+                response = asyncio.run(
+                    search_detailed(
+                        query=query,
+                        engines=engine_list,
+                        route=route or ("best" if engine_list is None else None),
+                        config=config,
+                        strict_mode=True,
+                        **common_params,
+                        **kwargs,
+                    ),
+                )
+            except Exception as exc:
+                self.logger.error(f"Search failed: {exc}")
+                _display_errors([str(exc)])
+                return []
+            results = _process_results(response.results)
+            explain_payload = _build_explain_payload(response, engine_list, config)
+            if json:
+                self.console.print(
+                    json_lib.dumps(
+                        {"explain": explain_payload, "results": _results_json_payload(results)},
+                        indent=2,
+                        cls=CustomJSONEncoder,
+                    ),
+                )
+                return []
+            _display_explain(explain_payload, plain=plain)
+        elif json or plain:
             results = asyncio.run(
                 self._run_search(
                     query,
@@ -1294,6 +1328,81 @@ def _process_results(results: list) -> list[dict[str, Any]]:
     return processed
 
 
+def _build_explain_payload(
+    response: SearchResponse,
+    selected_engines: list[str] | None,
+    config: Config,
+) -> dict[str, Any]:
+    """Build machine-readable CLI explain metadata from a detailed response."""
+    selected = selected_engines or response.request.engines or [outcome.engine for outcome in response.engines]
+    selected_set = set(selected)
+    skipped = []
+    for engine_name, engine_config in sorted(config.engines.items()):
+        if engine_name in selected_set:
+            continue
+        provider = get_provider_metadata(engine_name)
+        reason = "route_filter"
+        if not engine_config.enabled:
+            reason = "disabled"
+        elif provider and provider.requires_api_key and not engine_config.api_key:
+            reason = "missing_api_key"
+        skipped.append({"engine": engine_name, "reason": reason})
+
+    llm_params = response.request.params
+    llm_steps = {
+        "rewrite": llm_params.get("llm_rewritten_query") or llm_params.get("llm_rewrite_error"),
+        "decomposition": llm_params.get("llm_decomposition") or llm_params.get("llm_decomposition_error"),
+        "search_queries": llm_params.get("llm_search_queries", [response.request.query]),
+        "rerank": llm_params.get("llm_rerank") or llm_params.get("llm_rerank_error"),
+        "answer": llm_params.get("llm_answer") or llm_params.get("llm_answer_error"),
+    }
+
+    return {
+        "query": response.request.query,
+        "route": response.request.route,
+        "selected_engines": selected,
+        "skipped_engines": skipped,
+        "proxy": {
+            "enabled": config.proxies.enabled,
+            "configured": config.proxies.is_configured(),
+            "provider": config.proxies.provider,
+            "url": config.proxies.redacted_url(),
+            "timeout": config.proxies.timeout,
+            "retries": config.proxies.retries,
+            "retry_delay": config.proxies.retry_delay,
+            "min_delay": config.proxies.min_delay,
+            "max_parallelism": config.proxies.max_parallelism,
+        },
+        "outcomes": [
+            {
+                "engine": outcome.engine,
+                "status": outcome.status,
+                "result_count": len(outcome.results),
+            }
+            for outcome in response.engines
+        ],
+        "errors": [failure.model_dump(mode="json") for failure in response.failures],
+        "llm_steps": llm_steps,
+    }
+
+
+def _display_explain(payload: dict[str, Any], *, plain: bool = False) -> None:
+    """Display explain metadata for humans or plain text consumers."""
+    if plain:
+        console.print(json_lib.dumps(payload, cls=CustomJSONEncoder, sort_keys=True))
+        return
+    table = Table(title="Search Explain")
+    table.add_column("Field", style="cyan", no_wrap=True)
+    table.add_column("Value", style="white")
+    table.add_row("route", str(payload["route"]))
+    table.add_row("selected", ", ".join(payload["selected_engines"]) or "none")
+    table.add_row("skipped", str(len(payload["skipped_engines"])))
+    table.add_row("proxy", "enabled" if payload["proxy"]["enabled"] else "disabled")
+    table.add_row("errors", str(len(payload["errors"])))
+    table.add_row("llm_queries", ", ".join(payload["llm_steps"]["search_queries"]))
+    console.print(table)
+
+
 def _display_results(
     processed_results: list[dict[str, Any]],
     verbose: bool = False,
@@ -1361,6 +1470,11 @@ def _display_errors(error_messages: list[str]) -> None:
 
 def _display_json_results(processed_results: list[dict[str, Any]]) -> None:
     """Format and print results as JSON."""
+    console.print(json_lib.dumps(_results_json_payload(processed_results), indent=2, cls=CustomJSONEncoder))
+
+
+def _results_json_payload(processed_results: list[dict[str, Any]]) -> dict[str, dict[str, list[dict[str, Any]]]]:
+    """Build the grouped JSON result payload used by CLI JSON output."""
     results_by_engine: dict[str, dict[str, list[dict[str, Any]]]] = {}
 
     # Group results by engine
@@ -1385,8 +1499,7 @@ def _display_json_results(processed_results: list[dict[str, Any]]) -> None:
             },
         )
 
-    # Print the JSON output using the CustomJSONEncoder defined at the top of the file
-    console.print(json_lib.dumps(results_by_engine, indent=2, cls=CustomJSONEncoder))
+    return results_by_engine
 
 
 def main() -> None:

@@ -9,6 +9,28 @@ All notable changes to this project will be documented in this file.
 ## Unreleased Changes
 
 ### Added
+- Added an OpenAI-compatible LLM helper that posts chat completion requests for opt-in query rewriting without adding a new SDK dependency.
+- Added LLM query-rewrite and result-rerank configuration for feature flags, temperature, token limit, and custom system prompts.
+- Added optional pre-fan-out query rewriting in `search_detailed()` with original-query preservation and request provenance.
+- Added optional LLM query decomposition before provider fan-out with capped, deduplicated subqueries and per-result query provenance.
+- Added CLI `--explain` output for selected engines, skipped engines, proxy policy, retries, provider errors, and LLM step provenance.
+- Added optional post-fan-out LLM result reranking with per-result model, prompt-version, input-result, score, and rationale provenance.
+- Added optional LLM answer synthesis with result URL citations and explicit source-failure preservation.
+- Added offline fake-client tests for LLM chat request shape, response parsing, rewrite/rerank/synthesis fallback behavior, and search API wiring.
+- Added planned provider metadata for env-discovered LangSearch, MapleSERP, Search Cans, Bright Data, Browse AI, CaptureKit, and Decodo.
+- Added a LangSearch Web Search API engine using `LANGSEARCH_API_KEY` and the shared HTTP request/proxy path.
+- Added mocked LangSearch tests for registration, documented payload construction, result conversion, provider errors, and parse failures.
+- Added a MapleSERP SERP API engine using `MAPLESERP_API_KEY` and the shared HTTP request/proxy path.
+- Added mocked MapleSERP tests for registration, documented GET params, result conversion, auth failure, and parse failures.
+- Added a SearchCans SERP API engine using `SEARCH_CANS_API_KEY` and the shared HTTP request/proxy path.
+- Added mocked SearchCans tests for registration, documented payload construction, result conversion, provider errors, and parse failures.
+- Added a Gensee Search Agent API engine using `GENSEE_SEARCH_API_KEY` and the shared HTTP request/proxy path.
+- Added mocked Gensee tests for registration, documented GET params, result conversion, auth failure, and parse failures.
+- Documented the `/Users/adam/.env.anon.txt` search-adjacent key classification in the 2.0 TODO.
+- Added proxy-aware HTTP request policy wiring inspired by `private/ytrix`: configured proxies now pass timeout, retry count, retry delay, and jittered minimum request delay through the shared engine request path.
+- Added environment overrides for proxy pacing: `TWAT_SEARCH_PROXY_TIMEOUT`, `TWAT_SEARCH_PROXY_RETRIES`, `TWAT_SEARCH_PROXY_RETRY_DELAY`, `TWAT_SEARCH_PROXY_MIN_DELAY`, and `TWAT_SEARCH_PROXY_MAX_PARALLELISM`.
+- Added a GitHub REST API search engine using `GITHUB_API_TOKEN`/`GITHUB_TOKEN`-style credentials and the shared HTTP request/proxy path.
+- Added mocked GitHub search tests for registration, repository/code/issue endpoints, request headers, result conversion, and parse failures.
 - Added an Apify Google Search Scraper engine using `APIFY_API_KEY` and the shared HTTP request/proxy path.
 - Added mocked Apify tests for registration, sync actor URL construction, actor input payloads, nested organic results, flat dataset items, and parse failures.
 - Added an AISearch web-summary engine using `AISEARCH_API_KEY` and the shared HTTP request/proxy path.
@@ -35,7 +57,7 @@ All notable changes to this project will be documented in this file.
 - Added catalog-driven default engine configuration and generated engine env-var mappings.
 - Added catalog selection helpers used by route/preset selection.
 - Added a typed provider catalog with transport, status, credential, proxy, browser, rate, cost, stability, and result-kind metadata.
-- Added planned 2.0 provider metadata for Gensee, Browser Use, and GitHub search.
+- Added planned 2.0 provider metadata for Gensee and Browser Use.
 - Added catalog-backed CLI engine JSON metadata output.
 - Added typed proxy and LLM configuration foundations for the 2.0 search refactor.
 - Added Webshare-style proxy environment loading and URL builders for HTTPX and Playwright.
@@ -48,6 +70,11 @@ All notable changes to this project will be documented in this file.
 - Added proper handling of mock engine parameters, ensuring correct result count
 
 ### Changed
+- Promoted LangSearch from planned provider metadata to an implemented, config-backed API engine.
+- Promoted MapleSERP from planned provider metadata to an implemented, config-backed API engine.
+- Promoted SearchCans from planned provider metadata to an implemented, config-backed API engine.
+- Promoted Gensee from planned provider metadata to an implemented, config-backed API engine.
+- Promoted GitHub search from planned provider metadata to an implemented, config-backed REST API engine.
 - Promoted Apify from planned provider metadata to an implemented, config-backed actor API engine.
 - Promoted AISearch from planned provider metadata to an implemented, config-backed API engine.
 - Promoted Search1API from planned provider metadata to an implemented, config-backed API engine.
@@ -73,6 +100,7 @@ All notable changes to this project will be documented in this file.
 - Improved error handling patterns across the codebase
 
 ### Fixed
+- Fixed provider registry credential leakage by giving each registered engine subclass its own `env_api_key_names` list before catalog env vars are merged.
 - Removed generated Python, pytest, ruff, and mypy cache directories from the repository tree.
 - Fixed obsolete Falla/browser debug tests so missing optional Playwright dependencies skip instead of breaking collection.
 - Fixed the Hatch test environment so async tests load `pytest-asyncio`.

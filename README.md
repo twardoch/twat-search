@@ -128,10 +128,18 @@ export TWAT_SEARCH_LLM_PROVIDER="openai-compatible"
 export TWAT_SEARCH_LLM_MODEL="gpt-5-mini"
 export TWAT_SEARCH_LLM_API_KEY="$OPENAI_API_KEY"
 export TWAT_SEARCH_LLM_BASE_URL="https://api.openai.com/v1"
+export TWAT_SEARCH_LLM_QUERY_REWRITE="true"
+export TWAT_SEARCH_LLM_RESULT_RERANK="true"
+export TWAT_SEARCH_LLM_ANSWER_SYNTHESIS="true"
 ```
 
 The package stores LLM decisions as provenance, not hidden magic. A result set
 can show whether a title/snippet came from the source, an extractor, or a model.
+Callers can override configured query rewriting per request with
+`rewrite_query=True` or `rewrite_query=False`, and result reranking with
+`rerank_results=True` or `rerank_results=False`. Answer synthesis is similarly
+explicit via `synthesize_answer=True` or `synthesize_answer=False`; synthesized
+answers cite result URLs and keep provider failures visible.
 
 ## Result Model
 

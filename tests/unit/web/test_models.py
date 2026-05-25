@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 from pydantic import HttpUrl, ValidationError
 
-from twat_search.web.models import EngineOutcome, SearchFailure, SearchRequest, SearchResponse, SearchResult
+from twat_search.web.models import EngineOutcome, SearchAnswer, SearchFailure, SearchRequest, SearchResponse, SearchResult
 
 
 def test_search_result_valid_data() -> None:
@@ -161,3 +161,26 @@ def test_search_response_serializes_engine_failures() -> None:
     assert data["engines"][0]["status"] == "failed"
     assert data["failures"][0]["kind"] == "timeout"
     assert data["failures"][0]["retryable"] is True
+
+
+def test_search_response_serializes_answer_with_failures() -> None:
+    """Detailed responses can carry synthesized answers without hiding failures."""
+    failure = SearchFailure(engine="mock", kind="empty", message="no results")
+    response = SearchResponse(
+        request=SearchRequest(query="test"),
+        engines=[EngineOutcome(engine="mock", status="empty", failure=failure)],
+        failures=[failure],
+        answer=SearchAnswer(
+            text="A cited answer.",
+            cited_urls=["https://example.com/source"],
+            model="gpt-test",
+            prompt_version="twat-search-synthesis-v1",
+            input_result_count=1,
+            source_failures=[failure],
+        ),
+    )
+
+    data = response.model_dump()
+    assert data["answer"]["text"] == "A cited answer."
+    assert str(data["answer"]["cited_urls"][0]) == "https://example.com/source"
+    assert data["answer"]["source_failures"][0]["kind"] == "empty"

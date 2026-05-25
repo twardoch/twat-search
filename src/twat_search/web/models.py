@@ -115,6 +115,17 @@ class EngineOutcome(BaseModel):
     failure: SearchFailure | None = None
 
 
+class SearchAnswer(BaseModel):
+    """Optional synthesized answer with citations and visible source failures."""
+
+    text: str
+    cited_urls: list[HttpUrl] = Field(default_factory=list)
+    model: str
+    prompt_version: str
+    input_result_count: int = 0
+    source_failures: list[SearchFailure] = Field(default_factory=list)
+
+
 class SearchResponse(BaseModel):
     """Detailed multi-engine response with results and per-engine outcomes."""
 
@@ -122,3 +133,4 @@ class SearchResponse(BaseModel):
     engines: list[EngineOutcome]
     results: list[SearchResult] = Field(default_factory=list)
     failures: list[SearchFailure] = Field(default_factory=list)
+    answer: SearchAnswer | None = None

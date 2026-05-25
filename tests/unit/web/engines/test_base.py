@@ -9,6 +9,7 @@ This module tests the base search engine class and factory functions.
 from __future__ import annotations
 
 import abc
+from typing import Any
 
 import pytest
 from pydantic import HttpUrl
@@ -137,3 +138,59 @@ def test_get_engine_with_kwargs() -> None:
     assert engine.kwargs == kwargs
     assert engine.kwargs["timeout"] == 30
     assert engine.kwargs["country"] == "US"
+
+
+@pytest.mark.asyncio
+async def test_make_http_request_uses_proxy_request_policy(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Shared HTTP requests honor proxy URL, timeout, and pacing settings."""
+    captured: dict[str, Any] = {}
+    sleep_calls: list[float] = []
+
+    class FakeResponse:
+        def raise_for_status(self) -> None:
+            return None
+
+    class FakeAsyncClient:
+        def __init__(self, **kwargs: Any) -> None:
+            captured["client_kwargs"] = kwargs
+
+        async def __aenter__(self) -> FakeAsyncClient:
+            return self
+
+        async def __aexit__(self, *_args: Any) -> None:
+            return None
+
+        async def request(self, **kwargs: Any) -> FakeResponse:
+            captured["request_kwargs"] = kwargs
+            return FakeResponse()
+
+    async def fake_sleep(delay: float) -> None:
+        sleep_calls.append(delay)
+
+    monkeypatch.setattr("twat_search.web.engines.base.httpx.AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr("twat_search.web.engines.base.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr("twat_search.web.engines.base.random.uniform", lambda _a, _b: 0.01)
+
+    engine = TestSearchEngine(
+        EngineConfig(),
+        proxy_url="http://proxy.example:80",
+        timeout=30,
+        retries=0,
+        min_delay=0.1,
+        use_random_user_agent=False,
+    )
+
+    await engine.make_http_request("https://example.com/search", params={"q": "fonts"})
+
+    assert sleep_calls == [0.11]
+    assert captured["client_kwargs"] == {
+        "timeout": 30,
+        "proxy": "http://proxy.example:80",
+    }
+    assert captured["request_kwargs"] == {
+        "method": "GET",
+        "url": "https://example.com/search",
+        "headers": {},
+        "params": {"q": "fonts"},
+        "json": None,
+    }

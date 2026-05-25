@@ -83,6 +83,7 @@ class SearchEngine(abc.ABC):
         self.timeout = kwargs.get("timeout", 10)
         self.retries = kwargs.get("retries", 2)
         self.retry_delay = kwargs.get("retry_delay", 1.0)
+        self.min_delay = kwargs.get("min_delay", 0.0) or 0.0
         self.use_random_user_agent = kwargs.get("use_random_user_agent", True)
         self.proxy_url = kwargs.get("proxy_url")
 
@@ -260,6 +261,9 @@ class SearchEngine(abc.ABC):
         # Try the request multiple times
         for attempt in range(1, actual_retries + 2):  # +2 because we want actual_retries+1 attempts
             try:
+                if self.min_delay > 0:
+                    await asyncio.sleep(self.min_delay + random.uniform(0, self.min_delay * 0.1))
+
                 client_kwargs: dict[str, Any] = {"timeout": actual_timeout}
                 if self.proxy_url:
                     client_kwargs["proxy"] = self.proxy_url
@@ -353,10 +357,11 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
             error_msg = "Engine must define a non-empty 'engine_code' attribute."
             raise AttributeError(error_msg)
 
-        # Now check for env_api_key_names attribute
-        if not hasattr(engine_class, "env_api_key_names"):
-            error_msg = "Engine must define a 'env_api_key_names' attribute."
-            raise AttributeError(error_msg)
+        # Give each subclass its own credential-name list. Otherwise a test or
+        # plugin class that inherits the base class variable can leak API-key
+        # requirements into unrelated engines when the catalog merge below runs.
+        if "env_api_key_names" not in engine_class.__dict__:
+            engine_class.env_api_key_names = list(getattr(engine_class, "env_api_key_names", []))
 
         for env_name in get_api_key_env_names(engine_class.engine_code):
             if env_name not in engine_class.env_api_key_names:
