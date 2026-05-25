@@ -4,6 +4,7 @@ Critique Labs search engine implementation.
 This module implements the Critique Labs AI API integration.
 """
 
+# this_file: src/twat_search/web/engines/critique.py
 from __future__ import annotations
 
 import base64

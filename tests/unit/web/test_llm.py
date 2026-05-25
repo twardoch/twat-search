@@ -58,6 +58,21 @@ class FakeAsyncClient:
         return FakeResponse(self.response_data)
 
 
+class InjectedFakeLLMClient:
+    """Fake LLM client injected directly into helper functions."""
+
+    def __init__(self, *responses: str) -> None:
+        self.responses = list(responses)
+        self.calls: list[list[dict[str, str]]] = []
+
+    async def chat(self, messages: list[dict[str, str]]) -> str:
+        """Capture messages and return the next configured response."""
+        self.calls.append(messages)
+        if not self.responses:
+            return ""
+        return self.responses.pop(0)
+
+
 @pytest.fixture(autouse=True)
 def reset_fake_client() -> None:
     """Reset shared fake state between tests."""
@@ -84,7 +99,7 @@ def configured_llm(**overrides: Any) -> LLMConfig:
 @pytest.mark.asyncio
 async def test_openai_compatible_client_posts_chat_completion(monkeypatch: MonkeyPatch) -> None:
     """Client sends the documented chat completion shape and parses first message content."""
-    monkeypatch.setattr("twat_search.web.llm.httpx.AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr("twat_search.web.llm_transport.httpx.AsyncClient", FakeAsyncClient)
     client = OpenAICompatibleLLMClient(configured_llm(timeout=12.5, temperature=0.2, max_tokens=64))
 
     result = await client.chat([{"role": "user", "content": "query"}])
@@ -112,7 +127,7 @@ async def test_openai_compatible_client_posts_chat_completion(monkeypatch: Monke
 @pytest.mark.asyncio
 async def test_rewrite_search_query_uses_system_and_user_messages(monkeypatch: MonkeyPatch) -> None:
     """Query rewriting sends a concise rewrite prompt and strips wrapping quotes."""
-    monkeypatch.setattr("twat_search.web.llm.httpx.AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr("twat_search.web.llm_transport.httpx.AsyncClient", FakeAsyncClient)
     FakeAsyncClient.response_data = {"choices": [{"message": {"content": '"python httpx retry"'}}]}
 
     rewritten = await rewrite_search_query("python request retries", configured_llm())
@@ -126,7 +141,7 @@ async def test_rewrite_search_query_uses_system_and_user_messages(monkeypatch: M
 @pytest.mark.asyncio
 async def test_rewrite_search_query_falls_back_when_disabled_or_empty(monkeypatch: MonkeyPatch) -> None:
     """Disabled or empty rewrites preserve the original query."""
-    monkeypatch.setattr("twat_search.web.llm.httpx.AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr("twat_search.web.llm_transport.httpx.AsyncClient", FakeAsyncClient)
 
     assert await rewrite_search_query("original", configured_llm(query_rewrite=False)) == "original"
 
@@ -156,9 +171,28 @@ def test_normalize_rewritten_query_preserves_unwrapped_queries() -> None:
 
 
 @pytest.mark.asyncio
+async def test_llm_helpers_accept_injected_fake_client_without_httpx() -> None:
+    """LLM steps can be tested offline by injecting a small fake chat client."""
+    client = InjectedFakeLLMClient(
+        '"site:example.com font tools"',
+        '```json\n{"queries": ["font tools", "site:github.com font tools"]}\n```',
+    )
+    config = configured_llm(decomposition_max_queries=3)
+
+    rewritten = await rewrite_search_query("font tools", config, client=client)  # type: ignore[arg-type]
+    decomposed = await decompose_search_query("font tools", config, client=client)  # type: ignore[arg-type]
+
+    assert rewritten == "site:example.com font tools"
+    assert decomposed == ["font tools", "site:github.com font tools"]
+    assert len(client.calls) == 2
+    assert client.calls[0][0]["content"].startswith("Rewrite")
+    assert client.calls[1][0]["content"].startswith("Decompose")
+
+
+@pytest.mark.asyncio
 async def test_decompose_search_query_returns_deduplicated_capped_queries(monkeypatch: MonkeyPatch) -> None:
     """Query decomposition parses model JSON and keeps the base query first."""
-    monkeypatch.setattr("twat_search.web.llm.httpx.AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr("twat_search.web.llm_transport.httpx.AsyncClient", FakeAsyncClient)
     FakeAsyncClient.response_data = {
         "choices": [
             {
@@ -195,7 +229,7 @@ async def test_decompose_search_query_rejects_incomplete_config() -> None:
 @pytest.mark.asyncio
 async def test_rerank_search_results_orders_by_model_score_and_adds_provenance(monkeypatch: MonkeyPatch) -> None:
     """Reranking sorts scored candidates and stores model provenance on each result."""
-    monkeypatch.setattr("twat_search.web.llm.httpx.AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr("twat_search.web.llm_transport.httpx.AsyncClient", FakeAsyncClient)
     FakeAsyncClient.response_data = {
         "choices": [
             {
@@ -243,7 +277,7 @@ async def test_rerank_search_results_falls_back_when_disabled_or_empty() -> None
 @pytest.mark.asyncio
 async def test_synthesize_search_answer_cites_known_urls_and_preserves_failures(monkeypatch: MonkeyPatch) -> None:
     """Answer synthesis filters citations to input results and carries source failures."""
-    monkeypatch.setattr("twat_search.web.llm.httpx.AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr("twat_search.web.llm_transport.httpx.AsyncClient", FakeAsyncClient)
     FakeAsyncClient.response_data = {
         "choices": [
             {

@@ -15,7 +15,13 @@ import pytest
 from pydantic import HttpUrl
 
 from twat_search.web.config import EngineConfig
-from twat_search.web.engines.base import SearchEngine, get_engine, register_engine
+from twat_search.web.engines.base import (
+    SearchEngine,
+    get_engine,
+    get_engine_registry,
+    get_registered_engines,
+    register_engine,
+)
 from twat_search.web.exceptions import SearchError
 from twat_search.web.models import SearchResult
 
@@ -101,6 +107,27 @@ def test_engine_registration() -> None:
     assert isinstance(engine_instance, NewEngine)
 
 
+def test_get_engine_accepts_normalized_cli_alias() -> None:
+    """Hyphenated CLI aliases resolve through canonical provider codes."""
+    engine_instance = get_engine("test-engine", EngineConfig())
+
+    assert isinstance(engine_instance, TestSearchEngine)
+
+
+def test_engine_registry_returns_typed_entries() -> None:
+    """Engine registry exposes typed records while preserving class lookup compatibility."""
+    registry = get_engine_registry()
+    registered_classes = get_registered_engines()
+
+    assert registry["test_engine"].code == "test_engine"
+    assert registry["test_engine"].engine_class is TestSearchEngine
+    assert registry["test_engine"].friendly_name == "test_engine"
+    assert registry["test_engine"].catalog_status == "uncataloged"
+    assert registry["test_engine"].transport == "unknown"
+    assert registry["test_engine"].result_kinds == ("web",)
+    assert registered_classes["test_engine"] is TestSearchEngine
+
+
 def test_get_engine_with_invalid_name() -> None:
     """Test that get_engine raises an error for invalid engine names."""
     with pytest.raises(SearchError, match="Unknown search engine"):
@@ -167,9 +194,9 @@ async def test_make_http_request_uses_proxy_request_policy(monkeypatch: pytest.M
     async def fake_sleep(delay: float) -> None:
         sleep_calls.append(delay)
 
-    monkeypatch.setattr("twat_search.web.engines.base.httpx.AsyncClient", FakeAsyncClient)
-    monkeypatch.setattr("twat_search.web.engines.base.asyncio.sleep", fake_sleep)
-    monkeypatch.setattr("twat_search.web.engines.base.random.uniform", lambda _a, _b: 0.01)
+    monkeypatch.setattr("twat_search.web.api_transport.httpx.AsyncClient", FakeAsyncClient)
+    monkeypatch.setattr("twat_search.web.api_transport.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr("twat_search.web.api_transport.random.uniform", lambda _a, _b: 0.01)
 
     engine = TestSearchEngine(
         EngineConfig(),

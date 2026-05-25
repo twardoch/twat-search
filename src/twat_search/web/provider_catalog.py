@@ -57,6 +57,7 @@ class ProviderMetadata:
     browser_required: bool = False
     browser_policy: BrowserPolicy | None = None
     rate_policy: RatePolicy = field(default_factory=RatePolicy)
+    route_priority: int = 1000
     cost_class: CostClass = "unknown"
     stability: StabilityClass = "beta"
     result_kinds: tuple[str, ...] = ("web",)
@@ -100,6 +101,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         proxy_policy="optional",
         cost_class="free",
         stability="fragile",
+        route_priority=260,
         package_extra="bing_scraper",
     ),
     "brave": ProviderMetadata(
@@ -110,6 +112,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"country": "US", "language": "en-US", "safe_search": True},
         cost_class="metered",
         stability="stable",
+        route_priority=10,
     ),
     "brave_news": ProviderMetadata(
         code="brave_news",
@@ -119,6 +122,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"country": "US", "language": "en-US", "freshness": "last7days"},
         cost_class="metered",
         stability="stable",
+        route_priority=20,
         result_kinds=("news",),
     ),
     "brightdata": ProviderMetadata(
@@ -179,6 +183,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         proxy_policy="optional",
         cost_class="free",
         stability="fragile",
+        route_priority=200,
         package_extra="duckduckgo",
     ),
     "decodo": ProviderMetadata(
@@ -203,6 +208,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "language": "en"},
         cost_class="paid",
         stability="stable",
+        route_priority=35,
         package_extra="hasdata",
     ),
     "google_hasdata_full": ProviderMetadata(
@@ -213,6 +219,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "language": "en"},
         cost_class="paid",
         stability="stable",
+        route_priority=34,
         package_extra="hasdata",
     ),
     "google_scraper": ProviderMetadata(
@@ -223,6 +230,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         proxy_policy="optional",
         cost_class="free",
         stability="fragile",
+        route_priority=250,
         package_extra="google_scraper",
     ),
     "google_serpapi": ProviderMetadata(
@@ -233,6 +241,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"country": "us", "language": "en", "safe_search": True},
         cost_class="paid",
         stability="stable",
+        route_priority=60,
         package_extra="serpapi",
     ),
     "pplx": ProviderMetadata(
@@ -243,6 +252,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "focus": None},
         cost_class="paid",
         stability="stable",
+        route_priority=45,
     ),
     "tavily": ProviderMetadata(
         code="tavily",
@@ -260,6 +270,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         },
         cost_class="paid",
         stability="stable",
+        route_priority=30,
         package_extra="tavily",
     ),
     "you": ProviderMetadata(
@@ -270,6 +281,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "country_code": "us", "safe_search": True},
         cost_class="paid",
         stability="stable",
+        route_priority=40,
     ),
     "you_news": ProviderMetadata(
         code="you_news",
@@ -279,128 +291,151 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "country_code": "us", "safe_search": True},
         cost_class="paid",
         stability="stable",
+        route_priority=42,
         result_kinds=("news",),
     ),
-    # Browser-backed engines. These replace the old Falla-first mental model.
-    "google_falla": ProviderMetadata(
-        code="google_falla",
+    # Browser-backed engines backed by the bundled Playwright scraper adapter.
+    "google_browser": ProviderMetadata(
+        code="google_browser",
         display_name="Google browser search",
         transport="browser",
+        aliases=("google_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=300,
         package_extra="falla",
     ),
-    "bing_falla": ProviderMetadata(
-        code="bing_falla",
+    "bing_browser": ProviderMetadata(
+        code="bing_browser",
         display_name="Bing browser search",
         transport="browser",
+        aliases=("bing_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=310,
         package_extra="falla",
     ),
-    "duckduckgo_falla": ProviderMetadata(
-        code="duckduckgo_falla",
+    "duckduckgo_browser": ProviderMetadata(
+        code="duckduckgo_browser",
         display_name="DuckDuckGo browser search",
         transport="browser",
+        aliases=("duckduckgo_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=320,
         package_extra="falla",
     ),
-    "aol_falla": ProviderMetadata(
-        code="aol_falla",
+    "aol_browser": ProviderMetadata(
+        code="aol_browser",
         display_name="AOL browser search",
         transport="browser",
+        aliases=("aol_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=390,
         package_extra="falla",
     ),
-    "ask_falla": ProviderMetadata(
-        code="ask_falla",
+    "ask_browser": ProviderMetadata(
+        code="ask_browser",
         display_name="Ask.com browser search",
         transport="browser",
+        aliases=("ask_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=380,
         package_extra="falla",
     ),
-    "dogpile_falla": ProviderMetadata(
-        code="dogpile_falla",
+    "dogpile_browser": ProviderMetadata(
+        code="dogpile_browser",
         display_name="Dogpile browser search",
         transport="browser",
+        aliases=("dogpile_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=370,
         package_extra="falla",
     ),
-    "gibiru_falla": ProviderMetadata(
-        code="gibiru_falla",
+    "gibiru_browser": ProviderMetadata(
+        code="gibiru_browser",
         display_name="Gibiru browser search",
         transport="browser",
+        aliases=("gibiru_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=360,
         package_extra="falla",
     ),
-    "mojeek_falla": ProviderMetadata(
-        code="mojeek_falla",
+    "mojeek_browser": ProviderMetadata(
+        code="mojeek_browser",
         display_name="Mojeek browser search",
         transport="browser",
+        aliases=("mojeek_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=350,
         package_extra="falla",
     ),
-    "qwant_falla": ProviderMetadata(
-        code="qwant_falla",
+    "qwant_browser": ProviderMetadata(
+        code="qwant_browser",
         display_name="Qwant browser search",
         transport="browser",
+        aliases=("qwant_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=330,
         package_extra="falla",
     ),
-    "yahoo_falla": ProviderMetadata(
-        code="yahoo_falla",
+    "yahoo_browser": ProviderMetadata(
+        code="yahoo_browser",
         display_name="Yahoo browser search",
         transport="browser",
+        aliases=("yahoo_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=340,
         package_extra="falla",
     ),
-    "yandex_falla": ProviderMetadata(
-        code="yandex_falla",
+    "yandex_browser": ProviderMetadata(
+        code="yandex_browser",
         display_name="Yandex browser search",
         transport="browser",
+        aliases=("yandex_falla",),
         default_params={"num_results": 5},
         proxy_policy="optional",
         browser_required=True,
         cost_class="free",
         stability="fragile",
+        route_priority=400,
         package_extra="falla",
     ),
     # Planned API/search providers discovered from /Users/adam/.env.anon.txt.
@@ -412,6 +447,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "gl": "us", "hl": "en"},
         cost_class="metered",
         stability="stable",
+        route_priority=65,
         notes="Requires GOOGLE_CSE_ID or GOOGLE_CSE_CX for the search engine ID.",
     ),
     "serper": ProviderMetadata(
@@ -422,6 +458,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "gl": "us", "hl": "en"},
         cost_class="paid",
         stability="stable",
+        route_priority=55,
     ),
     "dataforseo": ProviderMetadata(
         code="dataforseo",
@@ -436,6 +473,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         },
         cost_class="paid",
         stability="stable",
+        route_priority=70,
     ),
     "exa": ProviderMetadata(
         code="exa",
@@ -445,6 +483,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "search_type": "auto", "include_text": False, "include_highlights": True},
         cost_class="paid",
         stability="stable",
+        route_priority=25,
     ),
     "firecrawl": ProviderMetadata(
         code="firecrawl",
@@ -454,6 +493,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "country": "US", "include_markdown": False},
         cost_class="paid",
         stability="stable",
+        route_priority=32,
     ),
     "jina": ProviderMetadata(
         code="jina",
@@ -463,6 +503,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "include_content": True},
         cost_class="paid",
         stability="stable",
+        route_priority=50,
     ),
     "langsearch": ProviderMetadata(
         code="langsearch",
@@ -472,6 +513,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "freshness": "noLimit", "summary": True},
         cost_class="paid",
         stability="beta",
+        route_priority=75,
         result_kinds=("web", "answer"),
     ),
     "mapleserp": ProviderMetadata(
@@ -482,6 +524,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "engine": "google"},
         cost_class="paid",
         stability="beta",
+        route_priority=80,
         result_kinds=("web", "serp"),
     ),
     "search1api": ProviderMetadata(
@@ -498,6 +541,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         },
         cost_class="paid",
         stability="beta",
+        route_priority=85,
     ),
     "search_cans": ProviderMetadata(
         code="search_cans",
@@ -507,6 +551,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "engine": "google", "timeout_ms": 20000, "page": 1},
         cost_class="paid",
         stability="beta",
+        route_priority=90,
         result_kinds=("web", "serp"),
     ),
     "gensee": ProviderMetadata(
@@ -517,7 +562,37 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "multilingual": False},
         cost_class="paid",
         stability="beta",
+        route_priority=95,
         result_kinds=("web", "answer"),
+    ),
+    "plugin_search": ProviderMetadata(
+        code="plugin_search",
+        display_name="Template search plugins",
+        transport="plugin",
+        default_enabled=False,
+        default_params={
+            "plugins": [
+                {
+                    "code": "github-code",
+                    "name": "GitHub code search",
+                    "url_template": "https://github.com/search?q={query_url}&type=code",
+                    "title_template": "GitHub code: {query}",
+                    "snippet_template": "Open GitHub code search for {query}",
+                },
+                {
+                    "code": "github-repositories",
+                    "name": "GitHub repositories",
+                    "url_template": "https://github.com/search?q={query_url}&type=repositories",
+                    "title_template": "GitHub repositories: {query}",
+                    "snippet_template": "Open GitHub repository search for {query}",
+                },
+            ],
+        },
+        cost_class="free",
+        stability="experimental",
+        route_priority=500,
+        result_kinds=("web", "code", "repository"),
+        notes="Query-template adapter inspired by qBittorrent search plugins and GitHub dork tooling.",
     ),
     "aisearch": ProviderMetadata(
         code="aisearch",
@@ -527,6 +602,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "response_type": "markdown", "context": []},
         cost_class="paid",
         stability="beta",
+        route_priority=100,
         result_kinds=("answer", "web"),
     ),
     "apify": ProviderMetadata(
@@ -543,6 +619,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         proxy_policy="optional",
         cost_class="paid",
         stability="stable",
+        route_priority=110,
     ),
     "browser_use": ProviderMetadata(
         code="browser_use",
@@ -564,6 +641,7 @@ PROVIDER_CATALOG: dict[str, ProviderMetadata] = {
         default_params={"num_results": 5, "search_type": "repositories", "sort": None, "order": "desc"},
         cost_class="metered",
         stability="stable",
+        route_priority=120,
         result_kinds=("code", "repository", "issue"),
     ),
 }
@@ -584,7 +662,18 @@ def list_known_provider_codes(include_planned: bool = True) -> list[str]:
 
 def get_provider_metadata(code: str) -> ProviderMetadata | None:
     """Return provider metadata by normalized provider code."""
-    return PROVIDER_CATALOG.get(code.replace("-", "_"))
+    return PROVIDER_CATALOG.get(canonical_provider_code(code))
+
+
+def canonical_provider_code(code: str) -> str:
+    """Return the canonical provider code for a code or useful alias."""
+    normalized = code.replace("-", "_")
+    if normalized in PROVIDER_CATALOG:
+        return normalized
+    for provider in PROVIDER_CATALOG.values():
+        if normalized in provider.aliases:
+            return provider.code
+    return normalized
 
 
 def get_friendly_name(code: str) -> str:

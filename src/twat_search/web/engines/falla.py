@@ -4,10 +4,10 @@
 # ///
 # this_file: src/twat_search/web/engines/falla.py
 """
-Search engine wrappers based on the Falla scraping library.
+Browser search wrappers based on the bundled scraper library.
 
-This module provides search engine implementations that use the embedded
-Falla library for scraping search engine results.
+This module exposes provider-neutral browser engine codes while reusing the
+embedded scraper implementation internally.
 """
 
 import logging
@@ -16,7 +16,6 @@ from typing import Any, ClassVar
 from pydantic import HttpUrl
 from twat_cache import ucache
 
-from twat_search.web.api import search as api_search  # Alias to avoid conflict with local search method
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.engines.lib_falla.core import (
     Aol,
@@ -34,11 +33,12 @@ from twat_search.web.engines.lib_falla.core import (
 )
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
+from twat_search.web.browser_transport import BrowserChallengeError
 
 logger = logging.getLogger(__name__)
 
-# List of available Falla engine names
-FALLA_AVAILABLE_ENGINES = [
+# List of bundled browser adapter names.
+BROWSER_AVAILABLE_ENGINES = [
     "google",
     "bing",
     "duckduckgo",
@@ -52,78 +52,79 @@ FALLA_AVAILABLE_ENGINES = [
     "yandex",
 ]
 
-# Track if Falla engines are available
-_falla_available = False
-# Flag set to True once the first Falla-based engine is initialized
-_falla_initialized = False
+# Track if bundled browser engines are available.
+_browser_engines_available = False
+# Flag set to True once the first bundled browser engine is initialized.
+_browser_engines_initialized = False
 
 
-def is_falla_available() -> bool:
+def are_browser_engines_available() -> bool:
     """
-    Check if Falla search engines are available.
+    Check if bundled browser search engines are available.
 
     Returns:
-        bool: True if Falla engines are available, False otherwise
+        bool: True if browser engines are available, False otherwise
     """
-    global _falla_available
-    if not _falla_initialized:
-        # Check if Falla can be initialized without errors
+    global _browser_engines_available  # noqa: PLW0603
+    if not _browser_engines_initialized:
+        # Check if the embedded scraper can be initialized without errors.
         try:
             # Basic check - create and validate a Google instance
             # Google constructor doesn't take a name parameter
             _check_engine = Google()
-            _falla_available = True
+            _browser_engines_available = True
         except Exception as e:
-            logger.warning(f"Falla engines are not available: {e}")
-            _falla_available = False
+            logger.warning(f"Browser engines are not available: {e}")
+            _browser_engines_available = False
 
-    return _falla_available
+    return _browser_engines_available
 
 
-@register_engine
-class FallaSearchEngine(SearchEngine):
-    """Base class for all Falla-based search engines."""
+class BrowserScraperSearchEngine(SearchEngine):
+    """Base class for bundled browser-backed search engines."""
 
     # To be overridden by subclasses
-    engine_code = "falla"
-    friendly_engine_name = "Falla Search"
+    engine_code = "browser_scraper"
+    friendly_engine_name = "Browser scraper search"
     env_api_key_names: ClassVar[list[str]] = []
 
     # Note: This is marked as a ClassVar for type-checking, but will be overridden
     # by subclasses with their specific engine classes (Google, Bing, etc.)
     # The actual implementation doesn't use Falla directly
-    _falla_engine_class: Any = Google  # Use Google as a default callable
+    _browser_engine_class: Any = Google  # Use Google as a default callable
 
     def __init__(self, config: Any, **kwargs: Any) -> None:
-        """Initialize the Falla search engine."""
+        """Initialize the browser search engine."""
         super().__init__(config, **kwargs)
 
-        # Create the Falla engine instance
-        self._falla_engine = self._create_engine_instance()
+        # Create the bundled browser adapter instance.
+        self._browser_engine = self._create_engine_instance()
+        self._browser_engine.browser_config = kwargs.get("browser_config", self._browser_engine.browser_config)
+        self._browser_engine.proxy_config = kwargs.get("proxy_config", self._browser_engine.proxy_config)
 
         # Set global flag
-        global _falla_initialized
-        _falla_initialized = True
+        global _browser_engines_initialized  # noqa: PLW0603
+        _browser_engines_initialized = True
 
     def _create_engine_instance(self) -> Falla:
         """
-        Create an instance of the Falla engine.
+        Create an instance of the browser engine.
 
         Returns:
-            Falla: Instance of the Falla engine class
+            Falla: Instance of the embedded scraper engine class
         """
         # Create a new instance - each subclass of Falla has its own __init__
         # that handles initialization without explicit parameters
-        return self._falla_engine_class()  # type: ignore[no-any-return]
+        return self._browser_engine_class()  # type: ignore[no-any-return]
 
     # @ucache(maxsize=500, ttl=3600)  # Cache 500 searches for 1 hour
     async def search(self, query: str, **_kwargs: Any) -> list[SearchResult]:
         """
-        Perform a search using the Falla engine.
+        Perform a search using the bundled browser engine.
 
         Args:
             query: Search query
-            **_kwargs: Additional search parameters (ignored for Falla engines)
+            **_kwargs: Additional search parameters ignored by browser engines
 
         Returns:
             list[SearchResult]: List of search results
@@ -132,10 +133,9 @@ class FallaSearchEngine(SearchEngine):
             EngineError: If the search fails
         """
         try:
-            # Perform the search using the async method
-            # Falla engines return a list[dict[str, str]] as documented in their search_async method
+            # The bundled adapters return list[dict[str, str]] from search_async.
             # Cast return value to ensure type safety
-            raw_results: list[dict[str, str]] = await self._falla_engine.search_async(query=query)
+            raw_results: list[dict[str, str]] = await self._browser_engine.search_async(query=query)
 
             # Convert to SearchResult objects
             results = []
@@ -162,119 +162,128 @@ class FallaSearchEngine(SearchEngine):
                     continue
 
             return self.limit_results(results)
+        except BrowserChallengeError:
+            raise
         except Exception as e:
             logger.error(f"Search failed: {e!s}")
             msg = f"Search failed: {e!s}"
             raise EngineError(self.engine_code, msg) from e
 
 
-# Define engine classes for specific Falla engines
+# Define engine classes for specific browser engines.
 @register_engine
-class GoogleFallaEngine(FallaSearchEngine):
-    """Google search implementation using Falla."""
+class GoogleBrowserEngine(BrowserScraperSearchEngine):
+    """Google browser search implementation."""
 
-    engine_code = "google_falla"
-    friendly_engine_name = "Google (Falla)"
-    _falla_engine_class = Google
-
-
-@register_engine
-class BingFallaEngine(FallaSearchEngine):
-    """Bing search implementation using Falla."""
-
-    engine_code = "bing_falla"
-    friendly_engine_name = "Bing (Falla)"
-    _falla_engine_class = Bing
+    engine_code = "google_browser"
+    friendly_engine_name = "Google browser search"
+    _browser_engine_class = Google
 
 
 @register_engine
-class DuckDuckGoFallaEngine(FallaSearchEngine):
-    """DuckDuckGo search implementation using Falla."""
+class BingBrowserEngine(BrowserScraperSearchEngine):
+    """Bing browser search implementation."""
 
-    engine_code = "duckduckgo_falla"
-    friendly_engine_name = "DuckDuckGo (Falla)"
-    _falla_engine_class = DuckDuckGo
-
-
-@register_engine
-class YahooFallaEngine(FallaSearchEngine):
-    """Yahoo search implementation using Falla."""
-
-    engine_code = "yahoo_falla"
-    friendly_engine_name = "Yahoo (Falla)"
-    _falla_engine_class = Yahoo
+    engine_code = "bing_browser"
+    friendly_engine_name = "Bing browser search"
+    _browser_engine_class = Bing
 
 
 @register_engine
-class AskFallaEngine(FallaSearchEngine):
-    """Ask.com search implementation using Falla."""
+class DuckDuckGoBrowserEngine(BrowserScraperSearchEngine):
+    """DuckDuckGo browser search implementation."""
 
-    engine_code = "ask_falla"
-    friendly_engine_name = "Ask.com (Falla)"
-    _falla_engine_class = Ask
-
-
-@register_engine
-class AolFallaEngine(FallaSearchEngine):
-    """AOL search implementation using Falla."""
-
-    engine_code = "aol_falla"
-    friendly_engine_name = "AOL (Falla)"
-    _falla_engine_class = Aol
+    engine_code = "duckduckgo_browser"
+    friendly_engine_name = "DuckDuckGo browser search"
+    _browser_engine_class = DuckDuckGo
 
 
 @register_engine
-class DogpileFallaEngine(FallaSearchEngine):
-    """Dogpile search implementation using Falla."""
+class YahooBrowserEngine(BrowserScraperSearchEngine):
+    """Yahoo browser search implementation."""
 
-    engine_code = "dogpile_falla"
-    friendly_engine_name = "Dogpile (Falla)"
-    _falla_engine_class = DogPile
-
-
-@register_engine
-class GibiruFallaEngine(FallaSearchEngine):
-    """Gibiru search implementation using Falla."""
-
-    engine_code = "gibiru_falla"
-    friendly_engine_name = "Gibiru (Falla)"
-    _falla_engine_class = Gibiru
+    engine_code = "yahoo_browser"
+    friendly_engine_name = "Yahoo browser search"
+    _browser_engine_class = Yahoo
 
 
 @register_engine
-class MojeekFallaEngine(FallaSearchEngine):
-    """Mojeek search implementation using Falla."""
+class AskBrowserEngine(BrowserScraperSearchEngine):
+    """Ask.com browser search implementation."""
 
-    engine_code = "mojeek_falla"
-    friendly_engine_name = "Mojeek (Falla)"
-    _falla_engine_class = Mojeek
-
-
-@register_engine
-class QwantFallaEngine(FallaSearchEngine):
-    """Qwant search implementation using Falla."""
-
-    engine_code = "qwant_falla"
-    friendly_engine_name = "Qwant (Falla)"
-    _falla_engine_class = Qwant
+    engine_code = "ask_browser"
+    friendly_engine_name = "Ask.com browser search"
+    _browser_engine_class = Ask
 
 
 @register_engine
-class YandexFallaEngine(FallaSearchEngine):
-    """Yandex search implementation using Falla."""
+class AolBrowserEngine(BrowserScraperSearchEngine):
+    """AOL browser search implementation."""
 
-    engine_code = "yandex_falla"
-    friendly_engine_name = "Yandex (Falla)"
-    _falla_engine_class = Yandex
+    engine_code = "aol_browser"
+    friendly_engine_name = "AOL browser search"
+    _browser_engine_class = Aol
+
+
+@register_engine
+class DogpileBrowserEngine(BrowserScraperSearchEngine):
+    """Dogpile browser search implementation."""
+
+    engine_code = "dogpile_browser"
+    friendly_engine_name = "Dogpile browser search"
+    _browser_engine_class = DogPile
+
+
+@register_engine
+class GibiruBrowserEngine(BrowserScraperSearchEngine):
+    """Gibiru browser search implementation."""
+
+    engine_code = "gibiru_browser"
+    friendly_engine_name = "Gibiru browser search"
+    _browser_engine_class = Gibiru
+
+
+@register_engine
+class MojeekBrowserEngine(BrowserScraperSearchEngine):
+    """Mojeek browser search implementation."""
+
+    engine_code = "mojeek_browser"
+    friendly_engine_name = "Mojeek browser search"
+    _browser_engine_class = Mojeek
+
+
+@register_engine
+class QwantBrowserEngine(BrowserScraperSearchEngine):
+    """Qwant browser search implementation."""
+
+    engine_code = "qwant_browser"
+    friendly_engine_name = "Qwant browser search"
+    _browser_engine_class = Qwant
+
+
+@register_engine
+class YandexBrowserEngine(BrowserScraperSearchEngine):
+    """Yandex browser search implementation."""
+
+    engine_code = "yandex_browser"
+    friendly_engine_name = "Yandex browser search"
+    _browser_engine_class = Yandex
 
 
 # Convenience functions for direct API access
 # These match the function naming convention used in the module
 
 
-async def google_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def _search_browser_engine(query: str, engine: str, **kwargs: Any) -> list[SearchResult]:
+    """Run a browser-engine search without importing the API at module load."""
+    from twat_search.web.api import search  # noqa: PLC0415
+
+    return await search(query, engines=[engine], **kwargs)
+
+
+async def google_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform a Google search using Falla engine.
+    Perform a Google search using the browser engine.
 
     Args:
         query: Search query
@@ -283,16 +292,12 @@ async def google_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    return await api_search(
-        query,
-        engines=["google_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "google_browser", **kwargs)
 
 
-async def bing_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def bing_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform a Bing search using Falla engine.
+    Perform a Bing search using the browser engine.
 
     Args:
         query: Search query
@@ -301,16 +306,12 @@ async def bing_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    return await api_search(
-        query,
-        engines=["bing_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "bing_browser", **kwargs)
 
 
-async def duckduckgo_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def duckduckgo_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform a DuckDuckGo search using Falla engine.
+    Perform a DuckDuckGo search using the browser engine.
 
     Args:
         query: Search query
@@ -319,16 +320,12 @@ async def duckduckgo_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    return await api_search(
-        query,
-        engines=["duckduckgo_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "duckduckgo_browser", **kwargs)
 
 
-async def yahoo_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def yahoo_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform a Yahoo search using Falla engine.
+    Perform a Yahoo search using the browser engine.
 
     Args:
         query: Search query
@@ -337,16 +334,12 @@ async def yahoo_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    return await api_search(
-        query,
-        engines=["yahoo_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "yahoo_browser", **kwargs)
 
 
-async def ask_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def ask_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform an Ask.com search using Falla engine.
+    Perform an Ask.com search using the browser engine.
 
     Args:
         query: Search query
@@ -355,16 +348,12 @@ async def ask_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    return await api_search(
-        query,
-        engines=["ask_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "ask_browser", **kwargs)
 
 
-async def aol_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def aol_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform an AOL search using Falla engine.
+    Perform an AOL search using the browser engine.
 
     Args:
         query: Search query
@@ -373,16 +362,12 @@ async def aol_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    return await api_search(
-        query,
-        engines=["aol_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "aol_browser", **kwargs)
 
 
-async def dogpile_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def dogpile_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform a Dogpile search using Falla engine.
+    Perform a Dogpile search using the browser engine.
 
     Args:
         query: Search query
@@ -391,16 +376,12 @@ async def dogpile_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    return await api_search(
-        query,
-        engines=["dogpile_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "dogpile_browser", **kwargs)
 
 
-async def gibiru_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def gibiru_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform a Gibiru search using Falla engine.
+    Perform a Gibiru search using the browser engine.
 
     Args:
         query: Search query
@@ -409,16 +390,12 @@ async def gibiru_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    return await api_search(
-        query,
-        engines=["gibiru_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "gibiru_browser", **kwargs)
 
 
-async def mojeek_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def mojeek_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform a Mojeek search using Falla engine.
+    Perform a Mojeek search using the browser engine.
 
     Args:
         query: Search query
@@ -427,18 +404,12 @@ async def mojeek_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
-        query,
-        engines=["mojeek_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "mojeek_browser", **kwargs)
 
 
-async def qwant_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def qwant_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform a Qwant search using Falla engine.
+    Perform a Qwant search using the browser engine.
 
     Args:
         query: Search query
@@ -447,18 +418,12 @@ async def qwant_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
-        query,
-        engines=["qwant_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "qwant_browser", **kwargs)
 
 
-async def yandex_falla(query: str, **kwargs: Any) -> list[SearchResult]:
+async def yandex_browser(query: str, **kwargs: Any) -> list[SearchResult]:
     """
-    Perform a Yandex search using Falla engine.
+    Perform a Yandex search using the browser engine.
 
     Args:
         query: Search query
@@ -467,10 +432,4 @@ async def yandex_falla(query: str, **kwargs: Any) -> list[SearchResult]:
     Returns:
         list[SearchResult]: Search results
     """
-    from twat_search.web.api import search
-
-    return await search(
-        query,
-        engines=["yandex_falla"],
-        **kwargs,
-    )
+    return await _search_browser_engine(query, "yandex_browser", **kwargs)

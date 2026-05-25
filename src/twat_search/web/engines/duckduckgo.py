@@ -122,7 +122,7 @@ class DuckDuckGoSearchEngine(SearchEngine):
         safesearch = kwargs.get("safesearch", safe_search)
         if isinstance(safesearch, str):
             safesearch = safesearch.lower() not in ["off", "false"]
-        proxy = kwargs.get("proxy") or config.default_params.get("proxy", None)
+        proxy = kwargs.get("proxy") or kwargs.get("proxy_url") or config.default_params.get("proxy", None)
         timeout = kwargs.get(
             "timeout",
         ) or config.default_params.get("timeout", 10)

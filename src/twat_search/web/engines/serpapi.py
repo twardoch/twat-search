@@ -4,11 +4,11 @@ SerpApi Google search engine implementation.
 This module implements the SerpApi Google Search API integration.
 """
 
+# this_file: src/twat_search/web/engines/serpapi.py
 from __future__ import annotations
 
 from typing import Any, ClassVar
 
-import httpx
 from pydantic import BaseModel, HttpUrl, ValidationError
 
 from twat_search.web.config import EngineConfig
@@ -115,55 +115,43 @@ class SerpApiSearchEngine(SearchEngine):
         # Merge in any additional parameters, filtering out None values.
         params.update({k: v for k, v in self._params.items() if v is not None})
 
-        async with httpx.AsyncClient() as client:
-            try:
-                response = await client.get(
-                    self.base_url,
-                    params=params,
-                    timeout=30,  # SerpApi can be slower
-                )
-                response.raise_for_status()
-                data = response.json()
+        try:
+            response = await self.make_http_request(
+                self.base_url,
+                params=params,
+                timeout=30,  # SerpApi can be slower
+            )
+            data = response.json()
 
-                # Return empty list if no results found
-                if "organic_results" not in data:
-                    return []
+            # Return empty list if no results found
+            if "organic_results" not in data:
+                return []
 
-                serpapi_response = SerpApiResponse(**data)
+            serpapi_response = SerpApiResponse(**data)
 
-                results = []
-                for result in serpapi_response.organic_results:
-                    try:
-                        results.append(
-                            SearchResult(
-                                title=result.title,
-                                url=result.link,  # SerpApi uses 'link' instead of 'url'
-                                snippet=result.snippet,
-                                source=self.engine_code,
-                                rank=result.position,  # Use position as rank if available
-                                raw=result.model_dump(),  # Include raw result for debugging
-                            ),
-                        )
-                    except ValidationError:
-                        continue
+            results = []
+            for result in serpapi_response.organic_results:
+                try:
+                    results.append(
+                        SearchResult(
+                            title=result.title,
+                            url=result.link,  # SerpApi uses 'link' instead of 'url'
+                            snippet=result.snippet,
+                            source=self.engine_code,
+                            rank=result.position,  # Use position as rank if available
+                            raw=result.model_dump(),  # Include raw result for debugging
+                        ),
+                    )
+                except ValidationError:
+                    continue
 
-                return self.limit_results(results)
+            return self.limit_results(results)
 
-            except httpx.RequestError as exc:
-                raise EngineError(
-                    self.engine_code,
-                    f"HTTP Request failed: {exc}",
-                ) from exc
-            except httpx.HTTPStatusError as exc:
-                raise EngineError(
-                    self.engine_code,
-                    f"HTTP Status error: {exc.response.status_code} - {exc.response.text}",
-                ) from exc
-            except ValidationError as exc:
-                raise EngineError(
-                    self.engine_code,
-                    f"Response parsing error: {exc}",
-                ) from exc
+        except ValidationError as exc:
+            raise EngineError(
+                self.engine_code,
+                f"Response parsing error: {exc}",
+            ) from exc
 
 
 def _convert_safe(safe: bool | str | None) -> str | None:

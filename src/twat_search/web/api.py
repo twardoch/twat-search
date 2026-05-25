@@ -1,3 +1,4 @@
+# this_file: src/twat_search/web/api.py
 """Multi-engine web search API for twat-search.
 
 This module is the main entry point for programmatic web searches.  The
@@ -7,9 +8,8 @@ objects.
 
 Supported engines (registered in ``twat_search/web/engines/``)
 ---------------------------------------------------------------
-brave, bing_scraper, google_scraper, duckduckgo, tavily, you, pplx
-(Perplexity), serpapi, hasdata, falla, critique, and a ``mock`` engine for
-testing.
+API, scraper, browser, and LLM-assisted engines are registered behind the same
+provider-neutral interface, plus a ``mock`` engine for tests.
 
 Most engines require an API key in the environment.  Check each engine module's
 ``PROVIDER_HELP`` dict for the exact variable name.
@@ -41,17 +41,33 @@ from typing import TYPE_CHECKING, Any
 
 from twat_cache import ucache
 
+from twat_search.web.browser import BrowserChallengeError
 from twat_search.web.config import Config, EngineConfig
 from twat_search.web.engines import standardize_engine_name
 from twat_search.web.engines.base import SearchEngine, get_engine, get_registered_engines
 from twat_search.web.exceptions import SearchError
-from twat_search.web.llm import decompose_search_query, rerank_search_results, rewrite_search_query, synthesize_search_answer
-from twat_search.web.routes import select_route_engines
+from twat_search.web.llm import (
+    decompose_search_query,
+    rerank_search_results,
+    rewrite_search_query,
+    synthesize_search_answer,
+)
+from twat_search.web.routes import get_route_policy, select_route_engines
+from twat_search.web.transports import enrich_engine_request
 
 if TYPE_CHECKING:
     from collections.abc import Coroutine
 
-from twat_search.web.models import EngineOutcome, SearchFailure, SearchRequest, SearchResponse, SearchResult
+from twat_search.web.models import (
+    EngineOutcome,
+    EngineExecutionContext,
+    EngineParameterSet,
+    EngineRequest,
+    SearchFailure,
+    SearchRequest,
+    SearchResponse,
+    SearchResult,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -62,32 +78,97 @@ def get_engine_params(
     kwargs: dict,
     common_params: dict,
 ) -> dict:
+    """Return final provider params for a single engine."""
+    return build_engine_execution_context(
+        engine_name=engine_name,
+        engines=engines,
+        kwargs=kwargs,
+        common_params=common_params,
+    ).params
+
+
+def build_engine_parameter_set(
+    engine_name: str,
+    engines: list[str],
+    kwargs: dict,
+    common_params: dict,
+) -> EngineParameterSet:
+    """Parse raw engine kwargs into typed common, engine-specific, and passthrough groups."""
+    std_engine_name = standardize_engine_name(engine_name)
+    std_engines = [standardize_engine_name(e) for e in engines]
+    prefixes = tuple(dict.fromkeys((std_engine_name, engine_name)))
+
+    engine_specific = {}
+    for key, value in kwargs.items():
+        if key.startswith(std_engine_name + "_"):
+            engine_specific[key[len(std_engine_name) + 1 :]] = value
+        elif key.startswith(engine_name + "_"):
+            engine_specific[key[len(engine_name) + 1 :]] = value
+
+    control_keys = {"engines", "common_params", "route", "route_policy", "engine_request", "execution_context"}
+    non_prefixed = {
+        key: value
+        for key, value in kwargs.items()
+        if key not in control_keys
+        and key not in common_params
+        and not any(key.startswith(engine + "_") for engine in std_engines + engines)
+    }
+
+    params = {**common_params, **engine_specific, **non_prefixed}
+    param_sources = dict.fromkeys(common_params, "common")
+    param_sources.update(dict.fromkeys(engine_specific, "engine_specific"))
+    param_sources.update(dict.fromkeys(non_prefixed, "passthrough"))
+
+    return EngineParameterSet(
+        engine=std_engine_name,
+        requested_engines=tuple(std_engines),
+        common_params=common_params,
+        engine_specific_params=engine_specific,
+        passthrough_params=non_prefixed,
+        params=params,
+        param_sources=param_sources,
+        engine_specific_prefixes=prefixes,
+    )
+
+
+def build_engine_execution_context(
+    engine_name: str,
+    engines: list[str],
+    kwargs: dict,
+    common_params: dict,
+) -> EngineExecutionContext:
     """
-    Build engine-specific parameters by merging:
+    Build a typed engine execution context by merging:
     - parameters prefixed with the engine name,
     - any non-prefixed parameters,
     - and the common parameters.
     """
-    # Standardize engine name for parameter lookup
-    std_engine_name = standardize_engine_name(engine_name)
+    parameter_set = build_engine_parameter_set(
+        engine_name=engine_name,
+        engines=engines,
+        kwargs=kwargs,
+        common_params=common_params,
+    )
 
-    # Look for parameters with both standardized and original name prefixes
-    engine_specific = {}
-    for k, v in kwargs.items():
-        if k.startswith(std_engine_name + "_"):
-            engine_specific[k[len(std_engine_name) + 1 :]] = v
-        elif k.startswith(engine_name + "_"):  # For backward compatibility
-            engine_specific[k[len(engine_name) + 1 :]] = v
-
-    # Get non-prefixed parameters
-    std_engines = [standardize_engine_name(e) for e in engines]
-    non_prefixed = {k: v for k, v in kwargs.items() if not any(k.startswith(e + "_") for e in std_engines + engines)}
-
-    return {**common_params, **engine_specific, **non_prefixed}
+    return EngineExecutionContext(
+        engine=parameter_set.engine,
+        route=kwargs.get("route"),
+        request_policy=kwargs.get("request_policy"),
+        parameter_set=parameter_set,
+        params=parameter_set.params,
+        param_sources=parameter_set.param_sources,
+        engine_specific_prefixes=parameter_set.engine_specific_prefixes,
+    )
 
 
 def _classify_failure(error: Exception) -> tuple[str, bool]:
     """Classify provider failures into first-class failure kinds."""
+    if isinstance(error, BrowserChallengeError):
+        if error.evidence.blocked:
+            return "block", True
+        if error.evidence.needs_consent:
+            return "block", False
+        return "provider_error", True
     message = str(error).lower()
     error_type = type(error).__name__.lower()
     if "api key" in message or "unauthorized" in message or "forbidden" in message:
@@ -103,10 +184,18 @@ def _classify_failure(error: Exception) -> tuple[str, bool]:
     return "provider_error", True
 
 
+def _failure_details(error: Exception) -> dict[str, Any]:
+    """Extract serializable diagnostic details from known exception types."""
+    if isinstance(error, BrowserChallengeError):
+        return error.evidence.to_failure_details()
+    return {}
+
+
 def init_engine_task(
     engine_name: str,
     query: str,
     config: Config,
+    engine_request: EngineRequest | None = None,
     **kwargs: Any,
 ) -> tuple[str, Coroutine[Any, Any, EngineOutcome]] | EngineOutcome:
     """
@@ -128,14 +217,11 @@ def init_engine_task(
     # Standardize engine name for lookups
     std_engine_name = standardize_engine_name(engine_name)
 
-    # Get engine configuration
+    # Get engine configuration from the canonical provider code.
     engine_config = config.engines.get(std_engine_name)
     if not engine_config:
-        # Fallback to non-standardized name for backward compatibility
-        engine_config = config.engines.get(engine_name)
-        if not engine_config:
-            logger.warning(f"Engine '{engine_name}' not configured, using default configuration.")
-            engine_config = EngineConfig(enabled=True)
+        logger.warning(f"Engine '{std_engine_name}' not configured, using default configuration.")
+        engine_config = EngineConfig(enabled=True)
 
     # Extract the num_results from the kwargs if present
     num_results = kwargs.get("num_results")
@@ -144,18 +230,28 @@ def init_engine_task(
 
     try:
         # Build engine-specific parameters
-        engine_params = get_engine_params(
+        execution_context = build_engine_execution_context(
             engine_name=engine_name,
             engines=kwargs.get("engines", []),
             kwargs=kwargs,
             common_params=kwargs.get("common_params", {}),
         )
+        engine_request = engine_request or EngineRequest(
+            engine=std_engine_name,
+            query=query,
+            params=execution_context.params,
+            execution=execution_context,
+            route=kwargs.get("route"),
+        )
+        if engine_request.execution is None:
+            engine_request = engine_request.model_copy(update={"execution": execution_context})
+        engine_request = enrich_engine_request(engine_request)
 
         # Create engine instance
         engine_instance: SearchEngine = get_engine(
             engine_name,
             engine_config,
-            **engine_params,
+            **engine_request.params,
         )
 
         logger.info(f"🔍 Querying engine: {engine_name}")
@@ -163,12 +259,13 @@ def init_engine_task(
         # Create a wrapper coroutine that handles exceptions
         async def search_with_error_handling() -> EngineOutcome:
             try:
-                results = await engine_instance.search(query)
+                results = await engine_instance.search(engine_request.query)
                 if results:
-                    return EngineOutcome(engine=engine_name, status="ok", results=results)
+                    return EngineOutcome(engine=engine_name, status="ok", request=engine_request, results=results)
                 return EngineOutcome(
                     engine=engine_name,
                     status="empty",
+                    request=engine_request,
                     failure=SearchFailure(
                         engine=engine_name,
                         kind="empty",
@@ -181,12 +278,14 @@ def init_engine_task(
                 return EngineOutcome(
                     engine=engine_name,
                     status="failed",
+                    request=engine_request,
                     failure=SearchFailure(
                         engine=engine_name,
                         kind=kind,
                         message=str(e),
                         exception_type=type(e).__name__,
                         retryable=retryable,
+                        details=_failure_details(e),
                     ),
                 )
 
@@ -209,6 +308,7 @@ def init_engine_task(
         return EngineOutcome(
             engine=engine_name,
             status="failed",
+            request=engine_request,
             failure=SearchFailure(
                 engine=engine_name,
                 kind="initialization",
@@ -246,7 +346,7 @@ async def search_detailed(
         time_frame: Time frame for results (e.g., "day", "week", "month")
         config: Optional custom configuration
         route: Route preset to use when engines is None
-        strict_mode: If True (default), don't fall back to other engines when specific engines are requested
+        strict_mode: If True (default), flat `search()` raises when all requested engines fail to initialize
         **kwargs: Additional engine-specific parameters
 
     Returns:
@@ -268,31 +368,38 @@ async def search_detailed(
         request_params["rerank_results"] = bool(rerank_results_override)
     if synthesize_answer_override is not None:
         request_params["synthesize_answer"] = bool(synthesize_answer_override)
+    route_policy = get_route_policy(route)
+    config = config or Config()
+    result_processing_policy = config.result_processing.as_result_processing_policy()
     request = SearchRequest(
         query=query,
         engines=engines,
-        route=route,
+        route=route_policy.name,
+        route_policy=route_policy,
         num_results=num_results,
         country=country,
         language=language,
         safe_search=safe_search,
         time_frame=time_frame,
         strict_mode=strict_mode,
+        result_processing=result_processing_policy,
         params=request_params,
     )
     flattened_results: list[SearchResult] = []
     outcomes: list[EngineOutcome] = []
 
     try:
-        # Initialize configuration if not provided
-        config = config or Config()
         search_query = query
         search_queries = [query]
-        should_rewrite_query = config.llm.query_rewrite if rewrite_query_override is None else bool(rewrite_query_override)
+        should_rewrite_query = (
+            config.llm.query_rewrite if rewrite_query_override is None else bool(rewrite_query_override)
+        )
         should_decompose_query = (
             config.llm.query_decomposition if decompose_query_override is None else bool(decompose_query_override)
         )
-        should_rerank_results = config.llm.result_rerank if rerank_results_override is None else bool(rerank_results_override)
+        should_rerank_results = (
+            config.llm.result_rerank if rerank_results_override is None else bool(rerank_results_override)
+        )
         should_synthesize_answer = (
             config.llm.answer_synthesis if synthesize_answer_override is None else bool(synthesize_answer_override)
         )
@@ -345,7 +452,6 @@ async def search_detailed(
             raise SearchError(msg)
 
         # Determine which engines to use
-        explicit_engines_requested = engines is not None and len(engines) > 0
         if engines is None:
             engines_to_try = select_route_engines(
                 config=config,
@@ -368,6 +474,8 @@ async def search_detailed(
         # Normalize engine names
         engines_to_try = [standardize_engine_name(e) for e in engines_to_try]
 
+        request_policy = config.request_policy.as_request_policy(config.proxies)
+
         # Common parameters for all engines
         common_params = {
             "num_results": num_results,
@@ -375,7 +483,9 @@ async def search_detailed(
             "language": language,
             "safe_search": safe_search,
             "time_frame": time_frame,
-            **config.proxies.http_request_kwargs(),
+            "browser_config": config.browser,
+            "proxy_config": config.proxies,
+            **request_policy.engine_kwargs(),
         }
 
         # First attempt with specific engines or all enabled engines
@@ -408,6 +518,8 @@ async def search_detailed(
                         config,
                         engines=engines_to_try,
                         common_params=common_params,
+                        route=route,
+                        request_policy=request_policy,
                         num_results=num_results,
                         **kwargs,
                     )
@@ -430,48 +542,11 @@ async def search_detailed(
             failed_engines_str = ", ".join(failed_engines)
             logger.warning(f"Failed to initialize engines: {failed_engines_str}")
 
-        # If no engines could be initialized and no structured failures exist.
+        # If no engines could be initialized and no structured failures exist, fail loudly.
         if not tasks and not outcomes:
-            if strict_mode or explicit_engines_requested:
-                # In strict mode or when engines were explicitly requested, don't fall back
-                # This is important to prevent unintended fallbacks
-                msg = f"No search engines could be initialized from requested engines: {', '.join(engines_to_try)}"
-                logger.error(msg)
-                raise SearchError(msg)
-
-            # Try with any available engine as a fallback
-            logger.warning("Falling back to any available search engine...")
-            for engine_name in get_registered_engines():
-                try:
-                    # Pass all parameters including kwargs to init_engine_task
-                    task_result = init_engine_task(
-                        engine_name,
-                        search_query,
-                        config,
-                        engines=[engine_name],
-                        common_params=common_params,
-                        num_results=num_results,
-                        **kwargs,
-                    )
-
-                    # Check if initialization was successful
-                    if isinstance(task_result, EngineOutcome):
-                        outcomes.append(task_result)
-                        failed_engines.append(engine_name)
-                    else:
-                        engine_names.append(task_result[0])
-                        tasks.append(task_result[1])
-                        task_queries.append((task_result[0], 0, search_query))
-                        logger.info(f"Successfully fell back to engine: {engine_name}")
-                        break
-                except Exception as e:
-                    logger.debug(f"Failed to initialize fallback engine {engine_name}: {e}")
-                    continue
-
-            if not tasks:
-                msg = "No search engines could be initialized"
-                logger.error(msg)
-                raise SearchError(msg)
+            msg = f"No search engines could be initialized from selected engines: {', '.join(engines_to_try)}"
+            logger.error(msg)
+            raise SearchError(msg)
 
         # Execute all search tasks concurrently
         results = await asyncio.gather(*tasks, return_exceptions=True) if tasks else []
@@ -524,6 +599,10 @@ async def search_detailed(
     except Exception as e:
         logger.error(f"Search failed: {e}")
         raise
+
+    if flattened_results and "result_processing_policy" in locals():
+        flattened_results, result_metadata = result_processing_policy.process_results(flattened_results)
+        request.params["result_processing"] = result_metadata
 
     # Log the total number of results found
     if flattened_results and "should_rerank_results" in locals() and should_rerank_results:

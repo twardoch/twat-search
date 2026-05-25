@@ -31,10 +31,18 @@ uvx hatch test
 ```bash
 twat-search web q "Adam Twardoch" -e brave,serpapi,duckduckgo -n 5 --json
 twat-search web info --plain
+twat-search web providers --json
+twat-search web routes --json
+twat-search web doctor --json
+twat-search web fetch https://example.com --json
 twat search web q "font engineering news" --route resilient --json
+twat-search web q "font tooling" --route plugins --json
+twat-search web q "agent search" --route resilient --jsonl --explain
 ```
 
-The `twat` host package exposes this plugin as `twat search`.
+The `twat` host package exposes this plugin as `twat search`. JSONL output is
+newline-delimited and includes request, engine, result, failure, answer, and
+optional explain records for streaming consumers.
 
 ## Python API
 
@@ -70,6 +78,9 @@ asyncio.run(main())
   Jina, Search1API, Gensearch, and other configured providers.
 - Scraper engines: DuckDuckGo, Google, Bing, qbittorrent-style plugin scrapers,
   GitHub/code search providers, and specialized dork engines.
+- Plugin engines: template-based adapters that turn a query into external
+  search URLs, including GitHub code/repository search and user-configured
+  dork-style query expansions.
 - Browser engines: Playwright-controlled Google, Bing, Qwant, Yahoo, Yandex,
   Mojeek, Gibiru, and future browser-to-API adapters.
 - LLM engines: user-selected OpenAI-compatible models for query planning,
@@ -141,6 +152,67 @@ Callers can override configured query rewriting per request with
 explicit via `synthesize_answer=True` or `synthesize_answer=False`; synthesized
 answers cite result URLs and keep provider failures visible.
 
+### Browser Runtime
+
+Browser-backed engines share one runtime configuration so Playwright adapters,
+browser-to-API probes, stealth settings, persistent profiles, proxy injection,
+and failure evidence all use the same contract:
+
+```bash
+export TWAT_SEARCH_BROWSER_ENABLED="true"
+export TWAT_SEARCH_BROWSER_TYPE="chromium"
+export TWAT_SEARCH_BROWSER_HEADLESS="true"
+export TWAT_SEARCH_BROWSER_STEALTH="true"
+export TWAT_SEARCH_BROWSER_PERSISTENT_CONTEXT="false"
+export TWAT_SEARCH_BROWSER_LOCALE="en-US"
+export TWAT_SEARCH_BROWSER_TIMEZONE="America/New_York"
+export TWAT_SEARCH_BROWSER_SCREENSHOTS="true"
+export TWAT_SEARCH_BROWSER_SAVE_HTML="true"
+export TWAT_SEARCH_BROWSER_NETWORK_LOG="false"
+```
+
+The browser config can produce Playwright launch/context kwargs without
+importing Playwright, which keeps unit tests offline and lets future browser
+engines opt into the same proxy and evidence-capture behavior.
+
+Browser diagnostics are shared as well. Browser engines can classify captured
+HTML as CAPTCHA, bot challenge, consent interstitial, rate limit, login wall, or
+generic block, then write configured HTML and screenshot artifacts under a
+single evidence contract. Local fixture tests cover these states before live
+search pages are exercised.
+
+### Search Plugins
+
+The `plugin_search` engine is a small adapter format for experimental search
+targets. A plugin declares a code, name, URL template, and optional query
+template. It can expand a normal query into a site-specific search URL without
+adding dependencies or executing untrusted plugin code:
+
+```python
+from twat_search.web.config import Config, EngineConfig
+
+config = Config(
+    engines={
+        "plugin_search": EngineConfig(
+            enabled=True,
+            default_params={
+                "plugins": [
+                    {
+                        "code": "github-env",
+                        "name": "GitHub env files",
+                        "query_template": "{query} filename:.env",
+                        "url_template": "https://github.com/search?q={query_url}&type=code",
+                    }
+                ]
+            },
+        )
+    }
+)
+```
+
+This is the first step toward qBittorrent-style external adapters, GitHub dork
+packs, and project-local search plugins that can live outside the core package.
+
 ## Result Model
 
 Every result carries:
@@ -149,6 +221,8 @@ Every result carries:
 - optional raw provider payload
 - detailed `SearchResponse` data with the parsed `SearchRequest`, per-engine
   `EngineOutcome` records, and structured `SearchFailure` objects
+- browser failure details for CAPTCHA, consent, rate-limit, bot-challenge, and
+  artifact paths when a browser engine reports a challenge
 - future engine timing, proxy, and route metadata
 - future content artifacts such as fetched HTML, extracted text, screenshots,
   citations, and LLM summaries
@@ -178,7 +252,7 @@ is a smaller, typed, testable core:
 - strict provider capability metadata
 - explicit proxy and browser configuration
 - normalized result and error data
-- no obsolete Falla-specific mess in the public API
+- no obsolete browser-scraper internals leaking into the public API
 - tests for each adapter boundary before live provider tests
 
 Run the normal check before handing off changes:

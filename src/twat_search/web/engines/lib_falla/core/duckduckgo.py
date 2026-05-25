@@ -1,3 +1,4 @@
+# this_file: src/twat_search/web/engines/lib_falla/core/duckduckgo.py
 # Falla-DuckDuckGo
 # Sanix-darker
 
@@ -8,6 +9,7 @@ from typing import cast
 
 from bs4.element import Tag
 
+from twat_search.web.browser import BrowserChallengeError
 from twat_search.web.engines.lib_falla.core.falla import Falla
 
 logger = logging.getLogger(__name__)
@@ -65,7 +67,8 @@ class DuckDuckGo(Falla):
             page = await self.browser_context.new_page()
 
             # Set timeout for navigation to prevent hanging
-            await page.goto(url, timeout=30000, wait_until="domcontentloaded")
+            browser_config = self._get_browser_config()
+            await page.goto(url, timeout=browser_config.navigation_timeout * 1000, wait_until="domcontentloaded")
 
             # Check for and handle CAPTCHA or challenge page
             try:
@@ -84,14 +87,7 @@ class DuckDuckGo(Falla):
 
                     if challenge_exists:
                         logger.warning(f"Challenge detected on DuckDuckGo using selector: {selector}")
-                        # Take a screenshot for debugging
-                        await page.screenshot(path="duckduckgo_challenge.png")
-                        # Try to save the HTML content for analysis
-                        html_content = await page.content()
-                        with open("duckduckgo_challenge.html", "w", encoding="utf-8") as f:
-                            f.write(html_content)
-                        logger.info("Saved challenge page content for debugging")
-                        break
+                        return await self._content_or_raise_browser_challenge(page, url)
             except Exception as e:
                 logger.debug(f"Error checking for challenges: {e}")
 
@@ -99,14 +95,18 @@ class DuckDuckGo(Falla):
             try:
                 if self.wait_for_selector:
                     logger.info(f"Waiting for selector: {self.wait_for_selector}")
-                    await page.wait_for_selector(self.wait_for_selector, timeout=5000)
+                    await page.wait_for_selector(
+                        self.wait_for_selector,
+                        timeout=browser_config.action_timeout * 1000,
+                    )
                 else:
                     await asyncio.sleep(2)
             except Exception as e:
                 logger.warning(f"Timeout waiting for selector in {self.name}: {e}")
 
-            # Get the page content
-            return await page.content()
+            return await self._content_or_raise_browser_challenge(page, url)
+        except BrowserChallengeError:
+            raise
         except Exception as e:
             logger.error(f"Error fetching page with Playwright: {e}")
             self.current_retry += 1

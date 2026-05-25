@@ -9,10 +9,9 @@ implement, as well as functions to register and instantiate engines.
 from __future__ import annotations
 
 import abc
-import asyncio
 import logging
 import os
-import random
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import httpx
@@ -20,7 +19,8 @@ import httpx
 from twat_search.web.engine_constants import ENGINE_FRIENDLY_NAMES
 from twat_search.web.engines import standardize_engine_name
 from twat_search.web.exceptions import EngineError, SearchError
-from twat_search.web.provider_catalog import get_api_key_env_names
+from twat_search.web.provider_catalog import ProviderMetadata, get_api_key_env_names, get_provider_metadata
+from twat_search.web.api_transport import execute_api_request
 
 if TYPE_CHECKING:
     from twat_search.web.config import EngineConfig
@@ -28,15 +28,6 @@ if TYPE_CHECKING:
 
 # Initialize logger
 logger = logging.getLogger(__name__)
-
-# List of user agents to rotate for scrapers to avoid blocking
-USER_AGENTS = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Safari/605.1.15",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1",
-]
 
 
 class SearchEngine(abc.ABC):
@@ -247,65 +238,20 @@ class SearchEngine(abc.ABC):
         actual_retries = self.retries if retries is None else retries
         actual_retry_delay = self.retry_delay if retry_delay is None else retry_delay
 
-        # Build headers with random user agent if enabled
-        if headers is None:
-            headers = {}
-
-        if self.use_random_user_agent and "user-agent" not in {k.lower() for k in headers}:
-            headers["User-Agent"] = random.choice(USER_AGENTS)
-
-        delay = actual_retry_delay  # Initial delay
-        # Initialize with None, but will be a RequestError or HTTPStatusError after a failed attempt
-        last_error: httpx.RequestError | httpx.HTTPStatusError | None = None
-
-        # Try the request multiple times
-        for attempt in range(1, actual_retries + 2):  # +2 because we want actual_retries+1 attempts
-            try:
-                if self.min_delay > 0:
-                    await asyncio.sleep(self.min_delay + random.uniform(0, self.min_delay * 0.1))
-
-                client_kwargs: dict[str, Any] = {"timeout": actual_timeout}
-                if self.proxy_url:
-                    client_kwargs["proxy"] = self.proxy_url
-
-                async with httpx.AsyncClient(**client_kwargs) as client:
-                    response = await client.request(
-                        method=method,
-                        url=url,
-                        headers=headers,
-                        params=params,
-                        json=json_data,
-                    )
-                    response.raise_for_status()
-                    return response
-            except (httpx.RequestError, httpx.HTTPStatusError) as exc:
-                last_error = exc
-                if attempt > actual_retries:
-                    # Final retry failed
-                    # This will be reached on the last iteration if all attempts fail
-                    break
-
-                # Add jitter to retry delay to avoid thundering herd effect
-                jitter = random.uniform(0.5, 1.5)
-                actual_delay = delay * jitter
-
-                # Log the error and retry
-                logger.warning(
-                    f"Request failed (attempt {attempt}/{actual_retries + 1}), retrying in {actual_delay:.2f}s: {exc}",
-                )
-
-                await asyncio.sleep(actual_delay)
-                delay *= 2  # Exponential backoff
-
-        # If we get here, all attempts failed
-        # At this point, last_error should always be set to a RequestError or HTTPStatusError
-        # because we only exit the loop after at least one attempt has failed
-        # But we'll add a fallback just in case (should never happen)
-        if last_error is None:
-            last_error = httpx.RequestError("Unknown error occurred during HTTP request")
-
-        msg = f"HTTP request failed after {actual_retries + 1} attempts: {last_error}"
-        raise EngineError(self.engine_code, msg) from last_error
+        return await execute_api_request(
+            engine_code=self.engine_code,
+            url=url,
+            method=method,
+            headers=headers,
+            params=params,
+            json_data=json_data,
+            timeout=actual_timeout,
+            retries=actual_retries,
+            retry_delay=actual_retry_delay,
+            min_delay=self.min_delay,
+            use_random_user_agent=self.use_random_user_agent,
+            proxy_url=self.proxy_url,
+        )
 
     @abc.abstractmethod
     async def search(self, query: str) -> list[SearchResult]:
@@ -337,8 +283,58 @@ class SearchEngine(abc.ABC):
         return self.config.api_key
 
 
+@dataclass(frozen=True)
+class EngineRegistryEntry:
+    """Typed registration record joining an engine class with provider metadata."""
+
+    code: str
+    engine_class: type[SearchEngine]
+    provider_metadata: ProviderMetadata | None
+    friendly_name: str
+    env_api_key_names: tuple[str, ...]
+    catalog_status: str
+
+    @property
+    def class_name(self) -> str:
+        """Return the concrete registered engine class name."""
+        return self.engine_class.__name__
+
+    @property
+    def transport(self) -> str:
+        """Return the provider transport, or unknown for uncataloged test/plugin engines."""
+        return self.provider_metadata.transport if self.provider_metadata else "unknown"
+
+    @property
+    def result_kinds(self) -> tuple[str, ...]:
+        """Return provider result kinds, or a conservative web default."""
+        return self.provider_metadata.result_kinds if self.provider_metadata else ("web",)
+
+    @property
+    def proxy_policy(self) -> str:
+        """Return the provider proxy policy."""
+        return self.provider_metadata.proxy_policy if self.provider_metadata else "none"
+
+
 # Registry of available search engines
-_engine_registry: dict[str, type[SearchEngine]] = {}
+_engine_registry: dict[str, EngineRegistryEntry] = {}
+
+
+def _build_registry_entry(engine_class: type[SearchEngine]) -> EngineRegistryEntry:
+    """Build a typed registry record for an engine class."""
+    provider = get_provider_metadata(engine_class.engine_code)
+    friendly_name = engine_class.friendly_engine_name or (
+        provider.display_name
+        if provider
+        else ENGINE_FRIENDLY_NAMES.get(engine_class.engine_code, engine_class.engine_code)
+    )
+    return EngineRegistryEntry(
+        code=engine_class.engine_code,
+        engine_class=engine_class,
+        provider_metadata=provider,
+        friendly_name=friendly_name,
+        env_api_key_names=tuple(engine_class.env_api_key_names),
+        catalog_status="cataloged" if provider else "uncataloged",
+    )
 
 
 def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
@@ -367,9 +363,6 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
             if env_name not in engine_class.env_api_key_names:
                 engine_class.env_api_key_names.append(env_name)
 
-        # Register the engine
-        _engine_registry[engine_class.engine_code] = engine_class
-
         # Set friendly_name if not defined
         if not engine_class.friendly_engine_name:
             try:
@@ -379,6 +372,9 @@ def register_engine(engine_class: type[SearchEngine]) -> type[SearchEngine]:
                 )
             except ImportError:
                 engine_class.friendly_engine_name = engine_class.engine_code
+
+        # Register the typed engine record.
+        _engine_registry[engine_class.engine_code] = _build_registry_entry(engine_class)
 
         return engine_class
     except Exception as e:
@@ -405,25 +401,21 @@ def get_engine(engine_name: str, config: EngineConfig, **kwargs: Any) -> SearchE
         SearchError: If the engine is not found
     """
     # Get the registry of engines
-    engines = get_registered_engines()
+    registry = get_engine_registry()
 
     # Standardize the engine name for lookup
     std_engine_name = standardize_engine_name(engine_name)
 
-    # Try to find the engine class
-    engine_class = engines.get(std_engine_name)
+    # Try to find the engine class by canonical provider code.
+    registry_entry = registry.get(std_engine_name)
 
-    # If not found with standardized name, try original name (for backward compatibility)
-    if engine_class is None:
-        engine_class = engines.get(engine_name)
-
-    # If still not found, provide a helpful error message
-    if engine_class is None:
-        available_engines = ", ".join(sorted(engines.keys()))
+    if registry_entry is None:
+        available_engines = ", ".join(sorted(registry.keys()))
         msg = f"Engine '{engine_name}' not found. Available engines: {available_engines}"
         logger.error(msg)
         msg = f"Unknown search engine '{engine_name}'"
         raise SearchError(msg)
+    engine_class = registry_entry.engine_class
 
     try:
         # Check if the engine is enabled in the configuration
@@ -464,5 +456,15 @@ def get_registered_engines() -> dict[str, type[SearchEngine]]:
 
     Returns:
         A dictionary mapping engine codes to engine classes.
+    """
+    return {code: entry.engine_class for code, entry in _engine_registry.items()}
+
+
+def get_engine_registry() -> dict[str, EngineRegistryEntry]:
+    """
+    Get typed registration records for all registered search engines.
+
+    Returns:
+        A dictionary mapping engine codes to typed registry entries.
     """
     return _engine_registry.copy()

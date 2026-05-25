@@ -14,26 +14,26 @@ from loguru import logger
 
 from twat_search.web.engine_constants import (
     ALL_POSSIBLE_ENGINES,
-    AOL_FALLA,
+    AOL_BROWSER,
     AISEARCH,
     APIFY,
-    ASK_FALLA,
-    BING_FALLA,
+    ASK_BROWSER,
+    BING_BROWSER,
     BING_SCRAPER,
     BRAVE,
     BRAVE_NEWS,
     CRITIQUE,
     DATAFORSEO,
-    DOGPILE_FALLA,
+    DOGPILE_BROWSER,
     DUCKDUCKGO,
-    DUCKDUCKGO_FALLA,
+    DUCKDUCKGO_BROWSER,
     ENGINE_FRIENDLY_NAMES,
     EXA,
     FIRECRAWL,
-    GIBIRU_FALLA,
+    GIBIRU_BROWSER,
     GENSEE,
     GITHUB_SEARCH,
-    GOOGLE_FALLA,
+    GOOGLE_BROWSER,
     GOOGLE_CSE,
     GOOGLE_HASDATA,
     GOOGLE_HASDATA_FULL,
@@ -42,15 +42,16 @@ from twat_search.web.engine_constants import (
     JINA,
     LANGSEARCH,
     MAPLESERP,
-    MOJEEK_FALLA,
+    MOJEEK_BROWSER,
     PPLX,
-    QWANT_FALLA,
+    PLUGIN_SEARCH,
+    QWANT_BROWSER,
     SEARCH1API,
     SEARCH_CANS,
     SERPER,
     TAVILY,
-    YAHOO_FALLA,
-    YANDEX_FALLA,
+    YAHOO_BROWSER,
+    YANDEX_BROWSER,
     YOU,
     YOU_NEWS,
     standardize_engine_name,
@@ -68,28 +69,28 @@ __all__ = [
     # Helper functions
     "AISEARCH",
     "ALL_POSSIBLE_ENGINES",
-    "AOL_FALLA",
+    "AOL_BROWSER",
     "APIFY",
-    "ASK_FALLA",
-    "BING_FALLA",
+    "ASK_BROWSER",
+    "BING_BROWSER",
     # Engine name constants
     "BING_SCRAPER",
     "BRAVE",
     "BRAVE_NEWS",
     "CRITIQUE",
     "DATAFORSEO",
-    "DOGPILE_FALLA",
+    "DOGPILE_BROWSER",
     "DUCKDUCKGO",
-    "DUCKDUCKGO_FALLA",
+    "DUCKDUCKGO_BROWSER",
     "ENGINE_FRIENDLY_NAMES",
     "EXA",
     "FIRECRAWL",
     "GENSEE",
-    "GIBIRU_FALLA",
+    "GIBIRU_BROWSER",
     "GITHUB_SEARCH",
+    # Browser-engine providers backed by the bundled Playwright scraper adapter.
+    "GOOGLE_BROWSER",
     "GOOGLE_CSE",
-    # Falla-based engines
-    "GOOGLE_FALLA",
     "GOOGLE_HASDATA",
     "GOOGLE_HASDATA_FULL",
     "GOOGLE_SCRAPER",
@@ -97,15 +98,16 @@ __all__ = [
     "JINA",
     "LANGSEARCH",
     "MAPLESERP",
-    "MOJEEK_FALLA",
+    "MOJEEK_BROWSER",
+    "PLUGIN_SEARCH",
     "PPLX",
-    "QWANT_FALLA",
+    "QWANT_BROWSER",
     "SEARCH1API",
     "SEARCH_CANS",
     "SERPER",
     "TAVILY",
-    "YAHOO_FALLA",
-    "YANDEX_FALLA",
+    "YAHOO_BROWSER",
+    "YANDEX_BROWSER",
     "YOU",
     "YOU_NEWS",
     "available_engine_functions",
@@ -120,10 +122,24 @@ available_engine_functions: dict[str, Any] = {}
 
 # Import base functionality first
 try:
-    from twat_search.web.engines.base import SearchEngine, get_engine, get_registered_engines, register_engine
+    from twat_search.web.engines.base import (
+        EngineRegistryEntry,
+        SearchEngine,
+        get_engine,
+        get_engine_registry,
+        get_registered_engines,
+        register_engine,
+    )
 
     __all__.extend(
-        ["SearchEngine", "get_engine", "get_registered_engines", "register_engine"],
+        [
+            "EngineRegistryEntry",
+            "SearchEngine",
+            "get_engine",
+            "get_engine_registry",
+            "get_registered_engines",
+            "register_engine",
+        ],
     )
 except ImportError:
     pass
@@ -239,7 +255,7 @@ try:
     available_engine_functions["bing_scraper"] = bing_scraper
     __all__.extend(["BingScraperSearchEngine", "bing_scraper"])
 except ImportError as e:
-    logger.warning(f"Failed to import bing_scraper: {e}")
+    logger.debug(f"Optional bing_scraper engine is unavailable: {e}")
 
 # Import HasData engines
 try:
@@ -320,6 +336,14 @@ except ImportError:
     pass
 
 try:
+    from twat_search.web.engines.plugin_search import PluginSearchEngine, SearchPluginSpec, plugin_search
+
+    available_engine_functions["plugin_search"] = plugin_search
+    __all__.extend(["PluginSearchEngine", "SearchPluginSpec", "plugin_search"])
+except ImportError:
+    pass
+
+try:
     from twat_search.web.engines.search_cans import SearchCansSearchEngine, search_cans
 
     available_engine_functions["search_cans"] = search_cans
@@ -346,83 +370,83 @@ except (ImportError, AttributeError):
     pass
 
 
-# Import Falla-based engines
+# Import bundled browser-backed engines.
 try:
     from twat_search.web.engines.falla import (
-        AolFallaEngine,
-        AskFallaEngine,
-        BingFallaEngine,
-        DogpileFallaEngine,
-        DuckDuckGoFallaEngine,
-        FallaSearchEngine,
-        GibiruFallaEngine,
-        GoogleFallaEngine,
-        MojeekFallaEngine,
-        QwantFallaEngine,
-        YahooFallaEngine,
-        YandexFallaEngine,
-        aol_falla,
-        ask_falla,
-        bing_falla,
-        dogpile_falla,
-        duckduckgo_falla,
-        gibiru_falla,
-        google_falla,
-        is_falla_available,
-        mojeek_falla,
-        qwant_falla,
-        yahoo_falla,
-        yandex_falla,
+        AolBrowserEngine,
+        AskBrowserEngine,
+        BingBrowserEngine,
+        BrowserScraperSearchEngine,
+        DogpileBrowserEngine,
+        DuckDuckGoBrowserEngine,
+        GibiruBrowserEngine,
+        GoogleBrowserEngine,
+        MojeekBrowserEngine,
+        QwantBrowserEngine,
+        YahooBrowserEngine,
+        YandexBrowserEngine,
+        aol_browser,
+        are_browser_engines_available,
+        ask_browser,
+        bing_browser,
+        dogpile_browser,
+        duckduckgo_browser,
+        gibiru_browser,
+        google_browser,
+        mojeek_browser,
+        qwant_browser,
+        yahoo_browser,
+        yandex_browser,
     )
 
     # Register engine functions
-    if is_falla_available():
-        available_engine_functions["google_falla"] = google_falla
-        available_engine_functions["bing_falla"] = bing_falla
-        available_engine_functions["duckduckgo_falla"] = duckduckgo_falla
-        available_engine_functions["yahoo_falla"] = yahoo_falla
-        available_engine_functions["ask_falla"] = ask_falla
-        available_engine_functions["aol_falla"] = aol_falla
-        available_engine_functions["dogpile_falla"] = dogpile_falla
-        available_engine_functions["gibiru_falla"] = gibiru_falla
-        available_engine_functions["mojeek_falla"] = mojeek_falla
-        available_engine_functions["qwant_falla"] = qwant_falla
-        available_engine_functions["yandex_falla"] = yandex_falla
+    if are_browser_engines_available():
+        available_engine_functions["google_browser"] = google_browser
+        available_engine_functions["bing_browser"] = bing_browser
+        available_engine_functions["duckduckgo_browser"] = duckduckgo_browser
+        available_engine_functions["yahoo_browser"] = yahoo_browser
+        available_engine_functions["ask_browser"] = ask_browser
+        available_engine_functions["aol_browser"] = aol_browser
+        available_engine_functions["dogpile_browser"] = dogpile_browser
+        available_engine_functions["gibiru_browser"] = gibiru_browser
+        available_engine_functions["mojeek_browser"] = mojeek_browser
+        available_engine_functions["qwant_browser"] = qwant_browser
+        available_engine_functions["yandex_browser"] = yandex_browser
 
     else:
-        logger.warning("Falla search engines are not available")
+        logger.warning("Browser search engines are not available")
 
     # Add to __all__
     __all__.extend(
         [
-            "AolFallaEngine",
-            "AskFallaEngine",
-            "BingFallaEngine",
-            "DogpileFallaEngine",
-            "DuckDuckGoFallaEngine",
-            "FallaSearchEngine",
-            "GibiruFallaEngine",
-            "GoogleFallaEngine",
-            "MojeekFallaEngine",
-            "QwantFallaEngine",
-            "YahooFallaEngine",
-            "YandexFallaEngine",
-            "aol_falla",
-            "ask_falla",
-            "bing_falla",
-            "dogpile_falla",
-            "duckduckgo_falla",
-            "gibiru_falla",
-            "google_falla",
-            "is_falla_available",
-            "mojeek_falla",
-            "qwant_falla",
-            "yahoo_falla",
-            "yandex_falla",
+            "AolBrowserEngine",
+            "AskBrowserEngine",
+            "BingBrowserEngine",
+            "BrowserScraperSearchEngine",
+            "DogpileBrowserEngine",
+            "DuckDuckGoBrowserEngine",
+            "GibiruBrowserEngine",
+            "GoogleBrowserEngine",
+            "MojeekBrowserEngine",
+            "QwantBrowserEngine",
+            "YahooBrowserEngine",
+            "YandexBrowserEngine",
+            "aol_browser",
+            "are_browser_engines_available",
+            "ask_browser",
+            "bing_browser",
+            "dogpile_browser",
+            "duckduckgo_browser",
+            "gibiru_browser",
+            "google_browser",
+            "mojeek_browser",
+            "qwant_browser",
+            "yahoo_browser",
+            "yandex_browser",
         ],
     )
 except (ImportError, SyntaxError) as e:
-    logger.warning(f"Failed to import falla module: {e}")
+    logger.debug(f"Optional browser engine module is unavailable: {e}")
 
 
 # Add helper functions

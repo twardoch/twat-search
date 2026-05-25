@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from twat_search.web.config import (
+    BrowserConfig,
     Config,
     DEFAULT_CONFIG,
     ENV_VAR_MAP,
@@ -18,6 +19,8 @@ from twat_search.web.config import (
     EngineConfig,
     LLMConfig,
     ProxyConfig,
+    ResultProcessingConfig,
+    RequestPolicyConfig,
 )
 from twat_search.web.provider_catalog import get_provider_metadata, list_provider_metadata
 
@@ -131,6 +134,15 @@ def test_env_var_map_is_catalog_backed() -> None:
     assert ENV_VAR_MAP["TWAT_SEARCH_LLM_TEMPERATURE"] == ["llm", "temperature"]
     assert ENV_VAR_MAP["TWAT_SEARCH_LLM_MAX_TOKENS"] == ["llm", "max_tokens"]
     assert ENV_VAR_MAP["TWAT_SEARCH_LLM_SYSTEM_PROMPT"] == ["llm", "system_prompt"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_BROWSER_ENABLED"] == ["browser", "enabled"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_BROWSER_TYPE"] == ["browser", "browser_type"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_BROWSER_PERSISTENT_CONTEXT"] == ["browser", "persistent_context"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_BROWSER_NETWORK_LOG"] == ["browser", "network_log"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_REQUEST_TIMEOUT"] == ["request_policy", "timeout"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_REQUEST_RANDOM_USER_AGENT"] == ["request_policy", "use_random_user_agent"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_RESULTS_DEDUPLICATE"] == ["result_processing", "deduplicate"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_RESULTS_DEDUPLICATE_BY"] == ["result_processing", "deduplicate_by"]
+    assert ENV_VAR_MAP["TWAT_SEARCH_RESULTS_MAX_RESULTS"] == ["result_processing", "max_results"]
 
 
 def test_config_with_direct_initialization() -> None:
@@ -180,6 +192,66 @@ def test_proxy_config_builds_webshare_url() -> None:
     }
 
 
+def test_request_policy_config_builds_effective_policy() -> None:
+    """Request policy exposes non-proxy defaults and proxy overrides."""
+    request_policy = RequestPolicyConfig(
+        timeout=12,
+        retries=1,
+        retry_delay=0.2,
+        min_delay=0.05,
+        max_parallelism=2,
+        use_random_user_agent=False,
+    )
+
+    plain = request_policy.as_request_policy()
+
+    assert plain.engine_kwargs() == {
+        "timeout": 12.0,
+        "retries": 1,
+        "retry_delay": 0.2,
+        "min_delay": 0.05,
+        "use_random_user_agent": False,
+    }
+    assert plain.max_parallelism == 2
+    assert plain.proxy_enabled is False
+
+    proxied = request_policy.as_request_policy(
+        ProxyConfig(
+            enabled=True,
+            username="user",
+            password="secret",  # noqa: S106
+            host="p.webshare.io",
+            port=80,
+            timeout=45,
+            retries=4,
+            retry_delay=0.25,
+            min_delay=0.1,
+            max_parallelism=8,
+        ),
+    )
+
+    assert proxied.timeout == 45
+    assert proxied.retries == 4
+    assert proxied.max_parallelism == 8
+    assert proxied.proxy_enabled is True
+    assert proxied.proxy_configured is True
+    assert proxied.proxy_provider == "webshare"
+    assert proxied.proxy_url == "http://user:secret@p.webshare.io:80"
+    assert proxied.redacted_proxy_url == "http://user:****@p.webshare.io:80"
+    assert proxied.engine_kwargs()["proxy_url"] == "http://user:secret@p.webshare.io:80"
+
+
+def test_result_processing_config_builds_policy() -> None:
+    """Result-processing config creates a typed response assembly policy."""
+    config = ResultProcessingConfig(deduplicate=False, deduplicate_by="url_and_title", max_results=10)
+
+    policy = config.as_result_processing_policy()
+
+    assert policy.deduplicate is False
+    assert policy.deduplicate_by == "url_and_title"
+    assert policy.max_results == 10
+
+
 def test_proxy_config_builds_playwright_shape() -> None:
     """Test Playwright proxy dict construction."""
     config = ProxyConfig(
@@ -222,6 +294,116 @@ def test_config_loads_proxy_env(monkeypatch: MonkeyPatch) -> None:
     assert config.proxies.max_parallelism == 8
 
 
+def test_config_loads_request_policy_env(monkeypatch: MonkeyPatch) -> None:
+    """Config loads shared non-proxy request policy from environment variables."""
+    monkeypatch.delenv("_TEST_ENGINE", raising=False)
+    monkeypatch.setenv("TWAT_SEARCH_REQUEST_TIMEOUT", "22")
+    monkeypatch.setenv("TWAT_SEARCH_REQUEST_RETRIES", "5")
+    monkeypatch.setenv("TWAT_SEARCH_REQUEST_RETRY_DELAY", "0.75")
+    monkeypatch.setenv("TWAT_SEARCH_REQUEST_MIN_DELAY", "0.2")
+    monkeypatch.setenv("TWAT_SEARCH_REQUEST_MAX_PARALLELISM", "3")
+    monkeypatch.setenv("TWAT_SEARCH_REQUEST_RANDOM_USER_AGENT", "false")
+
+    config = Config()
+
+    assert config.request_policy.timeout == 22
+    assert config.request_policy.retries == 5
+    assert config.request_policy.retry_delay == 0.75
+    assert config.request_policy.min_delay == 0.2
+    assert config.request_policy.max_parallelism == 3
+    assert config.request_policy.use_random_user_agent is False
+
+
+def test_config_loads_result_processing_env(monkeypatch: MonkeyPatch) -> None:
+    """Config loads aggregate result-processing settings from environment variables."""
+    monkeypatch.delenv("_TEST_ENGINE", raising=False)
+    monkeypatch.setenv("TWAT_SEARCH_RESULTS_DEDUPLICATE", "false")
+    monkeypatch.setenv("TWAT_SEARCH_RESULTS_DEDUPLICATE_BY", "url_and_title")
+    monkeypatch.setenv("TWAT_SEARCH_RESULTS_MAX_RESULTS", "7")
+
+    config = Config()
+
+    assert config.result_processing.deduplicate is False
+    assert config.result_processing.deduplicate_by == "url_and_title"
+    assert config.result_processing.max_results == 7
+
+
+def test_browser_config_builds_playwright_runtime_shapes() -> None:
+    """Browser config exposes Playwright-safe launch and context kwargs."""
+    proxy_config = ProxyConfig(
+        enabled=True,
+        username="user",
+        password="pass",  # noqa: S106
+        host="p.webshare.io",
+        port=80,
+    )
+    config = BrowserConfig(
+        enabled=True,
+        channel="chrome",
+        headless=False,
+        locale="pl-PL",
+        timezone="Europe/Warsaw",
+        viewport_width=1440,
+        viewport_height=900,
+    )
+
+    assert config.is_configured() is True
+    assert config.viewport() == {"width": 1440, "height": 900}
+    assert config.launch_kwargs() == {"headless": False, "channel": "chrome"}
+    assert config.context_kwargs(proxy_config) == {
+        "locale": "pl-PL",
+        "timezone_id": "Europe/Warsaw",
+        "viewport": {"width": 1440, "height": 900},
+        "proxy": {
+            "server": "http://p.webshare.io:80",
+            "username": "user",
+            "password": "pass",
+        },
+    }
+
+
+def test_config_loads_browser_env(monkeypatch: MonkeyPatch) -> None:
+    """Config loads browser runtime settings from environment variables."""
+    monkeypatch.delenv("_TEST_ENGINE", raising=False)
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_ENABLED", "true")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_BACKEND", "playwright")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_TYPE", "firefox")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_CHANNEL", "firefox")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_HEADLESS", "false")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_STEALTH", "false")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_PERSISTENT_CONTEXT", "true")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_USER_DATA_DIR", ".twat-search-browser")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_LOCALE", "de-DE")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_TIMEZONE", "Europe/Berlin")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_VIEWPORT_WIDTH", "1280")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_VIEWPORT_HEIGHT", "720")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_NAVIGATION_TIMEOUT", "45")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_ACTION_TIMEOUT", "12.5")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_SCREENSHOTS", "false")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_SAVE_HTML", "false")
+    monkeypatch.setenv("TWAT_SEARCH_BROWSER_NETWORK_LOG", "true")
+
+    config = Config()
+
+    assert config.browser.enabled is True
+    assert config.browser.is_configured() is True
+    assert config.browser.backend == "playwright"
+    assert config.browser.browser_type == "firefox"
+    assert config.browser.channel == "firefox"
+    assert config.browser.headless is False
+    assert config.browser.stealth is False
+    assert config.browser.persistent_context is True
+    assert config.browser.user_data_dir == ".twat-search-browser"
+    assert config.browser.locale == "de-DE"
+    assert config.browser.timezone == "Europe/Berlin"
+    assert config.browser.viewport() == {"width": 1280, "height": 720}
+    assert config.browser.navigation_timeout == 45
+    assert config.browser.action_timeout == 12.5
+    assert config.browser.screenshots_on_failure is False
+    assert config.browser.save_html_on_failure is False
+    assert config.browser.network_log is True
+
+
 def test_llm_config_requires_enabled_model_and_key() -> None:
     """Test LLM config readiness guard."""
     assert (
@@ -242,7 +424,9 @@ def test_llm_config_requires_enabled_model_and_key() -> None:
         ).is_configured()
         is False
     )
-    assert LLMConfig(enabled=True, model=None, api_key="key", base_url="https://llm.example/v1").is_configured() is False
+    assert (
+        LLMConfig(enabled=True, model=None, api_key="key", base_url="https://llm.example/v1").is_configured() is False
+    )
     assert LLMConfig(enabled=True, model="gpt-5-mini", api_key="key", base_url=None).is_configured() is False
 
 

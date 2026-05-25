@@ -12,7 +12,19 @@ from __future__ import annotations
 import pytest
 from pydantic import HttpUrl, ValidationError
 
-from twat_search.web.models import EngineOutcome, SearchAnswer, SearchFailure, SearchRequest, SearchResponse, SearchResult
+from twat_search.web.models import (
+    EngineExecutionContext,
+    EngineOutcome,
+    EngineParameterSet,
+    EngineRequest,
+    ResultProcessingPolicy,
+    RoutePolicy,
+    SearchAnswer,
+    SearchFailure,
+    SearchRequest,
+    SearchResponse,
+    SearchResult,
+)
 
 
 def test_search_result_valid_data() -> None:
@@ -135,32 +147,139 @@ def test_search_result_deserialization() -> None:
     assert result.rank == 1
 
 
+def test_result_processing_policy_deduplicates_and_limits_results() -> None:
+    """Result processing deduplicates normalized URLs and records provenance."""
+    policy = ResultProcessingPolicy(deduplicate=True, max_results=1)
+    results = [
+        SearchResult(title="One", url="https://Example.com/path/?b=2&a=1#frag", snippet="", source="a"),
+        SearchResult(title="Duplicate", url="https://example.com/path?a=1&b=2", snippet="", source="b"),
+        SearchResult(title="Two", url="https://example.com/other", snippet="", source="c"),
+    ]
+
+    processed, metadata = policy.process_results(results)
+
+    assert [result.title for result in processed] == ["One"]
+    assert metadata == {
+        "input_result_count": 3,
+        "output_result_count": 1,
+        "duplicate_result_count": 1,
+        "truncated_result_count": 1,
+        "deduplicate": True,
+        "deduplicate_by": "url",
+        "max_results": 1,
+    }
+
+
 def test_search_request_rejects_empty_query() -> None:
     """SearchRequest parses and rejects invalid user input at the boundary."""
     with pytest.raises(ValidationError):
         SearchRequest(query="   ")
 
 
+def test_search_request_serializes_route_policy() -> None:
+    """SearchRequest can carry a parsed route policy at the API boundary."""
+    request = SearchRequest(
+        query="font tools",
+        route="browser",
+        route_policy=RoutePolicy(
+            name="browser",
+            transports=("browser",),
+            require_proxy_support=True,
+        ),
+    )
+
+    data = request.model_dump()
+
+    assert data["route"] == "browser"
+    assert data["route_policy"]["name"] == "browser"
+    assert data["route_policy"]["transports"] == ("browser",)
+    assert data["route_policy"]["require_proxy_support"] is True
+
+
+def test_engine_request_serializes_execution_context() -> None:
+    """EngineRequest can carry parsed provider parameter provenance."""
+    parameter_set = EngineParameterSet(
+        engine="brave",
+        requested_engines=("brave", "duckduckgo"),
+        common_params={"num_results": 5, "country": "US"},
+        engine_specific_params={"freshness": "pd"},
+        passthrough_params={},
+        params={"num_results": 5, "country": "US", "freshness": "pd"},
+        param_sources={
+            "num_results": "common",
+            "country": "common",
+            "freshness": "engine_specific",
+        },
+        engine_specific_prefixes=("brave",),
+    )
+    execution = EngineExecutionContext(
+        engine="brave",
+        route="best",
+        parameter_set=parameter_set,
+        params={"num_results": 5, "country": "US", "freshness": "pd"},
+        param_sources={
+            "num_results": "common",
+            "country": "common",
+            "freshness": "engine_specific",
+        },
+        engine_specific_prefixes=("brave",),
+    )
+    request = EngineRequest(
+        engine="brave",
+        query="font tools",
+        params=execution.params,
+        execution=execution,
+        route="best",
+    )
+
+    data = request.model_dump()
+
+    assert data["execution"]["engine"] == "brave"
+    assert data["execution"]["route"] == "best"
+    assert data["execution"]["params"]["freshness"] == "pd"
+    assert data["execution"]["param_sources"]["freshness"] == "engine_specific"
+    assert data["execution"]["parameter_set"]["engine_specific_params"] == {"freshness": "pd"}
+    assert data["execution"]["parameter_set"]["requested_engines"] == ("brave", "duckduckgo")
+
+
 def test_search_response_serializes_engine_failures() -> None:
     """Detailed responses carry results and first-class provider failures."""
+    engine_request = EngineRequest(
+        engine="mock",
+        query="test",
+        params={"num_results": 2},
+        route="best",
+        transport="plugin",
+        proxy_policy="optional",
+        proxy_transports=("httpx",),
+        browser_required=False,
+        result_kinds=("web", "code"),
+    )
     failure = SearchFailure(
         engine="mock",
         kind="timeout",
         message="request timed out",
         exception_type="TimeoutError",
         retryable=True,
+        details={"attempts": 3},
     )
     response = SearchResponse(
         request=SearchRequest(query="test"),
-        engines=[EngineOutcome(engine="mock", status="failed", failure=failure)],
+        engines=[EngineOutcome(engine="mock", status="failed", request=engine_request, failure=failure)],
         failures=[failure],
     )
 
     data = response.model_dump()
     assert data["request"]["query"] == "test"
+    assert data["engines"][0]["request"]["params"] == {"num_results": 2}
+    assert data["engines"][0]["request"]["transport"] == "plugin"
+    assert data["engines"][0]["request"]["proxy_policy"] == "optional"
+    assert data["engines"][0]["request"]["proxy_transports"] == ("httpx",)
+    assert data["engines"][0]["request"]["result_kinds"] == ("web", "code")
     assert data["engines"][0]["status"] == "failed"
     assert data["failures"][0]["kind"] == "timeout"
     assert data["failures"][0]["retryable"] is True
+    assert data["failures"][0]["details"] == {"attempts": 3}
 
 
 def test_search_response_serializes_answer_with_failures() -> None:

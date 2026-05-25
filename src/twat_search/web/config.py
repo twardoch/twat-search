@@ -18,8 +18,8 @@ from urllib.parse import quote
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field, field_validator
 
-from twat_search.web.engines.base import get_registered_engines  # Added import
-from twat_search.web.provider_catalog import list_provider_metadata
+from twat_search.web.models import RequestPolicy, ResultProcessingPolicy
+from twat_search.web.provider_catalog import get_api_key_env_names, list_provider_metadata
 
 # Load environment variables from .env file if present
 load_dotenv()
@@ -49,6 +49,17 @@ DEFAULT_CONFIG: dict[str, dict[str, Any]] = _build_default_config()
 BASE_ENV_VAR_MAP: dict[str, str | list[str]] = {
     # General
     "TWAT_SEARCH_LOG_LEVEL": "log_level",
+    # Shared request policy for API and scraper engines
+    "TWAT_SEARCH_REQUEST_TIMEOUT": ["request_policy", "timeout"],
+    "TWAT_SEARCH_REQUEST_RETRIES": ["request_policy", "retries"],
+    "TWAT_SEARCH_REQUEST_RETRY_DELAY": ["request_policy", "retry_delay"],
+    "TWAT_SEARCH_REQUEST_MIN_DELAY": ["request_policy", "min_delay"],
+    "TWAT_SEARCH_REQUEST_MAX_PARALLELISM": ["request_policy", "max_parallelism"],
+    "TWAT_SEARCH_REQUEST_RANDOM_USER_AGENT": ["request_policy", "use_random_user_agent"],
+    # Shared result processing configuration
+    "TWAT_SEARCH_RESULTS_DEDUPLICATE": ["result_processing", "deduplicate"],
+    "TWAT_SEARCH_RESULTS_DEDUPLICATE_BY": ["result_processing", "deduplicate_by"],
+    "TWAT_SEARCH_RESULTS_MAX_RESULTS": ["result_processing", "max_results"],
     # Shared proxy configuration
     "TWAT_SEARCH_PROXY_ENABLED": ["proxies", "enabled"],
     "TWAT_SEARCH_PROXY_URL": ["proxies", "url"],
@@ -62,6 +73,24 @@ BASE_ENV_VAR_MAP: dict[str, str | list[str]] = {
     "TWAT_SEARCH_PROXY_RETRY_DELAY": ["proxies", "retry_delay"],
     "TWAT_SEARCH_PROXY_MIN_DELAY": ["proxies", "min_delay"],
     "TWAT_SEARCH_PROXY_MAX_PARALLELISM": ["proxies", "max_parallelism"],
+    # Shared browser runtime configuration
+    "TWAT_SEARCH_BROWSER_ENABLED": ["browser", "enabled"],
+    "TWAT_SEARCH_BROWSER_BACKEND": ["browser", "backend"],
+    "TWAT_SEARCH_BROWSER_TYPE": ["browser", "browser_type"],
+    "TWAT_SEARCH_BROWSER_CHANNEL": ["browser", "channel"],
+    "TWAT_SEARCH_BROWSER_HEADLESS": ["browser", "headless"],
+    "TWAT_SEARCH_BROWSER_STEALTH": ["browser", "stealth"],
+    "TWAT_SEARCH_BROWSER_PERSISTENT_CONTEXT": ["browser", "persistent_context"],
+    "TWAT_SEARCH_BROWSER_USER_DATA_DIR": ["browser", "user_data_dir"],
+    "TWAT_SEARCH_BROWSER_LOCALE": ["browser", "locale"],
+    "TWAT_SEARCH_BROWSER_TIMEZONE": ["browser", "timezone"],
+    "TWAT_SEARCH_BROWSER_VIEWPORT_WIDTH": ["browser", "viewport_width"],
+    "TWAT_SEARCH_BROWSER_VIEWPORT_HEIGHT": ["browser", "viewport_height"],
+    "TWAT_SEARCH_BROWSER_NAVIGATION_TIMEOUT": ["browser", "navigation_timeout"],
+    "TWAT_SEARCH_BROWSER_ACTION_TIMEOUT": ["browser", "action_timeout"],
+    "TWAT_SEARCH_BROWSER_SCREENSHOTS": ["browser", "screenshots_on_failure"],
+    "TWAT_SEARCH_BROWSER_SAVE_HTML": ["browser", "save_html_on_failure"],
+    "TWAT_SEARCH_BROWSER_NETWORK_LOG": ["browser", "network_log"],
     # Shared LLM routing configuration
     "TWAT_SEARCH_LLM_PROVIDER": ["llm", "provider"],
     "TWAT_SEARCH_LLM_MODEL": ["llm", "model"],
@@ -175,6 +204,114 @@ class ProxyConfig(BaseModel):
         return proxy_url.replace(str(self.password), "****").replace(quote(str(self.password), safe=""), "****")
 
 
+class RequestPolicyConfig(BaseModel):
+    """Configuration for shared API/scraper request behavior."""
+
+    timeout: float = 10.0
+    retries: int = 2
+    retry_delay: float = 1.0
+    min_delay: float = 0.0
+    max_parallelism: int = 1
+    use_random_user_agent: bool = True
+
+    def as_request_policy(self, proxy_config: ProxyConfig | None = None) -> RequestPolicy:
+        """Return the effective request policy after optional proxy overrides."""
+        proxy_configured = proxy_config.is_configured() if proxy_config else False
+        proxy_url = proxy_config.httpx_proxy_url() if proxy_config else None
+        if proxy_config and proxy_url:
+            return RequestPolicy(
+                timeout=proxy_config.timeout,
+                retries=proxy_config.retries,
+                retry_delay=proxy_config.retry_delay,
+                min_delay=proxy_config.min_delay,
+                max_parallelism=proxy_config.max_parallelism,
+                use_random_user_agent=self.use_random_user_agent,
+                proxy_enabled=proxy_config.enabled,
+                proxy_configured=proxy_configured,
+                proxy_provider=proxy_config.provider,
+                proxy_url=proxy_url,
+                redacted_proxy_url=proxy_config.redacted_url(),
+            )
+        return RequestPolicy(
+            timeout=self.timeout,
+            retries=self.retries,
+            retry_delay=self.retry_delay,
+            min_delay=self.min_delay,
+            max_parallelism=self.max_parallelism,
+            use_random_user_agent=self.use_random_user_agent,
+            proxy_enabled=proxy_config.enabled if proxy_config else False,
+            proxy_configured=proxy_configured,
+            proxy_provider=proxy_config.provider if proxy_config else None,
+            redacted_proxy_url=proxy_config.redacted_url() if proxy_config else None,
+        )
+
+
+class ResultProcessingConfig(BaseModel):
+    """Configuration for aggregate result normalization after provider fan-out."""
+
+    deduplicate: bool = True
+    deduplicate_by: str = "url"
+    max_results: int | None = None
+
+    def as_result_processing_policy(self) -> ResultProcessingPolicy:
+        """Return the parsed result-processing policy used by response assembly."""
+        return ResultProcessingPolicy(
+            deduplicate=self.deduplicate,
+            deduplicate_by=self.deduplicate_by,
+            max_results=self.max_results,
+        )
+
+
+class BrowserConfig(BaseModel):
+    """Configuration for browser-backed search adapters and browser-to-API probes."""
+
+    enabled: bool = False
+    backend: str = "playwright"
+    browser_type: str = "chromium"
+    channel: str | None = None
+    headless: bool = True
+    stealth: bool = True
+    persistent_context: bool = False
+    user_data_dir: str | None = None
+    locale: str = "en-US"
+    timezone: str = "America/New_York"
+    viewport_width: int = 1365
+    viewport_height: int = 768
+    navigation_timeout: float = 30.0
+    action_timeout: float = 10.0
+    screenshots_on_failure: bool = True
+    save_html_on_failure: bool = True
+    network_log: bool = False
+
+    def is_configured(self) -> bool:
+        """Return True when browser automation is enabled and has a backend."""
+        return bool(self.enabled and self.backend and self.browser_type)
+
+    def viewport(self) -> dict[str, int]:
+        """Return Playwright's viewport shape."""
+        return {"width": self.viewport_width, "height": self.viewport_height}
+
+    def launch_kwargs(self) -> dict[str, Any]:
+        """Return launch-time kwargs that do not depend on a browser context."""
+        kwargs: dict[str, Any] = {"headless": self.headless}
+        if self.channel:
+            kwargs["channel"] = self.channel
+        return kwargs
+
+    def context_kwargs(self, proxy_config: ProxyConfig | None = None) -> dict[str, Any]:
+        """Return browser-context kwargs, including optional proxy injection."""
+        kwargs: dict[str, Any] = {
+            "locale": self.locale,
+            "timezone_id": self.timezone,
+            "viewport": self.viewport(),
+        }
+        if proxy_config:
+            proxy = proxy_config.playwright_proxy()
+            if proxy:
+                kwargs["proxy"] = proxy
+        return kwargs
+
+
 class LLMConfig(BaseModel):
     """Configuration for optional LLM-assisted search stages."""
 
@@ -221,22 +358,13 @@ class EngineConfig(BaseModel):
         # If no API key is provided but we have an engine code, try to get it from environment variables
         if self.api_key is None and self.engine_code:
             logger.debug(f"No API key provided for {self.engine_code}, checking environment variables")
-            try:
-                engine_class = get_registered_engines().get(self.engine_code)
-                if engine_class and hasattr(engine_class, "env_api_key_names") and engine_class.env_api_key_names:
-                    logger.debug(
-                        f"Engine '{self.engine_code}' requires API key from env vars: {engine_class.env_api_key_names}",
-                    )
-                    # Try to get API key from environment variables
-                    for env_var in engine_class.env_api_key_names:
-                        env_value = os.environ.get(env_var)
-                        logger.debug(f"Checking env var '{env_var}' in __init__: {env_value is not None}")
-                        if env_value:
-                            logger.debug(f"Using API key from environment variable '{env_var}'")
-                            self.api_key = env_value
-                            break
-            except (ImportError, AttributeError) as e:
-                logger.debug(f"Couldn't check API key requirements for {self.engine_code}: {e}")
+            for env_var in get_api_key_env_names(self.engine_code):
+                env_value = os.environ.get(env_var)
+                logger.debug(f"Checking env var '{env_var}' in __init__: {env_value is not None}")
+                if env_value:
+                    logger.debug(f"Using API key from environment variable '{env_var}'")
+                    self.api_key = env_value
+                    break
 
     @field_validator("api_key")
     @classmethod
@@ -253,35 +381,19 @@ class EngineConfig(BaseModel):
         logger.debug(f"Validating API key for engine '{engine_code}', current value: {v is not None}")
 
         if engine_code and v is None:
-            # We have an engine code but no API key - we'll check in the registry
-            # if this engine requires an API key
-            try:
-                engine_class = get_registered_engines().get(engine_code)
-                logger.debug(f"Found engine class for '{engine_code}': {engine_class is not None}")
+            env_names = get_api_key_env_names(engine_code)
+            for env_var in env_names:
+                env_value = os.environ.get(env_var)
+                logger.debug(f"Checking env var '{env_var}': {env_value is not None}")
+                if env_value:
+                    logger.debug(f"Using API key from environment variable '{env_var}'")
+                    return env_value
 
-                # If we found the engine class and it requires an API key,
-                # check environment variables
-                if engine_class and hasattr(engine_class, "env_api_key_names") and engine_class.env_api_key_names:
-                    logger.debug(
-                        f"Engine '{engine_code}' requires API key from env vars: {engine_class.env_api_key_names}",
-                    )
-                    # Try to get API key from environment variables
-                    for env_var in engine_class.env_api_key_names:
-                        env_value = os.environ.get(env_var)
-                        logger.debug(f"Checking env var '{env_var}': {env_value is not None}")
-                        if env_value:
-                            logger.debug(f"Using API key from environment variable '{env_var}'")
-                            return env_value
-
-                    # If we get here, no environment variables were set
-                    logger.warning(
-                        f"Engine '{engine_code}' may require an API key. "
-                        f"Please set one of these environment variables: {', '.join(engine_class.env_api_key_names)}",
-                    )
-            except (ImportError, AttributeError) as e:
-                # Can't access the engine registry yet - this happens during
-                # initial import. We'll validate again when creating the engine.
-                logger.debug(f"Couldn't check API key requirements for {engine_code}: {e}")
+            if env_names:
+                logger.warning(
+                    f"Engine '{engine_code}' may require an API key. "
+                    f"Please set one of these environment variables: {', '.join(env_names)}",
+                )
 
         return v
 
@@ -290,7 +402,10 @@ class Config(BaseModel):
     """Main configuration model for the web search module."""
 
     engines: dict[str, EngineConfig] = Field(default_factory=dict)
+    request_policy: RequestPolicyConfig = Field(default_factory=RequestPolicyConfig)
+    result_processing: ResultProcessingConfig = Field(default_factory=ResultProcessingConfig)
     proxies: ProxyConfig = Field(default_factory=ProxyConfig)
+    browser: BrowserConfig = Field(default_factory=BrowserConfig)
     llm: LLMConfig = Field(default_factory=LLMConfig)
     config_path: ClassVar[str | None] = None
 

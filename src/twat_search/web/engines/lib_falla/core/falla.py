@@ -5,7 +5,10 @@ Base Falla class for search engine scraping.
 This module provides the base class for all Falla search engine scrapers.
 """
 
+from __future__ import annotations
+
 import asyncio
+import contextlib
 import logging
 import os
 import re
@@ -21,10 +24,18 @@ from playwright.async_api import Browser, BrowserContext
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import async_playwright
 
+from twat_search.web.browser_transport import (
+    BrowserChallengeError,
+    build_browser_evidence,
+    write_browser_failure_evidence,
+)
 from twat_search.web.engines.lib_falla.settings import SPLASH_SCRAP_URL
+from twat_search.web.scraper_transport import fetch_scraper_html
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
+
+    from twat_search.web.config import BrowserConfig, ProxyConfig
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -57,20 +68,77 @@ class Falla:
         self.max_retries = 3
         self.current_retry = 0
         self.wait_for_selector: str | None = None
+        self.browser_config: BrowserConfig | None = None
+        self.proxy_config: ProxyConfig | None = None
+        self.current_query = ""
+
+    def _get_browser_config(self) -> BrowserConfig:
+        """Return browser config without importing global config during module load."""
+        if self.browser_config is None:
+            from twat_search.web.config import BrowserConfig  # noqa: PLC0415
+
+            self.browser_config = BrowserConfig()
+        return self.browser_config
+
+    def _get_proxy_config(self) -> ProxyConfig:
+        """Return proxy config without importing global config during module load."""
+        if self.proxy_config is None:
+            from twat_search.web.config import ProxyConfig  # noqa: PLC0415
+
+            self.proxy_config = ProxyConfig()
+        return self.proxy_config
 
     async def _initialize_browser(self) -> None:
         """
         Initialize the Playwright browser if not already initialized.
         """
         if self.browser is None:
+            browser_config = self._get_browser_config()
             p = await async_playwright().start()
-            self.browser = await p.chromium.launch(headless=True)
+            browser_type = getattr(p, browser_config.browser_type)
+            self.browser = await browser_type.launch(**browser_config.launch_kwargs())
 
         if self.browser_context is None and self.browser is not None:
+            browser_config = self._get_browser_config()
             self.browser_context = await self.browser.new_context(
-                viewport={"width": 1920, "height": 1080},
+                **browser_config.context_kwargs(self._get_proxy_config()),
                 user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             )
+
+    async def _content_or_raise_browser_challenge(self, page: Any, url: str) -> str:
+        """Return page HTML or raise structured evidence for challenge pages."""
+        html = await page.content()
+        try:
+            title = await page.title()
+        except Exception:
+            title = None
+
+        evidence = build_browser_evidence(
+            engine=self.name or self.__class__.__name__,
+            query=self.current_query,
+            html=html,
+            url=url,
+            title=title,
+        )
+        if not evidence.blocked and not evidence.needs_consent:
+            return html
+
+        screenshot: bytes | None = None
+        browser_config = self._get_browser_config()
+        if browser_config.screenshots_on_failure:
+            with contextlib.suppress(Exception):
+                screenshot = await page.screenshot()
+
+        evidence = write_browser_failure_evidence(
+            engine=self.name or self.__class__.__name__,
+            query=self.current_query,
+            html=html,
+            config=browser_config,
+            url=url,
+            title=title,
+            screenshot=screenshot,
+        )
+        raise BrowserChallengeError(evidence)
 
     async def _close_browser(self) -> None:
         """
@@ -104,14 +172,18 @@ class Falla:
             page = await self.browser_context.new_page()
 
             # Set timeout for navigation to prevent hanging
-            await page.goto(url, timeout=30000, wait_until="domcontentloaded")
+            browser_config = self._get_browser_config()
+            await page.goto(url, timeout=browser_config.navigation_timeout * 1000, wait_until="domcontentloaded")
 
             # Wait a moment for JavaScript to render content
             try:
                 # If we know what to wait for (a selector), use that
                 if self.wait_for_selector:
                     logger.info(f"Waiting for selector: {self.wait_for_selector}")
-                    await page.wait_for_selector(self.wait_for_selector, timeout=5000)
+                    await page.wait_for_selector(
+                        self.wait_for_selector,
+                        timeout=browser_config.action_timeout * 1000,
+                    )
                 else:
                     # Otherwise wait a short time
                     await asyncio.sleep(2)
@@ -119,8 +191,9 @@ class Falla:
                 # If timeout occurs when waiting for selector, continue anyway
                 logger.warning(f"Timeout waiting for selector in {self.name}")
 
-            # Get the page content
-            return await page.content()
+            return await self._content_or_raise_browser_challenge(page, url)
+        except BrowserChallengeError:
+            raise
         except Exception as e:
             logger.error(f"Error fetching page with Playwright: {e}")
             self.current_retry += 1
@@ -261,23 +334,30 @@ class Falla:
         """
         try:
             async with async_playwright() as p:
-                browser = await p.chromium.launch(headless=True)
+                browser_config = self._get_browser_config()
+                browser_type = getattr(p, browser_config.browser_type)
+                browser = await browser_type.launch(**browser_config.launch_kwargs())
                 try:
                     context = await browser.new_context(
-                        viewport={"width": 1920, "height": 1080},
+                        **browser_config.context_kwargs(self._get_proxy_config()),
                         user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
                     )
 
                     page = await context.new_page()
                     # Increase timeout to 60 seconds for slow connections
-                    await page.goto(url, timeout=60000, wait_until="domcontentloaded")
+                    await page.goto(
+                        url, timeout=browser_config.navigation_timeout * 1000, wait_until="domcontentloaded"
+                    )
 
                     # Wait for selector if specified
                     if self.wait_for_selector:
                         try:
                             logger.info(f"Waiting for selector: {self.wait_for_selector}")
                             # Increase timeout to 10 seconds for selector
-                            await page.wait_for_selector(self.wait_for_selector, timeout=10000)
+                            await page.wait_for_selector(
+                                self.wait_for_selector,
+                                timeout=browser_config.action_timeout * 1000,
+                            )
                         except PlaywrightTimeoutError:
                             # If timeout occurs when waiting for selector, continue anyway
                             logger.warning(f"Timeout waiting for selector in {self.name}")
@@ -285,8 +365,7 @@ class Falla:
                         # Otherwise wait a short time
                         await asyncio.sleep(2)
 
-                    # Get the page content
-                    content = await page.content()
+                    content = await self._content_or_raise_browser_challenge(page, url)
                     logger.info(f"Got content length: {len(content)}")
 
                     # Log a preview of the content for debugging
@@ -298,6 +377,8 @@ class Falla:
                     return content
                 finally:
                     await browser.close()
+        except BrowserChallengeError:
+            raise
         except Exception as e:
             logger.error(f"Error fetching page with Playwright: {e}")
             self.current_retry += 1
@@ -368,17 +449,7 @@ class Falla:
         Returns:
             HTML content as string
         """
-        try:
-            # Standard HTTP request
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-            }
-            response = requests.get(url, headers=headers, timeout=15)
-            response.raise_for_status()  # Raise an exception for 4XX/5XX responses
-            return response.text
-        except Exception as e:
-            logger.error(f"Error getting HTML content: {e}")
-            return ""
+        return fetch_scraper_html(url, proxy_config=self._get_proxy_config())
 
     async def fetch_async(self, entry_point: str) -> list[dict[str, str]]:
         """
@@ -488,6 +559,7 @@ class Falla:
         Returns:
             List of dictionaries containing search results
         """
+        self.current_query = query
         url = self.get_url(query)
         if pages:
             url += f"&{pages}"
@@ -506,6 +578,7 @@ class Falla:
             List of dictionaries containing search results
         """
         try:
+            self.current_query = query
             url = self.get_url(query)
             if pages:
                 url += f"&{pages}"

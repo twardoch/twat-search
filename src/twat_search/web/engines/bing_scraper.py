@@ -18,14 +18,17 @@ from __future__ import annotations
 
 import logging
 from typing import Any, ClassVar
+from urllib.parse import urlencode, urlunparse
 
+from bs4 import BeautifulSoup
 from pydantic import BaseModel, HttpUrl, ValidationError
 
-from twat_search.web.config import EngineConfig
+from twat_search.web.config import EngineConfig, ProxyConfig
 from twat_search.web.engine_constants import BING_SCRAPER, DEFAULT_NUM_RESULTS, ENGINE_FRIENDLY_NAMES
 from twat_search.web.engines.base import SearchEngine, register_engine
 from twat_search.web.exceptions import EngineError
 from twat_search.web.models import SearchResult
+from twat_search.web.scraper_transport import fetch_scraper_html
 
 # Set up logger
 logger = logging.getLogger(__name__)
@@ -64,6 +67,10 @@ except ImportError:
             Returns:
                 Empty list (dummy implementation)
             """
+            return []
+
+        def _extract_search_results(self, soup: BeautifulSoup) -> list[Any]:
+            """Dummy extraction method for type checking."""
             return []
 
 
@@ -138,6 +145,7 @@ class BingScraperSearchEngine(SearchEngine):
         self.delay_between_requests: float = kwargs.get(
             "delay_between_requests",
         ) or self.config.default_params.get("delay_between_requests", 1.0)
+        self.proxy_config = self._resolve_proxy_config(kwargs)
 
         # Log any unused parameters for clarity
         unused_params: list[str] = []
@@ -153,6 +161,48 @@ class BingScraperSearchEngine(SearchEngine):
             logger.debug(
                 f"Parameters {', '.join(unused_params)} set but not used by Bing Scraper",
             )
+
+    def _resolve_proxy_config(self, kwargs: dict[str, Any]) -> ProxyConfig:
+        """Return the effective shared proxy config for Bing HTML fetching."""
+        proxy_config = kwargs.get("proxy_config")
+        if isinstance(proxy_config, ProxyConfig):
+            if proxy_config.httpx_proxy_url():
+                return proxy_config
+
+        proxy_url = kwargs.get("proxy") or kwargs.get("proxy_url") or self.config.default_params.get("proxy")
+        if proxy_url:
+            return ProxyConfig(
+                enabled=True,
+                url=str(proxy_url),
+                timeout=float(kwargs.get("timeout", self.timeout)),
+                retries=int(kwargs.get("retries", self.retries)),
+                retry_delay=float(kwargs.get("retry_delay", self.retry_delay)),
+                min_delay=float(kwargs.get("min_delay", self.min_delay)),
+            )
+        return proxy_config if isinstance(proxy_config, ProxyConfig) else ProxyConfig()
+
+    def _search_with_shared_transport(self, scraper: BingScraper, query: str) -> list[Any]:
+        """Fetch Bing HTML through the shared scraper transport and parse results."""
+        url = urlunparse(
+            (
+                "https",
+                "www.bing.com",
+                "/search",
+                "",
+                urlencode({"q": query, "n": self.num_results}),
+                "",
+            ),
+        )
+        html = fetch_scraper_html(
+            url,
+            proxy_config=self.proxy_config,
+            user_agent=scraper._get_random_user_agent(),
+            default_timeout=self.timeout,
+        )
+        if not html:
+            return []
+        soup = BeautifulSoup(html, "html.parser")
+        return scraper._extract_search_results(soup)[: self.num_results]
 
     def _convert_result(self, result: Any) -> SearchResult | None:
         """
@@ -232,7 +282,10 @@ class BingScraperSearchEngine(SearchEngine):
             )
 
             # Perform the search
-            raw_results = scraper.search(query, num_results=self.num_results)
+            if self.proxy_config.httpx_proxy_url():
+                raw_results = self._search_with_shared_transport(scraper, query)
+            else:
+                raw_results = scraper.search(query, num_results=self.num_results)
 
             # Return an empty list if no results
             if not raw_results:

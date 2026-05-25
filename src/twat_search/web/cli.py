@@ -20,6 +20,7 @@ import os
 from typing import TYPE_CHECKING, Any
 
 import fire.core
+import httpx
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.table import Table
@@ -27,7 +28,7 @@ from rich.table import Table
 from twat_search.web.api import search, search_detailed
 from twat_search.web.config import Config  # Already here, but good to note
 from twat_search.web.engine_constants import DEFAULT_NUM_RESULTS
-from twat_search.web.engines import get_registered_engines  # Added this
+from twat_search.web.engines import get_engine_registry, get_registered_engines  # Added this
 from twat_search.web.engines import (
     ALL_POSSIBLE_ENGINES,
     ENGINE_FRIENDLY_NAMES,
@@ -36,8 +37,8 @@ from twat_search.web.engines import (
     is_engine_available,
     standardize_engine_name,
 )
-from twat_search.web.provider_catalog import get_provider_metadata, select_provider_codes
-from twat_search.web.routes import route_names, select_route_engines
+from twat_search.web.provider_catalog import get_provider_metadata, list_provider_metadata, select_provider_codes
+from twat_search.web.routes import explain_route_selection, get_route_policy, route_names, select_route_engines
 
 if TYPE_CHECKING:
     from twat_search.web.models import SearchResponse
@@ -294,6 +295,7 @@ class SearchCLI:
         route: str | None = None,
         verbose: bool = False,
         json: bool = False,
+        jsonl: bool = False,
         plain: bool = False,
         explain: bool = False,
         **kwargs: Any,
@@ -318,6 +320,7 @@ class SearchCLI:
             route: Route preset to use when engines are omitted
             verbose: Whether to display verbose output
             json: Whether to return results as JSON
+            jsonl: Whether to return detailed search events as JSON Lines
             plain: Whether to display results in plain text format
             explain: Whether to display route, proxy, failure, and LLM-step metadata
             **kwargs: Additional engine-specific parameters
@@ -361,6 +364,9 @@ class SearchCLI:
         if not engine_list and engines is not None and engines not in ("best", "free", "all"):
             error_msg = f"No valid engines found for: {engines}"
             self.logger.error(error_msg)
+            if jsonl:
+                _display_jsonl_error(ValueError(error_msg))
+                return []
             _display_errors([error_msg])
             return []
 
@@ -375,6 +381,27 @@ class SearchCLI:
 
         # Add a debug statement to verify the num_results value is correct
         self.logger.debug(f"Right before executing search, num_results={num_results}")
+
+        if jsonl:
+            try:
+                response = asyncio.run(
+                    search_detailed(
+                        query=query,
+                        engines=engine_list,
+                        route=route or ("best" if engine_list is None else None),
+                        config=config,
+                        strict_mode=True,
+                        **common_params,
+                        **kwargs,
+                    ),
+                )
+            except Exception as exc:
+                self.logger.error(f"Search failed: {exc}")
+                _display_jsonl_error(exc)
+                return []
+            explain_payload = _build_explain_payload(response, engine_list, config) if explain else None
+            _display_jsonl_response(response, explain=explain_payload)
+            return []
 
         if explain:
             try:
@@ -602,7 +629,7 @@ class SearchCLI:
 
     def _display_engines_json(self, engine: str | None, config: Config) -> None:
         try:
-            registered_engines = get_registered_engines()
+            registered_engines = get_engine_registry()
         except ImportError:
             registered_engines = {}
         result = {}
@@ -624,6 +651,114 @@ class SearchCLI:
                     registered_engines,
                 )
         self.console.print(json_lib.dumps(result, cls=CustomJSONEncoder, indent=2))
+
+    def providers(
+        self,
+        transport: str | None = None,
+        status: str | None = None,
+        json: bool = False,
+        plain: bool = False,
+    ) -> None:
+        """List provider catalog entries with capability metadata."""
+        providers = _provider_records(transport=transport, status=status)
+        if json:
+            print(json_lib.dumps({"providers": providers}, cls=CustomJSONEncoder, indent=2))
+            return
+        if plain:
+            for provider in providers:
+                self.console.print(provider["code"])
+            return
+        table = Table(title="Search Providers")
+        table.add_column("Provider", style="cyan", no_wrap=True)
+        table.add_column("Transport", style="magenta")
+        table.add_column("Status", style="yellow")
+        table.add_column("Auth", style="green")
+        table.add_column("Proxy", style="blue")
+        for provider in providers:
+            table.add_row(
+                provider["code"],
+                provider["transport"],
+                provider["status"],
+                "yes" if provider["requires_api_key"] else "no",
+                provider["proxy_policy"],
+            )
+        self.console.print(table)
+
+    def routes(
+        self,
+        route: str | None = None,
+        json: bool = False,
+        plain: bool = False,
+    ) -> None:
+        """List route presets and currently selected engines."""
+        config = Config()
+        route_filter = route.replace("_", "-") if route else None
+        records = _route_records(config, route=route_filter)
+        if json:
+            print(json_lib.dumps({"routes": records}, cls=CustomJSONEncoder, indent=2))
+            return
+        if plain:
+            for record in records:
+                self.console.print(record["name"])
+            return
+        table = Table(title="Search Routes")
+        table.add_column("Route", style="cyan", no_wrap=True)
+        table.add_column("Transports", style="magenta")
+        table.add_column("Engines", style="green")
+        for record in records:
+            table.add_row(record["name"], ",".join(record["transports"]), ",".join(record["selected_engines"]))
+        self.console.print(table)
+
+    def doctor(self, json: bool = False, plain: bool = False) -> None:
+        """Report local search configuration readiness."""
+        config = Config()
+        payload = _doctor_payload(config)
+        if json:
+            print(json_lib.dumps(payload, cls=CustomJSONEncoder, indent=2))
+            return
+        if plain:
+            for issue in payload["issues"]:
+                self.console.print(issue)
+            return
+        table = Table(title="Search Doctor")
+        table.add_column("Check", style="cyan", no_wrap=True)
+        table.add_column("Value", style="white")
+        table.add_row("implemented_providers", str(payload["counts"]["implemented_providers"]))
+        table.add_row("enabled_engines", str(payload["counts"]["enabled_engines"]))
+        table.add_row("configured_keyed_engines", str(payload["counts"]["configured_keyed_engines"]))
+        table.add_row("proxy", "configured" if payload["proxy"]["configured"] else "not configured")
+        table.add_row("browser", "enabled" if payload["browser"]["enabled"] else "disabled")
+        table.add_row("llm", "configured" if payload["llm"]["configured"] else "not configured")
+        table.add_row("issues", str(len(payload["issues"])))
+        self.console.print(table)
+
+    def fetch(
+        self,
+        url: str,
+        timeout: float | None = None,
+        json: bool = False,
+        plain: bool = False,
+    ) -> None:
+        """Fetch a URL through the shared proxy policy for diagnostics."""
+        config = Config()
+        payload = _fetch_url_payload(url, config=config, timeout=timeout)
+        if json:
+            print(json_lib.dumps(payload, cls=CustomJSONEncoder, indent=2))
+            return
+        if plain:
+            if payload["ok"]:
+                self.console.print(payload["text"])
+            else:
+                self.console.print(payload["error"])
+            return
+        table = Table(title="Fetch")
+        table.add_column("Field", style="cyan", no_wrap=True)
+        table.add_column("Value", style="white")
+        for key in ["ok", "url", "status_code", "content_type", "bytes", "proxy"]:
+            table.add_row(key, str(payload.get(key)))
+        if not payload["ok"]:
+            table.add_row("error", str(payload["error"]))
+        self.console.print(table)
 
     async def critique(
         self,
@@ -1238,19 +1373,21 @@ def _get_engine_info(
     registered_engines: dict,
 ) -> dict:
     provider = get_provider_metadata(engine_name)
+    registry_entry = registered_engines.get(engine_name)
+    engine_class = getattr(registry_entry, "engine_class", registry_entry)
     api_key_required = False
     api_key_set = False
     env_names = list(provider.env_api_key_names) if provider else []
     if hasattr(engine_config, "api_key") and engine_config.api_key is not None:
         api_key_required = True
         api_key_set = True
-    if engine_name in registered_engines:
-        engine_class = registered_engines.get(engine_name)
-        if engine_class and hasattr(engine_class, "env_api_key_names"):
-            for env_name in engine_class.env_api_key_names:
-                if env_name not in env_names:
-                    env_names.append(env_name)
-            api_key_required = bool(env_names)
+    if registry_entry:
+        entry_env_names = getattr(registry_entry, "env_api_key_names", None)
+        class_env_names = getattr(engine_class, "env_api_key_names", ())
+        for env_name in entry_env_names or class_env_names:
+            if env_name not in env_names:
+                env_names.append(env_name)
+        api_key_required = bool(env_names)
     elif provider:
         api_key_required = provider.requires_api_key
 
@@ -1279,11 +1416,176 @@ def _get_engine_info(
         "proxy_policy": provider.proxy_policy if provider else "none",
         "proxy_transports": list(provider.proxy_transports) if provider else [],
         "browser_required": provider.browser_required if provider else False,
+        "route_priority": provider.route_priority if provider else 1000,
         "cost_class": provider.cost_class if provider else "unknown",
         "stability": provider.stability if provider else "unknown",
         "planned": provider.planned if provider else False,
         "result_kinds": list(provider.result_kinds) if provider else ["web"],
+        "registered": bool(registry_entry),
+        "registry_catalog_status": getattr(registry_entry, "catalog_status", "unregistered"),
+        "engine_class": getattr(registry_entry, "class_name", getattr(engine_class, "__name__", None)),
     }
+
+
+def _provider_records(transport: str | None = None, status: str | None = None) -> list[dict[str, Any]]:
+    """Return provider catalog records for CLI output."""
+    transport_filter = transport.replace("_", "-") if transport else None
+    status_filter = status.replace("_", "-") if status else None
+    records = []
+    for provider in list_provider_metadata(include_planned=True):
+        if transport_filter and provider.transport != transport_filter:
+            continue
+        if status_filter and provider.status != status_filter:
+            continue
+        records.append(
+            {
+                "code": provider.code,
+                "display_name": provider.display_name,
+                "transport": provider.transport,
+                "status": provider.status,
+                "family": provider.family,
+                "requires_api_key": provider.requires_api_key,
+                "env_api_key_names": list(provider.env_api_key_names),
+                "default_enabled": provider.default_enabled,
+                "cost_class": provider.cost_class,
+                "stability": provider.stability,
+                "proxy_support": provider.proxy_support,
+                "proxy_policy": provider.proxy_policy,
+                "proxy_transports": list(provider.proxy_transports),
+                "browser_required": provider.browser_required,
+                "route_priority": provider.route_priority,
+                "result_kinds": list(provider.result_kinds),
+                "planned": provider.planned,
+            },
+        )
+    return records
+
+
+def _route_records(config: Config, route: str | None = None) -> list[dict[str, Any]]:
+    """Return route preset records with currently selected engines."""
+    route_list = [route] if route else route_names()
+    available = set(get_available_engines())
+    records = []
+    for route_name in route_list:
+        selection = explain_route_selection(config=config, route=route_name, available_engines=available)
+        policy = selection.policy
+        records.append(
+            {
+                "name": policy.name,
+                "policy": policy.model_dump(),
+                "transports": list(policy.transports),
+                "cost_classes": list(policy.cost_classes),
+                "include_unkeyed": policy.include_unkeyed,
+                "include_keyed": policy.include_keyed,
+                "max_engines": policy.max_engines,
+                "stability": list(policy.stability),
+                "selected_engines": selection.selected_engines,
+                "skipped_engines": [
+                    {"engine": decision.engine, "reason": decision.reason} for decision in selection.skipped
+                ],
+            },
+        )
+    return records
+
+
+def _doctor_payload(config: Config) -> dict[str, Any]:
+    """Build local readiness diagnostics for providers, routes, proxy, browser, and LLM."""
+    providers = list_provider_metadata(include_planned=False)
+    enabled = [code for code, engine_config in config.engines.items() if engine_config.enabled]
+    configured_keyed = [
+        provider.code
+        for provider in providers
+        if provider.requires_api_key and config.engines.get(provider.code) and config.engines[provider.code].api_key
+    ]
+    route_status = {
+        route_name: select_route_engines(
+            config=config, route=route_name, available_engines=set(get_available_engines())
+        )
+        for route_name in route_names()
+    }
+    issues = []
+    if not any(route_status.values()):
+        issues.append("No route currently selects a runnable engine.")
+    if config.proxies.enabled and not config.proxies.is_configured():
+        issues.append("Proxy support is enabled but no complete proxy URL or Webshare-style parts are configured.")
+    if config.browser.enabled and not config.browser.is_configured():
+        issues.append("Browser support is enabled but browser backend/type configuration is incomplete.")
+    if config.llm.enabled and not config.llm.is_configured():
+        issues.append("LLM support is enabled but model, API key, or base URL is missing.")
+    return {
+        "counts": {
+            "implemented_providers": len(providers),
+            "enabled_engines": len(enabled),
+            "configured_keyed_engines": len(configured_keyed),
+        },
+        "routes": route_status,
+        "proxy": {
+            "enabled": config.proxies.enabled,
+            "configured": config.proxies.is_configured(),
+            "provider": config.proxies.provider,
+            "url": config.proxies.redacted_url(),
+        },
+        "browser": {
+            "enabled": config.browser.enabled,
+            "configured": config.browser.is_configured(),
+            "backend": config.browser.backend,
+            "browser_type": config.browser.browser_type,
+        },
+        "llm": {
+            "enabled": config.llm.enabled,
+            "configured": config.llm.is_configured(),
+            "provider": config.llm.provider,
+            "model": config.llm.model,
+            "base_url": config.llm.base_url,
+        },
+        "issues": issues,
+    }
+
+
+def _fetch_url_payload(url: str, *, config: Config, timeout: float | None = None) -> dict[str, Any]:
+    """Fetch a URL for CLI diagnostics using shared proxy settings."""
+    normalized_url = url.strip()
+    if not normalized_url.startswith(("http://", "https://")):
+        return {
+            "ok": False,
+            "url": normalized_url,
+            "status_code": None,
+            "content_type": None,
+            "bytes": 0,
+            "text": "",
+            "proxy": config.proxies.redacted_url(),
+            "error": "URL must start with http:// or https://",
+            "exception_type": "ValueError",
+        }
+    request_timeout = timeout if timeout is not None else config.proxies.timeout
+    proxy_url = config.proxies.httpx_proxy_url()
+    try:
+        with httpx.Client(proxy=proxy_url, timeout=request_timeout, follow_redirects=True) as client:
+            response = client.get(normalized_url)
+        text = response.text
+        return {
+            "ok": response.is_success,
+            "url": str(response.url),
+            "status_code": response.status_code,
+            "content_type": response.headers.get("content-type"),
+            "bytes": len(response.content),
+            "text": text,
+            "proxy": config.proxies.redacted_url(),
+            "error": None if response.is_success else response.reason_phrase,
+            "exception_type": None,
+        }
+    except Exception as exc:
+        return {
+            "ok": False,
+            "url": normalized_url,
+            "status_code": None,
+            "content_type": None,
+            "bytes": 0,
+            "text": "",
+            "proxy": config.proxies.redacted_url(),
+            "error": str(exc),
+            "exception_type": type(exc).__name__,
+        }
 
 
 def _process_results(results: list) -> list[dict[str, Any]]:
@@ -1336,17 +1638,16 @@ def _build_explain_payload(
     """Build machine-readable CLI explain metadata from a detailed response."""
     selected = selected_engines or response.request.engines or [outcome.engine for outcome in response.engines]
     selected_set = set(selected)
-    skipped = []
-    for engine_name, engine_config in sorted(config.engines.items()):
-        if engine_name in selected_set:
-            continue
-        provider = get_provider_metadata(engine_name)
-        reason = "route_filter"
-        if not engine_config.enabled:
-            reason = "disabled"
-        elif provider and provider.requires_api_key and not engine_config.api_key:
-            reason = "missing_api_key"
-        skipped.append({"engine": engine_name, "reason": reason})
+    route_selection = explain_route_selection(
+        config=config,
+        route=response.request.route,
+        available_engines=set(get_available_engines()),
+    )
+    skipped = [
+        {"engine": decision.engine, "reason": decision.reason}
+        for decision in route_selection.skipped
+        if decision.engine not in selected_set
+    ]
 
     llm_params = response.request.params
     llm_steps = {
@@ -1360,8 +1661,20 @@ def _build_explain_payload(
     return {
         "query": response.request.query,
         "route": response.request.route,
+        "route_policy": (
+            response.request.route_policy.model_dump()
+            if response.request.route_policy
+            else route_selection.policy.model_dump()
+        ),
         "selected_engines": selected,
         "skipped_engines": skipped,
+        "request_policy": config.request_policy.as_request_policy(config.proxies).model_dump(mode="json"),
+        "result_processing": (
+            response.request.result_processing.model_dump(mode="json")
+            if response.request.result_processing
+            else config.result_processing.as_result_processing_policy().model_dump(mode="json")
+        ),
+        "result_processing_stats": response.request.params.get("result_processing", {}),
         "proxy": {
             "enabled": config.proxies.enabled,
             "configured": config.proxies.is_configured(),
@@ -1378,6 +1691,15 @@ def _build_explain_payload(
                 "engine": outcome.engine,
                 "status": outcome.status,
                 "result_count": len(outcome.results),
+                "transport": outcome.request.transport if outcome.request else None,
+                "param_sources": (
+                    outcome.request.execution.param_sources if outcome.request and outcome.request.execution else {}
+                ),
+                "parameter_set": (
+                    outcome.request.execution.parameter_set.model_dump(mode="json")
+                    if outcome.request and outcome.request.execution and outcome.request.execution.parameter_set
+                    else None
+                ),
             }
             for outcome in response.engines
         ],
@@ -1471,6 +1793,76 @@ def _display_errors(error_messages: list[str]) -> None:
 def _display_json_results(processed_results: list[dict[str, Any]]) -> None:
     """Format and print results as JSON."""
     console.print(json_lib.dumps(_results_json_payload(processed_results), indent=2, cls=CustomJSONEncoder))
+
+
+def _display_jsonl_response(response: SearchResponse, *, explain: dict[str, Any] | None = None) -> None:
+    """Print detailed search response events as newline-delimited JSON."""
+    for record in _response_jsonl_records(response, explain=explain):
+        print(json_lib.dumps(record, cls=CustomJSONEncoder, separators=(",", ":")))
+
+
+def _display_jsonl_error(error: Exception) -> None:
+    """Print a machine-readable JSONL error record."""
+    print(
+        json_lib.dumps(
+            {
+                "type": "error",
+                "message": str(error),
+                "exception_type": type(error).__name__,
+            },
+            cls=CustomJSONEncoder,
+            separators=(",", ":"),
+        ),
+    )
+
+
+def _response_jsonl_records(
+    response: SearchResponse,
+    *,
+    explain: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
+    """Build JSONL records for request, outcomes, results, failures, and answer."""
+    records: list[dict[str, Any]] = [
+        {
+            "type": "request",
+            "request": response.request.model_dump(mode="json"),
+        },
+    ]
+    for outcome in response.engines:
+        records.append(
+            {
+                "type": "engine",
+                "engine": outcome.engine,
+                "status": outcome.status,
+                "result_count": len(outcome.results),
+            },
+        )
+        if outcome.failure:
+            records.append(
+                {
+                    "type": "failure",
+                    "engine": outcome.engine,
+                    "failure": outcome.failure.model_dump(mode="json"),
+                },
+            )
+        for result in outcome.results:
+            records.append(
+                {
+                    "type": "result",
+                    "engine": outcome.engine,
+                    "result": result.model_dump(mode="json"),
+                },
+            )
+    if response.answer:
+        records.append(
+            {
+                "type": "answer",
+                "answer": response.answer.model_dump(mode="json"),
+            },
+        )
+    if explain is not None:
+        records.append({"type": "explain", "explain": explain})
+    return records
 
 
 def _results_json_payload(processed_results: list[dict[str, Any]]) -> dict[str, dict[str, list[dict[str, Any]]]]:

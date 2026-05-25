@@ -149,9 +149,13 @@ class GoogleScraperEngine(SearchEngine):
         self.ssl_verify: bool | None = kwargs.get(
             "ssl_verify",
         ) or self.config.default_params.get("ssl_verify", None)
-        self.proxy: str | None = kwargs.get("proxy") or self.config.default_params.get(
-            "proxy",
-            None,
+        self.proxy: str | None = (
+            kwargs.get("proxy")
+            or kwargs.get("proxy_url")
+            or self.config.default_params.get(
+                "proxy",
+                None,
+            )
         )
         self.unique: bool = kwargs.get("unique") or self.config.default_params.get(
             "unique",
@@ -334,7 +338,7 @@ async def google_scraper(
     Raises:
         EngineError: If the search fails
     """
-    from twat_search.web.api import search
+    from twat_search.web.api import search  # noqa: PLC0415
 
     return await search(
         query,

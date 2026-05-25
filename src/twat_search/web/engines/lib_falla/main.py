@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
+# this_file: src/twat_search/web/engines/lib_falla/main.py
 """
 Main script for the Falla search engine scraper.
 
 This module provides the command-line interface for the Falla search engine scraper.
 It demonstrates both synchronous and asynchronous usage of the library.
 """
-
-# this_file: src/twat_search/web/engines/lib_falla/main.py
 
 import argparse
 import asyncio
@@ -101,3 +100,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+# this_file: src/twat_search/web/engines/lib_falla/main.py

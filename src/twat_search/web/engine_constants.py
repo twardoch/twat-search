@@ -9,7 +9,7 @@ This module is separate to avoid circular dependencies between engines and confi
 # These constants should be used instead of string literals
 from __future__ import annotations
 
-from twat_search.web.provider_catalog import get_friendly_name, list_known_provider_codes
+from twat_search.web.provider_catalog import canonical_provider_code, get_friendly_name, list_known_provider_codes
 
 DEFAULT_NUM_RESULTS = 5
 
@@ -34,6 +34,7 @@ JINA = "jina"
 LANGSEARCH = "langsearch"
 MAPLESERP = "mapleserp"
 PPLX = "pplx"
+PLUGIN_SEARCH = "plugin_search"
 SEARCH1API = "search1api"
 SEARCH_CANS = "search_cans"
 SERPER = "serper"
@@ -41,18 +42,18 @@ TAVILY = "tavily"
 YOU = "you"
 YOU_NEWS = "you_news"
 
-# Falla-based engines
-GOOGLE_FALLA = "google_falla"
-BING_FALLA = "bing_falla"
-DUCKDUCKGO_FALLA = "duckduckgo_falla"
-AOL_FALLA = "aol_falla"
-ASK_FALLA = "ask_falla"
-DOGPILE_FALLA = "dogpile_falla"
-GIBIRU_FALLA = "gibiru_falla"
-MOJEEK_FALLA = "mojeek_falla"
-QWANT_FALLA = "qwant_falla"
-YAHOO_FALLA = "yahoo_falla"
-YANDEX_FALLA = "yandex_falla"
+# Browser-engine providers backed by the bundled Playwright scraper adapter.
+GOOGLE_BROWSER = "google_browser"
+BING_BROWSER = "bing_browser"
+DUCKDUCKGO_BROWSER = "duckduckgo_browser"
+AOL_BROWSER = "aol_browser"
+ASK_BROWSER = "ask_browser"
+DOGPILE_BROWSER = "dogpile_browser"
+GIBIRU_BROWSER = "gibiru_browser"
+MOJEEK_BROWSER = "mojeek_browser"
+QWANT_BROWSER = "qwant_browser"
+YAHOO_BROWSER = "yahoo_browser"
+YANDEX_BROWSER = "yandex_browser"
 
 
 # Complete list of all known engines and planned 2.0 providers.
@@ -63,7 +64,7 @@ ENGINE_FRIENDLY_NAMES = {engine_code: get_friendly_name(engine_code) for engine_
 
 
 def standardize_engine_name(engine_name: str) -> str:
-    """Standardize engine name by replacing hyphens with underscores.
+    """Standardize engine name and resolve catalog aliases.
 
     Args:
         engine_name: The engine name to standardize
@@ -71,4 +72,4 @@ def standardize_engine_name(engine_name: str) -> str:
     Returns:
         The standardized engine name
     """
-    return engine_name.replace("-", "_")
+    return canonical_provider_code(engine_name)

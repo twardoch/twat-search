@@ -7,12 +7,12 @@ This module provides the Google search engine implementation for the Falla searc
 
 import logging
 import urllib.parse
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, cast
 
 from bs4 import BeautifulSoup
 from bs4.element import ResultSet, Tag
 
+from twat_search.web.browser import BrowserChallengeError
 from twat_search.web.engines.lib_falla.core.falla import Falla
 
 if TYPE_CHECKING:
@@ -173,6 +173,7 @@ class Google(Falla):
             List of dictionaries containing search results
         """
         try:
+            self.current_query = query
             url = self.get_url(query)
             if pages:
                 url += f"&{pages}"
@@ -189,14 +190,18 @@ class Google(Falla):
             page = await self.browser_context.new_page()
 
             try:
+                browser_config = self._get_browser_config()
                 # Set timeout for navigation to prevent hanging
-                await page.goto(url, timeout=60000, wait_until="domcontentloaded")
+                await page.goto(url, timeout=browser_config.navigation_timeout * 1000, wait_until="domcontentloaded")
 
                 logger.info("Page loaded, waiting for selector...")
                 # Wait for selector
                 try:
                     if self.wait_for_selector:
-                        await page.wait_for_selector(self.wait_for_selector, timeout=10000)
+                        await page.wait_for_selector(
+                            self.wait_for_selector,
+                            timeout=browser_config.action_timeout * 1000,
+                        )
                         logger.info(f"Selector '{self.wait_for_selector}' found")
                 except Exception as e:
                     logger.warning(f"Timeout waiting for selector: {e}")
@@ -210,21 +215,14 @@ class Google(Falla):
 
                     if captcha_exists:
                         logger.warning("CAPTCHA detected on Google search page")
-                        # Take a screenshot for debugging
-                        await page.screenshot(path="google_captcha.png")
-                        return []
+                        await self._content_or_raise_browser_challenge(page, url)
+                except BrowserChallengeError:
+                    raise
                 except Exception as e:
                     logger.error(f"Error checking for CAPTCHA: {e}")
 
-                # Get the page content
-                html_content = await page.content()
+                html_content = await self._content_or_raise_browser_challenge(page, url)
                 logger.info(f"Retrieved HTML content, length: {len(html_content)}")
-
-                # Save to file for debugging
-                debug_file = f"google_debug_{query.replace(' ', '_')}.html"
-                with open(debug_file, "w", encoding="utf-8") as f:
-                    f.write(html_content)
-                logger.info(f"Wrote HTML content to {Path(debug_file).resolve()}")
 
                 # Look for specific elements to debug selector issues
                 result_count = await page.evaluate("""() => {
@@ -263,11 +261,7 @@ class Google(Falla):
             if not results:
                 logger.warning("No results found with standard method, trying alternate parsing")
 
-                # Parse the saved HTML file
-                if Path(debug_file).exists():
-                    with open(debug_file, encoding="utf-8") as f:
-                        html_content = f.read()
-
+                if html_content:
                     soup = BeautifulSoup(html_content, "html.parser")
 
                     # Try various selectors
@@ -313,6 +307,8 @@ class Google(Falla):
                                 return manual_results
 
             return results
+        except BrowserChallengeError:
+            raise
         except Exception as e:
             logger.error(f"Search failed: {e}", exc_info=True)
             return []

@@ -6,26 +6,54 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
-from twat_search.web.provider_catalog import ProviderMetadata, get_provider_metadata, list_provider_metadata
+from twat_search.web.models import RouteName, RoutePolicy
+from twat_search.web.provider_catalog import (
+    ProviderMetadata,
+    canonical_provider_code,
+    get_provider_metadata,
+    list_provider_metadata,
+)
 
 if TYPE_CHECKING:
     from twat_search.web.config import Config
 
-RouteName = Literal["best", "fast", "cheap", "resilient", "deep", "browser", "api-only", "all"]
+RouteDecisionReason = Literal[
+    "selected",
+    "missing_config",
+    "unavailable",
+    "transport",
+    "cost_class",
+    "proxy_support",
+    "stability",
+    "keyed_excluded",
+    "unkeyed_excluded",
+    "disabled",
+    "missing_api_key",
+    "max_engines",
+]
 
 
 @dataclass(frozen=True)
-class RoutePolicy:
-    """A named engine-selection policy."""
+class RouteDecision:
+    """Selection outcome for one provider under a route policy."""
 
-    name: RouteName
-    transports: tuple[str, ...] = ()
-    cost_classes: tuple[str, ...] = ()
-    require_proxy_support: bool | None = None
-    include_unkeyed: bool = True
-    include_keyed: bool = True
-    max_engines: int | None = None
-    stability: tuple[str, ...] = ("stable", "beta", "experimental", "fragile")
+    engine: str
+    selected: bool
+    reason: RouteDecisionReason
+
+
+@dataclass(frozen=True)
+class RouteSelection:
+    """Full route-selection result with selected engines and skip reasons."""
+
+    policy: RoutePolicy
+    selected_engines: list[str]
+    decisions: list[RouteDecision]
+
+    @property
+    def skipped(self) -> list[RouteDecision]:
+        """Return decisions that did not select an engine."""
+        return [decision for decision in self.decisions if not decision.selected]
 
 
 ROUTE_POLICIES: dict[str, RoutePolicy] = {
@@ -61,7 +89,7 @@ ROUTE_POLICIES: dict[str, RoutePolicy] = {
     ),
     "deep": RoutePolicy(
         name="deep",
-        transports=("api", "scraper", "browser"),
+        transports=("api", "scraper", "browser", "plugin"),
         include_unkeyed=True,
         include_keyed=True,
         stability=("stable", "beta", "experimental", "fragile"),
@@ -80,9 +108,16 @@ ROUTE_POLICIES: dict[str, RoutePolicy] = {
         include_keyed=True,
         stability=("stable", "beta", "experimental", "fragile"),
     ),
+    "plugins": RoutePolicy(
+        name="plugins",
+        transports=("plugin",),
+        include_unkeyed=True,
+        include_keyed=True,
+        stability=("stable", "beta", "experimental", "fragile"),
+    ),
     "all": RoutePolicy(
         name="all",
-        transports=("api", "scraper", "browser"),
+        transports=("api", "scraper", "browser", "plugin"),
         include_unkeyed=True,
         include_keyed=True,
         stability=("stable", "beta", "experimental", "fragile"),
@@ -101,50 +136,76 @@ def get_route_policy(route: str | None) -> RoutePolicy:
         raise ValueError(msg) from err
 
 
-def _provider_is_configured(provider: ProviderMetadata, config: Config) -> bool:
-    """Return True when the provider is enabled and has required credentials."""
-    engine_config = config.engines.get(provider.code)
-    if engine_config is None or not engine_config.enabled:
-        return False
-    if provider.requires_api_key and not engine_config.api_key:
-        return False
-    return True
-
-
 def select_route_engines(
     config: Config,
     route: str | None = "best",
     available_engines: set[str] | None = None,
 ) -> list[str]:
     """Select runnable engine codes for a route using catalog and config state."""
+    return explain_route_selection(
+        config=config,
+        route=route,
+        available_engines=available_engines,
+    ).selected_engines
+
+
+def explain_route_selection(
+    config: Config,
+    route: str | None = "best",
+    available_engines: set[str] | None = None,
+) -> RouteSelection:
+    """Select engines for a route and retain typed reasons for skipped providers."""
     policy = get_route_policy(route)
     selected: list[str] = []
+    decisions: list[RouteDecision] = []
+    normalized_available = (
+        {canonical_provider_code(engine) for engine in available_engines} if available_engines is not None else None
+    )
 
-    for provider in list_provider_metadata(include_planned=False):
+    providers = sorted(
+        list_provider_metadata(include_planned=False),
+        key=lambda provider: (provider.route_priority, provider.code),
+    )
+    for provider in providers:
         if provider.code not in config.engines:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="missing_config"))
             continue
-        if available_engines is not None and provider.code not in available_engines:
+        engine_config = config.engines[provider.code]
+        if not engine_config.enabled:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="disabled"))
+            continue
+        if provider.requires_api_key and not engine_config.api_key:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="missing_api_key"))
+            continue
+        if normalized_available is not None and provider.code not in normalized_available:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="unavailable"))
             continue
         if policy.transports and provider.transport not in policy.transports:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="transport"))
             continue
         if policy.cost_classes and provider.cost_class not in policy.cost_classes:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="cost_class"))
             continue
         if policy.require_proxy_support is not None and provider.proxy_support != policy.require_proxy_support:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="proxy_support"))
             continue
         if provider.stability not in policy.stability:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="stability"))
             continue
         if provider.requires_api_key and not policy.include_keyed:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="keyed_excluded"))
             continue
         if not provider.requires_api_key and not policy.include_unkeyed:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="unkeyed_excluded"))
             continue
-        if not _provider_is_configured(provider, config):
+        if policy.max_engines is not None and len(selected) >= policy.max_engines:
+            decisions.append(RouteDecision(provider.code, selected=False, reason="max_engines"))
             continue
 
         selected.append(provider.code)
-        if policy.max_engines is not None and len(selected) >= policy.max_engines:
-            break
+        decisions.append(RouteDecision(provider.code, selected=True, reason="selected"))
 
-    return selected
+    return RouteSelection(policy=policy, selected_engines=selected, decisions=decisions)
 
 
 def route_names() -> list[str]:

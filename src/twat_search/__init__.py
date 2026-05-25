@@ -1,7 +1,7 @@
+# this_file: src/twat_search/__init__.py
 """twat-search: Tools for web search and information retrieval."""
 
 from __future__ import annotations
-from .__version__ import __version__
 
 from twat_search.__version__ import __version__
 
@@ -29,7 +29,7 @@ except ImportError:
 
 def main() -> None:
     """CLI entry point for twat-search and ``twat search`` dispatch."""
-    from twat_search.__main__ import main as cli_main
+    from twat_search.__main__ import main as cli_main  # noqa: PLC0415
 
     cli_main()
 

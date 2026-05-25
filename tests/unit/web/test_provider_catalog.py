@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from twat_search.web.engine_constants import ALL_POSSIBLE_ENGINES, ENGINE_FRIENDLY_NAMES
+from twat_search.web.engines.base import get_engine_registry
 from twat_search.web.provider_catalog import (
     get_api_key_env_names,
     get_friendly_name,
@@ -20,10 +21,11 @@ def test_catalog_contains_current_and_planned_providers() -> None:
     codes = list_known_provider_codes()
 
     assert "brave" in codes
-    assert "google_falla" in codes
+    assert "google_browser" in codes
     assert "serper" in codes
     assert "dataforseo" in codes
     assert "github_search" in codes
+    assert "plugin_search" in codes
     assert "langsearch" in codes
     assert "mapleserp" in codes
     assert "brightdata" in codes
@@ -46,6 +48,7 @@ def test_catalog_can_filter_planned_providers() -> None:
     assert "search_cans" in implemented
     assert "gensee" in implemented
     assert "apify" in implemented
+    assert "plugin_search" in implemented
 
 
 def test_provider_metadata_captures_transport_and_proxy_support() -> None:
@@ -57,11 +60,15 @@ def test_provider_metadata_captures_transport_and_proxy_support() -> None:
     assert brave.transport == "api"
     assert brave.requires_api_key is True
     assert brave.proxy_support is False
+    assert brave.route_priority == 10
 
     assert google_browser is not None
     assert google_browser.transport == "browser"
     assert google_browser.browser_required is True
     assert google_browser.proxy_support is True
+    assert google_browser.route_priority == 300
+    assert google_browser.code == "google_browser"
+    assert "google_falla" in google_browser.aliases
 
 
 def test_provider_metadata_exposes_env_names() -> None:
@@ -71,11 +78,27 @@ def test_provider_metadata_exposes_env_names() -> None:
     assert get_api_key_env_names("duckduckgo") == ()
 
 
+def test_registry_entries_attach_provider_metadata() -> None:
+    """Registered engine classes are exposed through typed provider metadata records."""
+    registry = get_engine_registry()
+    entry = registry["brave"]
+
+    assert entry.code == "brave"
+    assert entry.engine_class.engine_code == "brave"
+    assert entry.provider_metadata is get_provider_metadata("brave")
+    assert entry.catalog_status == "cataloged"
+    assert entry.friendly_name == "Brave Search API"
+    assert entry.env_api_key_names == ("BRAVE_API_KEY",)
+    assert entry.transport == "api"
+    assert entry.proxy_policy == "none"
+
+
 def test_engine_constants_are_catalog_backed() -> None:
-    """Legacy constants stay compatible while using provider metadata."""
+    """Engine constants expose canonical provider metadata."""
     assert ALL_POSSIBLE_ENGINES == list_known_provider_codes(include_planned=True)
     assert ENGINE_FRIENDLY_NAMES["brave"] == get_friendly_name("brave")
     assert ENGINE_FRIENDLY_NAMES["serper"] == "Serper Google Search API"
+    assert "google_falla" not in ALL_POSSIBLE_ENGINES
 
 
 def test_catalog_entries_have_unique_codes() -> None:
@@ -89,7 +112,7 @@ def test_catalog_entries_have_unique_codes() -> None:
 
 def test_browser_provider_has_derived_browser_and_proxy_policy() -> None:
     """Browser providers derive Playwright proxy and browser defaults."""
-    google_browser = get_provider_metadata("google_falla")
+    google_browser = get_provider_metadata("google_browser")
 
     assert google_browser is not None
     assert google_browser.status == "implemented"
@@ -107,6 +130,7 @@ def test_provider_status_replaces_boolean_source_of_truth() -> None:
     langsearch = get_provider_metadata("langsearch")
     mapleserp = get_provider_metadata("mapleserp")
     search_cans = get_provider_metadata("search_cans")
+    plugin_search = get_provider_metadata("plugin_search")
 
     assert serper is not None
     assert serper.status == "implemented"
@@ -128,6 +152,10 @@ def test_provider_status_replaces_boolean_source_of_truth() -> None:
     assert search_cans is not None
     assert search_cans.status == "implemented"
     assert search_cans.env_api_key_names == ("SEARCH_CANS_API_KEY",)
+    assert plugin_search is not None
+    assert plugin_search.status == "implemented"
+    assert plugin_search.transport == "plugin"
+    assert plugin_search.default_enabled is False
 
 
 def test_select_provider_codes_filters_catalog() -> None:
@@ -137,5 +165,5 @@ def test_select_provider_codes_filters_catalog() -> None:
 
     assert "duckduckgo" in free_no_key
     assert "brave" not in free_no_key
-    assert "google_falla" in browser_proxy
+    assert "google_browser" in browser_proxy
     assert "browser_use" not in browser_proxy
