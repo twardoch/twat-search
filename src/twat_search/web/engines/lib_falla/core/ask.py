@@ -2,26 +2,37 @@
 # Falla-Ask
 # Sanix-darker
 
+from bs4.element import Tag
+
 from twat_search.web.engines.lib_falla.core.falla import Falla
 
 
 class Ask(Falla):
+    """Ask.com search engine implementation for Falla."""
+
     def __init__(self) -> None:
-        self.try_it = 0
-        self.max_retry = 3
-        self.source = "Ask"
-        self.mode = "requests"
-        self.results_box = "//div[@class='l-mid-content']"
-        self.each_element = {"tag": "div", "attr": {"class": "PartialSearchResults-item"}}
-        self.href = {"tag": "a:PartialSearchResults-item-title-link", "type": "attribute", "key": "href", "child": {}}
-        self.title = {"tag": "a:PartialSearchResults-item-title-link", "type": "text"}
-        self.cite = {"tag": "p:PartialSearchResults-item-abstract", "type": "text"}
+        """Initialize the Ask.com search engine."""
+        super().__init__(name="Ask")
+        self.use_method = "requests"
+        self.container_element = ("div", {"class": "PartialSearchResults-item"})
 
-    def search(self, search_text: str, pages: str = "") -> list[dict[str, str]]:
-        url = "https://www.ask.com/web?q=" + search_text.replace(" ", "+") + pages
+    def get_url(self, query: str) -> str:
+        return "https://www.ask.com/web?q=" + query.replace(" ", "+")
 
-        return self.fetch(url)
+    def get_title(self, elm: Tag) -> str:
+        a = elm.find("a", class_="PartialSearchResults-item-title-link")
+        if not isinstance(a, Tag):
+            a = elm.find(["h2", "h3"])
+        return a.get_text().strip() if isinstance(a, Tag) else ""
 
+    def get_link(self, elm: Tag) -> str:
+        a = elm.find("a", class_="PartialSearchResults-item-title-link")
+        if not isinstance(a, Tag):
+            a = elm.find("a", href=True)
+        return str(a.attrs["href"]) if isinstance(a, Tag) and a.has_attr("href") else ""
 
-# ak = Ask()
-# print(ak.search("un avion"))
+    def get_snippet(self, elm: Tag) -> str:
+        p = elm.find("p", class_="PartialSearchResults-item-abstract")
+        if not isinstance(p, Tag):
+            p = elm.find("p")
+        return p.get_text().strip() if isinstance(p, Tag) else ""

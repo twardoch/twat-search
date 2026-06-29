@@ -2,26 +2,31 @@
 # Falla-Aol
 # Sanix-darker
 
+from bs4.element import Tag
+
 from twat_search.web.engines.lib_falla.core.falla import Falla
 
 
 class Aol(Falla):
+    """AOL (Yahoo-backed) search engine implementation for Falla."""
+
     def __init__(self) -> None:
-        self.try_it = 0
-        self.max_retry = 3
-        self.source = "Aol"
-        self.mode = "requests"
-        self.results_box = "//div[@id='web']"
-        self.each_element = {"tag": "li"}
-        self.href = {"tag": "a", "type": "attribute", "key": "href", "child": {}}
-        self.title = {"tag": "a", "type": "text"}
-        self.cite = {"tag": "div:compText", "child": {"tag": "p", "type": "text"}}
+        """Initialize the AOL search engine."""
+        super().__init__(name="Aol")
+        self.use_method = "requests"
+        self.container_element = ("div", {"class": "algo"})
 
-    def search(self, search_text: str, pages: str = "") -> list[dict[str, str]]:
-        url = "https://search.aol.com/aol/search?q=" + search_text.replace(" ", "+") + pages
+    def get_url(self, query: str) -> str:
+        return "https://search.aol.com/aol/search?q=" + query.replace(" ", "+")
 
-        return self.fetch(url)
+    def get_title(self, elm: Tag) -> str:
+        h = elm.find(["h3", "h2"])
+        return h.get_text().strip() if isinstance(h, Tag) else ""
 
+    def get_link(self, elm: Tag) -> str:
+        a = elm.find("a", href=True)
+        return str(a.attrs["href"]) if isinstance(a, Tag) else ""
 
-# a = Aol()
-# print(a.search("un avion"))
+    def get_snippet(self, elm: Tag) -> str:
+        p = elm.find("p")
+        return p.get_text().strip() if isinstance(p, Tag) else ""
