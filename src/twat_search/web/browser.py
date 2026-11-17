@@ -20,7 +20,10 @@ _BROWSER_SIGNAL_PATTERNS: tuple[tuple[BrowserSignalKind, re.Pattern[str]], ...] 
     ("bot_challenge", re.compile(r"\b(?:cf-turnstile|cloudflare|botguard|challenge-platform)\b", re.IGNORECASE)),
     ("rate_limit", re.compile(r"\b(?:rate limit|too many requests|temporarily blocked)\b", re.IGNORECASE)),
     ("blocked", re.compile(r"\b(?:access denied|request blocked|automated queries|are you a robot)\b", re.IGNORECASE)),
-    ("consent", re.compile(r"\b(?:cookie consent|consent page|accept all|reject all|privacy choices)\b", re.IGNORECASE)),
+    (
+        "consent",
+        re.compile(r"\b(?:cookie consent|consent page|accept all|reject all|privacy choices)\b", re.IGNORECASE),
+    ),
     ("consent", re.compile(r"consent\.(?:google|youtube)\.", re.IGNORECASE)),
     ("login", re.compile(r"\b(?:sign in to continue|login required|authentication required)\b", re.IGNORECASE)),
 )

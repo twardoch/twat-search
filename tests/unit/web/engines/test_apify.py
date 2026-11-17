@@ -36,10 +36,7 @@ def test_apify_builds_sync_actor_url() -> None:
     """Apify actor IDs are encoded for the documented sync dataset endpoint."""
     engine = ApifySearchEngine(EngineConfig(api_key="test-key"), actor_id="apify/google-search-scraper")
 
-    assert (
-        engine._build_url()
-        == "https://api.apify.com/v2/acts/apify~google-search-scraper/run-sync-get-dataset-items"
-    )
+    assert engine._build_url() == "https://api.apify.com/v2/acts/apify~google-search-scraper/run-sync-get-dataset-items"
 
 
 def test_apify_builds_google_search_scraper_payload() -> None:
@@ -99,7 +96,10 @@ async def test_apify_search_converts_nested_organic_results(monkeypatch: pytest.
 
     results = await engine.search("font engineering")
 
-    assert captured_request["url"] == "https://api.apify.com/v2/acts/apify~google-search-scraper/run-sync-get-dataset-items"
+    assert (
+        captured_request["url"]
+        == "https://api.apify.com/v2/acts/apify~google-search-scraper/run-sync-get-dataset-items"
+    )
     assert captured_request["method"] == "POST"
     assert captured_request["headers"]["Authorization"] == "Bearer test-key"
     assert captured_request["json_data"]["queries"] == "font engineering"

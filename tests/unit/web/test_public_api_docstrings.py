@@ -9,7 +9,14 @@ from collections.abc import Callable
 from twat_search.web.browser import BrowserBlockSignal, BrowserEvidence
 from twat_search.web.config import BrowserConfig, Config, EngineConfig, LLMConfig, ProxyConfig
 from twat_search.web.engines.plugin_search import SearchPluginSpec
-from twat_search.web.models import EngineOutcome, EngineRequest, SearchFailure, SearchRequest, SearchResponse, SearchResult
+from twat_search.web.models import (
+    EngineOutcome,
+    EngineRequest,
+    SearchFailure,
+    SearchRequest,
+    SearchResponse,
+    SearchResult,
+)
 
 
 PUBLIC_CLASSES = [
